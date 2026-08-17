@@ -109,5 +109,58 @@ class AssetTest(unittest.TestCase):
                              f"{nome} non rispetta la Sez. 23A del GDD")
 
 
+ACCENTATE_MAPPATE = "àèéìòùÀÈÉÌÒÙ"
+
+
+class FontTest(unittest.TestCase):
+    """Ogni carattere che il gioco stampa deve esistere nel font.
+
+    Un carattere non mappato NON e' un errore di compilazione: e' un `BN_ERROR` a runtime,
+    cioe' il gioco che si ferma davanti al giocatore alla prima battuta che lo contiene. Questo
+    test sposta quell'errore dal salotto del giocatore alla suite."""
+
+    def setUp(self):
+        self.root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+
+    def test_font_generato_presente(self):
+        for nome in ("graphics/font_gubbio.bmp", "graphics/font_gubbio.json",
+                     "include/font_gubbio.h"):
+            self.assertTrue(os.path.exists(os.path.join(self.root, nome)),
+                            f"{nome} manca: eseguire python tools/make_font.py")
+
+    def test_font_ha_le_celle_attese(self):
+        """94 celle ASCII + 12 accentate italiane, di 8 pixel ciascuna."""
+        larghezza, altezza, _ = leggi_bmp(os.path.join(self.root, "graphics/font_gubbio.bmp"))
+        self.assertEqual(larghezza, 8)
+        self.assertEqual(altezza, (94 + 12) * 8,
+                         "il numero di celle del font non corrisponde a 94 ASCII + 12 accentate")
+
+    def test_ogni_carattere_dei_testi_e_stampabile(self):
+        """Scandisce le stringhe letterali dei sorgenti: se una contiene un carattere che il
+        font non ha, il gioco si fermerebbe nel momento in cui prova a disegnarla."""
+        import glob
+        import re as _re
+
+        non_mappati = {}
+        for percorso in (glob.glob(os.path.join(self.root, "src", "*.cpp")) +
+                         glob.glob(os.path.join(self.root, "include", "*.h"))):
+            if os.path.basename(percorso) == "font_gubbio.h":
+                continue      # l'elenco dei glifi, non un testo da stampare
+            with open(percorso, encoding="utf-8") as f:
+                sorgente = f.read()
+            # Solo le righe di codice: i commenti non finiscono mai a schermo.
+            righe = [l for l in sorgente.splitlines() if not l.lstrip().startswith("//")]
+            codice = chr(10).join(righe)
+            for letterale in _re.findall(r'"([^"\\]*)"', codice):
+                for ch in letterale:
+                    if ch in ACCENTATE_MAPPATE or 32 <= ord(ch) <= 126:
+                        continue
+                    non_mappati.setdefault(ch, []).append(os.path.basename(percorso))
+
+        self.assertFalse(non_mappati,
+                         "caratteri non presenti nel font: " +
+                         ", ".join(f"{c!r} in {sorted(set(f))}" for c, f in non_mappati.items()))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

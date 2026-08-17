@@ -1760,6 +1760,32 @@ Il sistema visuale sfrutta il layer hardware **BG0** (Priorità 0) per visualizz
 
 ### A. SPECIFICHE DEL MOTORE DI TESTO
 * **Font Compatto a 8 px:** Set di caratteri proporzionale ottimizzato per la risoluzione $240 	imes 160$ px (fino a 28 caratteri per riga, massimo 3 righe per box).
+
+> **NOTA DI REVISIONE (2026-08-18, Sessione 12) — IL FONT ITALIANO ESISTE.**
+> Questa sezione dava per scontato un set di caratteri adeguato all'italiano. Non lo era: il font
+> usato fino alla Sessione 11, `common_variable_8x8_sprite_font` di Butano, mappa 16 caratteri non
+> ASCII e sono **tutti spagnoli** (`Á É Í Ó Ú Ü Ñ á é í ó ú ü ñ ¡ ¿`) — **nessun accento grave
+> italiano**. Un carattere non mappato non e' un errore di compilazione: e' un `BN_ERROR` a
+> runtime, cioe' il gioco che si ferma davanti al giocatore alla prima battuta con "città".
+>
+> **Decisione: font 8x8 proprio del progetto**, `graphics/font_gubbio.bmp` + `include/font_gubbio.h`,
+> generato da `tools/make_font.py`. Contiene i 94 glifi ASCII di Butano piu' le **12 lettere
+> accentate italiane** (`à è é ì ò ù À È É Ì Ò Ù`). Le misure che hanno determinato la forma:
+> * le **minuscole** avevano gia' lo spazio (3 righe libere sopra `a`, `o`, `u`; 2 sopra `e`),
+>   quindi sono **derivate senza ridisegnare nulla**; sulla `i` l'accento prende il posto del
+>   puntino, come vuole la tipografia;
+> * le **maiuscole** occupavano tutte e 8 le righe, quindi si toglie la riga la cui rimozione si
+>   nota di meno — per `A I O U` esiste una riga duplicata e la compressione e' esatta, per `E` il
+>   costo misurato e' di 2 pixel — e l'accento e' un trattino di 3 px sulla riga liberata.
+>   La compressione piu' aggressiva (a 6 righe) e' stata **provata e scartata**: accanto alle
+>   altre maiuscole la lettera appariva rimpicciolita.
+>
+> Conseguenze applicate: il Battle HUD usa lo stesso font (il menu comandi dice ora **"Abilità"**),
+> la libreria `../butano/common` e' stata **rimossa dal `Makefile`** perche' serviva solo al font,
+> e `tools/preview_battle_screen.py` rende con il medesimo font della ROM. Un test della suite
+> verifica che **ogni carattere delle stringhe dei sorgenti esista nel font**.
+>
+> Resta valido il resto della sezione: 8 px di altezza, fino a 28 caratteri per riga, 3 righe.
 * **Effetto Macchina da Scrivere (Typewriter):** 1 carattere ogni 2 frame hardware (30 caratteri al secondo), con possibilità di skip istantaneo premendo il tasto $B$.
 * **Speaker Indicator & Bip Vocale Chiptune:** Pitch audio modulato in base a chi parla (grave/solenne per Sant'Ubaldo, squillante per San Giorgio, cupo/roco per Sant'Antonio, metallico/minaccioso per Monaldo).
 

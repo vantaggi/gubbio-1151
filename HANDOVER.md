@@ -38,11 +38,13 @@ bash tools/build_rom.sh "USERFLAGS=-DGUBBIO_BATTLE_AUTOTEST"   # ROM che si auto
 3. **Il GDD si contraddice spesso.** Quando succede: scegliere motivando, e **correggere anche il
    GDD** con nota di revisione, altrimenti la sessione dopo ripristina il valore vecchio (Sess. 02b).
 
-**Il prossimo passo** e' il **Passo 15** di [`docs/piano_fase_successiva.md`](./docs/piano_fase_successiva.md)
-(font italiano), che sblocca i Passi 16-18 (dialoghi, copione, quest). I Passi 0-8 e 10-14 sono
-fatti; il Passo 9 (budget VRAM) e' assorbito nelle `static_assert` di `map_data.h`.
-**Il Passo 15 e' bloccato da una decisione del committente**: font custom con i sette accenti
-gravi italiani, oppure convenzione con apostrofo ("pero'") per sempre.
+**Il prossimo passo** e' il **Passo 16** di [`docs/piano_fase_successiva.md`](./docs/piano_fase_successiva.md)
+(`dialogue_box.h` corretto + `dialogue_view`), poi 17 (copione e quest) e 18 (esecutore di
+dialoghi agganciato all'esplorazione). I Passi 0-8, 10-14 e 15 sono fatti; il Passo 9 (budget
+VRAM) e' assorbito nelle `static_assert` di `map_data.h`.
+Attenzione al Passo 16: `dialogue_box.h` esiste dalla Sessione 01 ma **non e' mai stato compilato
+ne' eseguito**, e ha tre difetti gia' individuati (UTF-8 per byte invece che per codepoint, una
+`bn::string_view` che non possiede la memoria, confronti signed/unsigned).
 
 **Decisioni aperte che spettano al designer.** Nessuna blocca il Passo 7, ma tutte prima o poi si
 presentano:
@@ -52,7 +54,7 @@ presentano:
   12A/12C — vedi [`docs/piano_combo_tre_ceri.md`](./docs/piano_combo_tre_ceri.md).
 * I boss agiscono **1 o 2 volte per turno**? Sez. 26 contro Sez. 13D: con due, il duello con
   Corrado va ritarato — vedi [`docs/piano_ia_boss.md`](./docs/piano_ia_boss.md).
-* Il **font non ha le lettere accentate italiane**: o si estende, o i dialoghi scrivono "pero".
+* ~~Il **font non ha le lettere accentate italiane**~~ — **CHIUSA nella Sessione 12**: font 8x8 proprio del progetto con le 12 accentate italiane (`tools/make_font.py`).
 
 **Due decisioni maturate con Piazza Grande, che ora chiedono una risposta** (dettagli in Sess. 11b):
 
@@ -95,6 +97,7 @@ presentano:
 | **Arte Piazza** | [`tools/make_piazza_art.py`](./tools/make_piazza_art.py) / [`tools/preview_piazza.py`](./tools/preview_piazza.py) | Segnaposto di Piazza Grande derivato dalla griglia di collisione, con controllo di colori e tile unici; anteprima 240x160 fuori emulatore. |
 | **Main Loop** | [`src/main.cpp`](./src/main.cpp) | Entry point e **trampolino di scene**: `switch` su `SceneId` con la scena come variabile di scope. Avvia Piazza Grande (la battaglia sotto autotest). **Eseguito su mGBA.** |
 | **Battle HUD** | [`include/battle_hud.h`](./include/battle_hud.h) / [`src/battle_hud.cpp`](./src/battle_hud.cpp) | Schermata di combattimento Sez. 14B.3: fondale, schieramenti, menu comandi, barre HP/Fervore, cursore bersaglio. |
+| **Font Italiano** | [`tools/make_font.py`](./tools/make_font.py) / [`include/font_gubbio.h`](./include/font_gubbio.h) | Font 8x8 del progetto: 94 glifi ASCII di Butano + 12 accentate italiane derivate. Sostituisce `common_variable_8x8_sprite_font`, che ha solo accenti spagnoli. |
 | **Grafica Segnaposto** | [`tools/make_placeholder_art.py`](./tools/make_placeholder_art.py) | Genera i 9 asset di `graphics/` nelle misure della Sez. 23A. Da sostituire con l'arte definitiva. |
 | **Anteprima Schermata** | [`tools/preview_battle_screen.py`](./tools/preview_battle_screen.py) | Compone i 240x160 fuori dall'emulatore per iterare su layout e arte. |
 | **Build Configuration** | [`Makefile`](./Makefile) | Makefile allineato alla convenzione Butano attuale (`LIBBUTANOABS`), ROM title `GUBBIO1151`. **Build verificata: produce `gubbio1151.gba`.** |
@@ -568,11 +571,37 @@ Motivazione: fino a ieri le regole di `AGENTS.md` erano **dichiarate ma non misu
 * **Il progetto ha una storia.** Fino alla Sessione 11c questa cartella **non era un repository git**: undici sessioni di lavoro, file critici riscritti da capo (`save_data.h` nella 11c), e nessun modo di vedere un diff, tornare indietro o sapere quando una riga fosse cambiata. Ora c'e' un commit iniziale con gli 80 file del progetto.
   * **Escluso dalla storia:** `build/`, ROM, ELF, mappe, anteprime e **il `.sav`** — che e' la memoria di chi gioca, non un file del progetto (i test lo leggono se c'e' e dichiarano `skip` se manca).
   * **Incluso di proposito:** i `.bmp` di `graphics/`, che sono la *fonte* da cui grit genera i tile e non un artefatto — oggi segnaposto, domani arte disegnata a mano.
-  * **`.gitattributes` non e' cosmetico:** `tools/build_rom.sh` e `tools/check_zero_heap.sh` girano sotto Git Bash, e uno script shell con terminatori CRLF fallisce in modo ostile (`$'': command not found`). Senza il vincolo `eol=lf`, il primo clone su una macchina con `core.autocrlf=true` avrebbe una build rotta e una diagnosi difficile.
+  * **`.gitattributes` non e' cosmetico:** `tools/build_rom.sh` e `tools/check_zero_heap.sh` girano sotto Git Bash, e uno script shell con terminatori CRLF fallisce in modo ostile (`$'
+': command not found`). Senza il vincolo `eol=lf`, il primo clone su una macchina con `core.autocrlf=true` avrebbe una build rotta e una diagnosi difficile.
 
 * **Skill `decisioni-aperte`.** Il collo di bottiglia dichiarato del progetto non e' scrivere codice: e' che il GDD si contraddice e che una ventina di scelte non sono mai state prese — e in questo momento e' una di queste (il font) a bloccare il Passo 15. La skill formalizza cio' che le sessioni migliori hanno gia' fatto a mano: **round sulla frontiera** (solo le domande le cui premesse sono risolte), **prove dal GDD prima delle domande** (contare in quante sedi compare ciascuna lettura, come nella Sessione 02b), **tre classi di decisione** (riservate al committente / decidibili motivando / gia' chiuse e da non riaprire) e **chiusura obbligatoria in tre posti** — GDD nella sezione contraddetta, HANDOVER, e codice con `static_assert` dove possibile.
   * Il registro delle decisioni **non e' duplicato** nella skill: resta in `docs/piano_fase_successiva.md` e nella Sezione 0 di `HANDOVER.md`, che sono le fonti.
   * Spunto esterno: il metodo a round e' ripreso dalla skill `/grill-me` di aihero.dev, adattato al protocollo di continuita' di questo progetto. Il resto di quel catalogo e' stato valutato e **scartato**: `/tdd` prescriverebbe una disciplina piu' debole di quella gia' in vigore (gate sull'ELF, prove negative obbligatorie), `/to-issues` e `/triage` presuppongono un tracker inesistente, `/to-prd` e `/domain-model` un documento di dominio mancante — mentre qui il GDD c'e', e il problema e' opposto.
+
+### [2026-08-18] - Sessione 12: Passo 15 — Il Font Italiano (decisione chiusa)
+
+* **Autore / Agente:** Claude Opus 5 (Claude Code)
+* **File creati:** `tools/make_font.py`, `graphics/font_gubbio.{bmp,json}`, `include/font_gubbio.h`
+* **File modificati:** `src/battle_hud.cpp`, `include/item_data.h`, `Makefile`, `tools/preview_battle_screen.py`, `tests/test_assets.py`, `GUBBIO_1151_LA_BIBBIA_GDD.md` (Sez. 25A), entrambe le copie della skill `asset-pipeline`
+
+* **DECISIONE DEL COMMITTENTE (via `/decisioni-aperte`): font 8x8 proprio del progetto**, non la convenzione con apostrofo e non il passaggio a 8x16. Chiusa anche la sotto-decisione sulle maiuscole: **compresse di una riga con accento sottile**, non apostrofo.
+
+* **La premessa del piano era sbagliata, e la misura lo ha mostrato.** Il Passo 15 presentava la scelta come *"font custom (lavoro d'arte) contro apostrofo (gratuito)"*. Misurando i glifi di Butano:
+  * le **minuscole hanno gia' lo spazio** — 3 righe libere sopra `a`, `o`, `u`, 2 sopra `e` — quindi `à è é ò ù` sono **derivate senza ridisegnare nulla**, e sulla `i` l'accento prende il posto del puntino;
+  * le **maiuscole** riempiono tutte e 8 le righe: si toglie la riga la cui rimozione si nota di meno. Per `A I O U` esiste una riga **duplicata** e la compressione e' esatta (0 pixel alterati); per la `E`, che ha tutte le righe diverse, il costo misurato e' **2 pixel**.
+  * La variante a 6 righe e' stata **generata, guardata e scartata**: accanto alle altre maiuscole la lettera appariva rimpicciolita. La scelta e' stata presa **guardando le tre varianti rese in immagine**, non descritte a parole.
+
+* **Il fabbisogno reale, contato invece che stimato.** Nel GDD ci sono 168 caratteri accentati, ma la maggior parte e' prosa di design che non entra nel gioco. Nelle sole battute: **34 occorrenze, 7 caratteri distinti**. Le maiuscole accentate servono in due punti soli, ed entrambi pesano: `PODESTÀ GUIDO:` (etichetta ricorrente) e `GUBBIO È SALVA.` (schermata finale). Il font ne mappa comunque **12**, cioe' tutto il set italiano: costa 384 byte di ROM e chiude la questione per sempre.
+
+* **Conseguenze applicate nello stesso passo:**
+  * il Battle HUD usa il font del progetto — il menu comandi dice ora **"Abilità"** e l'oggetto e' **"Baccalà alla Ceraiola"**;
+  * **`../butano/common` rimosso dal `Makefile`** (SOURCES, INCLUDES e GRAPHICS): serviva unicamente al font, ed era marcato "da rimuovere" dalla Sessione 02d;
+  * `tools/preview_battle_screen.py` rende con **lo stesso font della ROM**, chiudendo la divergenza dichiarata nella Sessione 05.
+
+* **Verifiche.** Build pulita senza `common`, gate verde. **Accento renderizzato davvero su mGBA**: la ROM di autotest ha disegnato "Abilità" senza alcun `BN_ERROR` — che e' il modo in cui un carattere non mappato si manifesta. Anteprima di battaglia rigenerata e ispezionata a occhio.
+  * **Nuovo oracolo con prova negativa:** `tests/test_assets.py` scandisce le stringhe letterali dei sorgenti e fallisce se un carattere non esiste nel font. Verificato inserendo una `ñ` spagnola: il test e' diventato rosso nominando il file. Suite: **31/31 + 9/9 + 9/9**.
+
+* **Nota di metodo.** Questa decisione e' stata sciolta con la skill `decisioni-aperte` alla sua prima applicazione: due round, prove raccolte prima delle domande, e la scoperta — mostrata al committente **prima** che scegliesse — che l'opzione ritenuta costosa costava quasi nulla. Il metodo ha cambiato il contenuto della decisione, non solo la sua forma.
 
 ---
 

@@ -12,12 +12,13 @@
 TARGET          :=  gubbio1151
 BUILD           :=  build
 PYTHON          :=  python
-# `common` e' la libreria di supporto degli esempi Butano: fornisce i font sprite usati dal
-# tabulato di collaudo in main.cpp. Da rimuovere quando l'HUD definitivo avra' i propri asset.
-SOURCES         :=  src ../butano/common/src
-INCLUDES        :=  include ../butano/common/include
+# La libreria `common` degli esempi Butano e' stata RIMOSSA nella Sessione 12: serviva solo per
+# `common_variable_8x8_sprite_font`, sostituito da `include/font_gubbio.h` (font del progetto con
+# le lettere accentate italiane, che quello di Butano non ha).
+SOURCES         :=  src
+INCLUDES        :=  include
 DATA            :=
-GRAPHICS        :=  graphics ../butano/common/graphics
+GRAPHICS        :=  graphics
 AUDIO           :=  audio
 AUDIOBACKEND    :=  maxmod
 AUDIOTOOL       :=

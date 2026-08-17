@@ -70,7 +70,7 @@ constexpr ItemData ITEMS[int(ItemId::COUNT)] = {
     {"Crescia sotto la Cenere",            "Cenere",    ItemTarget::ALLY_FALLEN, ItemEffect::REVIVE,          0,  100,    0,  100,  100,  100,     0, 0,                   6,   2},
     // Tetto di trasporto 1: 510 Fervore restituiti valgono cinque Boost MAX. E' un'apertura di
     // boss fight, non una risorsa rinnovabile, come il rito della Brocca dell'Alzata (Sez. 8C).
-    {"Baccala' alla Ceraiola",             "Baccala'",  ItemTarget::PARTY,       ItemEffect::RESTORE_FERVOR,  0,    0,  100,  100,  100,  100,     0, 0,                   6,   1},
+    {"Baccalà alla Ceraiola",             "Baccalà",  ItemTarget::PARTY,       ItemEffect::RESTORE_FERVOR,  0,    0,  100,  100,  100,  100,     0, 0,                   6,   1},
     // "Consumabile rapido" (Sez. 8E): priorita' 10, sopra il Bastione Azzurro.
     {"Biscotti all'Anice di Sant'Ubaldo",  "Biscotti",  ItemTarget::ALLY,        ItemEffect::CURE_STATUS,     0,    0,    0,  100,  100,  100,     0, CURE_MASK_ANICE,    10,   5},
     // Durata 3 turni allineata a BURN_DURATION_TURNS: il GDD non la specifica.

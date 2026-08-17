@@ -15,7 +15,7 @@
 #include "bn_sprite_items_timeline_icons.h"
 #include "scene_fade.h"
 
-#include "common_variable_8x8_sprite_font.h"
+#include "font_gubbio.h"
 
 namespace gubbio {
 
@@ -64,7 +64,7 @@ constexpr const char* HERO_SHORT_NAME[PARTY_SIZE] = {"Ubaldo", "Giorgio", "Anton
     switch(command)
     {
         case MenuCommand::ATTACK: return "Attacca";
-        case MenuCommand::SKILL:  return "Abilita";
+        case MenuCommand::SKILL:  return "Abilità";
         case MenuCommand::ITEM:   return "Oggetti";
         case MenuCommand::FLEE:   return "Fuga";
         default:                  return "";
@@ -118,7 +118,7 @@ constexpr const char* HERO_SHORT_NAME[PARTY_SIZE] = {"Ubaldo", "Giorgio", "Anton
 
 BattleHud::BattleHud() :
     _background(bn::regular_bg_items::battle_bg.create_bg(0, 0)),
-    _text_generator(common::variable_8x8_sprite_font),
+    _text_generator(FONT_GUBBIO),
     _last_signature(0),
     _last_intro_progress(-1),
     _units_built(false)

@@ -68,15 +68,22 @@ def load_rgba(name, transparent_index_0=True):
     return rgba
 
 
+# Le accentate stanno in coda alle 94 celle ASCII, nell'ordine in cui make_font.py le emette.
+ASCII_CELLE = 94
+ACCENTATE = "àèéìòùÀÈÉÌÒÙ"
+
+
 def load_font():
-    """Font sprite 8x8 di Butano: celle impilate da ASCII 32, larghezze nell'header."""
-    header = os.path.join(BUTANO_COMMON, "include", "common_variable_8x8_sprite_font.h")
+    """Il font DEL PROGETTO (include/font_gubbio.h + graphics/font_gubbio.bmp), non quello di
+    Butano: 94 celle ASCII piu' le 12 accentate italiane. L'anteprima deve renderizzare con lo
+    stesso font della ROM, altrimenti mostra un testo che il gioco non stampera' mai — e' la
+    divergenza gia' dichiarata nella Sessione 05, qui chiusa."""
+    header = os.path.join(ROOT, "include", "font_gubbio.h")
     with open(header, encoding="utf-8") as f:
         text = f.read()
-    block = text.split("variable_8x8_sprite_font_character_widths[] = {")[1].split("};")[0]
+    block = text.split("FONT_CHARACTER_WIDTHS[] = {")[1].split("};")[0]
     widths = [int(m) for m in re.findall(r"^\s*(\d+),", block, re.M)]
-    sheet = Image.open(os.path.join(BUTANO_COMMON, "graphics",
-                                    "common_variable_8x8_font.bmp")).convert("P")
+    sheet = Image.open(os.path.join(ROOT, "graphics", "font_gubbio.bmp")).convert("P")
     return sheet, widths
 
 
@@ -85,6 +92,20 @@ def draw_text(dst, sheet, widths, x, y, text, color=(236, 232, 216)):
     src = sheet.load()
     for ch in text:
         code = ord(ch)
+
+        if ch in ACCENTATE:
+            idx = ASCII_CELLE + ACCENTATE.index(ch)
+            width_idx = ASCII_CELLE + 1 + ACCENTATE.index(ch)
+            top = idx * 8
+            for cy in range(8):
+                for cx in range(8):
+                    if src[cx, top + cy] != 0:
+                        px, py = x + cx, y + cy
+                        if 0 <= px < SCREEN_W and 0 <= py < SCREEN_H:
+                            dst.putpixel((px, py), color + (255,))
+            x += widths[width_idx]
+            continue
+
         width_idx = code - 32
         if width_idx < 0 or width_idx >= len(widths):
             width_idx = 0
