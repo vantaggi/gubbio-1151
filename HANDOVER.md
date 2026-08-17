@@ -107,6 +107,8 @@ presentano:
 | **Consumabili** | [`include/item_data.h`](./include/item_data.h) | I 5 oggetti della Sez. 8E in ROM, con `static_assert` sul tetto del Baccala' e sull'esclusione dello Shield Break dalle cure. |
 | **Gate Zero-Heap** | [`tools/check_zero_heap.sh`](./tools/check_zero_heap.sh) | Ispeziona i simboli dell'ELF a ogni build. **Prova negativa eseguita: diventa rosso su violazione.** |
 | **Test Asset** | [`tests/test_assets.py`](./tests/test_assets.py) | Valida i `.bmp` di `graphics/` contro i `.json`: 4bpp, misure OBJ/BG legali, conformita' Sez. 23A. |
+| **Controllo di Versione** | [`.gitignore`](./.gitignore) / [`.gitattributes`](./.gitattributes) | Repository git inizializzato nella Sessione 11d. Esclusi build, ROM, ELF e `.sav`; gli `.sh` sono forzati a fine riga LF perche' Git Bash non esegue script con CRLF. |
+| **Skill Decisioni** | `.agents/skills/decisioni-aperte/SKILL.md` (+ copia in `.claude/`) | Procedura per sciogliere UNA decisione di design aperta: round sulla frontiera, prove dal GDD, chiusura obbligatoria in GDD + HANDOVER + codice. |
 | **Piani non implementati** | [`docs/`](./docs/) | `piano_ia_boss.md` (Sez. 26), `piano_combo_tre_ceri.md` (Sez. 12C), `piano_fase_successiva.md` (23 passi). |
 | **Combat Test Harness** | [`tests/test_battle_engine.py`](./tests/test_battle_engine.py) | Port fedele in Python del Battle Engine C++: 31 unit test su formule, Shield Break, timeline, Fervore, status e IA. |
 
@@ -557,6 +559,20 @@ Motivazione: fino a ieri le regole di `AGENTS.md` erano **dichiarate ma non misu
 * **`tests/test_save_system.py` — due oracoli indipendenti, 9 test.** Il primo confronta il CRC del progetto con **`zlib`**, cioe' un'implementazione scritta da altri: e' l'unico modo di scoprire una convenzione sbagliata ma coerente con se stessa. Il secondo apre il **`.sav` prodotto da mGBA** e verifica magic, offset, checksum ricalcolato, coda del payload azzerata, monotonia del contatore e alternanza delle banche. Se il `.sav` manca, i test dichiarano `skip` invece di passare in silenzio.
 
 * **Esito:** build pulita da zero, gate verde, `test_battle_engine.py` **31/31**, `test_assets.py` **6/6**, `test_save_system.py` **9/9**.
+
+### [2026-08-18] - Sessione 11d: Controllo di Versione e Skill delle Decisioni
+
+* **Autore / Agente:** Claude Opus 5 (Claude Code)
+* **File creati:** `.gitignore`, `.gitattributes`, `.agents/skills/decisioni-aperte/SKILL.md`, `.claude/skills/decisioni-aperte/SKILL.md`
+
+* **Il progetto ha una storia.** Fino alla Sessione 11c questa cartella **non era un repository git**: undici sessioni di lavoro, file critici riscritti da capo (`save_data.h` nella 11c), e nessun modo di vedere un diff, tornare indietro o sapere quando una riga fosse cambiata. Ora c'e' un commit iniziale con gli 80 file del progetto.
+  * **Escluso dalla storia:** `build/`, ROM, ELF, mappe, anteprime e **il `.sav`** — che e' la memoria di chi gioca, non un file del progetto (i test lo leggono se c'e' e dichiarano `skip` se manca).
+  * **Incluso di proposito:** i `.bmp` di `graphics/`, che sono la *fonte* da cui grit genera i tile e non un artefatto — oggi segnaposto, domani arte disegnata a mano.
+  * **`.gitattributes` non e' cosmetico:** `tools/build_rom.sh` e `tools/check_zero_heap.sh` girano sotto Git Bash, e uno script shell con terminatori CRLF fallisce in modo ostile (`$'': command not found`). Senza il vincolo `eol=lf`, il primo clone su una macchina con `core.autocrlf=true` avrebbe una build rotta e una diagnosi difficile.
+
+* **Skill `decisioni-aperte`.** Il collo di bottiglia dichiarato del progetto non e' scrivere codice: e' che il GDD si contraddice e che una ventina di scelte non sono mai state prese — e in questo momento e' una di queste (il font) a bloccare il Passo 15. La skill formalizza cio' che le sessioni migliori hanno gia' fatto a mano: **round sulla frontiera** (solo le domande le cui premesse sono risolte), **prove dal GDD prima delle domande** (contare in quante sedi compare ciascuna lettura, come nella Sessione 02b), **tre classi di decisione** (riservate al committente / decidibili motivando / gia' chiuse e da non riaprire) e **chiusura obbligatoria in tre posti** — GDD nella sezione contraddetta, HANDOVER, e codice con `static_assert` dove possibile.
+  * Il registro delle decisioni **non e' duplicato** nella skill: resta in `docs/piano_fase_successiva.md` e nella Sezione 0 di `HANDOVER.md`, che sono le fonti.
+  * Spunto esterno: il metodo a round e' ripreso dalla skill `/grill-me` di aihero.dev, adattato al protocollo di continuita' di questo progetto. Il resto di quel catalogo e' stato valutato e **scartato**: `/tdd` prescriverebbe una disciplina piu' debole di quella gia' in vigore (gate sull'ELF, prove negative obbligatorie), `/to-issues` e `/triage` presuppongono un tracker inesistente, `/to-prd` e `/domain-model` un documento di dominio mancante — mentre qui il GDD c'e', e il problema e' opposto.
 
 ---
 
