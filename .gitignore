@@ -1,0 +1,32 @@
+# --- Artefatti di build -----------------------------------------------------------------------
+# Rigenerabili con `bash tools/build_rom.sh`. L'ELF da 8 MB in particolare non ha alcun motivo
+# di stare nella storia: cambia a ogni compilazione e non e' leggibile in un diff.
+build/
+*.gba
+*.elf
+*.sym
+*.map
+
+# --- Stato del giocatore ----------------------------------------------------------------------
+# La memoria FRAM emulata: e' il salvataggio di CHI GIOCA, non un file del progetto. I test di
+# `tests/test_save_system.py` lo leggono se c'e' e dichiarano `skip` se manca.
+*.sav
+
+# --- Anteprime ---------------------------------------------------------------------------------
+# Prodotte da tools/preview_battle_screen.py e tools/preview_piazza.py per guardare una schermata
+# senza emulatore. Sono usa e getta: si rigenerano in un secondo.
+preview_battle.png
+preview_piazza.bmp
+preview_*.png
+
+# --- Sistema operativo e editor ------------------------------------------------------------------
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp
+
+# NOTA su cosa NON e' ignorato, di proposito:
+#   graphics/*.bmp  — sono la FONTE da cui grit genera i tile, non un artefatto. Oggi sono
+#                     segnaposto generati da script; domani saranno arte disegnata a mano, e in
+#                     entrambi i casi vanno versionati (la loro sostituzione e' il lavoro d'arte).
+#   .claude/, .agents/ — le skill sono parte del progetto quanto il codice.

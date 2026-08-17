@@ -1,0 +1,21 @@
+# Normalizzazione dei fine riga.
+#
+# PERCHE' ESISTE. Si sviluppa su Windows, ma `tools/build_rom.sh` e `tools/check_zero_heap.sh`
+# vengono eseguiti da Git Bash. Uno script shell con terminatori CRLF fallisce in modo
+# particolarmente ostile — `$'\r': command not found`, oppure una variabile che contiene un
+# ritorno a capo invisibile — e senza questo file un clone su una macchina con
+# `core.autocrlf=true` li otterrebbe proprio cosi'.
+* text=auto
+
+*.sh   text eol=lf
+*.mak  text eol=lf
+Makefile text eol=lf
+
+# I file di Windows restano CRLF.
+*.ps1  text eol=crlf
+
+# Binari: nessuna conversione, e niente diff testuale che sarebbe illeggibile.
+*.bmp  binary
+*.png  binary
+*.gba  binary
+*.sav  binary
