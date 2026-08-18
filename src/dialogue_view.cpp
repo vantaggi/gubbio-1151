@@ -68,6 +68,13 @@ void DialogueView::_reset()
 
 void DialogueView::_close_tail(bn::string_view riga)
 {
+    if(! riga.data() || _tail_bytes <= 0)
+    {
+        _tail.clear();
+        _tail_bytes = 0;
+        return;
+    }
+
     // Il pezzo appena chiuso diventa definitivo: i suoi sprite passano fra gli stabili e non
     // verranno piu' rigenerati. La coda riparte da qui, spostata a destra della sua larghezza.
     const bn::string_view chiuso(riga.data() + _stable_bytes, _tail_bytes);
@@ -124,6 +131,11 @@ void DialogueView::update(const DialogueManager& dialogue)
         _tail_bytes = 0;
         _tail_x = sx(TEXT_X);
         _tail.clear();
+    }
+
+    if(! visibile.data())
+    {
+        return;                     // riga non ancora cominciata: niente da disegnare
     }
 
     const int byte_visibili = visibile.size();

@@ -79,6 +79,14 @@ inline constexpr int DIALOGUE_COMPOSED_CAPACITY = 64;
 // Frame fra un carattere e il successivo: 1 ogni 2 frame = 30 caratteri al secondo (Sez. 25).
 inline constexpr int DIALOGUE_FRAMES_PER_CHAR = 2;
 
+// Una view vuota ma con PUNTATORE VALIDO. `bn::string_view()` di default ha `data() == nullptr`,
+// e chi ci fa sopra aritmetica — come `dialogue_view`, che calcola `data() + offset` per la coda
+// in crescita — sbatte contro "Null char array ptr" (bn_string_view.h:91). Restituire sempre
+// questa invece della default toglie di mezzo la classe di guasto, invece di rincorrerla nei
+// chiamanti: e' successo due volte prima di capirlo.
+inline constexpr bn::string_view VUOTA = bn::string_view("");
+
+
 class DialogueManager
 {
 public:
@@ -87,8 +95,8 @@ public:
     // Apre una battuta. Le view devono puntare a memoria a DURATA STATICA: letterali, o tabelle
     // `constexpr` in ROM. Per tutto il resto esiste `show_composed`.
     void show_message(Speaker speaker, bn::string_view row0,
-                      bn::string_view row1 = bn::string_view(),
-                      bn::string_view row2 = bn::string_view())
+                      bn::string_view row1 = VUOTA,
+                      bn::string_view row2 = VUOTA)
     {
         // Aprire una battuta mentre un'altra e' in corso perdeva la prima senza che nulla lo
         // segnalasse. Ora e' un errore dichiarato: chi vuole incatenare due battute chiude la
@@ -101,9 +109,9 @@ public:
         // puntatore fa scattare "Null char array ptr" (bn_string_view.h:91) — il crash visto al
         // primo dialogo giocato davvero. Le righe assenti diventano stringhe vuote VERE, che un
         // puntatore valido ce l'hanno.
-        _rows[0] = row0.data() ? row0 : bn::string_view("");
-        _rows[1] = row1.data() ? row1 : bn::string_view("");
-        _rows[2] = row2.data() ? row2 : bn::string_view("");
+        _rows[0] = row0.data() ? row0 : VUOTA;
+        _rows[1] = row1.data() ? row1 : VUOTA;
+        _rows[2] = row2.data() ? row2 : VUOTA;
         _row_count = ! row2.empty() ? 3 : (! row1.empty() ? 2 : (! row0.empty() ? 1 : 0));
         _row_index = 0;
         _visible_bytes = 0;
@@ -184,7 +192,7 @@ public:
     {
         if(row < 0 || row >= _row_count)
         {
-            return bn::string_view();
+            return VUOTA;
         }
 
         if(row < _row_index)
@@ -194,7 +202,7 @@ public:
 
         if(row > _row_index)
         {
-            return bn::string_view();                            // non ancora cominciata
+            return VUOTA;                                        // non ancora cominciata
         }
 
         return bn::string_view(_rows[row].data(), _visible_bytes);
