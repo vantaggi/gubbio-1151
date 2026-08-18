@@ -30,7 +30,14 @@ bash tools/build_rom.sh "USERFLAGS=-DGUBBIO_BATTLE_AUTOTEST"   # ROM che si auto
   privilegi di amministratore). Butano: `../butano`, accanto al progetto.
 * Anteprima della schermata fuori dall'emulatore: `python tools/preview_battle_screen.py`.
 
-**Le tre regole che questo progetto ha imparato a sue spese:**
+**Le quattro regole che questo progetto ha imparato a sue spese:**
+
+0. **I log e le anteprime non sostituiscono il GIOCARE.** Alla Sessione 18 l'autotest riportava
+   "zero assert, ciclo completo verificato" — ed era vero, la logica funzionava. Tre minuti di
+   gioco vero hanno poi mostrato che il suolo era nel posto sbagliato, la cornice del dialogo 48
+   px sopra il suo testo, e che una battuta con meno di tre righe faceva crashare il gioco. Un
+   oracolo che legge solo testo non puo' accorgersi di dove stiano le cose sullo schermo:
+   **prima di dire che un passo e' finito, la ROM va giocata.**
 
 1. **Un oracolo che non puo' fallire non e' un oracolo.** L'autotest ha riportato "zero assert"
    per due sessioni mentre eseguiva un terzo dei round (Sess. 07F). Ogni controllo nuovo va fatto
@@ -772,6 +779,19 @@ Motivazione: fino a ieri le regole di `AGENTS.md` erano **dichiarate ma non misu
 * **DECISIONI DEL COMMITTENTE, entrambe annotate nel GDD:** si riproducono **tutti** i monumenti anche se posteriori al 1151 — conta che un eugubino riconosca la propria citta' — e si accettano **compromessi per la giocabilita' purche' resti l'illusione**, tradotta in `city_reference.h`: la scala vincola gli EDIFICI (1,5 m/tile, entro un tile), non le DISTANZE (comprimibili, oggi al 73%); ordine e adiacenze restano vincolanti.
 
 * **Esito:** build verde, gate verde, tutte le suite verdi.
+
+### [2026-08-18] - Sessione 18b: Tre difetti che solo giocare poteva mostrare
+
+* **Autore / Agente:** Claude Opus 5 (Claude Code)
+* **File modificati:** `src/scene_exploration.cpp`, `src/dialogue_view.cpp`, `include/dialogue_box.h`
+
+* **UNA SOLA RADICE PER DUE DEI TRE: in Butano l'origine di un background e' il suo CENTRO, non l'angolo in alto a sinistra.** Il suolo 512x512 lasciato a `(0,0)` metteva il proprio pixel centrale sull'origine del mondo, sfasando la mappa di meta' immagine: il giocatore camminava fuori dall'area disegnata e vedeva il cielo attraverso le zone trasparenti. La stessa cosa spostava la cornice del dialogo 48 px piu' in alto del testo — che essendo fatto di sprite usa coordinate di schermo — col risultato di un box nero sopra e le parole sotto.
+
+* **Il crash:** `bn::string_view()` di default ha `data() == nullptr`, e costruirne una nuova su quel puntatore fa scattare `Null char array ptr` (bn_string_view.h:91). Capitava su ogni battuta con meno di tre righe. Le righe assenti sono ora stringhe vuote vere, che un puntatore valido ce l'hanno.
+
+* **PERCHE' L'AUTOTEST NON LI AVEVA VISTI, ed e' il punto che vale piu' della correzione.** L'autotest legge i `BN_LOG` e riportava "zero assert, ciclo completo": era vero, la logica funzionava. Ma un oracolo che guarda solo il testo non puo' accorgersi che il pavimento e' nel posto sbagliato. E' la regola n.1 del progetto vista da un'angolazione nuova — non basta che un controllo POSSA fallire, deve poter fallire **su cio' che conta**. Aggiunta come regola 0 in Sezione 0.
+
+* **Esito:** build pulita, gate verde, autotest senza errori a runtime.
 
 ---
 
