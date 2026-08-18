@@ -244,13 +244,26 @@ MONUMENTI = {
         "solo_indici": [1, 2, 3, 4],
     },
 
-    # Palazzo Pretorio: 25 m di fronte = 16 tile alla scala di city_reference.h.
+    # Palazzo Pretorio: 16 tile di fronte per 4 di profondita', che e' la fascia che occupa nella
+    # griglia. Il ritaglio e' quindi ORIZZONTALE — 4:1 — e prende la fascia col portale: in una
+    # mappa vista dall'alto di un palazzo si vede la parte alta della facciata, non tutta.
     "pretorio_facciata": {
         "sorgente": "pretorio.jpg",
-        "ritaglio": (200, 80, 1000, 680),
+        "ritaglio": (650, 300, 1150, 425),
         "tile_w": 16,
-        "tile_h": 12,
-        "tetto_tile": 120,
+        "tile_h": 4,
+        "tetto_tile": 48,
+        "solo_indici": [0, 3, 4, 5, 6, 7, 8, 9, 10, 13],
+    },
+
+    # Fontana dei Matti: 4,5 m di diametro = 3 tile (Sez. 23 GDD). Il bacino ottagonale in
+    # primo piano nella foto del Bargello.
+    "fontana": {
+        "sorgente": "bargello_e_fontana.jpg",
+        "ritaglio": (150, 1000, 570, 1420),
+        "tile_w": 3,
+        "tile_h": 3,
+        "tetto_tile": 9,
     },
 
     # Lo skyline della citta' sul fianco del monte: e' il fondale di battaglia (oggi un profilo

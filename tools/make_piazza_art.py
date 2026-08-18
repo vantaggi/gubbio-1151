@@ -258,6 +258,8 @@ def draw_ground():
     # solo piu' povera. Non e' un dettaglio di cortesia — e' cio' che tiene la build riproducibile.
     cotto, cotto_w, cotto_h = leggi_indici_bmp4("piazza_cotto.bmp")
     facciata, facc_w, facc_h = leggi_indici_bmp4("consoli_facciata.bmp")
+    pretorio, pret_w, pret_h = leggi_indici_bmp4("pretorio_facciata.bmp")
+    fontana, font_w, font_h = leggi_indici_bmp4("fontana.bmp")
     # 512x512 e non 512x320: le dimensioni legali di un BG regolare sono multipli di 256
     # (butano_graphics_tool.py), e un 512x256 farebbe ricomparire in cima la fascia sud della
     # ringhiera per wrap hardware. Le righe oltre y=320 non sono mai inquadrate: la camera e'
@@ -280,6 +282,10 @@ def draw_ground():
                         else:
                             base = C_STONE if (tx + ty) % 2 == 0 else C_STONE_ALT
                             c = C_JOINT if (x == 0 or y == 0) else base
+                    elif kind == PRETORIO_FACADE and pretorio:
+                        px_, py_ = (x0 + x) - 24 * TILE, (y0 + y) - 34 * TILE
+                        c = (pretorio[py_][px_] if 0 <= px_ < pret_w and 0 <= py_ < pret_h
+                             else C_WALL)
                     elif kind in (CONSOLI_FACADE, PRETORIO_FACADE):
                         # I TRE SEGNI del Palazzo dei Consoli (docs/riferimenti/FONTI.md), resi
                         # con quel che un tile 8x8 concede. Il resto della facciata e' pietra
@@ -322,8 +328,15 @@ def draw_ground():
                         c = C_WOOD if 1 <= x <= 6 else C_WALL_DARK
                     elif kind in (EXIT_SAN_MARTINO, EXIT_PORTA_ROMANA):
                         c = C_ARCH if (x + y) % 8 else C_WALL_DARK
-                    else:  # FOUNTAIN
-                        c = C_WATER if 1 <= x <= 6 and 1 <= y <= 6 else C_RAIL
+                    elif kind == FOUNTAIN:
+                        if fontana:
+                            fx, fy = (x0 + x) - 23 * TILE, (y0 + y) - 24 * TILE
+                            c = (fontana[fy][fx] if 0 <= fx < font_w and 0 <= fy < font_h
+                                 else C_WATER)
+                        else:
+                            c = C_WATER if 1 <= x <= 6 and 1 <= y <= 6 else C_RAIL
+                    else:
+                        c = C_RAIL
                     px[y0 + y][x0 + x] = c
 
     return w, h, px
