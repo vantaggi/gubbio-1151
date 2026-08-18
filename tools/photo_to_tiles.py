@@ -1,0 +1,202 @@
+#!/usr/bin/env python3
+"""
+Da FOTOGRAFIA a TILE del GBA: converte una foto di un monumento reale in pixel art indicizzata,
+alla palette e ai vincoli del progetto.
+
+    python tools/photo_to_tiles.py
+
+PERCHE' ESISTE. Il progetto non ha budget e nessuno che sappia disegnare. L'unica via che resta
+per avere una Gubbio riconoscibile e' partire dalle fotografie — che abbiamo, libere e con
+licenza tracciata (docs/riferimenti/FONTI.md) — e portarle a 8 pixel per tile con uno strumento
+invece che con una mano. Provato: una conversione di questo tipo produce un Palazzo dei Consoli
+piu' riconoscibile di quanto si ottenga disegnandolo proceduralmente, perche' conserva le
+PROPORZIONI vere, che sono cio' che l'occhio riconosce.
+
+I TRE PROBLEMI CHE UNA CONVERSIONE INGENUA NON RISOLVE, e come li affronta questo strumento:
+
+1. **Una foto non ha ripetizione.** Ridimensionare e quantizzare da' quasi tanti tile unici
+   quante sono le celle — misurato sul Palazzo dei Consoli: 381 tile su 418 celle. Un tileset
+   vive del contrario. Qui i tile quasi identici vengono UNIFICATI, con una soglia che cresce
+   finche' il risultato non rientra nel budget dichiarato: si degrada il dettaglio fino a stare
+   nei limiti, invece di scoprire troppo tardi che non ci si sta.
+
+2. **La palette non puo' essere scelta dalla foto.** Un background a 4bpp ha SEDICI colori per
+   tutto: se ogni monumento portasse i suoi, non ne basterebbero. La palette e' un parametro,
+   condivisa da tutti gli asset dell'area.
+
+3. **Il rumore fotografico diventa sporcizia.** A 8 px per tile la grana di un muro non e'
+   texture, e' rumore che moltiplica i tile unici senza aggiungere nulla. Si sfoca PRIMA di
+   ridurre: la sfocatura toglie dettaglio che comunque andrebbe perso, ma lo toglie in modo
+   ordinato.
+"""
+
+import os
+import struct
+import sys
+
+from PIL import Image, ImageFilter
+
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+RIFERIMENTI = os.path.join(ROOT, "riferimenti")
+
+# La palette dell'area, condivisa da suolo, edifici e cornici. Sedici colori per TUTTO cio' che
+# sta su un background a 4bpp: e' il vincolo piu' stretto della grafica GBA, ed e' per questo che
+# le sfumature vanno spese dove l'occhio guarda — sei per la pietra dei palazzi, tre per il cotto.
+PALETTE_PIAZZA = [
+    (0, 0, 0),          # 0  fuori mappa / nero dei vani
+    (166, 86, 58),      # 1  cotto della pavimentazione
+    (148, 74, 50),      # 2  cotto, seconda tinta
+    (112, 56, 40),      # 3  fuga fra le lastre
+    (238, 232, 216),    # 4  pietra in piena luce
+    (216, 208, 190),    # 5  pietra
+    (194, 184, 164),    # 6  pietra in mezz'ombra
+    (168, 158, 138),    # 7  pietra in ombra
+    (132, 122, 106),    # 8  ombra profonda
+    (92, 84, 74),       # 9  vani delle finestre, sottogronda
+    (110, 72, 40),      # 10 legno dei portoni
+    (64, 118, 152),     # 11 acqua della fontana
+    (74, 92, 60),       # 12 vegetazione
+    (46, 42, 38),       # 13 nero dei passaggi voltati
+    (206, 172, 74),     # 14 bronzo e dettagli
+    (150, 140, 120),    # 15 parapetto
+]
+
+
+def quantizza(img, palette):
+    """Riporta l'immagine sulla palette data, senza dithering.
+
+    Il dithering e' controproducente qui: a questa scala sparpaglia i colori e MOLTIPLICA i tile
+    unici, che sono la risorsa scarsa."""
+    tavolozza = Image.new("P", (1, 1))
+    piatta = [c for colore in palette for c in colore] + [0] * (768 - len(palette) * 3)
+    tavolozza.putpalette(piatta)
+    return img.convert("RGB").quantize(palette=tavolozza, dither=Image.NONE)
+
+
+def _distanza(a, b):
+    return sum((p - q) * (p - q) for p, q in zip(a, b))
+
+
+def riduci_tile(indici, larghezza, altezza, tetto):
+    """Unifica i tile quasi identici finche' non si rientra nel tetto.
+
+    La soglia parte da zero — solo i duplicati esatti — e cresce: e' la forma piu' onesta di
+    degrado, perche' il dettaglio si perde a partire da dove si nota di meno. Ritorna i tile
+    modificati e la soglia a cui si e' fermata, che vale la pena stampare: dice quanto si e'
+    dovuto rinunciare."""
+    tw, th = larghezza // 8, altezza // 8
+
+    def celle():
+        return [[tuple(indici[(ty * 8 + y) * larghezza + tx * 8 + x] for y in range(8)
+                       for x in range(8)) for tx in range(tw)] for ty in range(th)]
+
+    griglia = celle()
+
+    for soglia in (0, 1, 2, 4, 8, 16, 32, 64, 128, 256):
+        rappresentanti = []
+        mappa = {}
+
+        for ty in range(th):
+            for tx in range(tw):
+                cella = griglia[ty][tx]
+
+                if cella in mappa:
+                    continue
+
+                for indice, rif in enumerate(rappresentanti):
+                    if sum(1 for p, q in zip(cella, rif) if p != q) <= soglia:
+                        mappa[cella] = indice
+                        break
+                else:
+                    mappa[cella] = len(rappresentanti)
+                    rappresentanti.append(cella)
+
+        if len(rappresentanti) <= tetto:
+            fuori = list(indici)
+
+            for ty in range(th):
+                for tx in range(tw):
+                    scelto = rappresentanti[mappa[griglia[ty][tx]]]
+
+                    for y in range(8):
+                        for x in range(8):
+                            fuori[(ty * 8 + y) * larghezza + tx * 8 + x] = scelto[y * 8 + x]
+
+            return fuori, len(rappresentanti), soglia
+
+    return list(indici), -1, -1
+
+
+def scrivi_bmp4(path, width, height, indici, palette):
+    rb = width // 2
+    pad = (4 - rb % 4) % 4
+    body = bytearray()
+
+    for y in range(height - 1, -1, -1):
+        riga = indici[y * width:(y + 1) * width]
+        for x in range(0, width, 2):
+            body.append(((riga[x] & 0xF) << 4) | (riga[x + 1] & 0xF))
+        body.extend(b"\x00" * pad)
+
+    off = 14 + 40 + 16 * 4
+    header = b"BM" + struct.pack("<IHHI", off + len(body), 0, 0, off)
+    dib = struct.pack("<IiiHHIIiiII", 40, width, height, 1, 4, 0, len(body), 2835, 2835, 16, 0)
+    pal = b"".join(struct.pack("<BBBB", b, g, r, 0) for (r, g, b) in palette)
+    open(path, "wb").write(header + dib + pal + bytes(body))
+
+
+def converti(sorgente, ritaglio, tile_w, tile_h, tetto_tile, sfocatura=2.0):
+    """Da file fotografico a lista di indici di palette, pronta per essere incollata in un BG."""
+    percorso = os.path.join(RIFERIMENTI, sorgente)
+
+    if not os.path.exists(percorso):
+        sys.exit(f"[foto] manca {percorso}\n       eseguire prima: python tools/fetch_riferimenti.py")
+
+    foto = Image.open(percorso).convert("RGB").crop(ritaglio)
+    w, h = tile_w * 8, tile_h * 8
+
+    if sfocatura:
+        # La sfocatura e' proporzionale al fattore di riduzione: sfocare di un valore fisso
+        # sarebbe troppo su una foto piccola e troppo poco su una grande.
+        raggio = max(1.0, sfocatura * foto.width / w / 4)
+        foto = foto.filter(ImageFilter.GaussianBlur(raggio))
+
+    piccola = foto.resize((w, h), Image.LANCZOS)
+    indici = list(quantizza(piccola, PALETTE_PIAZZA).getdata())
+    ridotti, unici, soglia = riduci_tile(indici, w, h, tetto_tile)
+
+    if unici < 0:
+        sys.exit(f"[foto] {sorgente}: impossibile rientrare in {tetto_tile} tile")
+
+    print(f"  {sorgente[:34]:34s} -> {tile_w}x{tile_h} tile, {unici:3d} unici "
+          f"(tetto {tetto_tile}, soglia di fusione {soglia} px)")
+    return ridotti, w, h
+
+
+# I monumenti da convertire: sorgente, ritaglio nella foto, misura in tile, tetto di tile unici.
+# Le misure in tile NON sono libere: vengono dalla scala di `city_reference.h` (1,5 m/tile).
+MONUMENTI = {
+    "consoli_facciata": {
+        "sorgente": "Gubbio_Palazzo_dei_Consoli.jpg",
+        "ritaglio": (150, 60, 1150, 1330),
+        "tile_w": 22,      # 33 m di fronte, in scala
+        "tile_h": 19,      # la fascia nord della piazza
+        "tetto_tile": 200,
+    },
+}
+
+
+def main():
+    print("[foto] conversione dei monumenti da fotografia")
+    os.makedirs(os.path.join(ROOT, "graphics"), exist_ok=True)
+
+    for nome, cfg in MONUMENTI.items():
+        indici, w, h = converti(cfg["sorgente"], cfg["ritaglio"], cfg["tile_w"], cfg["tile_h"],
+                                cfg["tetto_tile"])
+        scrivi_bmp4(os.path.join(ROOT, "graphics", nome + ".bmp"), w, h, indici, PALETTE_PIAZZA)
+
+    print("[foto] fatto. Gli asset sono INGREDIENTI: make_piazza_art.py li incolla nella mappa.")
+
+
+if __name__ == "__main__":
+    main()

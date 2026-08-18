@@ -252,9 +252,24 @@ def draw_ground():
                         base = C_STONE if (tx + ty) % 2 == 0 else C_STONE_ALT
                         c = C_JOINT if (x == 0 or y == 0) else base
                     elif kind in (CONSOLI_FACADE, PRETORIO_FACADE):
-                        # Pietra calcarea chiara con i corsi orizzontali: e' cosi' che i due
-                        # palazzi si staccano dal tessuto edilizio minore, che resta piu' scuro.
+                        # I TRE SEGNI del Palazzo dei Consoli (docs/riferimenti/FONTI.md), resi
+                        # con quel che un tile 8x8 concede. Il resto della facciata e' pietra
+                        # calcarea a corsi: e' cosi' che i due palazzi si staccano dal tessuto
+                        # edilizio minore, che resta piu' scuro.
                         c = C_WALL if (y % 4 != 3) else C_WALL_DARK
+
+                        if kind == CONSOLI_FACADE:
+                            if ty <= 1:
+                                # MERLATURA: denti alterni contro il cielo, passo 4 tile.
+                                c = C_WALL if ((x0 + x) // 16) % 2 == 0 and y < 5 else C_VOID
+                            elif ty >= 15:
+                                # BASAMENTO AD ARCATE: la sostruzione su cui poggia la piazza
+                                # pensile — l'elemento che dice "questa piazza sta per aria".
+                                dentro_arco = 2 <= x <= 5 and y >= 8 - (x if x < 4 else 7 - x) * 2
+                                c = C_ARCH if dentro_arco else C_WALL
+                            elif 21 <= tx <= 22 and ty >= 4:
+                                # TORRE campanaria: piu' alta e spostata rispetto al centro.
+                                c = C_WALL_DARK if x in (0, 7) else C_WALL
                     elif kind == STAIRS:
                         # Gradini: righe alternate chiare e scure, il segno che si legge a 8 px.
                         c = C_WALL if (y % 2 == 0) else C_RAIL
