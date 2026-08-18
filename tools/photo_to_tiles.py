@@ -62,6 +62,23 @@ PALETTE_PIAZZA = [
 ]
 
 
+# Il fondale panoramico NON puo' condividere la palette della piazza: un panorama ha cielo, bosco
+# e citta' lontana, e la palette urbana non ha ne' azzurri ne' verdi a sufficienza. Provato: lo
+# skyline quantizzato sulla palette della piazza collassava a UN SOLO tile unico, cioe' a una
+# macchia uniforme. Ogni FAMIGLIA di asset ha la sua palette; e' anche il modo in cui il GBA
+# vuole essere usato, perche' i banchi di palette sono per background, non per gioco.
+PALETTE_PANORAMA = [
+    (0, 0, 0),
+    (120, 168, 214), (98, 148, 200), (78, 128, 186),     # cielo, tre fasce
+    (226, 220, 204), (196, 188, 170), (160, 152, 136),   # citta' lontana, pietra
+    (140, 96, 72), (110, 70, 52),                        # tetti in cotto, visti da lontano
+    (96, 118, 76), (72, 96, 58), (52, 74, 44),           # bosco del monte, tre profondita'
+    (38, 54, 34),                                        # ombra del versante
+    (150, 150, 140), (100, 100, 94),                     # rovine e mura sul crinale
+    (28, 26, 24),
+]
+
+
 def quantizza(img, palette):
     """Riporta l'immagine sulla palette data, senza dithering.
 
@@ -73,8 +90,8 @@ def quantizza(img, palette):
     return img.convert("RGB").quantize(palette=tavolozza, dither=Image.NONE)
 
 
-def _distanza(a, b):
-    return sum((p - q) * (p - q) for p, q in zip(a, b))
+def piccola_o_foto(foto, w, h):
+    return foto.resize((w, h), Image.LANCZOS)
 
 
 def riduci_tile(indici, larghezza, altezza, tetto):
@@ -145,7 +162,8 @@ def scrivi_bmp4(path, width, height, indici, palette):
     open(path, "wb").write(header + dib + pal + bytes(body))
 
 
-def converti(sorgente, ritaglio, tile_w, tile_h, tetto_tile, sfocatura=2.0):
+def converti(sorgente, ritaglio, tile_w, tile_h, tetto_tile, sfocatura=2.0,
+             palette=None, solo_indici=None):
     """Da file fotografico a lista di indici di palette, pronta per essere incollata in un BG."""
     percorso = os.path.join(RIFERIMENTI, sorgente)
 
@@ -161,8 +179,18 @@ def converti(sorgente, ritaglio, tile_w, tile_h, tetto_tile, sfocatura=2.0):
         raggio = max(1.0, sfocatura * foto.width / w / 4)
         foto = foto.filter(ImageFilter.GaussianBlur(raggio))
 
-    piccola = foto.resize((w, h), Image.LANCZOS)
-    indici = list(quantizza(piccola, PALETTE_PIAZZA).getdata())
+    tavolozza = palette or PALETTE_PIAZZA
+
+    # `solo_indici` restringe la conversione a un sottoinsieme di colori. Serve quando la foto
+    # inganna la quantizzazione: la pavimentazione di Piazza Grande e' in COTTO, ma scattata
+    # all'ombra i suoi grigi somigliano piu' alla pietra dei palazzi che al rosso — e la
+    # quantizzazione, che guarda i pixel e non sa cosa siano, sceglieva la pietra.
+    if solo_indici:
+        ridotta = [tavolozza[i] for i in solo_indici]
+        convertita = quantizza(piccola_o_foto(foto, w, h), ridotta)
+        indici = [solo_indici[i] for i in convertita.getdata()]
+    else:
+        indici = list(quantizza(piccola_o_foto(foto, w, h), tavolozza).getdata())
     ridotti, unici, soglia = riduci_tile(indici, w, h, tetto_tile)
 
     if unici < 0:
@@ -176,12 +204,50 @@ def converti(sorgente, ritaglio, tile_w, tile_h, tetto_tile, sfocatura=2.0):
 # I monumenti da convertire: sorgente, ritaglio nella foto, misura in tile, tetto di tile unici.
 # Le misure in tile NON sono libere: vengono dalla scala di `city_reference.h` (1,5 m/tile).
 MONUMENTI = {
+    # Foto FRONTALE scattata dal committente dentro la piazza: e' quella giusta, perche' in una
+    # mappa vista dall'alto una facciata ripresa di tre quarti "punta" nella direzione sbagliata.
+    # Il ritaglio prende la parte ALTA — merlatura, archetti pensili, bifore — che e' cio' che si
+    # vede dall'alto, nel rapporto esatto dei 22x19 tile: ritagliare fuori rapporto stirerebbe
+    # l'edificio, e le proporzioni sono proprio cio' che lo rende riconoscibile.
     "consoli_facciata": {
-        "sorgente": "Gubbio_Palazzo_dei_Consoli.jpg",
-        "ritaglio": (150, 60, 1150, 1330),
+        "sorgente": "consoli_frontale.jpg",
+        "ritaglio": (405, 40, 1095, 636),
         "tile_w": 22,      # 33 m di fronte, in scala
         "tile_h": 19,      # la fascia nord della piazza
         "tetto_tile": 200,
+    },
+
+    # La PAVIMENTAZIONE e' l'asset piu' redditizio di tutti: e' l'unica cosa davvero ripetitiva
+    # della piazza, copre meta' schermo e costa pochi tile. Ritaglio quadrato al centro della
+    # foto, dove il cotto e' visto piu' da vicino a perpendicolo.
+    "piazza_cotto": {
+        "sorgente": "pavimentazione.jpg",
+        "ritaglio": (120, 420, 648, 948),
+        "tile_w": 8,
+        "tile_h": 8,
+        "tetto_tile": 24,
+        # Solo cotto e fughe: la spina di pesce e' rossa, e la foto in ombra non basta a dirlo.
+        "solo_indici": [1, 2, 3, 4],
+    },
+
+    # Palazzo Pretorio: 25 m di fronte = 16 tile alla scala di city_reference.h.
+    "pretorio_facciata": {
+        "sorgente": "pretorio.jpg",
+        "ritaglio": (200, 80, 1000, 680),
+        "tile_w": 16,
+        "tile_h": 12,
+        "tetto_tile": 120,
+    },
+
+    # Lo skyline della citta' sul fianco del monte: e' il fondale di battaglia (oggi un profilo
+    # anonimo) e il parallasse dell'esplorazione.
+    "skyline_gubbio": {
+        "sorgente": "skyline.jpg",
+        "ritaglio": (0, 0, 735, 272),
+        "tile_w": 32,
+        "tile_h": 12,
+        "tetto_tile": 160,
+        "palette": PALETTE_PANORAMA,
     },
 }
 
@@ -192,8 +258,10 @@ def main():
 
     for nome, cfg in MONUMENTI.items():
         indici, w, h = converti(cfg["sorgente"], cfg["ritaglio"], cfg["tile_w"], cfg["tile_h"],
-                                cfg["tetto_tile"])
-        scrivi_bmp4(os.path.join(ROOT, "graphics", nome + ".bmp"), w, h, indici, PALETTE_PIAZZA)
+                                cfg["tetto_tile"], palette=cfg.get("palette"),
+                                solo_indici=cfg.get("solo_indici"))
+        scrivi_bmp4(os.path.join(ROOT, "graphics", nome + ".bmp"), w, h, indici,
+                    cfg.get("palette") or PALETTE_PIAZZA)
 
     print("[foto] fatto. Gli asset sono INGREDIENTI: make_piazza_art.py li incolla nella mappa.")
 
