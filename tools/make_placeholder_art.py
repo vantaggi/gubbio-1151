@@ -220,7 +220,39 @@ def make_battle_bg():
         c = 0 if y < 26 else 1 if y < 58 else 2
         rect(px, 0, y, W - 1, y, c)
 
-    for x in range(W):                            # profilo del Monte Ingino
+    # LA CITTA' VERA, se c'e'. `tools/photo_to_tiles.py` converte la fotografia dello skyline
+    # sulla palette qui sopra: il profilo procedurale che segue resta come ripiego per chi clona
+    # il progetto senza le foto, che non sono versionate.
+    import os as _os
+    _ingr = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "..", "ingredienti",
+                          "skyline_assedio.bmp")
+    _skyline = None
+
+    if _os.path.exists(_ingr):
+        import struct as _st
+        _d = open(_ingr, "rb").read()
+        _off = _st.unpack_from("<I", _d, 10)[0]
+        _w, _h = _st.unpack_from("<ii", _d, 18)
+        _rb = _w // 2
+        _pad = (4 - _rb % 4) % 4
+        _righe = []
+
+        for _y in range(_h):
+            _st0 = _off + _y * (_rb + _pad)
+            _r = []
+            for _b in _d[_st0:_st0 + _rb]:
+                _r.append(_b >> 4)
+                _r.append(_b & 0x0F)
+            _righe.append(_r)
+
+        _righe.reverse()
+        _skyline = _righe
+
+        for _y in range(min(_h, 96)):
+            for _x in range(min(_w, W)):
+                px[16 + _y][_x] = _righe[_y][_x]
+
+    for x in range(W) if not _skyline else range(0):    # profilo del Monte Ingino
         h = 74 - int(26 * abs(((x + 40) % 200) / 100.0 - 1.0) ** 1.4)
         rect(px, x, h, x, 99, 3)
         h2 = 86 - int(16 * abs(((x + 130) % 150) / 75.0 - 1.0) ** 1.2)

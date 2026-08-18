@@ -85,13 +85,33 @@ PALETTE_PANORAMA = [
 ]
 
 
+# La palette del FONDALE DI BATTAGLIA (make_placeholder_art.make_battle_bg): notturna, perche'
+# l'assedio e' di notte. Convertire lo skyline diurno su questi colori invece che su quelli del
+# panorama non e' un ripiego — e' cio' che fa somigliare la fotografia a una scena del gioco
+# invece che a una cartolina incollata sopra.
+PALETTE_ASSEDIO = [
+    (18, 20, 34), (30, 32, 52), (48, 46, 68),            # cielo notturno, tre fasce
+    (34, 32, 46), (24, 24, 36),                          # monte lontano e vicino
+    (66, 62, 80),                                        # nebbia
+    (44, 40, 38), (58, 52, 46),                          # terreno
+    (14, 15, 12), (26, 28, 22),                          # pannello HUD
+    (138, 110, 44), (90, 72, 30),                        # bordo bronzo
+    (10, 11, 9), (72, 78, 66),                           # nero pannello, divisorio
+    (0, 0, 0), (0, 0, 0),
+]
+
+
 def quantizza(img, palette):
     """Riporta l'immagine sulla palette data, senza dithering.
 
     Il dithering e' controproducente qui: a questa scala sparpaglia i colori e MOLTIPLICA i tile
     unici, che sono la risorsa scarsa."""
+    # Le entry non usate ripetono l'ULTIMO colore invece di essere nere: riempiendole di zeri,
+    # PIL puo' assegnare a qualche pixel un indice oltre la palette reale — e con `solo_indici`
+    # quell'indice finisce fuori dalla lista. Ripetendo, ogni indice resta nel dominio.
     tavolozza = Image.new("P", (1, 1))
-    piatta = [c for colore in palette for c in colore] + [0] * (768 - len(palette) * 3)
+    piatta = [c for colore in palette for c in colore]
+    piatta += list(palette[-1]) * (256 - len(palette))
     tavolozza.putpalette(piatta)
     return img.convert("RGB").quantize(palette=tavolozza, dither=Image.NONE)
 
@@ -264,6 +284,18 @@ MONUMENTI = {
         "tile_w": 3,
         "tile_h": 3,
         "tetto_tile": 9,
+    },
+
+    # Lo stesso skyline, ma per il FONDALE DI BATTAGLIA: stessa foto, palette notturna, e solo i
+    # colori di cielo/monte/terreno — i colori dell'HUD restano al pannello, che e' dipinto sopra.
+    "skyline_assedio": {
+        "sorgente": "skyline.jpg",
+        "ritaglio": (0, 10, 735, 262),
+        "tile_w": 32,
+        "tile_h": 12,
+        "tetto_tile": 120,
+        "palette": PALETTE_ASSEDIO,
+        "solo_indici": [0, 1, 2, 3, 4, 5, 6, 7],
     },
 
     # Lo skyline della citta' sul fianco del monte: e' il fondale di battaglia (oggi un profilo
