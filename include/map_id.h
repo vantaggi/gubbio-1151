@@ -23,6 +23,9 @@ enum class MapId : uint8_t
     MURA          = 2,   // Assedio alle mura (Atto III)
     PIANA         = 3,   // Piana di Gubbio
     MONTE_INGINO  = 4,   // Stradoni del Monte Ingino (Sez. 10 Reference 3)
+    // Largo del Bargello, sulla salita di via dei Consoli: e' QUI che sta la Fontana dei Matti,
+    // non in Piazza Grande (correzione topografica della Sessione 18d). Area non ancora autorata.
+    LARGO_BARGELLO = 5,
     COUNT
 };
 
@@ -40,7 +43,8 @@ static_assert(MAP_COUNT <= 256, "MapId e' serializzato come uint8_t");
 // include l'header riceve la propria copia in .rodata e i puntatori differiscono fra le unita',
 // distruggendo proprio la fonte di verita' unica che questo file esiste per garantire.
 inline constexpr bn::string_view MAP_NAMES[MAP_COUNT] = {
-    "Piazza Grande", "Gola del Bottaccione", "Mura di Gubbio", "Piana", "Monte Ingino"
+    "Piazza Grande", "Gola del Bottaccione", "Mura di Gubbio", "Piana", "Monte Ingino",
+    "Largo del Bargello"
 };
 
 } // namespace gubbio

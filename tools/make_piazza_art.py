@@ -73,8 +73,6 @@ def get_tile_type(x, y):
         return EXIT_SAN_MARTINO
     if x >= 61 and 19 <= y <= 22:
         return EXIT_PORTA_ROMANA
-    if 23 <= x <= 24 and 24 <= y <= 25:
-        return FOUNTAIN
     return GROUND
 
 
@@ -82,7 +80,7 @@ def get_tile_type(x, y):
 assert get_tile_type(32, 18) == DOOR_CONSOLI
 assert get_tile_type(0, 39) == RAILING
 assert get_tile_type(32, 30) == GROUND
-assert get_tile_type(23, 24) == FOUNTAIN
+assert get_tile_type(23, 24) == GROUND   # la fontana e' in Largo del Bargello
 assert get_tile_type(21, 17) == CONSOLI_FACADE and get_tile_type(20, 17) == WALL
 assert get_tile_type(32, 35) == PRETORIO_FACADE
 assert get_tile_type(32, 19) == STAIRS

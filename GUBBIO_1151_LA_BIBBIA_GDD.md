@@ -1443,6 +1443,21 @@ La matrice usa valori a 8-bit per determinare calpestabilità ed eventi di trans
 |   4    | TRIGGER: BARGELLO  | Transizione verso Quartiere San Martino       |
 |   5    | TRIGGER: ROMANA    | Transizione verso Porta Romana (Fronte Est)   |
 |   6    | FONTANA DEI MATTI  | Interazione (Pressione Tasto A: 'Patente')    |
+
+> **NOTA DI REVISIONE (2026-08-18, Sessione 18d) — LA FONTANA NON E' IN PIAZZA GRANDE.**
+> Correzione del committente, che conosce la citta': la **Fontana dei Matti (Fontana del
+> Bargello)** si trova in **Largo del Bargello, lungo la salita di via dei Consoli**, davanti al
+> Palazzo del Bargello — **non** dentro Piazza Grande. Questa legenda la elencava fra i tile
+> della piazza, e il codice l'aveva ereditata: era in griglia alle celle (23-24, 24-25).
+>
+> Rimossa da `piazza_grande_collision.h`, con una `static_assert` che impedisce di rimetterla.
+> Il valore di tile 6 resta definito per l'area **`MapId::LARGO_BARGELLO`**, dichiarata e non
+> ancora autorata, dove staranno fontana e Palazzo del Bargello — e dove portera' il varco
+> occidentale della piazza, che oggi apre provvisoriamente una battaglia.
+>
+> Vale la pena notare **come e' emerso**: nessuna verifica automatica poteva trovarlo, perche' il
+> gioco funzionava benissimo con la fontana nel posto sbagliato. Serviva qualcuno che conoscesse
+> Gubbio e guardasse lo schermo.
 +-----------------------------------------------------------------------------+
 ```
 

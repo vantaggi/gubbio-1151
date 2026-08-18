@@ -25,7 +25,7 @@ enum class TileType : uint8_t
     DOOR_CONSOLI      = 3,   // trigger: ingresso del Palazzo dei Consoli
     EXIT_SAN_MARTINO  = 4,   // trigger: Quartiere San Martino (Bargello)
     EXIT_PORTA_ROMANA = 5,   // trigger: Porta Romana
-    FOUNTAIN          = 6,   // Fontana dei Matti: interazione (Patente da Matto)
+    FOUNTAIN          = 6,   // Fontana dei Matti: sta in Largo del Bargello, NON in piazza
 
     // Aggiunti nella Sessione 16, applicando la regola dell'illusione (city_reference.h): gli
     // EDIFICI stanno in scala anche quando le distanze sono compresse. Prima la fascia nord era
@@ -91,8 +91,12 @@ inline constexpr uint8_t get_tile_type(int x, int y) {
     if (x <= 2 && y >= 19 && y <= 22) return 4; // Verso San Martino / Bargello
     if (x >= 61 && y >= 19 && y <= 22) return 5; // Verso Porta Romana
 
-    // Fontana dei Matti
-    if (x >= 23 && x <= 24 && y >= 24 && y <= 25) return 6;
+    // LA FONTANA DEI MATTI NON E' QUI. Correzione topografica del committente, che conosce la
+    // citta': la Fontana del Bargello sta in **Largo del Bargello, lungo la salita di via dei
+    // Consoli**, non in Piazza Grande. La legenda della Sez. 21B GDD la elencava fra i tile della
+    // piazza e il codice l'aveva ereditata — un errore che nessuna verifica automatica poteva
+    // trovare, perche' il gioco funzionava benissimo con la fontana nel posto sbagliato.
+    // Il valore di tile 6 resta definito per quando esistera' `MapId::LARGO_BARGELLO`.
 
     return 0; // Terreno calpestabile
 }
@@ -176,8 +180,10 @@ static_assert(PIAZZA_GRID.data[0 + 39 * PIAZZA_WIDTH] == uint8_t(TileType::RAILI
               "Ringhiera sud assente dalla griglia derivata");
 static_assert(PIAZZA_GRID.data[32 + 30 * PIAZZA_WIDTH] == uint8_t(TileType::GROUND),
               "Il centro della piazza non e' calpestabile");
-static_assert(PIAZZA_GRID.data[23 + 24 * PIAZZA_WIDTH] == uint8_t(TileType::FOUNTAIN),
-              "Fontana dei Matti assente dalla griglia derivata");
+// La fontana NON deve stare in Piazza Grande: e' in Largo del Bargello. Se qualcuno la
+// rimettesse qui seguendo la legenda della Sez. 21B, la build si ferma.
+static_assert(PIAZZA_GRID.data[23 + 24 * PIAZZA_WIDTH] == uint8_t(TileType::GROUND),
+              "La Fontana dei Matti e' tornata in Piazza Grande: sta in Largo del Bargello");
 // Il fronte del palazzo deve misurare in griglia esattamente i 22 tile che la scala impone: se
 // qualcuno lo allargasse "perche' sta meglio", l'illusione si romperebbe proprio sull'edificio
 // che la regge.

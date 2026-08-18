@@ -136,7 +136,7 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
             // e' l'unico modo di collaudare il round-trip esplorazione -> battaglia ->
             // esplorazione con HP e Fervore che sopravvivono.
             {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::BATTLE, 0,
-             SPAWN_PIAZZA_DA_BARGELLO},
+             SPAWN_PIAZZA_DA_BARGELLO},   // PROVVISORIO: qui scendera' a Largo del Bargello
 
             {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
              int16_t(MapId::PIAZZA_GRANDE), SPAWN_PIAZZA_DA_EST},
@@ -145,7 +145,7 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
         }
     },
     // --- BOTTACCIONE, MURA, PIANA, MONTE_INGINO: non ancora autorate ---
-    {}, {}, {}, {}
+    {}, {}, {}, {}, {}
 };
 
 static_assert(int(sizeof(MAPS) / sizeof(MAPS[0])) == MAP_COUNT,
