@@ -5,6 +5,8 @@
 #include "bn_optional.h"
 #include "bn_regular_bg_ptr.h"
 
+#include "dialogue_box.h"
+#include "dialogue_view.h"
 #include "game_state.h"
 #include "map_data.h"
 #include "overworld_player.h"
@@ -42,6 +44,12 @@ private:
     bn::regular_bg_ptr _ground;
     bn::optional<bn::regular_bg_ptr> _sky;
     OverworldPlayer _player;
+
+    // Il motore del testo e il suo disegno vivono nella scena, non nel trampolino: la finestra
+    // di dialogo e' un SOTTO-STATO dell'esplorazione, mai una scena a se' — altrimenti servirebbe
+    // un quinto layer, che in Mode 0 non esiste.
+    DialogueManager _dialogue;
+    DialogueView _dialogue_view;
 
     // Debounce dei trigger: preimpostato al tile di comparsa, cosi' che comparire accanto a una
     // porta non la attraversi nello stesso frame. Un trigger scatta solo quando il tile sotto i

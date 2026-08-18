@@ -1786,6 +1786,24 @@ Il sistema visuale sfrutta il layer hardware **BG0** (Priorità 0) per visualizz
 > verifica che **ogni carattere delle stringhe dei sorgenti esista nel font**.
 >
 > Resta valido il resto della sezione: 8 px di altezza, fino a 28 caratteri per riga, 3 righe.
+>
+> **NOTA DI REVISIONE (2026-08-18, Sessione 13) — il motore di testo esiste ed e' eseguito.**
+> `include/dialogue_box.h` (stato e macchina da scrivere) e `include/dialogue_view.h` (cornice e
+> sprite) sono implementati e collaudati su emulatore. Due precisazioni che questa sezione rendeva
+> ambigue:
+> * **"BG0 visualizza la text box" va letto cosi': la CORNICE sta su BG0, il TESTO sta sugli
+>   sprite.** In Butano il testo e' fatto di sprite (OAM) e non di tile di background: alla
+>   lettera la frase non e' realizzabile. Misurato: tre righe di prosa italiana costano **15
+>   sprite e 120 tile OBJ**; il tetto che si tocca per primo non sono i tile (1024) ma le 128
+>   allocazioni distinte di `BN_CFG_SPRITE_TILES_MAX_ITEMS`.
+> * **Righe per battuta: 3, non 2.** Questa sezione dice "massimo 3 righe per box", mentre la
+>   struttura `DialogueNode` della Sez. 31C ne prevede due (`text_line_1`, `text_line_2`).
+>   Si adotta il 3 di questa sezione, che e' quella che descrive il motore; la 31C andra'
+>   allineata quando si scriveranno le tabelle del copione (Passo 17).
+>
+> Le coordinate della finestra **non sono fissate in alcun punto del GDD**: sono state scelte
+> nell'implementazione (testo a x=14, prima riga y=118, interlinea 13 px) riusando la fascia bassa
+> gia' quotata per l'HUD di battaglia (y 112-160, Sez. 14B.1).
 * **Effetto Macchina da Scrivere (Typewriter):** 1 carattere ogni 2 frame hardware (30 caratteri al secondo), con possibilità di skip istantaneo premendo il tasto $B$.
 * **Speaker Indicator & Bip Vocale Chiptune:** Pitch audio modulato in base a chi parla (grave/solenne per Sant'Ubaldo, squillante per San Giorgio, cupo/roco per Sant'Antonio, metallico/minaccioso per Monaldo).
 

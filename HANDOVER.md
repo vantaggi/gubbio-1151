@@ -38,13 +38,14 @@ bash tools/build_rom.sh "USERFLAGS=-DGUBBIO_BATTLE_AUTOTEST"   # ROM che si auto
 3. **Il GDD si contraddice spesso.** Quando succede: scegliere motivando, e **correggere anche il
    GDD** con nota di revisione, altrimenti la sessione dopo ripristina il valore vecchio (Sess. 02b).
 
-**Il prossimo passo** e' il **Passo 16** di [`docs/piano_fase_successiva.md`](./docs/piano_fase_successiva.md)
-(`dialogue_box.h` corretto + `dialogue_view`), poi 17 (copione e quest) e 18 (esecutore di
-dialoghi agganciato all'esplorazione). I Passi 0-8, 10-14 e 15 sono fatti; il Passo 9 (budget
+**Il prossimo passo** e' il **Passo 17** di [`docs/piano_fase_successiva.md`](./docs/piano_fase_successiva.md)
+(copione, tabelle di dialogo e quest, e riempimento del payload di salvataggio), poi il 18
+(esecutore di dialoghi agganciato agli NPC). I Passi 0-8 e 10-16 sono fatti; il Passo 9 (budget
 VRAM) e' assorbito nelle `static_assert` di `map_data.h`.
-Attenzione al Passo 16: `dialogue_box.h` esiste dalla Sessione 01 ma **non e' mai stato compilato
-ne' eseguito**, e ha tre difetti gia' individuati (UTF-8 per byte invece che per codepoint, una
-`bn::string_view` che non possiede la memoria, confronti signed/unsigned).
+Per il Passo 17, tre cose gia' accertate: il codice della Sez. 31C del GDD **non e' trascrivibile**
+(usa `bn::vector` dentro un array `constexpr`, e `bn::vector` non e' un tipo letterale in Butano);
+le righe vanno **gia' spezzate** nelle tabelle, perche' il word-wrap non e' compito del motore; e
+la Sez. 31C prevede 2 righe per nodo mentre il motore ne accetta 3.
 
 **Decisioni aperte che spettano al designer.** Nessuna blocca il Passo 7, ma tutte prima o poi si
 presentano:
@@ -85,7 +86,8 @@ presentano:
 | **CRC32** | [`include/save_crc32.h`](./include/save_crc32.h) | Tabella a nibble (64 B di ROM) derivata dal polinomio a compile time; vettore di prova standard in `static_assert`. |
 | **Test Salvataggio** | [`tests/test_save_system.py`](./tests/test_save_system.py) | 9 test: CRC del progetto contro `zlib`, e ispezione del `.sav` prodotto da mGBA. |
 | **Audio Trigger** | [`include/campanone_audio.h`](./include/campanone_audio.h) | Metodi statici per rintocchi singoli e sequenza a doppi d'assedio del Campanone. |
-| **Dialogue Engine** | [`include/dialogue_box.h`](./include/dialogue_box.h) | Typewriter effect (1 char ogni 2 frame), speaker mapping e gestione skip (Tasto B/A). |
+| **Dialogue Engine** | [`include/dialogue_box.h`](./include/dialogue_box.h) | Macchina da scrivere per CODEPOINT (non per byte), contratto sulla durata delle view, `show_composed()` con buffer da 64 B, guardia re-entrante e `close()`. **Eseguito su emulatore.** |
+| **Dialogue View** | [`include/dialogue_view.h`](./include/dialogue_view.h) / [`src/dialogue_view.cpp`](./src/dialogue_view.cpp) / [`tools/make_dialogue_frame.py`](./tools/make_dialogue_frame.py) | Cornice su BG0 (12 tile unici) e testo a sprite: si rigenera solo la coda in crescita, con il confine misurato in pixel. |
 | **Collision Grid** | [`include/piazza_grande_collision.h`](./include/piazza_grande_collision.h) | Matrice 64x40 per Piazza Grande con trigger Consoli, Bargello, Porta Romana e Fontana dei Matti. `TileType`, `is_solid`, `is_transition`, `get_tile_type_px`, e `PIAZZA_GRID` derivata a compile time. |
 | **Stato di Partita** | [`include/game_state.h`](./include/game_state.h) / [`src/game_state.cpp`](./src/game_state.cpp) | `GameState`, 140 byte in EWRAM: party, mappa, spawn, quest, inventario, bandiere, tempo di gioco. Zero padding, banalmente copiabile. |
 | **Transizioni** | [`include/scene_fade.h`](./include/scene_fade.h) / [`src/scene_fade.cpp`](./src/scene_fade.cpp) | Primitive di dissolvenza su palette, senza ciclo: `apply(0-100)`, `reset()`. |
@@ -602,6 +604,39 @@ Motivazione: fino a ieri le regole di `AGENTS.md` erano **dichiarate ma non misu
   * **Nuovo oracolo con prova negativa:** `tests/test_assets.py` scandisce le stringhe letterali dei sorgenti e fallisce se un carattere non esiste nel font. Verificato inserendo una `ñ` spagnola: il test e' diventato rosso nominando il file. Suite: **31/31 + 9/9 + 9/9**.
 
 * **Nota di metodo.** Questa decisione e' stata sciolta con la skill `decisioni-aperte` alla sua prima applicazione: due round, prove raccolte prima delle domande, e la scoperta — mostrata al committente **prima** che scegliesse — che l'opzione ritenuta costosa costava quasi nulla. Il metodo ha cambiato il contenuto della decisione, non solo la sua forma.
+
+### [2026-08-18] - Sessione 13: Passo 16 - Motore e Finestra di Dialogo
+
+* **Autore / Agente:** Claude Opus 5 (Claude Code)
+* **File creati:** `include/dialogue_view.h`, `src/dialogue_view.cpp`, `tools/make_dialogue_frame.py`, `graphics/dialogue_frame.{bmp,json}`
+* **File modificati:** `include/dialogue_box.h` (riscritto), `include/scene_exploration.h`, `src/scene_exploration.cpp`, `src/main.cpp`, `GUBBIO_1151_LA_BIBBIA_GDD.md` (Sez. 25A)
+
+* **Metodo: quattro ricognizioni in parallelo prima di scrivere codice** (workflow `gubbio-passo-16-ricognizione`, 4 agenti, ~370k token). Non e' stato un esercizio di stile: **ha corretto il piano su tre punti**, e due di quelle correzioni cambiano il codice.
+
+* **CORREZIONE 1 - tagliare una `string_view` a meta' di una sequenza UTF-8 NON fa scattare alcun assert.** Il piano dava per scontato il contrario ("il primo `substr(0,n)` che taglia a meta' una sequenza a 2 byte fa scattare `BN_BASIC_ASSERT`"). Verificato sui sorgenti: `bn::utf8_character` legge il byte successivo - che e' ancora nel buffer originale - lo trova valido e **disegna il glifo intero** (bn_utf8_character.h:83). Il typewriter mostrerebbe un carattere non ancora rivelato, e se la view finisse esattamente a fine buffer si leggerebbe memoria non posseduta: un difetto che passa i test e sbaglia in produzione. L'assert scatta invece **copiando** il prefisso in una `bn::string` - cioe' proprio nella forma "prudente" che verrebbe naturale adottare.
+
+* **CORREZIONE 2 - il terzo difetto elencato dal piano non esiste.** `bn::string_view::size_type` e' **`int`** (bn_string_view.h:38): non c'era alcun confronto signed/unsigned da normalizzare. Chi lo "correggesse" con cast a `unsigned` introdurrebbe il difetto che crede di togliere, perche' `npos` vale -1. **Confermato indipendentemente dal compilatore**: i cast `int(...)` scritti per prudenza hanno prodotto nove `-Wuseless-cast`. Annotato nel file perche' nessuno lo "ripari" domani.
+
+* **CORREZIONE 3 - il confine di sprite non e' "4 caratteri a 32 px".** Il font del progetto e' a larghezza variabile: Butano chiude lo sprite quando la somma delle larghezze supera 32 px, che in prosa italiana sono ~6 caratteri. Contando 4 caratteri i pezzi finirebbero a x sbagliate (4 minuscole sono 20 px, non 32) e **il testo scivolerebbe verso destra riga dopo riga, senza alcun assert a segnalarlo**. `dialogue_view` misura il confine in pixel con `sprite_text_generator::width()`.
+
+* **Difetti chiusi in `dialogue_box.h`**, che dalla Sessione 01 non era mai stato compilato: avanzamento per codepoint via `bn::utf8_character::size()`; contratto sulla durata statica delle view, con `show_composed()` che copia in un buffer membro da 64 byte; **guardia su `show_message` re-entrante** e **`close()` esplicito**, che mancavano del tutto - trovati dalla ricognizione, non erano in elenco. La classe espone ora `visible_row()`, cioe' la sottostringa gia' tagliata, e non un contatore che ogni chiamante dovrebbe interpretare a modo suo.
+
+* **`dialogue_view`: si rigenera solo la coda in crescita.** Gli sprite gia' composti non si toccano piu'; la coda si chiude quando supererebbe i 32 px. Rigenerare tutto a ogni carattere sarebbe stato ~21 create/release ogni 2 frame, oltre 300 operazioni al secondo sull'allocatore best-fit. La cornice e' un BG su BG0 (`tools/make_dialogue_frame.py`, 12 tile unici), allocato all'ingresso della scena e tenuto invisibile finche' non serve.
+
+* **VERIFICATO SU EMULATORE.** La battuta di prova contiene accenti di proposito:
+  ```
+  DIALOGO aperto (battuta di prova, 3 righe)
+    riga 0 completata (28 byte), passa alla 1     <- 27 caratteri, 28 byte
+    riga 1 completata (27 byte), passa alla 2     <- 25 caratteri, 27 byte
+  DIALOGO chiuso: sprite al picco 15 tile OBJ 120
+  ```
+  I byte tornano esattamente: il typewriter ha attraversato le sequenze a 2 byte senza spezzarle. 15 sprite sulle 128 allocazioni disponibili, 120 tile su 1024.
+
+* **PROVA NEGATIVA.** Aggiunto un invariante che verifica che il cursore non cada mai su un byte di continuazione (`10xxxxxx`). Rimesso l'avanzamento in byte - il difetto originale - **l'esecuzione si arresta sulla prima parola accentata**: il log si ferma a "DIALOGO aperto" e nessuna riga viene completata. Ripristinato l'avanzamento corretto, le tre righe si completano. E' l'unico modo di far fallire subito un difetto che, come dice la Correzione 1, altrimenti non fallirebbe affatto.
+
+* **Conflitto di input messo a verbale.** B e' corsa nell'overworld e skip nel dialogo; A e' interazione e chiusura. Non c'e' danno perche' **il dialogo sospende l'esplorazione**: le due modalita' non sono mai attive nello stesso frame. Restera' vero finche' non ci sara' un dialogo *durante* la battaglia (previsto per boss e Mosse Supreme), dove fast-forward e skip collidono sullo stesso tasto; la regola gia' scritta e' che li' il fast-forward va sospeso.
+
+* **Esito:** build pulita, gate verde, `test_battle_engine.py` 31/31, `test_assets.py` 9/9, `test_save_system.py` 9/9.
 
 ---
 

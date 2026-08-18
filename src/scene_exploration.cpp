@@ -29,6 +29,15 @@ constexpr int PARALLAX_SHIFT = 2;
 constexpr int CAMERA_MARGIN_X = 120;
 constexpr int CAMERA_MARGIN_Y = 80;
 
+// BATTUTA DI PROVA, tasto A. Il Passo 18 la sostituira' con `dialogue_runner` e le tabelle del
+// copione; finche' quelle non esistono, questa e' l'unico modo di far girare davvero il motore
+// del testo. Le tre righe sono LETTERALI, quindi a durata statica: e' cio' che il contratto di
+// `show_message` esige. Contengono accenti di proposito — sono il collaudo del font italiano
+// della Sessione 12 dentro la macchina da scrivere.
+constexpr const char* PROVA_RIGA_0 = "Città di Gubbio, anno 1151.";
+constexpr const char* PROVA_RIGA_1 = "Perché sei venuto quassù?";
+constexpr const char* PROVA_RIGA_2 = "Il Campanone suonerà.";
+
 [[nodiscard]] int clamp(int value, int low, int high)
 {
     return value < low ? low : (value > high ? high : value);
@@ -168,8 +177,49 @@ SceneRequest ExplorationScene::run()
 
     while(true)
     {
+        // Durante un dialogo il giocatore NON si muove e i trigger non vengono valutati: il box
+        // e' un sotto-stato che sospende l'esplorazione. E' anche cio' che disinnesca il
+        // conflitto sul tasto B, che nell'overworld e' la corsa e nel dialogo lo skip del
+        // testo — le due modalita' non sono mai attive nello stesso frame.
+        if(_dialogue.is_active())
+        {
+            const int riga_prima = _dialogue.active_row();
+            _dialogue.update();
+            _dialogue_view.update(_dialogue);
+
+            if(_dialogue.is_active() && _dialogue.active_row() != riga_prima)
+            {
+                BN_LOG("  riga ", riga_prima, " completata (", _dialogue.visible_row(riga_prima).size(),
+                       " byte), passa alla ", _dialogue.active_row());
+            }
+
+            // Misure al picco DEL DIALOGO: e' li' che il conteggio degli sprite e' massimo, ed
+            // e' il tetto delle 128 allocazioni distinte — non i tile — quello che si tocca prima.
+            peak_sprites = bn::max(peak_sprites, bn::sprites::used_items_count());
+
+            if(! _dialogue.is_active())
+            {
+                BN_LOG("DIALOGO chiuso: sprite al picco ", peak_sprites,
+                       " tile OBJ ", bn::sprite_tiles::used_tiles_count());
+            }
+
+            core_update();
+            continue;
+        }
+
+        // Apertura su R e non su A: A e' la conferma universale e nell'autotest compare a
+        // raffica nelle sequenze di battaglia, che aprirebbero la battuta di prova appena
+        // rientrati in piazza. R non e' usato altrove nell'esplorazione. Provvisorio comunque:
+        // al Passo 18 il dialogo si aprira' interagendo con un NPC.
+        if(bn::keypad::r_pressed())
+        {
+            _dialogue.show_message(Speaker::PODESTA, PROVA_RIGA_0, PROVA_RIGA_1, PROVA_RIGA_2);
+            BN_LOG("DIALOGO aperto (battuta di prova, 3 righe)");
+        }
+
         _player.update();
         _update_camera();
+        _dialogue_view.update(_dialogue);
 
         // SALVATAGGIO su SELECT — punto di collaudo PROVVISORIO.
         // Il GDD prevede il salvataggio dal menu di pausa (Sez. 33A) e all'Eremo di
