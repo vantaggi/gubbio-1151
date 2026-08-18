@@ -793,6 +793,22 @@ Motivazione: fino a ieri le regole di `AGENTS.md` erano **dichiarate ma non misu
 
 * **Esito:** build pulita, gate verde, autotest senza errori a runtime.
 
+### [2026-08-18] - Sessione 18c: I tre crash della giunzione testo/disegno
+
+* **Autore / Agente:** Claude Opus 5 (Claude Code)
+* **File modificati:** `include/dialogue_box.h`, `src/dialogue_view.cpp`, `src/scene_exploration.cpp`, `tools/photo_to_tiles.py`, `src/main.cpp`
+
+* **TRE CRASH IN FILA, TUTTI NELLO STESSO PUNTO: la giunzione fra il motore che avanza per CARATTERI e la vista che disegna per PIXEL.** Nessuno era visibile senza giocare.
+  1. `Null char array ptr` su `show_message`: `bn::string_view()` di default ha `data() == nullptr`.
+  2. **Lo stesso errore, tornato**: avevo corretto `show_message` ma `visible_row` restituiva ancora la view di default in tre altri rami, e chi ci fa aritmetica sopra — la coda in crescita, che calcola `data() + offset` — sbatteva ugualmente. **Rincorrere il difetto nei chiamanti non basta**: ora esiste una sola `VUOTA` valida, restituita ovunque.
+  3. `Invalid character` nel disegno: **la vista non taglia dove taglia il motore**. Il motore avanza per codepoint, ma la vista spezza la riga anche ai confini di sprite, decisi dalla larghezza in pixel — una misura che di UTF-8 non sa nulla. Bastava che un confine cadesse dentro una lettera accentata. Ora ogni offset e' arretrato al piu' vicino inizio di carattere, con un assert a guardia.
+
+* **Perche' l'autotest non ne vedeva nessuno.** Andava solo dal Podesta', che ha battute da tre righe; il crash del puntatore nullo stava sulle battute a due righe di **Mastro Tano**. E l'errore UTF-8 richiedeva che un confine di sprite cadesse su una accentata — cioe' una coincidenza fra dati e larghezze che nessun log poteva mostrare.
+
+* **DA VERIFICARE ALLA PROSSIMA SESSIONE:** il fix del taglio UTF-8 **non e' stato collaudato a runtime**. L'autotest e' stato puntato su Mastro Tano (`GUBBIO_SE_68`) ma la traiettoria non lo raggiunge: nel log non compare `PARLA CON`. Serve tarare la camminata, oppure — meglio — un test che simuli i confini di sprite sul copione vero e verifichi che nessun taglio cada dentro una sequenza.
+
+* **Rilievi del committente dal gioco vero, entrambi corretti:** del Palazzo dei Consoli si vedeva solo la parte bassa (il ritaglio prendeva la sola fascia alta della foto; ora entra tutto, compresso in verticale) e la trama del selciato era troppo grossa (texture da 4 tile invece di 8).
+
 ---
 
 ## 4. Prossimi Passi Immediati (Roadmap per la Prossima Sessione / IA)
