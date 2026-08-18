@@ -87,8 +87,18 @@
 // la chiude quando il testo e' completo.
 #define GUBBIO_TASTO_A   "10" "00"
 
-// R (0x100) -> bassi 0 = '0', alti 8 = '8'. Apre la battuta di prova nell'esplorazione.
-#define GUBBIO_TASTO_R   "08" "00"
+// DESTRA (0x010) + SU (0x040) + B (0x002) = 0x052 -> bassi 0x12 = 'B', alti 2 = '2'.
+// Porta il giocatore dal punto di rientro fino al Podesta' Guido, che sta davanti al Palazzo
+// dei Consoli: in corsa servono un centinaio di frame, e la salita si ferma da sola contro la
+// facciata del palazzo — che e' proprio dove l'NPC aspetta.
+#define GUBBIO_NE_1      "B2"
+#define GUBBIO_NE_4      GUBBIO_NE_1 GUBBIO_NE_1 GUBBIO_NE_1 GUBBIO_NE_1
+#define GUBBIO_NE_16     GUBBIO_NE_4 GUBBIO_NE_4 GUBBIO_NE_4 GUBBIO_NE_4
+#define GUBBIO_NE_64     GUBBIO_NE_16 GUBBIO_NE_16 GUBBIO_NE_16 GUBBIO_NE_16
+// 100 frame esatti: in corsa sono 200 px, che e' la distanza dal punto di rientro (x 44) al
+// Podesta' (x 244). Con 128 il giocatore lo SUPERAVA e premeva A nel vuoto — la prima stesura
+// sbagliava proprio cosi', e il log lo ha mostrato subito.
+#define GUBBIO_NE_100    GUBBIO_NE_64 GUBBIO_NE_16 GUBBIO_NE_16 GUBBIO_NE_4
 
 // SELECT (0x004) -> bassi 4 = '4', alti 0 = '0'. Un frame premuto, uno rilasciato: il
 // salvataggio scatta su `select_pressed()`, cioe' sul fronte, non finche' il tasto e' giu'.
@@ -103,10 +113,12 @@ constexpr const char* AUTOTEST_KEYPAD_SCRIPT =
     GUBBIO_IDLE_64        // attesa che la dissolvenza d'ingresso finisca
     GUBBIO_SELECT         // salvataggio su FRAM, verificabile nel `.sav` e nel log
     GUBBIO_IDLE_16
-    GUBBIO_TASTO_R        // apre il dialogo di prova
-    GUBBIO_IDLE_256       // la macchina da scrivere percorre le tre righe (~156 frame)
-    GUBBIO_TASTO_A        // lo chiude
-    GUBBIO_IDLE_64;
+    GUBBIO_NE_100         // raggiunge il Podesta' davanti al Palazzo dei Consoli
+    GUBBIO_TASTO_A        // gli parla: parte lo script dell'Atto I, cinque battute
+    GUBBIO_IDLE_256       // la macchina da scrivere percorre la prima battuta
+    GUBBIO_TASTO_A GUBBIO_IDLE_64 GUBBIO_TASTO_A GUBBIO_IDLE_64
+    GUBBIO_TASTO_A GUBBIO_IDLE_64 GUBBIO_TASTO_A GUBBIO_IDLE_64
+    GUBBIO_TASTO_A GUBBIO_IDLE_64;
 
 #endif
 

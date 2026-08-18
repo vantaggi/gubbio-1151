@@ -128,6 +128,7 @@ adiacenze restano vincolanti.
 | **Scala della Citta'** | [`include/city_reference.h`](./include/city_reference.h) | La regola dell'illusione: edifici in scala entro un tile, distanze comprimibili al 73%, adiacenze vincolanti. Verificata da `static_assert` sui monumenti della Sez. 23. |
 | **Riferimenti Reali** | [`docs/riferimenti/FONTI.md`](./docs/riferimenti/FONTI.md) / [`tools/fetch_riferimenti.py`](./tools/fetch_riferimenti.py) | I 30 monumenti della pianta ufficiale, classificati, con i tre segni distintivi per la pixel art e le fonti Commons. Immagini non versionate. |
 | **Piani non implementati** | [`docs/`](./docs/) | `piano_ia_boss.md` (Sez. 26), `piano_combo_tre_ceri.md` (Sez. 12C), `piano_fase_successiva.md` (23 passi). |
+| **Runner Dialoghi** | [`include/dialogue_runner.h`](./include/dialogue_runner.h) | Esegue uno script battuta per battuta con due interi di stato; interazione su tasto A entro 12 px da un NPC. |
 | **Copione & NPC** | [`tools/dialogue_exporter.py`](./tools/dialogue_exporter.py) / [`include/dialogue_data.h`](./include/dialogue_data.h) / [`include/npc_registry.h`](./include/npc_registry.h) | Battute della Sez. 31B con word-wrap **in pixel**, script come intervalli, NPC con regola prima-corrispondenza-vince. Tabelle generate, mai scritte a mano. |
 | **Quest** | [`include/quest_data.h`](./include/quest_data.h) | Le 5 quest della Sez. 31A legate a `quest_state`/`quest_counter`; ricompense segnaposto finche' non esiste l'equipaggiamento. |
 | **Test Copione** | [`tests/test_dialogue_quest.py`](./tests/test_dialogue_quest.py) | 6 test: header allineato al copione, righe dentro il box, nessun apostrofo al posto di un accento, parlanti esistenti, obiettivi conformi al GDD. |
@@ -724,6 +725,26 @@ Motivazione: fino a ieri le regole di `AGENTS.md` erano **dichiarate ma non misu
 * **Altre tre `static_assert`:** che i lati corti non lascino suolo libero sui bordi; che **i due varchi non siano stati murati** chiudendo la piazza (l'errore che verrebbe naturale commettere); che l'ingresso del Pretorio ci sia.
 
 * **Esito:** build verde, gate verde, `test_assets.py` 9/9. Tile unici del suolo da 9 a 11, ampiamente entro il budget di 512.
+
+### [2026-08-18] - Sessione 17: Passo 18 - Runner dei dialoghi e NPC interattivi
+
+* **Autore / Agente:** Claude Opus 5 (Claude Code)
+* **File creati:** `include/dialogue_runner.h`, `graphics/overworld_npc.{bmp,json}`
+* **File modificati:** `tools/make_piazza_art.py`, `include/scene_exploration.h`, `src/scene_exploration.cpp`, `src/main.cpp`
+
+* **`DialogueRunner`: due interi di stato.** Uno script e' un intervallo di battute in `DIALOGUE_LINES`, quindi per eseguirlo bastano "quale script" e "a che punto sono". Niente stack di chiamate, niente contenitori. E' anche cio' che rendera' banale salvare lo stato di un dialogo interrotto, se un giorno servira'.
+  * **Perche' non dentro `DialogueManager`:** il manager sa una cosa sola — come si rivela un testo — e la fa bene. Chi decide *quale* testo, *in che ordine* e *cosa succede dopo* e' un'altra responsabilita'. Separate, il motore del testo resta verificabile da solo e il runner puo' crescere senza toccarlo.
+
+* **L'interazione e' quella definitiva:** tasto **A** davanti a un NPC, che rimpiazza il trigger provvisorio su R della Sessione 13. Lo script recitato dipende dall'atto in corso, con la regola prima-corrispondenza-vince gia' verificata a compile time. Raggio di 12 px, generoso di proposito: con una hitbox ai piedi e un NPC alto 16 px i centri non coincidono mai, e pretendere la sovrapposizione esatta darebbe un giocatore che preme A e non capisce perche' non succeda nulla.
+
+* **Gli NPC sono sprite presi dalla tabella.** Chi autora il copione mette un personaggio in piazza **scrivendo una riga in `npc_registry.h`**, senza toccare la scena. Tre pose statiche distinte per colore della veste: a 16x16 e' il colore a distinguere un personaggio, non i lineamenti.
+
+* **Effetti di fine script: deliberatamente minimi.** Solo le bandiere di "gia' visto". `START_QUEST`, `GIVE_ITEM` e le scelte entrano nello stesso `switch` quando avranno senso: **meta' meccanica in un salvataggio persistente e' peggio di nessuna meccanica** — una quest che parte e non puo' essere consegnata resterebbe aperta per sempre nei `.sav` gia' scritti.
+
+* **VERIFICATO SU EMULATORE:** `PARLA CON Podesta' Guido (atto 1, script 0, 5 battute)`, con la macchina da scrivere che percorre le righe.
+  * **La prima stesura dell'autotest sbagliava, e il log l'ha mostrato subito:** 128 frame di corsa sono 256 px, ma la distanza dal punto di rientro al Podesta' e' 200 — il giocatore lo **superava** e premeva A nel vuoto. Corretto a 100 frame esatti. E' il tipo di errore che senza una traccia leggibile si sarebbe scambiato per "l'interazione non funziona".
+
+* **Esito:** build pulita, gate verde, tutte e quattro le suite verdi.
 
 ---
 

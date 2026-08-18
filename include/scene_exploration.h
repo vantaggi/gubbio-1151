@@ -5,7 +5,11 @@
 #include "bn_optional.h"
 #include "bn_regular_bg_ptr.h"
 
+#include "bn_sprite_ptr.h"
+#include "bn_vector.h"
+
 #include "dialogue_box.h"
+#include "dialogue_runner.h"
 #include "dialogue_view.h"
 #include "game_state.h"
 #include "map_data.h"
@@ -40,6 +44,7 @@ public:
 private:
     GameState& _state;
     const MapDescriptor& _map;
+    MapId _map_id = MapId::PIAZZA_GRANDE;
     bn::camera_ptr _camera;
     bn::regular_bg_ptr _ground;
     bn::optional<bn::regular_bg_ptr> _sky;
@@ -50,6 +55,11 @@ private:
     // un quinto layer, che in Mode 0 non esiste.
     DialogueManager _dialogue;
     DialogueView _dialogue_view;
+    DialogueRunner _runner;
+
+    // Gli NPC dell'area, presi da NPCS[]. Otto e' il tetto del piano: piu' di otto personaggi
+    // nella stessa schermata sarebbero comunque illeggibili a 16x16.
+    bn::vector<bn::sprite_ptr, 8> _npc_sprites;
 
     // Debounce dei trigger: preimpostato al tile di comparsa, cosi' che comparire accanto a una
     // porta non la attraversi nello stesso frame. Un trigger scatta solo quando il tile sotto i

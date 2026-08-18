@@ -8,6 +8,8 @@
 #include "bn_sprites.h"
 
 #include "game_clock.h"
+#include "bn_sprite_items_overworld_npc.h"
+
 #include "npc_registry.h"
 #include "save_data.h"
 #include "scene_fade.h"
@@ -67,6 +69,7 @@ ExplorationScene::ExplorationScene(GameState& state, const SceneRequest& request
     BN_BASIC_ASSERT(_map.is_implemented(), "Mappa non ancora autorata");
 
     _state.set_map(MapId(request.parameter));
+    _map_id = MapId(request.parameter);
 
     _ground.set_camera(_camera);
     _ground.set_priority(2);
@@ -87,6 +90,26 @@ ExplorationScene::ExplorationScene(GameState& state, const SceneRequest& request
         {
             BN_LOG("ATTENZIONE: cielo non allocabile, si prosegue senza parallasse");
         }
+    }
+
+    // Gli NPC dell'area diventano sprite. La posizione viene dalla tabella in ROM: chi autora il
+    // copione mette un personaggio in piazza scrivendo una riga, non toccando questa scena.
+    for(int i = 0; i < int(NpcId::COUNT); ++i)
+    {
+        const NpcDef& npc = NPCS[i];
+
+        if(npc.map != MapId(request.parameter) || _npc_sprites.full())
+        {
+            continue;
+        }
+
+        bn::sprite_ptr sprite = bn::sprite_items::overworld_npc.create_sprite(
+            npc.tile_x * maps::TILE_SIZE_PX + maps::TILE_SIZE_PX / 2,
+            npc.tile_y * maps::TILE_SIZE_PX - maps::TILE_SIZE_PX / 2, i);
+
+        sprite.set_camera(_camera);
+        sprite.set_bg_priority(1);
+        _npc_sprites.push_back(bn::move(sprite));
     }
 
     _last_trigger_tile = _player.tile_under_feet();
@@ -177,6 +200,7 @@ SceneRequest ExplorationScene::run()
         {
             const int riga_prima = _dialogue.active_row();
             _dialogue.update();
+            _runner.update(_dialogue, _state);      // battuta chiusa -> apre la successiva
             _dialogue_view.update(_dialogue);
 
             if(_dialogue.is_active() && _dialogue.active_row() != riga_prima)
@@ -199,27 +223,24 @@ SceneRequest ExplorationScene::run()
             continue;
         }
 
-        // Apertura su R e non su A: A e' la conferma universale e nell'autotest compare a
-        // raffica nelle sequenze di battaglia, che aprirebbero la battuta di prova appena
-        // rientrati in piazza. R non e' usato altrove nell'esplorazione. Provvisorio comunque:
-        // al Passo 18 il dialogo si aprira' interagendo con un NPC.
-        if(bn::keypad::r_pressed())
+        // INTERAZIONE: tasto A davanti a un NPC. Il trigger provvisorio su R della Sessione 13
+        // e' stato rimosso — questa e' la forma definitiva prevista dal piano.
+        if(bn::keypad::a_pressed())
         {
-            // La battuta viene ora DALLE TABELLE del copione (Passo 17), scelta secondo l'atto
-            // in corso con la regola prima-corrispondenza-vince. Resta provvisorio il modo di
-            // aprirla: al Passo 18 il dialogo partira' avvicinandosi all'NPC e premendo A, e il
-            // runner recitera' l'intero script invece della sola prima battuta.
-            const NpcDef& npc = NPCS[int(NpcId::PODESTA_GUIDO)];
-            const ScriptId script = npc_script_for_act(npc, _state.current_act);
+            const int indice = npc_at(_map_id, _player.x(), _player.y());
 
-            if(script != ScriptId::COUNT)
+            if(indice >= 0)
             {
-                const DialogueScript& s = dialogue_script(script);
-                const DialogueLine& linea = DIALOGUE_LINES[s.first_line];
+                const NpcDef& npc = NPCS[indice];
+                const ScriptId script = npc_script_for_act(npc, _state.current_act);
 
-                _dialogue.show_message(linea.speaker, linea.row[0], linea.row[1], linea.row[2]);
-                BN_LOG("DIALOGO da tabella: ", npc.name, ", atto ", int(_state.current_act),
-                       ", script ", int(script), " (", int(s.line_count), " battute)");
+                if(script != ScriptId::COUNT)
+                {
+                    _runner.start(script, _dialogue);
+                    BN_LOG("PARLA CON ", npc.name, " (atto ", int(_state.current_act),
+                           ", script ", int(script), ", ",
+                           int(dialogue_script(script).line_count), " battute)");
+                }
             }
         }
 

@@ -373,6 +373,46 @@ def draw_hero():
     return w, h, px
 
 
+# ----------------------------------------------------------------------------------------------
+# 4. NPC dell'overworld: una posa statica per personaggio (Passo 18)
+# ----------------------------------------------------------------------------------------------
+
+# Chi sta in piazza, nell'ordine di NpcId in include/npc_registry.h. Ogni voce e' la tinta della
+# veste: a 16x16 il colore e' cio' che distingue un personaggio da un altro, non i lineamenti.
+NPC_VESTI = [
+    ("podesta", 11),    # rosso: il potere civico
+    ("tano", 6),        # bruno: il custode della fontana
+    ("berto", 5),       # grigio pietra: il tagliapietre
+]
+
+
+def draw_npc():
+    w = 16
+    h = 16 * len(NPC_VESTI)
+    px = canvas(w, h, 0)
+
+    for indice, (_, tinta) in enumerate(NPC_VESTI):
+        y0 = indice * 16
+
+        def put(x, y, c):
+            if 0 <= x < 16 and 0 <= y + y0 < h:
+                px[y0 + y][x] = c
+
+        for y in range(3, 6):                       # testa
+            for x in range(6, 10):
+                put(x, y, C_SKIN)
+        for y in range(6, 13):                      # veste
+            for x in range(5, 11):
+                put(x, y, tinta)
+        for y in range(7, 11):                      # braccia
+            put(4, y, tinta)
+            put(11, y, tinta)
+        for x in range(5, 11):                      # contorno ai piedi
+            put(x, 13, 10)
+
+    return w, h, px
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     print("[piazza-art] generazione degli asset segnaposto di Piazza Grande")
@@ -388,6 +428,10 @@ def main():
     # 16x256, che non e' una misura OBJ esistente sul GBA, e la build muore con
     # "Invalid sprite height". Emesso qui insieme al .bmp, mai scritto a mano.
     check_and_write("overworld_ubaldo", w, h, px, PALETTE_HERO, "sprite", None,
+                    ',\n    "height": 16')
+
+    w, h, px = draw_npc()
+    check_and_write("overworld_npc", w, h, px, PALETTE_HERO, "sprite", None,
                     ',\n    "height": 16')
 
     print("[piazza-art] fatto. NON e' arte definitiva: sostituire i .bmp mantenendo misure e "
