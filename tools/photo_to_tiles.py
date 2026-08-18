@@ -39,6 +39,12 @@ from PIL import Image, ImageFilter
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 RIFERIMENTI = os.path.join(ROOT, "riferimenti")
 
+# GLI ESITI NON VANNO IN graphics/. Quella cartella e' il territorio di grit, che pretende un
+# `.json` accanto a ogni `.bmp` e li trasforma in asset di Butano: mettendoci gli ingredienti si
+# rompe la build. Questi sono materiali intermedi che `make_piazza_art.py` incolla dentro gli
+# asset veri, e stanno in una cartella loro.
+INGREDIENTI = os.path.join(ROOT, "ingredienti")
+
 # La palette dell'area, condivisa da suolo, edifici e cornici. Sedici colori per TUTTO cio' che
 # sta su un background a 4bpp: e' il vincolo piu' stretto della grafica GBA, ed e' per questo che
 # le sfumature vanno spese dove l'occhio guarda — sei per la pietra dei palazzi, tre per il cotto.
@@ -215,6 +221,11 @@ MONUMENTI = {
         "tile_w": 22,      # 33 m di fronte, in scala
         "tile_h": 19,      # la fascia nord della piazza
         "tetto_tile": 200,
+        # NIENTE indice 11: e' l'acqua della fontana, e la quantizzazione ci mandava sopra il
+        # CIELO della fotografia — che nella mappa compariva come un rettangolo azzurro attorno
+        # al palazzo, come se la piazza avesse un buco. Escluso quel colore, il cielo cade sulla
+        # pietra chiara e si legge come edificato minore, che e' cio' che c'e' davvero li'.
+        "solo_indici": [0, 3, 4, 5, 6, 7, 8, 9, 10, 13],
     },
 
     # La PAVIMENTAZIONE e' l'asset piu' redditizio di tutti: e' l'unica cosa davvero ripetitiva
@@ -222,7 +233,10 @@ MONUMENTI = {
     # foto, dove il cotto e' visto piu' da vicino a perpendicolo.
     "piazza_cotto": {
         "sorgente": "pavimentazione.jpg",
-        "ritaglio": (120, 420, 648, 948),
+        # Ritaglio AMPIO: con un ritaglio stretto i mattoni venivano giganteschi rispetto al
+        # giocatore, alto due tile. Un mattone reale e' circa un sesto di tile, quindi la
+        # porzione inquadrata dev'essere larga abbastanza da contenerne molti.
+        "ritaglio": (0, 280, 768, 1048),
         "tile_w": 8,
         "tile_h": 8,
         "tetto_tile": 24,
@@ -254,13 +268,13 @@ MONUMENTI = {
 
 def main():
     print("[foto] conversione dei monumenti da fotografia")
-    os.makedirs(os.path.join(ROOT, "graphics"), exist_ok=True)
+    os.makedirs(INGREDIENTI, exist_ok=True)
 
     for nome, cfg in MONUMENTI.items():
         indici, w, h = converti(cfg["sorgente"], cfg["ritaglio"], cfg["tile_w"], cfg["tile_h"],
                                 cfg["tetto_tile"], palette=cfg.get("palette"),
                                 solo_indici=cfg.get("solo_indici"))
-        scrivi_bmp4(os.path.join(ROOT, "graphics", nome + ".bmp"), w, h, indici,
+        scrivi_bmp4(os.path.join(INGREDIENTI, nome + ".bmp"), w, h, indici,
                     cfg.get("palette") or PALETTE_PIAZZA)
 
     print("[foto] fatto. Gli asset sono INGREDIENTI: make_piazza_art.py li incolla nella mappa.")

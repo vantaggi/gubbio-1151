@@ -93,6 +93,8 @@ assert get_tile_type(0, 30) == WALL and get_tile_type(0, 20) == EXIT_SAN_MARTINO
 # Budget del Passo 9, in tile unici a 4bpp. Tetto duro di Butano: 1024 tile per tileset.
 # ----------------------------------------------------------------------------------------------
 
+CONSOLI_FIRST_X_PX = 21 * TILE     # dove comincia la facciata, in pixel
+
 MAX_TILES_GROUND = 512
 MAX_TILES_SKY = 128
 
@@ -100,16 +102,19 @@ MAX_TILES_SKY = 128
 # Palette (Sez. 14C GDD come intenzione d'arte: pietra calcarea del Monte Ingino, cotto, bronzo)
 # ----------------------------------------------------------------------------------------------
 
+# Indici della palette CONDIVISA con tools/photo_to_tiles.py. Un background a 4bpp ha sedici
+# colori per tutto: se il generatore procedurale e le foto convertite ne usassero due diversi,
+# non potrebbero stare sullo stesso BG. La palette e' quindi una sola, e questi sono i suoi nomi.
 C_VOID = 0        # fuori mappa / trasparente per gli sprite
-C_STONE = 1       # lastricato chiaro
-C_STONE_ALT = 2   # lastricato, seconda tinta
+C_STONE = 1       # cotto della pavimentazione
+C_STONE_ALT = 2   # cotto, seconda tinta
 C_JOINT = 3       # fuga fra le lastre
-C_WALL = 4        # muratura dei palazzi
-C_WALL_DARK = 5   # ombra della muratura
-C_WOOD = 6        # portone dei Consoli
-C_RAIL = 7        # parapetto panoramico
-C_WATER = 8       # Fontana dei Matti
-C_ARCH = 9        # varchi laterali
+C_WALL = 4        # pietra in piena luce
+C_WALL_DARK = 7   # pietra in ombra
+C_WOOD = 10       # legno dei portoni
+C_RAIL = 15       # parapetto panoramico
+C_WATER = 11      # Fontana dei Matti
+C_ARCH = 13       # nero dei passaggi voltati
 C_SKIN = 10
 C_ROBE = 11
 C_ROBE_DARK = 12
@@ -120,24 +125,10 @@ C_SKY_LO = 15
 # Le tinte vere della citta', lette dalle fotografie d'insieme (vedi docs/riferimenti/FONTI.md):
 # pietra calcarea quasi bianca per i palazzi, COTTO ROSSO per la pavimentazione della piazza —
 # che la Sez. 23 GDD chiama "spina di pesce rossa" e che il segnaposto rendeva in grigio-beige.
-PALETTE_GROUND = [
-    (0, 0, 0),          # 0  fuori mappa
-    (166, 86, 58),      # 1  cotto della pavimentazione
-    (148, 74, 50),      # 2  cotto, seconda tinta
-    (112, 56, 40),      # 3  fuga fra le lastre
-    (226, 220, 206),    # 4  pietra calcarea dei palazzi, quasi bianca
-    (168, 160, 146),    # 5  ombra della pietra
-    (110, 72, 40),      # 6  legno del portone
-    (150, 140, 120),    # 7  parapetto
-    (64, 118, 152),     # 8  acqua
-    (96, 88, 78),       # 9  varco
-    (222, 180, 140),    # 10 (riservati allo sprite, tenuti allineati)
-    (150, 40, 40),
-    (100, 26, 26),
-    (206, 172, 74),
-    (120, 160, 200),
-    (78, 118, 168),
-]
+# LA STESSA di photo_to_tiles.PALETTE_PIAZZA, e non una copia da tenere allineata a mano: viene
+# importata da li'. Se un giorno divergessero, gli asset fotografici comparirebbero coi colori
+# sbagliati sulla mappa, ed e' il tipo di difetto che non fa rumore.
+from photo_to_tiles import PALETTE_PIAZZA as PALETTE_GROUND      # noqa: E402
 
 PALETTE_SKY = [
     (0, 0, 0),
@@ -195,6 +186,35 @@ def write_bmp4(path, width, height, pixels, palette):
         f.write(header + dib + pal_bytes + bytes(body))
 
 
+def leggi_indici_bmp4(nome):
+    """Rilegge un BMP a 4bpp prodotto da photo_to_tiles come griglia di indici di palette.
+
+    Gli ingredienti stanno in `ingredienti/` e NON in `graphics/`: quest'ultima e' il territorio
+    di grit, che pretende un `.json` accanto a ogni `.bmp` e fallisce la build su chi non ce l'ha."""
+    percorso = os.path.join(os.path.dirname(OUT), "ingredienti", nome)
+
+    if not os.path.exists(percorso):
+        return None, 0, 0
+
+    d = open(percorso, "rb").read()
+    off = struct.unpack_from("<I", d, 10)[0]
+    w, h = struct.unpack_from("<ii", d, 18)
+    rb = w // 2
+    pad = (4 - rb % 4) % 4
+    righe = []
+
+    for y in range(h):
+        st = off + y * (rb + pad)
+        riga = []
+        for b in d[st:st + rb]:
+            riga.append(b >> 4)
+            riga.append(b & 0x0F)
+        righe.append(riga)
+
+    righe.reverse()
+    return righe, w, h
+
+
 def canvas(w, h, fill=0):
     return [[fill] * w for _ in range(h)]
 
@@ -233,6 +253,11 @@ def check_and_write(name, width, height, pixels, palette, kind, max_tiles, extra
 # ----------------------------------------------------------------------------------------------
 
 def draw_ground():
+    # GLI ASSET FOTOGRAFICI, se ci sono. Il generatore procedurale resta come ripiego: chi clona
+    # il progetto senza le foto (che non sono versionate) ottiene comunque una mappa disegnata,
+    # solo piu' povera. Non e' un dettaglio di cortesia — e' cio' che tiene la build riproducibile.
+    cotto, cotto_w, cotto_h = leggi_indici_bmp4("piazza_cotto.bmp")
+    facciata, facc_w, facc_h = leggi_indici_bmp4("consoli_facciata.bmp")
     # 512x512 e non 512x320: le dimensioni legali di un BG regolare sono multipli di 256
     # (butano_graphics_tool.py), e un 512x256 farebbe ricomparire in cima la fascia sud della
     # ringhiera per wrap hardware. Le righe oltre y=320 non sono mai inquadrate: la camera e'
@@ -248,9 +273,13 @@ def draw_ground():
             for y in range(TILE):
                 for x in range(TILE):
                     if kind == GROUND:
-                        # Lastricato: due tinte a scacchi con la fuga sui bordi della lastra.
-                        base = C_STONE if (tx + ty) % 2 == 0 else C_STONE_ALT
-                        c = C_JOINT if (x == 0 or y == 0) else base
+                        if cotto:
+                            # La pavimentazione VERA, ripetuta: e' l'unica cosa davvero
+                            # ripetitiva della piazza, e in fotografia costa 22 tile unici.
+                            c = cotto[(y0 + y) % cotto_h][(x0 + x) % cotto_w]
+                        else:
+                            base = C_STONE if (tx + ty) % 2 == 0 else C_STONE_ALT
+                            c = C_JOINT if (x == 0 or y == 0) else base
                     elif kind in (CONSOLI_FACADE, PRETORIO_FACADE):
                         # I TRE SEGNI del Palazzo dei Consoli (docs/riferimenti/FONTI.md), resi
                         # con quel che un tile 8x8 concede. Il resto della facciata e' pietra
@@ -258,7 +287,16 @@ def draw_ground():
                         # edilizio minore, che resta piu' scuro.
                         c = C_WALL if (y % 4 != 3) else C_WALL_DARK
 
-                        if kind == CONSOLI_FACADE:
+                        if kind == CONSOLI_FACADE and facciata:
+                            # La facciata fotografata combacia con la fascia della griglia:
+                            # 22x19 tile sono 176x152 px, e sono esattamente le misure che la
+                            # scala di city_reference.h impone al Palazzo dei Consoli.
+                            fx = x0 + x - CONSOLI_FIRST_X_PX
+                            fy = y0 + y
+
+                            if 0 <= fx < facc_w and 0 <= fy < facc_h:
+                                c = facciata[fy][fx]
+                        elif kind == CONSOLI_FACADE:
                             if ty <= 1:
                                 # MERLATURA: denti alterni contro il cielo, passo 4 tile.
                                 c = C_WALL if ((x0 + x) // 16) % 2 == 0 and y < 5 else C_VOID
