@@ -32,8 +32,18 @@ enum class TileType : uint8_t
     // muro indistinto, e il palazzo simbolo della citta' non si distingueva da un magazzino.
     CONSOLI_FACADE    = 7,   // fronte del Palazzo dei Consoli: 33 m = 22 tile, in scala
     PRETORIO_FACADE   = 8,   // Palazzo Pretorio, che gli sta di fronte: 25 m = 16 tile
-    STAIRS            = 9    // scalinata a ventaglio davanti al portone: si calpesta
+    STAIRS            = 9,   // scalinata a ventaglio davanti al portone: si calpesta
+    DOOR_PRETORIO     = 10   // ingresso del Pretorio: oggi solo VISIVO, non porta altrove
 };
+
+// I lati corti. Piazza Grande e' uno spazio CHIUSO su quattro lati, ed e' da li' che viene
+// l'effetto che fa: un vuoto vasto ritagliato dentro un tessuto urbano fitto. Finche' i lati
+// corti restavano aperti, la piazza sfumava nel nulla e sembrava un cortile. Restano liberi solo
+// i due varchi dei trigger, che nella citta' vera sono passaggi voltati.
+constexpr int SIDE_WEST_LAST_X = 3;
+constexpr int SIDE_EAST_FIRST_X = 60;
+constexpr int SIDE_FIRST_Y = 23;      // sotto il corridoio dei varchi (y 19-22)
+constexpr int SIDE_LAST_Y = 37;       // sopra la ringhiera
 
 // Il fronte dei Consoli, centrato sul portone. La larghezza NON e' scelta a occhio: e' quella
 // che la scala impone (vedi city_reference.h), ed e' l'unico modo perche' il palazzo resti
@@ -54,7 +64,13 @@ inline constexpr uint8_t get_tile_type(int x, int y) {
     // Palazzo Pretorio: fronteggia i Consoli dal lato opposto della piazza, come nella citta'
     // vera. Sta davanti alla ringhiera, non al posto suo.
     if (y >= PRETORIO_FIRST_Y && y <= PRETORIO_LAST_Y &&
-        x >= PRETORIO_FIRST_X && x <= PRETORIO_LAST_X) return 8;
+        x >= PRETORIO_FIRST_X && x <= PRETORIO_LAST_X) {
+        // Ingresso sul fronte che guarda la piazza. Non e' ancora un trigger: aprirlo vorrebbe
+        // dire una quarta regola in MAPS[], e le sale del Pretorio non esistono. Disegnarlo
+        // adesso costa un tile e rende il palazzo un edificio invece di un blocco cieco.
+        if (y == PRETORIO_FIRST_Y && (x == 31 || x == 32)) return 10;
+        return 8;
+    }
 
     // Fronte nord: il Palazzo dei Consoli al centro, edifici minori ai lati.
     if (y <= 18) {
@@ -66,6 +82,10 @@ inline constexpr uint8_t get_tile_type(int x, int y) {
     // Scalinata a ventaglio davanti al portone: calpestabile, ed e' il primo dei tre segni
     // distintivi del palazzo (docs/riferimenti/FONTI.md).
     if (y == 19 && x >= 29 && x <= 34) return 9;
+
+    // Lati corti edificati: chiudono la piazza a est e a ovest, lasciando liberi i varchi.
+    if (y >= SIDE_FIRST_Y && y <= SIDE_LAST_Y &&
+        (x <= SIDE_WEST_LAST_X || x >= SIDE_EAST_FIRST_X)) return 1;
 
     // Trigger Laterali
     if (x <= 2 && y >= 19 && y <= 22) return 4; // Verso San Martino / Bargello
@@ -177,6 +197,30 @@ static_assert([]
 
     return larghezza == 22;
 }(), "Il fronte del Palazzo dei Consoli non misura i 22 tile della scala");
+
+// La piazza dev'essere CHIUSA: sui bordi laterali, fuori dai varchi, non puo' esserci suolo
+// libero — altrimenti si cammina fuori dallo spazio urbano e l'illusione cade.
+static_assert([]
+{
+    for(int y = SIDE_FIRST_Y; y <= SIDE_LAST_Y; ++y)
+    {
+        if(PIAZZA_GRID.data[0 + y * PIAZZA_WIDTH] == uint8_t(TileType::GROUND) ||
+           PIAZZA_GRID.data[PIAZZA_WIDTH - 1 + y * PIAZZA_WIDTH] == uint8_t(TileType::GROUND))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}(), "I lati corti della piazza non sono chiusi");
+
+// I due varchi restano percorribili: chiudere la piazza non deve murare le uscite.
+static_assert(! is_solid(PIAZZA_GRID.data[0 + 20 * PIAZZA_WIDTH]) &&
+              ! is_solid(PIAZZA_GRID.data[62 + 20 * PIAZZA_WIDTH]),
+              "Un varco laterale e' stato murato");
+
+static_assert(PIAZZA_GRID.data[31 + 34 * PIAZZA_WIDTH] == uint8_t(TileType::DOOR_PRETORIO),
+              "Manca l'ingresso del Palazzo Pretorio");
 
 static_assert(PIAZZA_GRID.data[32 + 19 * PIAZZA_WIDTH] == uint8_t(TileType::STAIRS),
               "Manca la scalinata davanti al portone dei Consoli");

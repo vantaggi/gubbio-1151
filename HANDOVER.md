@@ -719,6 +719,10 @@ Motivazione: fino a ieri le regole di `AGENTS.md` erano **dichiarate ma non misu
 
 * **Verifica visiva:** nell'anteprima il Palazzo dei Consoli in pietra chiara si stacca nettamente dagli edifici minori ai lati, resi piu' scuri, col portone e la scalinata al centro e la piazza in cotto rosso. E' la prima volta che la piazza somiglia a Piazza Grande invece che a un cortile.
 
+* **Pretorio e lati corti (stessa sessione).** Il Pretorio ha ora il suo **ingresso** sul fronte che guarda la piazza — solo visivo, non un trigger: aprirlo vorrebbe dire una quarta regola in `MAPS[]` e le sale non esistono; disegnarlo costa un tile e rende il palazzo un edificio invece di un blocco cieco. I **lati corti sono edificati**: Piazza Grande e' uno spazio CHIUSO su quattro lati, ed e' da li' che viene l'effetto che fa — un vuoto vasto ritagliato dentro un tessuto fitto. Finche' restavano aperti, la piazza sfumava nel nulla e sembrava un cortile. Restano liberi i due varchi, che nella citta' vera sono passaggi voltati.
+
+* **Altre tre `static_assert`:** che i lati corti non lascino suolo libero sui bordi; che **i due varchi non siano stati murati** chiudendo la piazza (l'errore che verrebbe naturale commettere); che l'ingresso del Pretorio ci sia.
+
 * **Esito:** build verde, gate verde, `test_assets.py` 9/9. Tile unici del suolo da 9 a 11, ampiamente entro il budget di 512.
 
 ---

@@ -47,7 +47,7 @@ PIAZZA_HEIGHT = 40
 TILE = 8
 
 (GROUND, WALL, RAILING, DOOR_CONSOLI, EXIT_SAN_MARTINO, EXIT_PORTA_ROMANA, FOUNTAIN,
- CONSOLI_FACADE, PRETORIO_FACADE, STAIRS) = range(10)
+ CONSOLI_FACADE, PRETORIO_FACADE, STAIRS, DOOR_PRETORIO) = range(11)
 
 
 def get_tile_type(x, y):
@@ -56,6 +56,8 @@ def get_tile_type(x, y):
     if y >= 38:
         return RAILING
     if 34 <= y <= 37 and 24 <= x <= 39:
+        if y == 34 and x in (31, 32):
+            return DOOR_PRETORIO
         return PRETORIO_FACADE
     if y <= 18:
         if y == 18 and x in (32, 33):
@@ -65,6 +67,8 @@ def get_tile_type(x, y):
         return WALL
     if y == 19 and 29 <= x <= 34:
         return STAIRS
+    if 23 <= y <= 37 and (x <= 3 or x >= 60):
+        return WALL
     if x <= 2 and 19 <= y <= 22:
         return EXIT_SAN_MARTINO
     if x >= 61 and 19 <= y <= 22:
@@ -82,6 +86,8 @@ assert get_tile_type(23, 24) == FOUNTAIN
 assert get_tile_type(21, 17) == CONSOLI_FACADE and get_tile_type(20, 17) == WALL
 assert get_tile_type(32, 35) == PRETORIO_FACADE
 assert get_tile_type(32, 19) == STAIRS
+assert get_tile_type(31, 34) == DOOR_PRETORIO
+assert get_tile_type(0, 30) == WALL and get_tile_type(0, 20) == EXIT_SAN_MARTINO
 
 # ----------------------------------------------------------------------------------------------
 # Budget del Passo 9, in tile unici a 4bpp. Tetto duro di Butano: 1024 tile per tileset.
@@ -257,6 +263,8 @@ def draw_ground():
                         c = C_ARCH if (y % 4 == 3 or ty == 18) else C_WALL_DARK
                     elif kind == RAILING:
                         c = C_RAIL if y < 4 else C_WALL_DARK
+                    elif kind == DOOR_PRETORIO:
+                        c = C_WOOD if 1 <= x <= 6 else C_WALL_DARK
                     elif kind == DOOR_CONSOLI:
                         c = C_WOOD if 1 <= x <= 6 else C_WALL_DARK
                     elif kind in (EXIT_SAN_MARTINO, EXIT_PORTA_ROMANA):
