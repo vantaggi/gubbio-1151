@@ -8,6 +8,7 @@
 #include "bn_sprites.h"
 
 #include "game_clock.h"
+#include "npc_registry.h"
 #include "save_data.h"
 #include "scene_fade.h"
 
@@ -28,15 +29,6 @@ constexpr int PARALLAX_SHIFT = 2;
 // oltre il bordo comparirebbe il vuoto (o, peggio, il wrap del BG).
 constexpr int CAMERA_MARGIN_X = 120;
 constexpr int CAMERA_MARGIN_Y = 80;
-
-// BATTUTA DI PROVA, tasto A. Il Passo 18 la sostituira' con `dialogue_runner` e le tabelle del
-// copione; finche' quelle non esistono, questa e' l'unico modo di far girare davvero il motore
-// del testo. Le tre righe sono LETTERALI, quindi a durata statica: e' cio' che il contratto di
-// `show_message` esige. Contengono accenti di proposito — sono il collaudo del font italiano
-// della Sessione 12 dentro la macchina da scrivere.
-constexpr const char* PROVA_RIGA_0 = "Città di Gubbio, anno 1151.";
-constexpr const char* PROVA_RIGA_1 = "Perché sei venuto quassù?";
-constexpr const char* PROVA_RIGA_2 = "Il Campanone suonerà.";
 
 [[nodiscard]] int clamp(int value, int low, int high)
 {
@@ -213,8 +205,22 @@ SceneRequest ExplorationScene::run()
         // al Passo 18 il dialogo si aprira' interagendo con un NPC.
         if(bn::keypad::r_pressed())
         {
-            _dialogue.show_message(Speaker::PODESTA, PROVA_RIGA_0, PROVA_RIGA_1, PROVA_RIGA_2);
-            BN_LOG("DIALOGO aperto (battuta di prova, 3 righe)");
+            // La battuta viene ora DALLE TABELLE del copione (Passo 17), scelta secondo l'atto
+            // in corso con la regola prima-corrispondenza-vince. Resta provvisorio il modo di
+            // aprirla: al Passo 18 il dialogo partira' avvicinandosi all'NPC e premendo A, e il
+            // runner recitera' l'intero script invece della sola prima battuta.
+            const NpcDef& npc = NPCS[int(NpcId::PODESTA_GUIDO)];
+            const ScriptId script = npc_script_for_act(npc, _state.current_act);
+
+            if(script != ScriptId::COUNT)
+            {
+                const DialogueScript& s = dialogue_script(script);
+                const DialogueLine& linea = DIALOGUE_LINES[s.first_line];
+
+                _dialogue.show_message(linea.speaker, linea.row[0], linea.row[1], linea.row[2]);
+                BN_LOG("DIALOGO da tabella: ", npc.name, ", atto ", int(_state.current_act),
+                       ", script ", int(script), " (", int(s.line_count), " battute)");
+            }
         }
 
         _player.update();

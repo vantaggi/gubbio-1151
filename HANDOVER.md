@@ -20,6 +20,7 @@ bash tools/build_rom.sh                 # build + gate zero-heap automatico
 python tests/test_battle_engine.py      # 31 test, mirror fedele del motore C++
 python tests/test_assets.py             # 6 test sugli asset di graphics/
 python tests/test_save_system.py        # 9 test su CRC32 e sul .sav prodotto da mGBA
+python tests/test_dialogue_quest.py     # 6 test sul copione e sulle quest
 bash tools/build_rom.sh "USERFLAGS=-DGUBBIO_BATTLE_AUTOTEST"   # ROM che si autogioca
 ```
 
@@ -38,14 +39,15 @@ bash tools/build_rom.sh "USERFLAGS=-DGUBBIO_BATTLE_AUTOTEST"   # ROM che si auto
 3. **Il GDD si contraddice spesso.** Quando succede: scegliere motivando, e **correggere anche il
    GDD** con nota di revisione, altrimenti la sessione dopo ripristina il valore vecchio (Sess. 02b).
 
-**Il prossimo passo** e' il **Passo 17** di [`docs/piano_fase_successiva.md`](./docs/piano_fase_successiva.md)
-(copione, tabelle di dialogo e quest, e riempimento del payload di salvataggio), poi il 18
-(esecutore di dialoghi agganciato agli NPC). I Passi 0-8 e 10-16 sono fatti; il Passo 9 (budget
-VRAM) e' assorbito nelle `static_assert` di `map_data.h`.
-Per il Passo 17, tre cose gia' accertate: il codice della Sez. 31C del GDD **non e' trascrivibile**
-(usa `bn::vector` dentro un array `constexpr`, e `bn::vector` non e' un tipo letterale in Butano);
-le righe vanno **gia' spezzate** nelle tabelle, perche' il word-wrap non e' compito del motore; e
-la Sez. 31C prevede 2 righe per nodo mentre il motore ne accetta 3.
+**Il prossimo passo** e' il **Passo 18** di [`docs/piano_fase_successiva.md`](./docs/piano_fase_successiva.md):
+`dialogue_runner.h`, l'esecutore di script (LINE, CHOICE, SET_FLAG, JUMP_IF_FLAG, START_QUEST,
+ADVANCE_QUEST, GIVE_ITEM, END) agganciato all'esplorazione, con gli NPC visibili sulla mappa e
+l'interazione su tasto A. I Passi 0-8 e 10-17 sono fatti.
+Due cose gia' pronte per il 18: le tabelle del copione e degli NPC (`dialogue_data.h`,
+`npc_registry.h`) con la regola prima-corrispondenza-vince gia' implementata e verificata a
+compile time, e il motore del testo che recita una battuta per volta. Restano da fare: la
+sequenza di battute di uno script, gli sprite degli NPC sulla mappa, e la sostituzione del
+trigger provvisorio su tasto R.
 
 **Decisioni aperte che spettano al designer.** Nessuna blocca il Passo 7, ma tutte prima o poi si
 presentano:
@@ -115,6 +117,9 @@ presentano:
 | **Controllo di Versione** | [`.gitignore`](./.gitignore) / [`.gitattributes`](./.gitattributes) | Repository git inizializzato nella Sessione 11d. Esclusi build, ROM, ELF e `.sav`; gli `.sh` sono forzati a fine riga LF perche' Git Bash non esegue script con CRLF. |
 | **Skill Decisioni** | `.agents/skills/decisioni-aperte/SKILL.md` (+ copia in `.claude/`) | Procedura per sciogliere UNA decisione di design aperta: round sulla frontiera, prove dal GDD, chiusura obbligatoria in GDD + HANDOVER + codice. |
 | **Piani non implementati** | [`docs/`](./docs/) | `piano_ia_boss.md` (Sez. 26), `piano_combo_tre_ceri.md` (Sez. 12C), `piano_fase_successiva.md` (23 passi). |
+| **Copione & NPC** | [`tools/dialogue_exporter.py`](./tools/dialogue_exporter.py) / [`include/dialogue_data.h`](./include/dialogue_data.h) / [`include/npc_registry.h`](./include/npc_registry.h) | Battute della Sez. 31B con word-wrap **in pixel**, script come intervalli, NPC con regola prima-corrispondenza-vince. Tabelle generate, mai scritte a mano. |
+| **Quest** | [`include/quest_data.h`](./include/quest_data.h) | Le 5 quest della Sez. 31A legate a `quest_state`/`quest_counter`; ricompense segnaposto finche' non esiste l'equipaggiamento. |
+| **Test Copione** | [`tests/test_dialogue_quest.py`](./tests/test_dialogue_quest.py) | 6 test: header allineato al copione, righe dentro il box, nessun apostrofo al posto di un accento, parlanti esistenti, obiettivi conformi al GDD. |
 | **Combat Test Harness** | [`tests/test_battle_engine.py`](./tests/test_battle_engine.py) | Port fedele in Python del Battle Engine C++: 31 unit test su formule, Shield Break, timeline, Fervore, status e IA. |
 
 ---
@@ -637,6 +642,33 @@ Motivazione: fino a ieri le regole di `AGENTS.md` erano **dichiarate ma non misu
 * **Conflitto di input messo a verbale.** B e' corsa nell'overworld e skip nel dialogo; A e' interazione e chiusura. Non c'e' danno perche' **il dialogo sospende l'esplorazione**: le due modalita' non sono mai attive nello stesso frame. Restera' vero finche' non ci sara' un dialogo *durante* la battaglia (previsto per boss e Mosse Supreme), dove fast-forward e skip collidono sullo stesso tasto; la regola gia' scritta e' che li' il fast-forward va sospeso.
 
 * **Esito:** build pulita, gate verde, `test_battle_engine.py` 31/31, `test_assets.py` 9/9, `test_save_system.py` 9/9.
+
+### [2026-08-18] - Sessione 14: Passo 17 - Copione, NPC e Quest in ROM
+
+* **Autore / Agente:** Claude Opus 5 (Claude Code)
+* **File creati:** `tools/dialogue_exporter.py`, `include/dialogue_data.h` (generato), `include/npc_registry.h`, `include/quest_data.h`, `tests/test_dialogue_quest.py`
+* **File modificati:** `src/scene_exploration.cpp` (la battuta di prova viene ora dalle tabelle)
+
+* **Il copione e' GENERATO, non trascritto.** `tools/dialogue_exporter.py` contiene le battute della Sez. 31B e produce `include/dialogue_data.h` con le righe **gia' spezzate**. Il wrap e' fatto **in pixel**, sommando le larghezze reali di `font_gubbio.h`: spezzare a 28 caratteri, il numero della Sez. 25, darebbe righe da 90 a 220 px — alcune fuori dal box, altre mezze vuote. Esito: 7 script, 21 battute, 47 righe, con la riga piu' larga a **211 px su 212 disponibili**.
+
+* **Tabelle piatte, perche' il codice del GDD non e' trascrivibile.** La Sez. 31C usa `bn::vector<DialogueNode, 4>` dentro un array `constexpr`: `bn::vector` non e' un tipo letterale in Butano e non compilerebbe. Qui le battute stanno in un unico array e ogni script e' un **intervallo** su di esso; gli NPC puntano a intervalli di condizioni con la regola **prima-corrispondenza-vince**. Nessun contenitore annidato, tutto in ROM, zero RAM.
+
+* **Due difetti veri trovati dai test, non dedotti:**
+  1. **Le sostituzioni degli accenti non scattavano.** L'esportatore converte `citta'` in `città` — il font ha le accentate dalla Sessione 12 — ma la regex usava `\b` anche in coda, e **fra un apostrofo e lo spazio che segue non c'e' confine di parola**: nessuna sostituzione avveniva. Il copione sarebbe finito in ROM con gli apostrofi, cioe' con la resa che la decisione sul font aveva esplicitamente scartato. Il test `test_nessun_apostrofo_al_posto_di_un_accento` l'ha trovato elencando le sette parole colpite.
+  2. **Una battuta non entrava nel box.** L'esportatore ha rifiutato `RANIERO_QUEST[1]` perche' occupava 4 righe su 3 disponibili, ed e' stata divisa in due battute successive — non troncata: tagliare il contenuto sarebbe una scelta di sceneggiatura, e non spetta a un esportatore.
+
+* **Invarianti verificati dal COMPILATORE**, non dai test: ogni script sta dentro la tabella delle battute; ogni NPC punta a un intervallo valido; **nessun NPC e' collocato dentro un muro** (verificato contro la stessa `get_tile_type` della collisione); e le due condizioni del Podesta' sono nell'ordine giusto — l'Atto III precede l'Atto I, perche' con la regola prima-corrispondenza-vince invertirle mostrerebbe la battuta d'apertura durante l'assedio.
+
+* **Quest: cinque, con una riserva dichiarata.** `quest_data.h` porta le cinque quest della Sez. 31A con obiettivi conformi (Q-SM01 tre blocchi di ferro, Q-SA01 quattro radici) e le lega agli indici di `GameState::quest_state` / `quest_counter`, che restano separati per la ragione a verbale dal Passo 4: **un bit non sa contare fino a 3**. Le ricompense vere della Sez. 31A sono equipaggiamenti e chiavi (Corazza Rinforzata, Spilla della Rosa, Patente da Matto) che **nel gioco non esistono**: non c'e' un sistema di equipaggiamento e la Patente e' una decisione aperta. Finche' non esistono, ogni quest consegna un consumabile della Sez. 8E, **dichiarato come segnaposto** nel file.
+
+* **VERIFICATO SU EMULATORE:** la battuta non e' piu' un letterale nel codice ma viene dalle tabelle, scelta secondo l'atto in corso.
+  ```
+  DIALOGO da tabella: Podesta' Guido, atto 1, script 0 (5 battute)
+    riga 0 completata (41 byte), passa alla 1
+  DIALOGO chiuso: sprite al picco 10 tile OBJ 100
+  ```
+
+* **Esito:** build pulita, gate verde, `test_battle_engine.py` 31/31, `test_assets.py` 9/9, `test_save_system.py` 9/9, `test_dialogue_quest.py` 6/6.
 
 ---
 
