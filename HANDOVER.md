@@ -703,6 +703,24 @@ Motivazione: fino a ieri le regole di `AGENTS.md` erano **dichiarate ma non misu
 
 * **Nessun download eseguito**: `fetch_riferimenti.py` e' pronto ma va lanciato dal committente, o su sua conferma.
 
+### [2026-08-18] - Sessione 16: Riferimenti scaricati e griglia della piazza in scala
+
+* **Autore / Agente:** Claude Opus 5 (Claude Code)
+* **File modificati:** `include/piazza_grande_collision.h`, `tools/make_piazza_art.py`, `tools/fetch_riferimenti.py`
+
+* **Riferimenti scaricati** da Wikimedia Commons su autorizzazione del committente: 4 immagini (Palazzo dei Consoli, Piazza Grande x2, via dei Consoli), con licenze **CC BY-SA 3.0/4.0 e CC BY 3.0** registrate in `riferimenti/CREDITI.txt` insieme agli autori. Il primo tentativo ha preso un **HTTP 429**: Wikimedia limita le richieste ravvicinate e pretende uno User-Agent descrittivo. Lo script ora attende fra una richiesta e l'altra e riprova con attesa crescente.
+
+* **La griglia della piazza applica la regola dell'illusione.** Prima tutta la fascia nord era `WALL` indistinto: il palazzo simbolo della citta' non si distingueva da un magazzino. Ora ci sono tre tipi nuovi:
+  * `CONSOLI_FACADE` — fronte di **22 tile**, che sono i 33 m reali alla scala di 1,5 m/tile, centrato sul portone;
+  * `PRETORIO_FACADE` — 16 tile (25 m), che **fronteggia i Consoli dal lato opposto**, come nella citta' vera, stando davanti alla ringhiera e non al posto suo;
+  * `STAIRS` — la scalinata a ventaglio davanti al portone, **calpestabile**: e' il primo dei tre segni distintivi del palazzo.
+
+* **Due `static_assert` nuove tengono l'illusione.** Una **conta i tile del fronte** nella griglia derivata e pretende che siano 22: se qualcuno allargasse il palazzo "perche' sta meglio", la build si ferma sull'edificio che regge tutta la riconoscibilita'. L'altra verifica che la scalinata ci sia e che non sia solida.
+
+* **Verifica visiva:** nell'anteprima il Palazzo dei Consoli in pietra chiara si stacca nettamente dagli edifici minori ai lati, resi piu' scuri, col portone e la scalinata al centro e la piazza in cotto rosso. E' la prima volta che la piazza somiglia a Piazza Grande invece che a un cortile.
+
+* **Esito:** build verde, gate verde, `test_assets.py` 9/9. Tile unici del suolo da 9 a 11, ampiamente entro il budget di 512.
+
 ---
 
 ## 4. Prossimi Passi Immediati (Roadmap per la Prossima Sessione / IA)

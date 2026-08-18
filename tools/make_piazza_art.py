@@ -46,7 +46,8 @@ PIAZZA_WIDTH = 64
 PIAZZA_HEIGHT = 40
 TILE = 8
 
-GROUND, WALL, RAILING, DOOR_CONSOLI, EXIT_SAN_MARTINO, EXIT_PORTA_ROMANA, FOUNTAIN = range(7)
+(GROUND, WALL, RAILING, DOOR_CONSOLI, EXIT_SAN_MARTINO, EXIT_PORTA_ROMANA, FOUNTAIN,
+ CONSOLI_FACADE, PRETORIO_FACADE, STAIRS) = range(10)
 
 
 def get_tile_type(x, y):
@@ -54,10 +55,16 @@ def get_tile_type(x, y):
         return WALL
     if y >= 38:
         return RAILING
+    if 34 <= y <= 37 and 24 <= x <= 39:
+        return PRETORIO_FACADE
     if y <= 18:
         if y == 18 and x in (32, 33):
             return DOOR_CONSOLI
+        if 21 <= x <= 42:
+            return CONSOLI_FACADE
         return WALL
+    if y == 19 and 29 <= x <= 34:
+        return STAIRS
     if x <= 2 and 19 <= y <= 22:
         return EXIT_SAN_MARTINO
     if x >= 61 and 19 <= y <= 22:
@@ -72,6 +79,9 @@ assert get_tile_type(32, 18) == DOOR_CONSOLI
 assert get_tile_type(0, 39) == RAILING
 assert get_tile_type(32, 30) == GROUND
 assert get_tile_type(23, 24) == FOUNTAIN
+assert get_tile_type(21, 17) == CONSOLI_FACADE and get_tile_type(20, 17) == WALL
+assert get_tile_type(32, 35) == PRETORIO_FACADE
+assert get_tile_type(32, 19) == STAIRS
 
 # ----------------------------------------------------------------------------------------------
 # Budget del Passo 9, in tile unici a 4bpp. Tetto duro di Butano: 1024 tile per tileset.
@@ -235,9 +245,16 @@ def draw_ground():
                         # Lastricato: due tinte a scacchi con la fuga sui bordi della lastra.
                         base = C_STONE if (tx + ty) % 2 == 0 else C_STONE_ALT
                         c = C_JOINT if (x == 0 or y == 0) else base
+                    elif kind in (CONSOLI_FACADE, PRETORIO_FACADE):
+                        # Pietra calcarea chiara con i corsi orizzontali: e' cosi' che i due
+                        # palazzi si staccano dal tessuto edilizio minore, che resta piu' scuro.
+                        c = C_WALL if (y % 4 != 3) else C_WALL_DARK
+                    elif kind == STAIRS:
+                        # Gradini: righe alternate chiare e scure, il segno che si legge a 8 px.
+                        c = C_WALL if (y % 2 == 0) else C_RAIL
                     elif kind == WALL:
                         # Muratura a corsi orizzontali, con la base in ombra.
-                        c = C_WALL_DARK if (y % 4 == 3 or ty == 18) else C_WALL
+                        c = C_ARCH if (y % 4 == 3 or ty == 18) else C_WALL_DARK
                     elif kind == RAILING:
                         c = C_RAIL if y < 4 else C_WALL_DARK
                     elif kind == DOOR_CONSOLI:

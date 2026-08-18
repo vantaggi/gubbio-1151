@@ -18,13 +18,18 @@ all'immagine: assolvere l'attribuzione a posteriori e' molto piu' faticoso che f
 
 import json
 import os
+import time
 import sys
 import urllib.parse
 import urllib.request
 
 DEST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "riferimenti")
 API = "https://commons.wikimedia.org/w/api.php"
-UA = "Gubbio1151-AssetPipeline/1.0 (progetto di gioco amatoriale; contatto via repo)"
+# Wikimedia chiede uno User-Agent descrittivo e risponde 429 a chi interroga troppo in fretta:
+# fra una richiesta e l'altra si aspetta, e su 429 si riprova con attesa crescente.
+UA = "Gubbio1151-AssetPipeline/1.0 (gioco amatoriale non commerciale; https://github.com/vantaggi/gubbio-1151)"
+PAUSA_S = 2
+TENTATIVI = 4
 
 # I file verificati finora. Si aggiungono qui man mano che FONTI.md cresce.
 FILE_COMMONS = [
@@ -35,15 +40,27 @@ FILE_COMMONS = [
 ]
 
 
+def _apri(url):
+    """Una richiesta, con attesa crescente sui 429."""
+    for tentativo in range(TENTATIVI):
+        try:
+            return urllib.request.urlopen(
+                urllib.request.Request(url, headers={"User-Agent": UA}), timeout=60).read()
+        except urllib.error.HTTPError as errore:
+            if errore.code != 429 or tentativo == TENTATIVI - 1:
+                raise
+            attesa = PAUSA_S * (2 ** tentativo)
+            print(f"    429: attendo {attesa}s e riprovo")
+            time.sleep(attesa)
+    return None
+
+
 def interroga(titolo):
     query = urllib.parse.urlencode({
         "action": "query", "format": "json", "prop": "imageinfo",
         "iiprop": "url|extmetadata", "titles": "File:" + titolo,
     })
-    richiesta = urllib.request.Request(API + "?" + query, headers={"User-Agent": UA})
-
-    with urllib.request.urlopen(richiesta, timeout=30) as risposta:
-        pagine = json.load(risposta)["query"]["pages"]
+    pagine = json.loads(_apri(API + "?" + query))["query"]["pages"]
 
     for pagina in pagine.values():
         info = pagina.get("imageinfo")
@@ -82,6 +99,7 @@ def main():
     righe_credito = []
 
     for titolo in FILE_COMMONS:
+        time.sleep(PAUSA_S)
         dati = interroga(titolo)
 
         if not dati:
@@ -89,10 +107,8 @@ def main():
             continue
 
         destinazione = os.path.join(DEST, titolo.replace(" ", "_"))
-        richiesta = urllib.request.Request(dati["url"], headers={"User-Agent": UA})
-
-        with urllib.request.urlopen(richiesta, timeout=60) as risposta:
-            contenuto = risposta.read()
+        time.sleep(PAUSA_S)
+        contenuto = _apri(dati["url"])
 
         open(destinazione, "wb").write(contenuto)
         righe_credito.append(f"{titolo}\n    autore:  {dati['autore']}\n"

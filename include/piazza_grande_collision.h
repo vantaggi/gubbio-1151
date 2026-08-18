@@ -25,8 +25,25 @@ enum class TileType : uint8_t
     DOOR_CONSOLI      = 3,   // trigger: ingresso del Palazzo dei Consoli
     EXIT_SAN_MARTINO  = 4,   // trigger: Quartiere San Martino (Bargello)
     EXIT_PORTA_ROMANA = 5,   // trigger: Porta Romana
-    FOUNTAIN          = 6    // Fontana dei Matti: interazione (Patente da Matto)
+    FOUNTAIN          = 6,   // Fontana dei Matti: interazione (Patente da Matto)
+
+    // Aggiunti nella Sessione 16, applicando la regola dell'illusione (city_reference.h): gli
+    // EDIFICI stanno in scala anche quando le distanze sono compresse. Prima la fascia nord era
+    // muro indistinto, e il palazzo simbolo della citta' non si distingueva da un magazzino.
+    CONSOLI_FACADE    = 7,   // fronte del Palazzo dei Consoli: 33 m = 22 tile, in scala
+    PRETORIO_FACADE   = 8,   // Palazzo Pretorio, che gli sta di fronte: 25 m = 16 tile
+    STAIRS            = 9    // scalinata a ventaglio davanti al portone: si calpesta
 };
+
+// Il fronte dei Consoli, centrato sul portone. La larghezza NON e' scelta a occhio: e' quella
+// che la scala impone (vedi city_reference.h), ed e' l'unico modo perche' il palazzo resti
+// riconoscibile in una piazza accorciata di un quarto.
+constexpr int CONSOLI_FIRST_X = 21;
+constexpr int CONSOLI_LAST_X = 42;      // 22 tile
+constexpr int PRETORIO_FIRST_X = 24;
+constexpr int PRETORIO_LAST_X = 39;     // 16 tile
+constexpr int PRETORIO_FIRST_Y = 34;
+constexpr int PRETORIO_LAST_Y = 37;
 
 inline constexpr uint8_t get_tile_type(int x, int y) {
     if (x < 0 || x >= PIAZZA_WIDTH || y < 0 || y >= PIAZZA_HEIGHT) return 1; // Fuori mappa = muro
@@ -34,11 +51,21 @@ inline constexpr uint8_t get_tile_type(int x, int y) {
     // Ringhiera sud
     if (y >= 38) return 2;
 
-    // Palazzi Consoli e Pretorio a Nord
+    // Palazzo Pretorio: fronteggia i Consoli dal lato opposto della piazza, come nella citta'
+    // vera. Sta davanti alla ringhiera, non al posto suo.
+    if (y >= PRETORIO_FIRST_Y && y <= PRETORIO_LAST_Y &&
+        x >= PRETORIO_FIRST_X && x <= PRETORIO_LAST_X) return 8;
+
+    // Fronte nord: il Palazzo dei Consoli al centro, edifici minori ai lati.
     if (y <= 18) {
         if (y == 18 && (x == 32 || x == 33)) return 3; // Portone Consoli
+        if (x >= CONSOLI_FIRST_X && x <= CONSOLI_LAST_X) return 7;
         return 1;
     }
+
+    // Scalinata a ventaglio davanti al portone: calpestabile, ed e' il primo dei tre segni
+    // distintivi del palazzo (docs/riferimenti/FONTI.md).
+    if (y == 19 && x >= 29 && x <= 34) return 9;
 
     // Trigger Laterali
     if (x <= 2 && y >= 19 && y <= 22) return 4; // Verso San Martino / Bargello
@@ -76,7 +103,8 @@ inline constexpr uint8_t get_tile_type(int x, int y) {
 // misure — 2x2 nel codice contro 3x3 della Sez. 15B — sono una decisione di design aperta.
 [[nodiscard]] inline constexpr bool is_solid(uint8_t tile)
 {
-    return tile == uint8_t(TileType::WALL) || tile == uint8_t(TileType::RAILING);
+    return tile == uint8_t(TileType::WALL) || tile == uint8_t(TileType::RAILING) ||
+           tile == uint8_t(TileType::CONSOLI_FACADE) || tile == uint8_t(TileType::PRETORIO_FACADE);
 }
 
 // Porta verso un'altra area: il giocatore che vi sale cambia scena.
@@ -130,6 +158,30 @@ static_assert(PIAZZA_GRID.data[32 + 30 * PIAZZA_WIDTH] == uint8_t(TileType::GROU
               "Il centro della piazza non e' calpestabile");
 static_assert(PIAZZA_GRID.data[23 + 24 * PIAZZA_WIDTH] == uint8_t(TileType::FOUNTAIN),
               "Fontana dei Matti assente dalla griglia derivata");
+// Il fronte del palazzo deve misurare in griglia esattamente i 22 tile che la scala impone: se
+// qualcuno lo allargasse "perche' sta meglio", l'illusione si romperebbe proprio sull'edificio
+// che la regge.
+static_assert([]
+{
+    int larghezza = 0;
+
+    for(int x = 0; x < PIAZZA_WIDTH; ++x)
+    {
+        const uint8_t t = PIAZZA_GRID.data[x + 17 * PIAZZA_WIDTH];
+
+        if(t == uint8_t(TileType::CONSOLI_FACADE))
+        {
+            ++larghezza;
+        }
+    }
+
+    return larghezza == 22;
+}(), "Il fronte del Palazzo dei Consoli non misura i 22 tile della scala");
+
+static_assert(PIAZZA_GRID.data[32 + 19 * PIAZZA_WIDTH] == uint8_t(TileType::STAIRS),
+              "Manca la scalinata davanti al portone dei Consoli");
+static_assert(! is_solid(uint8_t(TileType::STAIRS)), "La scalinata deve essere calpestabile");
+
 static_assert(sizeof(CollisionGrid) == PIAZZA_WIDTH * PIAZZA_HEIGHT,
               "La griglia deve restare un blocco contiguo di byte");
 
