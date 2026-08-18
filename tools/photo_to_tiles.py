@@ -245,10 +245,14 @@ MONUMENTI = {
     # l'edificio, e le proporzioni sono proprio cio' che lo rende riconoscibile.
     "consoli_facciata": {
         "sorgente": "consoli_frontale.jpg",
-        "ritaglio": (405, 40, 1095, 636),
+        # RITAGLIO ALTO: prima prendeva solo la fascia superiore, e in gioco si vedeva mezzo
+        # palazzo. Ora entra tutto — dalla cima della torre alla scalinata — compresso in
+        # verticale. La compressione e' voluta: e' cio' che fanno i giochi a vista dall'alto,
+        # perche' un edificio ripreso di fronte va schiacciato per stare in una fascia di mappa.
+        "ritaglio": (405, 40, 1095, 800),
         "tile_w": 22,      # 33 m di fronte, in scala
         "tile_h": 19,      # la fascia nord della piazza
-        "tetto_tile": 200,
+        "tetto_tile": 240,   # misurato: 222 col palazzo intero
         # NIENTE indice 11: e' l'acqua della fontana, e la quantizzazione ci mandava sopra il
         # CIELO della fotografia — che nella mappa compariva come un rettangolo azzurro attorno
         # al palazzo, come se la piazza avesse un buco. Escluso quel colore, il cielo cade sulla
@@ -265,9 +269,12 @@ MONUMENTI = {
         # giocatore, alto due tile. Un mattone reale e' circa un sesto di tile, quindi la
         # porzione inquadrata dev'essere larga abbastanza da contenerne molti.
         "ritaglio": (0, 280, 768, 1048),
-        "tile_w": 8,
-        "tile_h": 8,
-        "tetto_tile": 24,
+        # QUATTRO tile di lato, non otto: la trama veniva troppo grossa. La stessa area
+        # fotografata, ridotta al doppio, da' mattoni della meta' — e un mattone reale e' circa
+        # un sesto di tile, quindi va tenuto piccolo. Costa anche meno tile.
+        "tile_w": 4,
+        "tile_h": 4,
+        "tetto_tile": 16,
         # Solo cotto e fughe: la spina di pesce e' rossa, e la foto in ombra non basta a dirlo.
         "solo_indici": [1, 2, 3, 4],
     },
