@@ -135,7 +135,13 @@ def riduci_tile(indici, larghezza, altezza, tetto):
 
     griglia = celle()
 
-    for soglia in (0, 1, 2, 4, 8, 16, 32, 64, 128, 256):
+    # LA SOGLIA NON PUO' SALIRE OLTRE UN QUARTO DEI PIXEL DI UN TILE. Un tile ha 64 pixel:
+    # con soglia 64 "qualunque tile e' uguale a qualunque altro", e la fusione greedy collassa
+    # l'immagine intera su un solo rappresentante. E' successo davvero — basilica e teatro
+    # romano sono usciti a UN tile unico, cioe' a una macchia — e il difetto e' insidioso
+    # perche' il conteggio finale sembra un ottimo risultato invece che un disastro.
+    # Oltre 16 si preferisce FALLIRE dicendo quanti tile servirebbero.
+    for soglia in (0, 1, 2, 4, 8, 12, 16):
         rappresentanti = []
         mappa = {}
 
@@ -167,7 +173,7 @@ def riduci_tile(indici, larghezza, altezza, tetto):
 
             return fuori, len(rappresentanti), soglia
 
-    return list(indici), -1, -1
+    return list(indici), -len(rappresentanti), -1
 
 
 def scrivi_bmp4(path, width, height, indici, palette):
@@ -220,7 +226,9 @@ def converti(sorgente, ritaglio, tile_w, tile_h, tetto_tile, sfocatura=2.0,
     ridotti, unici, soglia = riduci_tile(indici, w, h, tetto_tile)
 
     if unici < 0:
-        sys.exit(f"[foto] {sorgente}: impossibile rientrare in {tetto_tile} tile")
+        sys.exit(f"[foto] {sorgente}: non rientra in {tetto_tile} tile senza collassare "
+                 f"l'immagine. Alla massima fusione ammessa ne servono {-unici}: "
+                 f"alzare il tetto, o ritagliare un'area piu' piccola.")
 
     print(f"  {sorgente[:34]:34s} -> {tile_w}x{tile_h} tile, {unici:3d} unici "
           f"(tetto {tetto_tile}, soglia di fusione {soglia} px)")
@@ -286,6 +294,31 @@ MONUMENTI = {
         "tetto_tile": 9,
     },
 
+    # Basilica di Sant'Ubaldo: 50 m di fronte = 34 tile. Facciata con la scalinata d'accesso,
+    # che e' uno dei suoi tre segni distintivi.
+    "basilica_facciata": {
+        "sorgente": "basilica.jpg",
+        "ritaglio": (270, 80, 918, 660),
+        "tile_w": 34,
+        "tile_h": 20,
+        # 600 e non 200: lo strumento ha detto che alla massima fusione ammessa ne servono 586.
+        # Il tetto e' un budget, non un desiderio — e sta comunque nei 1024 di un tileset.
+        "tetto_tile": 600,
+        "solo_indici": [0, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13],
+    },
+
+    # Teatro Romano: 70 m = 46 tile. E' l'unico monumento di cui abbiamo una ripresa DALL'ALTO,
+    # cioe' nella stessa vista in cui il gioco lo mostrera': la cavea semicircolare si legge
+    # cosi' com'e', senza doverla reinterpretare.
+    "teatro_romano": {
+        "sorgente": "13-Gubbio-Teatro-Romano-02-696x464.jpg",
+        "ritaglio": (170, 40, 660, 420),
+        "tile_w": 32,      # ridotto da 46: 1656 celle non stanno in un tileset
+        "tile_h": 24,
+        "tetto_tile": 700,
+        "palette": PALETTE_PANORAMA,
+    },
+
     # Lo stesso skyline, ma per il FONDALE DI BATTAGLIA: stessa foto, palette notturna, e solo i
     # colori di cielo/monte/terreno — i colori dell'HUD restano al pannello, che e' dipinto sopra.
     "skyline_assedio": {
@@ -305,7 +338,7 @@ MONUMENTI = {
         "ritaglio": (0, 0, 735, 272),
         "tile_w": 32,
         "tile_h": 12,
-        "tetto_tile": 160,
+        "tetto_tile": 300,   # misurato: 283 al massimo grado di fusione ammesso
         "palette": PALETTE_PANORAMA,
     },
 }
