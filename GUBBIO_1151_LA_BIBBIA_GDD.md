@@ -967,6 +967,35 @@ Questa sezione fornisce i parametri geometrici, le coordinate relative e i rappo
 +-----------------------------------------------------------------------------+
 ```
 
+> **NOTA DI REVISIONE (2026-08-18, Sessione 15) — LA CITTA' E' QUELLA CHE SI RICONOSCE.**
+> Decisione del committente, presa dopo il rilievo che segue.
+>
+> **Quasi nessuno dei monumenti che rendono Gubbio riconoscibile esisteva nel 1151.** Il
+> **Palazzo dei Consoli** — l'edificio simbolo, attorno a cui questa Bibbia costruisce l'hub —
+> e' del **1332-1349**, su progetto di Angelo da Orvieto: posteriore di quasi due secoli
+> all'assedio. Con esso e' posteriore **Piazza Grande**, che esiste *perche'* esiste quel
+> palazzo. Il **Palazzo Ducale** e' quattrocentesco. La **Basilica di Sant'Ubaldo** custodisce un
+> santo che nel 1151 e' **vivo**, ed e' il protagonista del gioco. Di tutti i trenta monumenti
+> della pianta ufficiale, il **Teatro Romano** e' fra i pochissimi che nel 1151 c'erano gia'.
+>
+> **Si riproducono comunque tutti, senza correzioni cronologiche.** La ragione e' esplicita: il
+> valore che si persegue e' che **un eugubino riconosca la propria citta'**, e una Gubbio
+> romanica filologicamente corretta non la riconoscerebbe nessuno — oltre a essere
+> archeologicamente poco documentata. Il gioco e' un dark fantasy con un Grifo demoniaco, non un
+> simulatore storico: l'anacronismo e' una scelta, ed e' questa.
+>
+> Conseguenza operativa: `docs/riferimenti/FONTI.md` censisce i trenta monumenti con una colonna
+> "nel 1151", che resta **informativa e non vincolante**. Nessuna sessione futura deve "correggere"
+> la mappa rimuovendo cio' che e' posteriore.
+>
+> **La scala e' 1,5 metri per tile.** Non e' una convenzione nuova: e' quella che questa tabella
+> gia' usa, verificata su cinque monumenti su sei (Consoli 33 m/22 tile, Piazza 130 m/86 tile,
+> Pretorio 25 m/16, Fontana 4,5 m/3, Basilica 50 m/34). L'unica eccezione e' il ponte
+> dell'acquedotto, 1,2 m rappresentato con 2 tile perche' sotto quella soglia non sarebbe
+> percorribile. Ne segue che **Piazza Grande come oggi implementata (64x40 tile = 96 x 60 m) non
+> e' in scala**: e' un quarto piu' corta e mezza volta piu' profonda della piazza vera. La scelta
+> fra fedelta' (86x26) e giocabilita' (64x40) e' aperta e spetta al committente.
+
 | Monumento Reale | Dimensioni Reali (m) | Dimensioni GBA (Tile $8\times8$) | Dettagli Architettonici Distintivi |
 | :--- | :--- | :--- | :--- |
 | **Palazzo dei Consoli** | $33\text{m largh.} \times 60\text{m alt.}$ | $22 \times 40\text{ tile } (176 \times 320\text{ px})$ | Facciata gotica in pietra chiara, portale a tutto sesto, scalinata semicircolare e torretta del Campanone sporgente. |

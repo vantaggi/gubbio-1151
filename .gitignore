@@ -12,6 +12,12 @@ build/
 # `tests/test_save_system.py` lo leggono se c'e' e dichiarano `skip` se manca.
 *.sav
 
+# --- Riferimenti iconografici -------------------------------------------------------------------
+# Scaricati da Wikimedia Commons con tools/fetch_riferimenti.py. Non si versionano: pesano e si
+# porterebbero dietro le proprie licenze. Cio' che va in repo e' docs/riferimenti/FONTI.md, che
+# ne registra URL, autore e licenza.
+riferimenti/
+
 # --- Anteprime ---------------------------------------------------------------------------------
 # Prodotte da tools/preview_battle_screen.py e tools/preview_piazza.py per guardare una schermata
 # senza emulatore. Sono usa e getta: si rigenerano in un secondo.

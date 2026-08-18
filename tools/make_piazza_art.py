@@ -101,13 +101,16 @@ C_GOLD = 13
 C_SKY_HI = 14
 C_SKY_LO = 15
 
+# Le tinte vere della citta', lette dalle fotografie d'insieme (vedi docs/riferimenti/FONTI.md):
+# pietra calcarea quasi bianca per i palazzi, COTTO ROSSO per la pavimentazione della piazza —
+# che la Sez. 23 GDD chiama "spina di pesce rossa" e che il segnaposto rendeva in grigio-beige.
 PALETTE_GROUND = [
     (0, 0, 0),          # 0  fuori mappa
-    (198, 184, 158),    # 1  lastricato chiaro
-    (176, 162, 138),    # 2  lastricato alternato
-    (140, 126, 106),    # 3  fuga
-    (128, 120, 112),    # 4  muratura
-    (86, 80, 74),       # 5  ombra muratura
+    (166, 86, 58),      # 1  cotto della pavimentazione
+    (148, 74, 50),      # 2  cotto, seconda tinta
+    (112, 56, 40),      # 3  fuga fra le lastre
+    (226, 220, 206),    # 4  pietra calcarea dei palazzi, quasi bianca
+    (168, 160, 146),    # 5  ombra della pietra
     (110, 72, 40),      # 6  legno del portone
     (150, 140, 120),    # 7  parapetto
     (64, 118, 152),     # 8  acqua

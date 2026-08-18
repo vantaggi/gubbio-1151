@@ -59,6 +59,13 @@ presentano:
   Corrado va ritarato — vedi [`docs/piano_ia_boss.md`](./docs/piano_ia_boss.md).
 * ~~Il **font non ha le lettere accentate italiane**~~ — **CHIUSA nella Sessione 12**: font 8x8 proprio del progetto con le 12 accentate italiane (`tools/make_font.py`).
 
+**CHIUSA nella Sessione 15:** l'anacronismo. Si riproducono tutti i monumenti, anche quelli
+posteriori al 1151 — conta che un eugubino riconosca la propria citta' (GDD Sez. 23, nota datata).
+
+**APERTA e ora quantificata:** Piazza Grande non e' in scala. Con la scala del GDD (1,5 m/tile)
+la piazza vera e' 86x26 tile; quella implementata e' 64x40. Fedelta' contro giocabilita': posso
+renderizzare entrambe affiancate prima che tu scelga.
+
 **Due decisioni maturate con Piazza Grande, che ora chiedono una risposta** (dettagli in Sess. 11b):
 
 * **Come si entra in battaglia dall'overworld?** Nessuna sezione del GDD lo dice. Oggi c'e' un
@@ -116,6 +123,7 @@ presentano:
 | **Test Asset** | [`tests/test_assets.py`](./tests/test_assets.py) | Valida i `.bmp` di `graphics/` contro i `.json`: 4bpp, misure OBJ/BG legali, conformita' Sez. 23A. |
 | **Controllo di Versione** | [`.gitignore`](./.gitignore) / [`.gitattributes`](./.gitattributes) | Repository git inizializzato nella Sessione 11d. Esclusi build, ROM, ELF e `.sav`; gli `.sh` sono forzati a fine riga LF perche' Git Bash non esegue script con CRLF. |
 | **Skill Decisioni** | `.agents/skills/decisioni-aperte/SKILL.md` (+ copia in `.claude/`) | Procedura per sciogliere UNA decisione di design aperta: round sulla frontiera, prove dal GDD, chiusura obbligatoria in GDD + HANDOVER + codice. |
+| **Riferimenti Reali** | [`docs/riferimenti/FONTI.md`](./docs/riferimenti/FONTI.md) / [`tools/fetch_riferimenti.py`](./tools/fetch_riferimenti.py) | I 30 monumenti della pianta ufficiale, classificati, con i tre segni distintivi per la pixel art e le fonti Commons. Immagini non versionate. |
 | **Piani non implementati** | [`docs/`](./docs/) | `piano_ia_boss.md` (Sez. 26), `piano_combo_tre_ceri.md` (Sez. 12C), `piano_fase_successiva.md` (23 passi). |
 | **Copione & NPC** | [`tools/dialogue_exporter.py`](./tools/dialogue_exporter.py) / [`include/dialogue_data.h`](./include/dialogue_data.h) / [`include/npc_registry.h`](./include/npc_registry.h) | Battute della Sez. 31B con word-wrap **in pixel**, script come intervalli, NPC con regola prima-corrispondenza-vince. Tabelle generate, mai scritte a mano. |
 | **Quest** | [`include/quest_data.h`](./include/quest_data.h) | Le 5 quest della Sez. 31A legate a `quest_state`/`quest_counter`; ricompense segnaposto finche' non esiste l'equipaggiamento. |
@@ -669,6 +677,28 @@ Motivazione: fino a ieri le regole di `AGENTS.md` erano **dichiarate ma non misu
   ```
 
 * **Esito:** build pulita, gate verde, `test_battle_engine.py` 31/31, `test_assets.py` 9/9, `test_save_system.py` 9/9, `test_dialogue_quest.py` 6/6.
+
+### [2026-08-18] - Sessione 15: World building - la citta' reale come riferimento
+
+* **Autore / Agente:** Claude Opus 5 (Claude Code)
+* **File creati:** `docs/riferimenti/FONTI.md`, `tools/fetch_riferimenti.py`
+* **File modificati:** `GUBBIO_1151_LA_BIBBIA_GDD.md` (Sez. 23), `.gitignore`
+
+* **DECISIONE DEL COMMITTENTE: la citta' e' quella che si riconosce, non quella del 1151.** Presa dopo un rilievo che nessuna sessione aveva sollevato: **quasi nessuno dei monumenti che rendono Gubbio riconoscibile esisteva nel 1151**. Il Palazzo dei Consoli e' del **1332-1349** (Angelo da Orvieto, fonte verificata su Wikipedia), Piazza Grande esiste *perche'* esiste quel palazzo, il Palazzo Ducale e' quattrocentesco, e la Basilica di Sant'Ubaldo custodisce un santo che nel 1151 e' **vivo** ed e' il protagonista. Si riproducono tutti comunque: il valore perseguito e' che un eugubino riconosca la propria citta'. Annotato in Sez. 23 del GDD perche' nessuno "corregga" la mappa fra dieci sessioni.
+
+* **LA SCALA ESISTEVA GIA' E NESSUNO L'AVEVA USATA.** La tabella dei monumenti della Sez. 23 riporta dimensioni reali *e* dimensioni GBA: dividendole viene **1,5 metri per tile**, coerente su cinque monumenti su sei (l'eccezione e' il ponte dell'acquedotto, 1,2 m reso con 2 tile perche' sotto quella soglia non sarebbe percorribile). Non serviva inventare una convenzione: ne esisteva una, inespressa.
+
+* **CONSEGUENZA DA PORTARE AL COMMITTENTE:** con quella scala, **Piazza Grande come implementata non e' in scala**. 64x40 tile sono 96 x 60 m contro i 130 x 40 m reali: un quarto piu' corta, mezza volta piu' profonda. La motivazione con cui la Sessione 11b scelse 64x40 ("86 eccede i 64 del riquadro") **non regge**: 86 tile sono 688 px, e un BG regolare `big` da 1024x256 li contiene. Ma il conflitto vero e' un altro e non e' tecnico: la piazza vera e' **lunga e stretta**, e 26 tile di profondita' lasciano poco spazio verticale di gioco. Fedelta' e giocabilita' qui divergono davvero.
+
+* **Il dislivello e' la struttura della citta', e il GDD lo tocca in due punti che non erano stati collegati.** La Sez. 23 descrive Piazza Grande con "ringhiera sud su vuoto con parallasse della piana" — e quella ringhiera e' gia' nella griglia di collisione (tile tipo 2, y >= 38) — mentre gli **Arconi di Sostruzione** restano "un secondo livello mai mappato" (decisione aperta n.10). Sono la stessa cosa vista da sopra e da sotto: la piazza e' **pensile**. Via raccomandata: **quota per area, scalinate come transizioni** (il meccanismo dei trigger gia' collaudato), con gli Arconi come mappa a se' sotto la piazza. Scartate: quota per singolo tile (potenza inutile su una citta' a terrazze) e vista a tre quarti (raddoppia il lavoro d'arte e contraddice la Sez. 21D).
+
+* **La pianta turistica fornita dal committente** censisce 30 monumenti georiferiti, i toponimi delle vie e le piazze minori; **non** perimetra i quattro Quartieri dei Ceri, che restano da procurare. Da essa si legge la struttura urbana che conta: **fasce parallele che salgono da sud-ovest a nord-est** — Piazza 40 Martiri in basso, la fascia di via dei Consoli lungo il Camignano, il ripiano di Piazza Grande, via XX Settembre, il livello del Duomo e del Palazzo Ducale, la Rocca e il monte.
+
+* **`docs/riferimenti/FONTI.md`**: i 30 monumenti classificati in canonici / sfondo / fuori scope, con la colonna "nel 1151" resa informativa, i riferimenti verificati su Wikimedia Commons (la categoria del Palazzo dei Consoli da sola ha **194 file**) e — la parte che serve a chi disegna — **i tre segni distintivi** per edificio. A 1,5 m/tile una facciata sta in venti tile: non ci stanno i dettagli, ci stanno tre segni. Un quarto non aggiunge riconoscibilita', aggiunge costo.
+
+* **Le immagini NON sono versionate** (`.gitignore`): pesano e si porterebbero dietro le proprie licenze. In repo va `FONTI.md` con URL, autore e licenza; `tools/fetch_riferimenti.py` le scarica in locale. Si usa Wikimedia Commons e non una ricerca immagini generica, perche' li' la licenza e' dichiarata e l'attribuzione tracciabile.
+
+* **Nessun download eseguito**: `fetch_riferimenti.py` e' pronto ma va lanciato dal committente, o su sua conferma.
 
 ---
 
