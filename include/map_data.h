@@ -8,6 +8,7 @@
 #include "bn_regular_bg_items_piazza_ground.h"
 #include "bn_regular_bg_items_piazza_sky.h"
 
+#include "city_reference.h"
 #include "map_id.h"
 #include "piazza_grande_collision.h"
 #include "scene.h"

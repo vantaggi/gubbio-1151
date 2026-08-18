@@ -62,9 +62,11 @@ presentano:
 **CHIUSA nella Sessione 15:** l'anacronismo. Si riproducono tutti i monumenti, anche quelli
 posteriori al 1151 — conta che un eugubino riconosca la propria citta' (GDD Sez. 23, nota datata).
 
-**APERTA e ora quantificata:** Piazza Grande non e' in scala. Con la scala del GDD (1,5 m/tile)
-la piazza vera e' 86x26 tile; quella implementata e' 64x40. Fedelta' contro giocabilita': posso
-renderizzare entrambe affiancate prima che tu scelga.
+**CHIUSA nella Sessione 15:** Piazza Grande non e' in scala, **e va bene cosi'**. Decisione del
+committente: compromessi per la giocabilita', purche' resti l'illusione. Tradotta in regola
+verificabile in [`include/city_reference.h`](./include/city_reference.h) — **la scala vincola gli
+EDIFICI (1,5 m/tile, entro un tile), non le DISTANZE (comprimibili, oggi al 73%)**; ordine e
+adiacenze restano vincolanti.
 
 **Due decisioni maturate con Piazza Grande, che ora chiedono una risposta** (dettagli in Sess. 11b):
 
@@ -123,6 +125,7 @@ renderizzare entrambe affiancate prima che tu scelga.
 | **Test Asset** | [`tests/test_assets.py`](./tests/test_assets.py) | Valida i `.bmp` di `graphics/` contro i `.json`: 4bpp, misure OBJ/BG legali, conformita' Sez. 23A. |
 | **Controllo di Versione** | [`.gitignore`](./.gitignore) / [`.gitattributes`](./.gitattributes) | Repository git inizializzato nella Sessione 11d. Esclusi build, ROM, ELF e `.sav`; gli `.sh` sono forzati a fine riga LF perche' Git Bash non esegue script con CRLF. |
 | **Skill Decisioni** | `.agents/skills/decisioni-aperte/SKILL.md` (+ copia in `.claude/`) | Procedura per sciogliere UNA decisione di design aperta: round sulla frontiera, prove dal GDD, chiusura obbligatoria in GDD + HANDOVER + codice. |
+| **Scala della Citta'** | [`include/city_reference.h`](./include/city_reference.h) | La regola dell'illusione: edifici in scala entro un tile, distanze comprimibili al 73%, adiacenze vincolanti. Verificata da `static_assert` sui monumenti della Sez. 23. |
 | **Riferimenti Reali** | [`docs/riferimenti/FONTI.md`](./docs/riferimenti/FONTI.md) / [`tools/fetch_riferimenti.py`](./tools/fetch_riferimenti.py) | I 30 monumenti della pianta ufficiale, classificati, con i tre segni distintivi per la pixel art e le fonti Commons. Immagini non versionate. |
 | **Piani non implementati** | [`docs/`](./docs/) | `piano_ia_boss.md` (Sez. 26), `piano_combo_tre_ceri.md` (Sez. 12C), `piano_fase_successiva.md` (23 passi). |
 | **Copione & NPC** | [`tools/dialogue_exporter.py`](./tools/dialogue_exporter.py) / [`include/dialogue_data.h`](./include/dialogue_data.h) / [`include/npc_registry.h`](./include/npc_registry.h) | Battute della Sez. 31B con word-wrap **in pixel**, script come intervalli, NPC con regola prima-corrispondenza-vince. Tabelle generate, mai scritte a mano. |
