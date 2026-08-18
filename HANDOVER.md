@@ -126,6 +126,7 @@ adiacenze restano vincolanti.
 | **Controllo di Versione** | [`.gitignore`](./.gitignore) / [`.gitattributes`](./.gitattributes) | Repository git inizializzato nella Sessione 11d. Esclusi build, ROM, ELF e `.sav`; gli `.sh` sono forzati a fine riga LF perche' Git Bash non esegue script con CRLF. |
 | **Skill Decisioni** | `.agents/skills/decisioni-aperte/SKILL.md` (+ copia in `.claude/`) | Procedura per sciogliere UNA decisione di design aperta: round sulla frontiera, prove dal GDD, chiusura obbligatoria in GDD + HANDOVER + codice. |
 | **Scala della Citta'** | [`include/city_reference.h`](./include/city_reference.h) | La regola dell'illusione: edifici in scala entro un tile, distanze comprimibili al 73%, adiacenze vincolanti. Verificata da `static_assert` sui monumenti della Sez. 23. |
+| **Foto -> Tile** | [`tools/photo_to_tiles.py`](./tools/photo_to_tiles.py) | Converte fotografie in pixel art indicizzata: palette per famiglia, fusione dei tile fino a rientrare nel budget, `solo_indici` per forzare una tinta. **E' la risposta al progetto senza budget.** |
 | **Riferimenti Reali** | [`docs/riferimenti/FONTI.md`](./docs/riferimenti/FONTI.md) / [`tools/fetch_riferimenti.py`](./tools/fetch_riferimenti.py) | I 30 monumenti della pianta ufficiale, classificati, con i tre segni distintivi per la pixel art e le fonti Commons. Immagini non versionate. |
 | **Piani non implementati** | [`docs/`](./docs/) | `piano_ia_boss.md` (Sez. 26), `piano_combo_tre_ceri.md` (Sez. 12C), `piano_fase_successiva.md` (23 passi). |
 | **Runner Dialoghi** | [`include/dialogue_runner.h`](./include/dialogue_runner.h) | Esegue uno script battuta per battuta con due interi di stato; interazione su tasto A entro 12 px da un NPC. |
@@ -745,6 +746,32 @@ Motivazione: fino a ieri le regole di `AGENTS.md` erano **dichiarate ma non misu
   * **La prima stesura dell'autotest sbagliava, e il log l'ha mostrato subito:** 128 frame di corsa sono 256 px, ma la distanza dal punto di rientro al Podesta' e' 200 — il giocatore lo **superava** e premeva A nel vuoto. Corretto a 100 frame esatti. E' il tipo di errore che senza una traccia leggibile si sarebbe scambiato per "l'interazione non funziona".
 
 * **Esito:** build pulita, gate verde, tutte e quattro le suite verdi.
+
+### [2026-08-18] - Sessione 18: La citta' vera entra nel gioco
+
+* **Autore / Agente:** Claude Opus 5 (Claude Code)
+* **File creati:** `tools/photo_to_tiles.py`, `docs/riferimenti/FONTI.md`, `tools/fetch_riferimenti.py`, `include/city_reference.h`
+* **File modificati:** `tools/make_piazza_art.py`, `tools/make_placeholder_art.py`, `include/piazza_grande_collision.h`, `.gitignore`, GDD (Sez. 23 e 25)
+
+* **IL VINCOLO CHE HA DETERMINATO TUTTO: zero budget, nessun artista, il committente non disegna.** Da qui l'unica strada praticabile — convertire fotografie in tile con uno strumento. Prima di costruirlo l'ho provato a mano: la facciata disegnata proceduralmente rendeva la merlatura (motivo regolare) ma sbagliava le arcate e non produceva affatto la torre. **La conversione fotografica batte il disegno procedurale** perche' conserva le PROPORZIONI vere, che sono cio' che l'occhio riconosce.
+
+* **`tools/photo_to_tiles.py`**, e i tre problemi che una conversione ingenua non risolve:
+  1. **Una foto non ha ripetizione**: ridurre e quantizzare da' 381 tile unici su 418 celle, mentre un tileset vive del contrario. I tile quasi identici vengono unificati con una **soglia che cresce finche' non si rientra nel budget**, e la soglia raggiunta viene stampata: dice quanto dettaglio si e' dovuto sacrificare.
+  2. **La palette non puo' venire dalla foto**: sedici colori per tutto cio' che sta su un BG a 4bpp. La palette e' un parametro **per famiglia di asset** — provato: lo skyline quantizzato sui colori della piazza collassava a **UN solo tile unico**, cioe' a una macchia uniforme.
+  3. **Il rumore fotografico diventa sporcizia**: si sfoca prima di ridurre, con raggio proporzionale al fattore di riduzione.
+
+* **Cinque asset dal vero, tutti in gioco:** facciata dei Consoli (174 tile), selciato a spina di pesce (8), fronte del Pretorio (44), Fontana dei Matti (9), skyline nel fondale di battaglia (114). Il suolo di Piazza Grande e' passato da 14 a 234 tile unici, su un tetto di 512.
+
+* **Tre difetti trovati guardando i risultati, non deducendoli:**
+  * il **cielo della fotografia** finiva sulla mappa come un rettangolo azzurro attorno al palazzo, perche' la quantizzazione lo mandava sull'indice dell'acqua della fontana;
+  * i **mattoni erano giganti** rispetto al giocatore: il ritaglio del selciato era troppo stretto, e un mattone reale e' un sesto di tile;
+  * il **selciato veniva grigio** invece che rosso, perche' la foto e' in ombra e i suoi grigi somigliano alla pietra piu' che al cotto. Da qui `solo_indici`, che restringe la conversione a un sottoinsieme di colori.
+
+* **Due difetti trovati dalla build e dai test:** gli ingredienti non possono stare in `graphics/`, dove grit pretende un `.json` accanto a ogni `.bmp` (ora stanno in `ingredienti/`, non versionata); e le entry inutilizzate della tavolozza erano nere, cosi' PIL poteva assegnare indici oltre la palette reale.
+
+* **DECISIONI DEL COMMITTENTE, entrambe annotate nel GDD:** si riproducono **tutti** i monumenti anche se posteriori al 1151 — conta che un eugubino riconosca la propria citta' — e si accettano **compromessi per la giocabilita' purche' resti l'illusione**, tradotta in `city_reference.h`: la scala vincola gli EDIFICI (1,5 m/tile, entro un tile), non le DISTANZE (comprimibili, oggi al 73%); ordine e adiacenze restano vincolanti.
+
+* **Esito:** build verde, gate verde, tutte le suite verdi.
 
 ---
 
