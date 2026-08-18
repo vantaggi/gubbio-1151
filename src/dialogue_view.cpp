@@ -1,5 +1,7 @@
 #include "dialogue_view.h"
 
+#include "bn_display.h"
+
 #include "bn_regular_bg_items_dialogue_frame.h"
 
 #include "font_gubbio.h"
@@ -35,6 +37,12 @@ DialogueView::DialogueView() :
     // Priorita' 0: la cornice sta davanti a suolo (2), foreground (1) e cielo (3), come vuole la
     // Sez. 14A. Gli sprite del testo, a parita' di priorita', stanno davanti ai background.
     _frame.set_priority(0);
+
+    // Stessa ragione del suolo: l'origine di un BG e' il suo centro. La cornice e' dipinta nelle
+    // righe 108-159 di un'immagine 256x256, e senza questo spostamento compariva 48 px piu' in
+    // alto — con il testo, che e' fatto di sprite e usa coordinate di schermo, che le finiva
+    // sotto invece che dentro.
+    _frame.set_position(0, 128 - bn::display::height() / 2);
     _generator.set_bg_priority(0);
 
     // Il BG e' allocato ALL'INGRESSO della scena e non a richiesta (Passo 9 del piano): tre BG

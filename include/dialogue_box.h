@@ -96,9 +96,14 @@ public:
         BN_ASSERT(! _active, "Dialogo gia' aperto: chiamare close() prima di mostrarne un altro");
 
         _speaker = speaker;
-        _rows[0] = row0;
-        _rows[1] = row1;
-        _rows[2] = row2;
+
+        // `bn::string_view()` di default ha `data() == nullptr`, e costruirne una nuova su quel
+        // puntatore fa scattare "Null char array ptr" (bn_string_view.h:91) — il crash visto al
+        // primo dialogo giocato davvero. Le righe assenti diventano stringhe vuote VERE, che un
+        // puntatore valido ce l'hanno.
+        _rows[0] = row0.data() ? row0 : bn::string_view("");
+        _rows[1] = row1.data() ? row1 : bn::string_view("");
+        _rows[2] = row2.data() ? row2 : bn::string_view("");
         _row_count = ! row2.empty() ? 3 : (! row1.empty() ? 2 : (! row0.empty() ? 1 : 0));
         _row_index = 0;
         _visible_bytes = 0;

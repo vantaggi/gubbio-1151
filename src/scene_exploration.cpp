@@ -27,6 +27,10 @@ constexpr int EXIT_FADE_FRAMES = 16;
 // e' uno shift, non una divisione, in un calcolo che gira a ogni frame.
 constexpr int PARALLAX_SHIFT = 2;
 
+// Lato dell'immagine del suolo: 512, cioe' la misura legale di BG regolare che contiene la
+// mappa 512x320 (le dimensioni ammesse sono multipli di 256).
+constexpr int GROUND_IMAGE_SIZE = 512;
+
 // Meta' schermo: la camera non puo' avvicinarsi al bordo della mappa piu' di cosi', altrimenti
 // oltre il bordo comparirebbe il vuoto (o, peggio, il wrap del BG).
 constexpr int CAMERA_MARGIN_X = 120;
@@ -73,6 +77,13 @@ ExplorationScene::ExplorationScene(GameState& state, const SceneRequest& request
 
     _ground.set_camera(_camera);
     _ground.set_priority(2);
+
+    // ANCORAGGIO. In Butano l'origine di un background e' il suo CENTRO, non l'angolo: un BG
+    // 512x512 lasciato a (0,0) mette il proprio pixel centrale sull'origine del mondo, e le
+    // coordinate della mappa — che partono dall'angolo in alto a sinistra — finiscono spostate
+    // di meta' immagine. Il giocatore camminava cosi' fuori dall'area disegnata, vedendo il
+    // cielo attraverso le zone trasparenti.
+    _ground.set_position(GROUND_IMAGE_SIZE / 2, GROUND_IMAGE_SIZE / 2);
 
     if(_map.parallax)
     {
