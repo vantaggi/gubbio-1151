@@ -100,6 +100,16 @@
 // sbagliava proprio cosi', e il log lo ha mostrato subito.
 #define GUBBIO_NE_100    GUBBIO_NE_64 GUBBIO_NE_16 GUBBIO_NE_16 GUBBIO_NE_4
 
+// DESTRA (0x010) + GIU' (0x080) + B (0x002) = 0x092 -> bassi 0x12 = 'B', alti 4 = '4'.
+// Porta dal punto di rientro a MASTRO TANO, accanto alla Fontana dei Matti: 136 px in corsa,
+// cioe' 68 frame. E' l'NPC su cui il gioco crashava — le sue battute hanno due righe invece di
+// tre, ed e' la riga assente a produrre il puntatore nullo. L'autotest andava solo dal Podesta',
+// che ne ha tre, e quindi non lo incontrava mai.
+#define GUBBIO_SE_1      "B4"
+#define GUBBIO_SE_4      GUBBIO_SE_1 GUBBIO_SE_1 GUBBIO_SE_1 GUBBIO_SE_1
+#define GUBBIO_SE_16     GUBBIO_SE_4 GUBBIO_SE_4 GUBBIO_SE_4 GUBBIO_SE_4
+#define GUBBIO_SE_68     GUBBIO_SE_16 GUBBIO_SE_16 GUBBIO_SE_16 GUBBIO_SE_16 GUBBIO_SE_4
+
 // SELECT (0x004) -> bassi 4 = '4', alti 0 = '0'. Un frame premuto, uno rilasciato: il
 // salvataggio scatta su `select_pressed()`, cioe' sul fronte, non finche' il tasto e' giu'.
 #define GUBBIO_SELECT    "40" "00"
@@ -113,7 +123,7 @@ constexpr const char* AUTOTEST_KEYPAD_SCRIPT =
     GUBBIO_IDLE_64        // attesa che la dissolvenza d'ingresso finisca
     GUBBIO_SELECT         // salvataggio su FRAM, verificabile nel `.sav` e nel log
     GUBBIO_IDLE_16
-    GUBBIO_NE_100         // raggiunge il Podesta' davanti al Palazzo dei Consoli
+    GUBBIO_SE_68          // raggiunge Mastro Tano, accanto alla Fontana dei Matti
     GUBBIO_TASTO_A        // gli parla: parte lo script dell'Atto I, cinque battute
     GUBBIO_IDLE_256       // la macchina da scrivere percorre la prima battuta
     GUBBIO_TASTO_A GUBBIO_IDLE_64 GUBBIO_TASTO_A GUBBIO_IDLE_64

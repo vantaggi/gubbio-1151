@@ -1,5 +1,8 @@
 #include "dialogue_view.h"
 
+#include <stdint.h>
+
+#include "bn_assert.h"
 #include "bn_display.h"
 
 #include "bn_regular_bg_items_dialogue_frame.h"
@@ -22,6 +25,25 @@ constexpr int ROW_HEIGHT = 13;      // 8 px di glifo piu' 5 di interlinea: tre r
 // Larghezza di uno sprite di testo di Butano: e' li' che il generatore chiude lo sprite e ne
 // apre un altro.
 constexpr int SPRITE_TEXT_WIDTH = 32;
+
+// Arretra un offset fino al piu' vicino inizio di carattere. I byte di continuazione UTF-8
+// hanno i due bit alti a `10`: cominciare una sottostringa su uno di essi significa passare al
+// generatore di testo una sequenza monca, e `sprite_text_generator::_paint` la respinge con
+// "Invalid character" — fermando il gioco davanti al giocatore.
+//
+// PERCHE' SERVE QUI, se il motore avanza gia' per codepoint. Perche' questa vista NON taglia
+// dove taglia il motore: spezza la riga anche ai confini di sprite, per rigenerare solo la coda
+// in crescita, e quei confini sono decisi dalla larghezza in pixel — che non sa nulla di UTF-8.
+[[nodiscard]] int allinea_a_carattere(bn::string_view riga, int offset)
+{
+    while(offset > 0 && offset < riga.size() &&
+          (uint8_t(riga.data()[offset]) & 0xC0) == 0x80)
+    {
+        --offset;
+    }
+
+    return offset;
+}
 
 [[nodiscard]] constexpr int sx(int screen_x) { return screen_x - 120; }
 [[nodiscard]] constexpr int sy(int screen_y) { return screen_y - 80; }
@@ -77,7 +99,9 @@ void DialogueView::_close_tail(bn::string_view riga)
 
     // Il pezzo appena chiuso diventa definitivo: i suoi sprite passano fra gli stabili e non
     // verranno piu' rigenerati. La coda riparte da qui, spostata a destra della sua larghezza.
-    const bn::string_view chiuso(riga.data() + _stable_bytes, _tail_bytes);
+    const int inizio = allinea_a_carattere(riga, _stable_bytes);
+    const int quanti = allinea_a_carattere(riga, inizio + _tail_bytes) - inizio;
+    const bn::string_view chiuso(riga.data() + inizio, quanti > 0 ? quanti : 0);
 
     for(const bn::sprite_ptr& sprite : _tail)
     {
@@ -145,7 +169,8 @@ void DialogueView::update(const DialogueManager& dialogue)
         return;                     // nulla di nuovo da rivelare: nessun tocco all'allocatore
     }
 
-    // Il pezzo che la coda dovrebbe contenere adesso.
+    // Il pezzo che la coda dovrebbe contenere adesso, allineato ai confini di carattere.
+    _stable_bytes = allinea_a_carattere(visibile, _stable_bytes);
     const bn::string_view coda(visibile.data() + _stable_bytes, byte_visibili - _stable_bytes);
 
     // Se la coda supererebbe la larghezza di uno sprite, si chiude PRIMA di aggiungere il nuovo
@@ -162,6 +187,8 @@ void DialogueView::update(const DialogueManager& dialogue)
     if(_tail_bytes > 0)
     {
         const bn::string_view nuova_coda(visibile.data() + _stable_bytes, _tail_bytes);
+        BN_BASIC_ASSERT((uint8_t(nuova_coda.data()[0]) & 0xC0) != 0x80,
+                        "Coda del dialogo che comincia a meta' di un carattere UTF-8");
         _generator.generate(_tail_x, _row_y(_row), nuova_coda, _tail);
     }
 }
