@@ -53,18 +53,18 @@ TILE = 8
 # Gli stessi nomi di include/piazza_grande_collision.h: l'angolo della fascia del Pretorio serve
 # sia alla griglia sia all'incollaggio della fotografia, e finche' era un 24 scritto a mano nel
 # punto d'incollaggio le due cose potevano scivolare l'una sull'altra — ed erano scivolate.
-PRETORIO_FIRST_X = 26
+PRETORIO_FIRST_X = 22
 PRETORIO_FIRST_Y = 34
 
 
 def get_tile_type(x, y):
-    """Mirror di include/piazza_grande_collision.h. Mappa orientata a OVEST: alto = Consoli,
-    basso = Pretorio, sinistra = ciottolato (nord), destra = muretto (sud)."""
+    """Mirror di include/piazza_grande_collision.h. Mappa RUOTATA con l'ovest in alto: alto =
+    Consoli, basso = Pretorio, destra = ciottolato (nord), sinistra = muretto (sud)."""
     if x < 0 or x >= PIAZZA_WIDTH or y < 0 or y >= PIAZZA_HEIGHT:
         return WALL
-    if x >= 60:
+    if x <= 3:
         return RAILING
-    if x <= 4:
+    if x >= 59:
         if y <= 8:
             return EXIT_SAN_MARTINO
         if y >= PIAZZA_HEIGHT - 9:
@@ -77,7 +77,7 @@ def get_tile_type(x, y):
     if y == 19 and 29 <= x <= 34:
         return STAIRS
     if y >= PRETORIO_FIRST_Y:
-        if PRETORIO_FIRST_X <= x <= 41:
+        if PRETORIO_FIRST_X <= x <= 37:
             return DOOR_PRETORIO if (y == PRETORIO_FIRST_Y and x in (31, 32)) else PRETORIO_FACADE
         return WALL
     return GROUND
@@ -85,8 +85,8 @@ def get_tile_type(x, y):
 
 # Gli stessi punti notevoli su cui il C++ ha le proprie static_assert.
 assert get_tile_type(31, 18) == DOOR_CONSOLI
-assert get_tile_type(62, 20) == RAILING
-assert get_tile_type(2, 20) == ROAD
+assert get_tile_type(1, 20) == RAILING
+assert get_tile_type(61, 20) == ROAD
 assert get_tile_type(32, 10) == CONSOLI_FACADE
 assert get_tile_type(32, 36) == PRETORIO_FACADE
 assert get_tile_type(32, 25) == GROUND

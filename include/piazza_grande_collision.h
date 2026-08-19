@@ -61,26 +61,34 @@ enum class TileType : uint8_t
 // vista, non l'ordine in cui le cose si incontrano.
 constexpr int CONSOLI_LAST_Y = 18;       // fascia alta: il palazzo, cioe' OVEST
 constexpr int PRETORIO_FIRST_Y = 34;     // fascia bassa: il Pretorio, cioe' EST
-constexpr int ROAD_LAST_X = 4;           // fascia sinistra: il ciottolato, cioe' NORD
-constexpr int RAILING_FIRST_X = 60;      // fascia destra: il muretto, cioe' SUD
+// A DESTRA il nord, a SINISTRA il sud. Non e' arbitrario: ruotando di 90 gradi una mappa con il
+// nord in alto — cioe' portando l'ovest in cima — il nord finisce a destra e il sud a sinistra.
+// La prima stesura li aveva scambiati, e quello non era una rotazione ma un RIBALTAMENTO: la
+// pianta risultante era l'immagine allo specchio di Gubbio, con via dei Consoli dalla parte
+// sbagliata rispetto al muretto. Chi tocca questi due numeri li tocca in coppia.
+constexpr int RAILING_LAST_X = 3;        // fascia sinistra: il muretto, cioe' SUD
+constexpr int ROAD_FIRST_X = 59;         // fascia destra: il ciottolato, cioe' NORD
 
 // Fronti in scala (city_reference.h): 33 m = 22 tile per i Consoli, 25 m = 16 per il Pretorio.
 constexpr int CONSOLI_FIRST_X = 21;
 constexpr int CONSOLI_LAST_X = 42;
-constexpr int PRETORIO_FIRST_X = 26;
-constexpr int PRETORIO_LAST_X = 41;
+// Specchiate insieme al resto: x -> PIAZZA_WIDTH - 1 - x porta 26..41 in 22..37. Il fronte dei
+// Consoli, 21..42, e' simmetrico rispetto al centro e quindi non cambia.
+constexpr int PRETORIO_FIRST_X = 22;
+constexpr int PRETORIO_LAST_X = 37;
 
 
 inline constexpr uint8_t get_tile_type(int x, int y) {
     if (x < 0 || x >= PIAZZA_WIDTH || y < 0 || y >= PIAZZA_HEIGHT) return 1; // Fuori mappa = muro
 
-    // DESTRA = SUD: il muretto sul vuoto, con gli Arconi sotto.
-    if (x >= RAILING_FIRST_X) return 2;
+    // SINISTRA = SUD: il muretto sul vuoto, con gli Arconi sotto.
+    if (x <= RAILING_LAST_X) return 2;
 
-    // SINISTRA = NORD: la strada in ciottolato. Via dei Consoli entra dall'angolo verso i
-    // Consoli, via XX Settembre esce dall'angolo verso il Pretorio: sono gli imbocchi
-    // nord-ovest e nord-est della piazza vera.
-    if (x <= ROAD_LAST_X) {
+    // DESTRA = NORD: la strada in ciottolato, che sale da EST a OVEST cioe' dal basso verso
+    // l'alto. Via dei Consoli entra dall'angolo verso i Consoli, via XX Settembre da quello
+    // verso il Pretorio: sono gli imbocchi nord-ovest e nord-est della piazza vera, e si
+    // congiungono proprio lungo questa fascia.
+    if (x >= ROAD_FIRST_X) {
         if (y <= 8) return 4;                        // via dei Consoli (nord-ovest)
         if (y >= PIAZZA_HEIGHT - 9) return 5;        // via XX Settembre (nord-est)
         return 11;                                   // ciottolato percorribile
@@ -188,14 +196,22 @@ inline constexpr CollisionGrid PIAZZA_GRID = make_piazza_grid();
 // eseguibile dell'orientamento: se qualcuno ruotasse di nuovo la mappa, si fermerebbe qui.
 static_assert(PIAZZA_GRID.data[31 + CONSOLI_LAST_Y * PIAZZA_WIDTH] == uint8_t(TileType::DOOR_CONSOLI),
               "Il portone dei Consoli non e' al centro del fronte");
-static_assert(PIAZZA_GRID.data[62 + 20 * PIAZZA_WIDTH] == uint8_t(TileType::RAILING),
-              "Il muretto sul vuoto deve stare a DESTRA (sud reale)");
-static_assert(PIAZZA_GRID.data[2 + 20 * PIAZZA_WIDTH] == uint8_t(TileType::ROAD),
-              "Il ciottolato deve stare a SINISTRA (nord reale)");
-static_assert(PIAZZA_GRID.data[2 + 2 * PIAZZA_WIDTH] == uint8_t(TileType::EXIT_SAN_MARTINO),
+static_assert(PIAZZA_GRID.data[1 + 20 * PIAZZA_WIDTH] == uint8_t(TileType::RAILING),
+              "Il muretto sul vuoto deve stare a SINISTRA (sud reale)");
+static_assert(PIAZZA_GRID.data[61 + 20 * PIAZZA_WIDTH] == uint8_t(TileType::ROAD),
+              "Il ciottolato deve stare a DESTRA (nord reale)");
+static_assert(PIAZZA_GRID.data[61 + 2 * PIAZZA_WIDTH] == uint8_t(TileType::EXIT_SAN_MARTINO),
               "Via dei Consoli sbocca verso il Palazzo dei Consoli");
-static_assert(PIAZZA_GRID.data[2 + 36 * PIAZZA_WIDTH] == uint8_t(TileType::EXIT_PORTA_ROMANA),
+static_assert(PIAZZA_GRID.data[61 + 36 * PIAZZA_WIDTH] == uint8_t(TileType::EXIT_PORTA_ROMANA),
               "Via XX Settembre sbocca verso il Pretorio");
+
+// La coppia che distingue una ROTAZIONE da un ribaltamento: strada e muretto stanno su lati
+// OPPOSTI, e su quale dei due non e' indifferente. Se qualcuno li riscambiasse otterrebbe di
+// nuovo l'immagine allo specchio di Gubbio, che compila e si gioca senza dare segno di se'.
+static_assert(ROAD_FIRST_X > RAILING_LAST_X,
+              "Strada e muretto si sovrappongono");
+static_assert(PIAZZA_GRID.data[1 + 20 * PIAZZA_WIDTH] != PIAZZA_GRID.data[61 + 20 * PIAZZA_WIDTH],
+              "I due lati corti non possono essere la stessa cosa");
 static_assert(PIAZZA_GRID.data[32 + 10 * PIAZZA_WIDTH] == uint8_t(TileType::CONSOLI_FACADE),
               "Il Palazzo dei Consoli sta in ALTO (ovest reale)");
 static_assert(PIAZZA_GRID.data[32 + 36 * PIAZZA_WIDTH] == uint8_t(TileType::PRETORIO_FACADE),

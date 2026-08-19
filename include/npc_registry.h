@@ -72,7 +72,7 @@ enum class NpcId : uint8_t
 inline constexpr NpcDef NPCS[int(NpcId::COUNT)] = {
     {"Podesta' Guido",  MapId::PIAZZA_GRANDE, 31, 21, 0, 2},   // sotto il portone dei Consoli
     {"Mastro Tano",     MapId::LARGO_BARGELLO, 16, 16, 2, 1},  // custode della Fontana dei Matti
-    {"Berto",           MapId::PIAZZA_GRANDE, 45, 27, 3, 1},   // sul selciato, verso il muretto
+    {"Berto",           MapId::PIAZZA_GRANDE, 18, 27, 3, 1},   // sul selciato, verso il muretto
 };
 
 inline constexpr int NPC_ENTRY_COUNT =

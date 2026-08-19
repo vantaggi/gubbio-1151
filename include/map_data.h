@@ -124,10 +124,10 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
         .spawns = {
             spawn_at_tile(32, 26),   // centro della piazza, sul selciato
             spawn_at_tile(32, 21),   // uscendo dal portone dei Consoli, in alto
-            // I rientri stanno SUL CIOTTOLATO, che e' l'unica fascia percorribile a sinistra:
+            // I rientri stanno SUL CIOTTOLATO, che e' l'unica fascia percorribile a destra:
             // la fascia alta e' tutta occupata dal Palazzo dei Consoli e dall'edificato minore.
-            spawn_at_tile(2, 28),    // rientrando da via XX Settembre
-            spawn_at_tile(2, 12)     // rientrando da via dei Consoli
+            spawn_at_tile(61, 28),   // rientrando da via XX Settembre
+            spawn_at_tile(61, 12)    // rientrando da via dei Consoli
         },
         .triggers = {
             // Il portone dei Consoli non ha ancora una mappa di destinazione: rimanda alla

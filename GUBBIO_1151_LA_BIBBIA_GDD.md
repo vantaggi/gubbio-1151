@@ -902,7 +902,16 @@ Questa sezione definisce la gestione dei layer grafici, le dimensioni in tile e 
 > uno in cima e uno in fondo allo schermo invece che ai lati. Ne segue che, sulla mappa:
 > alto = ovest = Consoli, basso = est = Pretorio, **sinistra = nord** = acciottolato con i due
 > ingressi, **destra = sud** = muretto. Chi legge `piazza_grande_collision.h` deve tenerlo a
-> mente: `y` cresce verso EST, `x` cresce verso SUD.
+> mente: `y` cresce verso EST, `x` cresce verso **NORD**.
+>
+> **Correzione del 19 agosto 2026, poche ore dopo.** La prima stesura di questa nota metteva
+> l'acciottolato a sinistra e il muretto a destra: era un **ribaltamento**, non una rotazione, e
+> la pianta che ne usciva era l'immagine allo specchio di Gubbio. Ruotando davvero una mappa con
+> il nord in alto fino a portare l'ovest in cima, il nord finisce a **destra** e il sud a
+> **sinistra**. Quindi: acciottolato e i due imbocchi a **destra**, con la strada che sale da est
+> a ovest cioe' dal basso verso l'alto; muretto sul vuoto degli Arconi a **sinistra**. Per la
+> stessa ragione la facciata fotografata del Pretorio va **specchiata** prima di essere incollata
+> — e' ripresa guardando a est, e ha quindi il nord dalla parte opposta a quella dello schermo.
 >
 > **La Fontana dei Matti non è in Piazza Grande** (vedi revisione precedente): sta in Largo del
 > Bargello, sulla salita di via dei Consoli, area a sé.

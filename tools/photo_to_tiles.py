@@ -195,7 +195,7 @@ def scrivi_bmp4(path, width, height, indici, palette):
 
 
 def converti(sorgente, ritaglio, tile_w, tile_h, tetto_tile, sfocatura=2.0,
-             palette=None, solo_indici=None):
+             palette=None, solo_indici=None, specchia=False):
     """Da file fotografico a lista di indici di palette, pronta per essere incollata in un BG."""
     percorso = os.path.join(RIFERIMENTI, sorgente)
 
@@ -203,6 +203,14 @@ def converti(sorgente, ritaglio, tile_w, tile_h, tetto_tile, sfocatura=2.0,
         sys.exit(f"[foto] manca {percorso}\n       eseguire prima: python tools/fetch_riferimenti.py")
 
     foto = Image.open(percorso).convert("RGB").crop(ritaglio)
+
+    if specchia:
+        # La mappa e' RUOTATA con l'ovest in alto, quindi il nord cade a destra dello schermo.
+        # Una facciata fotografata dalla piazza guardando a EST ha pero' il nord alla propria
+        # sinistra: incollata cosi' com'e' rovescerebbe il palazzo rispetto al resto della
+        # pianta. Le facciate riprese guardando a OVEST — i Consoli — non vanno specchiate.
+        foto = foto.transpose(Image.FLIP_LEFT_RIGHT)
+
     w, h = tile_w * 8, tile_h * 8
 
     if sfocatura:
@@ -290,6 +298,7 @@ MONUMENTI = {
     "pretorio_facciata": {
         "sorgente": "pretorio.jpg",
         "ritaglio": (660, 300, 1075, 670),
+        "specchia": True,
         "tile_w": 16,
         "tile_h": 6,
         "tetto_tile": 80,
@@ -377,7 +386,8 @@ def main():
     for nome, cfg in MONUMENTI.items():
         indici, w, h = converti(cfg["sorgente"], cfg["ritaglio"], cfg["tile_w"], cfg["tile_h"],
                                 cfg["tetto_tile"], palette=cfg.get("palette"),
-                                solo_indici=cfg.get("solo_indici"))
+                                solo_indici=cfg.get("solo_indici"),
+                                specchia=cfg.get("specchia", False))
         scrivi_bmp4(os.path.join(INGREDIENTI, nome + ".bmp"), w, h, indici,
                     cfg.get("palette") or PALETTE_PIAZZA)
 
