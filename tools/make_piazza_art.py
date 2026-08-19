@@ -47,45 +47,49 @@ PIAZZA_HEIGHT = 40
 TILE = 8
 
 (GROUND, WALL, RAILING, DOOR_CONSOLI, EXIT_SAN_MARTINO, EXIT_PORTA_ROMANA, FOUNTAIN,
- CONSOLI_FACADE, PRETORIO_FACADE, STAIRS, DOOR_PRETORIO) = range(11)
+ CONSOLI_FACADE, PRETORIO_FACADE, STAIRS, DOOR_PRETORIO, ROAD) = range(12)
+
+
+# Gli stessi nomi di include/piazza_grande_collision.h: l'angolo della fascia del Pretorio serve
+# sia alla griglia sia all'incollaggio della fotografia, e finche' era un 24 scritto a mano nel
+# punto d'incollaggio le due cose potevano scivolare l'una sull'altra — ed erano scivolate.
+PRETORIO_FIRST_X = 26
+PRETORIO_FIRST_Y = 34
 
 
 def get_tile_type(x, y):
+    """Mirror di include/piazza_grande_collision.h. Mappa orientata a OVEST: alto = Consoli,
+    basso = Pretorio, sinistra = ciottolato (nord), destra = muretto (sud)."""
     if x < 0 or x >= PIAZZA_WIDTH or y < 0 or y >= PIAZZA_HEIGHT:
         return WALL
-    if y >= 38:
+    if x >= 60:
         return RAILING
-    if 34 <= y <= 37 and 24 <= x <= 39:
-        if y == 34 and x in (31, 32):
-            return DOOR_PRETORIO
-        return PRETORIO_FACADE
+    if x <= 4:
+        if y <= 8:
+            return EXIT_SAN_MARTINO
+        if y >= PIAZZA_HEIGHT - 9:
+            return EXIT_PORTA_ROMANA
+        return ROAD
     if y <= 18:
-        if y == 18 and x in (32, 33):
+        if y == 18 and x in (31, 32):
             return DOOR_CONSOLI
-        if 21 <= x <= 42:
-            return CONSOLI_FACADE
-        return WALL
+        return CONSOLI_FACADE if 21 <= x <= 42 else WALL
     if y == 19 and 29 <= x <= 34:
         return STAIRS
-    if 23 <= y <= 37 and (x <= 3 or x >= 60):
+    if y >= PRETORIO_FIRST_Y:
+        if PRETORIO_FIRST_X <= x <= 41:
+            return DOOR_PRETORIO if (y == PRETORIO_FIRST_Y and x in (31, 32)) else PRETORIO_FACADE
         return WALL
-    if x <= 2 and 19 <= y <= 22:
-        return EXIT_SAN_MARTINO
-    if x >= 61 and 19 <= y <= 22:
-        return EXIT_PORTA_ROMANA
     return GROUND
 
 
 # Gli stessi punti notevoli su cui il C++ ha le proprie static_assert.
-assert get_tile_type(32, 18) == DOOR_CONSOLI
-assert get_tile_type(0, 39) == RAILING
-assert get_tile_type(32, 30) == GROUND
-assert get_tile_type(23, 24) == GROUND   # la fontana e' in Largo del Bargello
-assert get_tile_type(21, 17) == CONSOLI_FACADE and get_tile_type(20, 17) == WALL
-assert get_tile_type(32, 35) == PRETORIO_FACADE
-assert get_tile_type(32, 19) == STAIRS
-assert get_tile_type(31, 34) == DOOR_PRETORIO
-assert get_tile_type(0, 30) == WALL and get_tile_type(0, 20) == EXIT_SAN_MARTINO
+assert get_tile_type(31, 18) == DOOR_CONSOLI
+assert get_tile_type(62, 20) == RAILING
+assert get_tile_type(2, 20) == ROAD
+assert get_tile_type(32, 10) == CONSOLI_FACADE
+assert get_tile_type(32, 36) == PRETORIO_FACADE
+assert get_tile_type(32, 25) == GROUND
 
 # ----------------------------------------------------------------------------------------------
 # Budget del Passo 9, in tile unici a 4bpp. Tetto duro di Butano: 1024 tile per tileset.
@@ -272,7 +276,13 @@ def draw_ground():
 
             for y in range(TILE):
                 for x in range(TILE):
-                    if kind == GROUND:
+                    if kind == ROAD:
+                        # Ciottolato: acciottolato irregolare, non la lisca di pesce della piazza.
+                        # E' la differenza che il committente ha chiesto di rendere visibile —
+                        # quella fascia e' strada, non pavimento.
+                        c = C_WALL_DARK if ((gx_ := x0 + x) * 7 + (y0 + y) * 13) % 5 else C_RAIL
+                        c = C_JOINT if (gx_ + y0 + y) % 9 == 0 else c
+                    elif kind == GROUND:
                         if cotto:
                             # La pavimentazione VERA, ripetuta: e' l'unica cosa davvero
                             # ripetitiva della piazza, e in fotografia costa 22 tile unici.
@@ -281,7 +291,11 @@ def draw_ground():
                             base = C_STONE if (tx + ty) % 2 == 0 else C_STONE_ALT
                             c = C_JOINT if (x == 0 or y == 0) else base
                     elif kind == PRETORIO_FACADE and pretorio:
-                        px_, py_ = (x0 + x) - 24 * TILE, (y0 + y) - 34 * TILE
+                        # L'origine del ritaglio E' l'angolo della fascia, non un numero
+                        # scritto a mano: con l'offset fisso a 24 la facciata sbordava di due
+                        # tile a sinistra e lasciava due colonne vuote a destra.
+                        px_ = (x0 + x) - PRETORIO_FIRST_X * TILE
+                        py_ = (y0 + y) - PRETORIO_FIRST_Y * TILE
                         c = (pretorio[py_][px_] if 0 <= px_ < pret_w and 0 <= py_ < pret_h
                              else C_WALL)
                     elif kind in (CONSOLI_FACADE, PRETORIO_FACADE):

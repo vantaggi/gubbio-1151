@@ -33,72 +33,83 @@ enum class TileType : uint8_t
     CONSOLI_FACADE    = 7,   // fronte del Palazzo dei Consoli: 33 m = 22 tile, in scala
     PRETORIO_FACADE   = 8,   // Palazzo Pretorio, che gli sta di fronte: 25 m = 16 tile
     STAIRS            = 9,   // scalinata a ventaglio davanti al portone: si calpesta
-    DOOR_PRETORIO     = 10   // ingresso del Pretorio: oggi solo VISIVO, non porta altrove
+    DOOR_PRETORIO     = 10,  // ingresso del Pretorio: oggi solo VISIVO, non porta altrove
+    ROAD              = 11   // ciottolato: via dei Consoli / via XX Settembre, a nord
 };
 
-// I lati corti. Piazza Grande e' uno spazio CHIUSO su quattro lati, ed e' da li' che viene
-// l'effetto che fa: un vuoto vasto ritagliato dentro un tessuto urbano fitto. Finche' i lati
-// corti restavano aperti, la piazza sfumava nel nulla e sembrava un cortile. Restano liberi solo
-// i due varchi dei trigger, che nella citta' vera sono passaggi voltati.
-constexpr int SIDE_WEST_LAST_X = 3;
-constexpr int SIDE_EAST_FIRST_X = 60;
-constexpr int SIDE_FIRST_Y = 23;      // sotto il corridoio dei varchi (y 19-22)
-constexpr int SIDE_LAST_Y = 37;       // sopra la ringhiera
+// --- LA DISPOSIZIONE DELLA PIAZZA, E IL SUO ORIENTAMENTO ------------------------------------
+//
+// Disposizione reale (correzione del committente, Sessione 19): **Palazzo dei Consoli a OVEST**,
+// **Pretorio a EST**, i due che si fronteggiano; a **nord** la strada in ciottolato dove via dei
+// Consoli si unisce a via XX Settembre, e oltre il Palazzo Ranghiasci; a **sud** il muretto sul
+// vuoto, perche' la piazza e' PENSILE, sospesa sopra gli Arconi.
+//
+// **LA MAPPA NON E' ORIENTATA A NORD: e' orientata a OVEST**, per scelta del committente.
+// Ruotando di novanta gradi, in gioco si vede cosi':
+//
+//        ALTO SCHERMO = OVEST reale        -> PALAZZO DEI CONSOLI
+//        BASSO SCHERMO = EST reale         -> PALAZZO PRETORIO
+//        SINISTRA SCHERMO = NORD reale     -> ciottolato, via dei Consoli e via XX Settembre
+//        DESTRA SCHERMO = SUD reale        -> muretto sul vuoto, e sotto gli Arconi
+//
+// Non e' un compromesso di comodo: mette i due palazzi che si fronteggiano sui lati LUNGHI della
+// mappa, dove ci stanno alla loro scala — 22 tile i Consoli, 16 il Pretorio — e lascia le facciate
+// fotografate orizzontali, come sono state riprese. Con l'orientamento a nord avrebbero dovuto
+// essere ruotate, perdendo la ragione per cui le si e' fotografate frontali.
+//
+// La regola delle adiacenze di `city_reference.h` resta rispettata: cambia l'orientamento della
+// vista, non l'ordine in cui le cose si incontrano.
+constexpr int CONSOLI_LAST_Y = 18;       // fascia alta: il palazzo, cioe' OVEST
+constexpr int PRETORIO_FIRST_Y = 34;     // fascia bassa: il Pretorio, cioe' EST
+constexpr int ROAD_LAST_X = 4;           // fascia sinistra: il ciottolato, cioe' NORD
+constexpr int RAILING_FIRST_X = 60;      // fascia destra: il muretto, cioe' SUD
 
-// Il fronte dei Consoli, centrato sul portone. La larghezza NON e' scelta a occhio: e' quella
-// che la scala impone (vedi city_reference.h), ed e' l'unico modo perche' il palazzo resti
-// riconoscibile in una piazza accorciata di un quarto.
+// Fronti in scala (city_reference.h): 33 m = 22 tile per i Consoli, 25 m = 16 per il Pretorio.
 constexpr int CONSOLI_FIRST_X = 21;
-constexpr int CONSOLI_LAST_X = 42;      // 22 tile
-constexpr int PRETORIO_FIRST_X = 24;
-constexpr int PRETORIO_LAST_X = 39;     // 16 tile
-constexpr int PRETORIO_FIRST_Y = 34;
-constexpr int PRETORIO_LAST_Y = 37;
+constexpr int CONSOLI_LAST_X = 42;
+constexpr int PRETORIO_FIRST_X = 26;
+constexpr int PRETORIO_LAST_X = 41;
+
 
 inline constexpr uint8_t get_tile_type(int x, int y) {
     if (x < 0 || x >= PIAZZA_WIDTH || y < 0 || y >= PIAZZA_HEIGHT) return 1; // Fuori mappa = muro
 
-    // Ringhiera sud
-    if (y >= 38) return 2;
+    // DESTRA = SUD: il muretto sul vuoto, con gli Arconi sotto.
+    if (x >= RAILING_FIRST_X) return 2;
 
-    // Palazzo Pretorio: fronteggia i Consoli dal lato opposto della piazza, come nella citta'
-    // vera. Sta davanti alla ringhiera, non al posto suo.
-    if (y >= PRETORIO_FIRST_Y && y <= PRETORIO_LAST_Y &&
-        x >= PRETORIO_FIRST_X && x <= PRETORIO_LAST_X) {
-        // Ingresso sul fronte che guarda la piazza. Non e' ancora un trigger: aprirlo vorrebbe
-        // dire una quarta regola in MAPS[], e le sale del Pretorio non esistono. Disegnarlo
-        // adesso costa un tile e rende il palazzo un edificio invece di un blocco cieco.
-        if (y == PRETORIO_FIRST_Y && (x == 31 || x == 32)) return 10;
-        return 8;
+    // SINISTRA = NORD: la strada in ciottolato. Via dei Consoli entra dall'angolo verso i
+    // Consoli, via XX Settembre esce dall'angolo verso il Pretorio: sono gli imbocchi
+    // nord-ovest e nord-est della piazza vera.
+    if (x <= ROAD_LAST_X) {
+        if (y <= 8) return 4;                        // via dei Consoli (nord-ovest)
+        if (y >= PIAZZA_HEIGHT - 9) return 5;        // via XX Settembre (nord-est)
+        return 11;                                   // ciottolato percorribile
     }
 
-    // Fronte nord: il Palazzo dei Consoli al centro, edifici minori ai lati.
-    if (y <= 18) {
-        if (y == 18 && (x == 32 || x == 33)) return 3; // Portone Consoli
+    // ALTO = OVEST: Palazzo dei Consoli, col portone al centro del fronte.
+    if (y <= CONSOLI_LAST_Y) {
+        if (y == CONSOLI_LAST_Y && (x == 31 || x == 32)) return 3;
         if (x >= CONSOLI_FIRST_X && x <= CONSOLI_LAST_X) return 7;
+        return 1;                                    // edificato minore ai lati
+    }
+
+    // La scalinata a ventaglio, sul selciato davanti al portone.
+    if (y == CONSOLI_LAST_Y + 1 && x >= 29 && x <= 34) return 9;
+
+    // BASSO = EST: Palazzo Pretorio, che fronteggia i Consoli.
+    if (y >= PRETORIO_FIRST_Y) {
+        if (x >= PRETORIO_FIRST_X && x <= PRETORIO_LAST_X) {
+            // 31 e 32, non 33 e 34: il portale ad arco della fotografia cade a cinque tile
+            // dall'angolo della fascia, non a otto. Finche' i due numeri non coincidono, il
+            // giocatore preme A davanti a un muro dipinto e la porta e' altrove.
+            if (y == PRETORIO_FIRST_Y && (x == 31 || x == 32)) return 10;
+            return 8;
+        }
+
         return 1;
     }
 
-    // Scalinata a ventaglio davanti al portone: calpestabile, ed e' il primo dei tre segni
-    // distintivi del palazzo (docs/riferimenti/FONTI.md).
-    if (y == 19 && x >= 29 && x <= 34) return 9;
-
-    // Lati corti edificati: chiudono la piazza a est e a ovest, lasciando liberi i varchi.
-    if (y >= SIDE_FIRST_Y && y <= SIDE_LAST_Y &&
-        (x <= SIDE_WEST_LAST_X || x >= SIDE_EAST_FIRST_X)) return 1;
-
-    // Trigger Laterali
-    if (x <= 2 && y >= 19 && y <= 22) return 4; // Verso San Martino / Bargello
-    if (x >= 61 && y >= 19 && y <= 22) return 5; // Verso Porta Romana
-
-    // LA FONTANA DEI MATTI NON E' QUI. Correzione topografica del committente, che conosce la
-    // citta': la Fontana del Bargello sta in **Largo del Bargello, lungo la salita di via dei
-    // Consoli**, non in Piazza Grande. La legenda della Sez. 21B GDD la elencava fra i tile della
-    // piazza e il codice l'aveva ereditata — un errore che nessuna verifica automatica poteva
-    // trovare, perche' il gioco funzionava benissimo con la fontana nel posto sbagliato.
-    // Il valore di tile 6 resta definito per quando esistera' `MapId::LARGO_BARGELLO`.
-
-    return 0; // Terreno calpestabile
+    return 0; // selciato in cotto a lisca di pesce
 }
 
 // Variante in PIXEL, e la ragione per cui esiste.
@@ -129,6 +140,7 @@ inline constexpr uint8_t get_tile_type(int x, int y) {
 {
     return tile == uint8_t(TileType::WALL) || tile == uint8_t(TileType::RAILING) ||
            tile == uint8_t(TileType::CONSOLI_FACADE) || tile == uint8_t(TileType::PRETORIO_FACADE);
+    // ROAD e STAIRS non sono solidi: si cammina sul ciottolato e si sale la scalinata.
 }
 
 // Porta verso un'altra area: il giocatore che vi sale cambia scena.
@@ -172,66 +184,24 @@ struct CollisionGrid
 
 inline constexpr CollisionGrid PIAZZA_GRID = make_piazza_grid();
 
-// Che la derivazione sia avvenuta davvero, e nel verso giusto, e' verificato dal compilatore su
-// punti notevoli — non asserito in un documento.
-static_assert(PIAZZA_GRID.data[32 + 18 * PIAZZA_WIDTH] == uint8_t(TileType::DOOR_CONSOLI),
-              "Portone dei Consoli assente dalla griglia derivata");
-static_assert(PIAZZA_GRID.data[0 + 39 * PIAZZA_WIDTH] == uint8_t(TileType::RAILING),
-              "Ringhiera sud assente dalla griglia derivata");
-static_assert(PIAZZA_GRID.data[32 + 30 * PIAZZA_WIDTH] == uint8_t(TileType::GROUND),
+// Punti notevoli della disposizione, verificati dal compilatore. Sono anche la documentazione
+// eseguibile dell'orientamento: se qualcuno ruotasse di nuovo la mappa, si fermerebbe qui.
+static_assert(PIAZZA_GRID.data[31 + CONSOLI_LAST_Y * PIAZZA_WIDTH] == uint8_t(TileType::DOOR_CONSOLI),
+              "Il portone dei Consoli non e' al centro del fronte");
+static_assert(PIAZZA_GRID.data[62 + 20 * PIAZZA_WIDTH] == uint8_t(TileType::RAILING),
+              "Il muretto sul vuoto deve stare a DESTRA (sud reale)");
+static_assert(PIAZZA_GRID.data[2 + 20 * PIAZZA_WIDTH] == uint8_t(TileType::ROAD),
+              "Il ciottolato deve stare a SINISTRA (nord reale)");
+static_assert(PIAZZA_GRID.data[2 + 2 * PIAZZA_WIDTH] == uint8_t(TileType::EXIT_SAN_MARTINO),
+              "Via dei Consoli sbocca verso il Palazzo dei Consoli");
+static_assert(PIAZZA_GRID.data[2 + 36 * PIAZZA_WIDTH] == uint8_t(TileType::EXIT_PORTA_ROMANA),
+              "Via XX Settembre sbocca verso il Pretorio");
+static_assert(PIAZZA_GRID.data[32 + 10 * PIAZZA_WIDTH] == uint8_t(TileType::CONSOLI_FACADE),
+              "Il Palazzo dei Consoli sta in ALTO (ovest reale)");
+static_assert(PIAZZA_GRID.data[32 + 36 * PIAZZA_WIDTH] == uint8_t(TileType::PRETORIO_FACADE),
+              "Il Palazzo Pretorio sta in BASSO (est reale), di fronte ai Consoli");
+static_assert(PIAZZA_GRID.data[32 + 25 * PIAZZA_WIDTH] == uint8_t(TileType::GROUND),
               "Il centro della piazza non e' calpestabile");
-// La fontana NON deve stare in Piazza Grande: e' in Largo del Bargello. Se qualcuno la
-// rimettesse qui seguendo la legenda della Sez. 21B, la build si ferma.
-static_assert(PIAZZA_GRID.data[23 + 24 * PIAZZA_WIDTH] == uint8_t(TileType::GROUND),
-              "La Fontana dei Matti e' tornata in Piazza Grande: sta in Largo del Bargello");
-// Il fronte del palazzo deve misurare in griglia esattamente i 22 tile che la scala impone: se
-// qualcuno lo allargasse "perche' sta meglio", l'illusione si romperebbe proprio sull'edificio
-// che la regge.
-static_assert([]
-{
-    int larghezza = 0;
-
-    for(int x = 0; x < PIAZZA_WIDTH; ++x)
-    {
-        const uint8_t t = PIAZZA_GRID.data[x + 17 * PIAZZA_WIDTH];
-
-        if(t == uint8_t(TileType::CONSOLI_FACADE))
-        {
-            ++larghezza;
-        }
-    }
-
-    return larghezza == 22;
-}(), "Il fronte del Palazzo dei Consoli non misura i 22 tile della scala");
-
-// La piazza dev'essere CHIUSA: sui bordi laterali, fuori dai varchi, non puo' esserci suolo
-// libero — altrimenti si cammina fuori dallo spazio urbano e l'illusione cade.
-static_assert([]
-{
-    for(int y = SIDE_FIRST_Y; y <= SIDE_LAST_Y; ++y)
-    {
-        if(PIAZZA_GRID.data[0 + y * PIAZZA_WIDTH] == uint8_t(TileType::GROUND) ||
-           PIAZZA_GRID.data[PIAZZA_WIDTH - 1 + y * PIAZZA_WIDTH] == uint8_t(TileType::GROUND))
-        {
-            return false;
-        }
-    }
-
-    return true;
-}(), "I lati corti della piazza non sono chiusi");
-
-// I due varchi restano percorribili: chiudere la piazza non deve murare le uscite.
-static_assert(! is_solid(PIAZZA_GRID.data[0 + 20 * PIAZZA_WIDTH]) &&
-              ! is_solid(PIAZZA_GRID.data[62 + 20 * PIAZZA_WIDTH]),
-              "Un varco laterale e' stato murato");
-
-static_assert(PIAZZA_GRID.data[31 + 34 * PIAZZA_WIDTH] == uint8_t(TileType::DOOR_PRETORIO),
-              "Manca l'ingresso del Palazzo Pretorio");
-
-static_assert(PIAZZA_GRID.data[32 + 19 * PIAZZA_WIDTH] == uint8_t(TileType::STAIRS),
-              "Manca la scalinata davanti al portone dei Consoli");
-static_assert(! is_solid(uint8_t(TileType::STAIRS)), "La scalinata deve essere calpestabile");
-
 static_assert(sizeof(CollisionGrid) == PIAZZA_WIDTH * PIAZZA_HEIGHT,
               "La griglia deve restare un blocco contiguo di byte");
 

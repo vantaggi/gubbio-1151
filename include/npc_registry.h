@@ -7,6 +7,7 @@
 
 #include "dialogue_data.h"
 #include "map_id.h"
+#include "largo_bargello_collision.h"
 #include "piazza_grande_collision.h"
 #include "story_flags.h"
 
@@ -69,9 +70,9 @@ enum class NpcId : uint8_t
 // quando le loro mappe esisteranno. Le posizioni sono scelte sul calpestabile della piazza — un
 // NPC dentro un muro sarebbe irraggiungibile, e la `static_assert` in fondo lo impedisce.
 inline constexpr NpcDef NPCS[int(NpcId::COUNT)] = {
-    {"Podesta' Guido",  MapId::PIAZZA_GRANDE, 30, 20, 0, 2},   // davanti al Palazzo dei Consoli
-    {"Mastro Tano",     MapId::PIAZZA_GRANDE, 22, 26, 2, 1},   // accanto alla Fontana dei Matti
-    {"Berto",           MapId::PIAZZA_GRANDE, 45, 30, 3, 1},   // a est, sul lastricato
+    {"Podesta' Guido",  MapId::PIAZZA_GRANDE, 31, 21, 0, 2},   // sotto il portone dei Consoli
+    {"Mastro Tano",     MapId::LARGO_BARGELLO, 16, 16, 2, 1},  // custode della Fontana dei Matti
+    {"Berto",           MapId::PIAZZA_GRANDE, 45, 27, 3, 1},   // sul selciato, verso il muretto
 };
 
 inline constexpr int NPC_ENTRY_COUNT =
@@ -114,15 +115,20 @@ static_assert([]
 {
     for(const NpcDef& npc : NPCS)
     {
-        if(npc.map == MapId::PIAZZA_GRANDE &&
-           maps::is_solid(maps::get_tile_type(npc.tile_x, npc.tile_y)))
+        const bool dentro_un_muro =
+            (npc.map == MapId::PIAZZA_GRANDE &&
+             maps::is_solid(maps::get_tile_type(npc.tile_x, npc.tile_y))) ||
+            (npc.map == MapId::LARGO_BARGELLO &&
+             maps::is_solid(maps::bargello_tile_type(npc.tile_x, npc.tile_y)));
+
+        if(dentro_un_muro)
         {
             return false;
         }
     }
 
     return true;
-}(), "Un NPC di Piazza Grande e' collocato dentro un muro");
+}(), "Un NPC e' collocato dentro un muro");
 
 // L'Atto III del Podesta' precede l'Atto I nell'elenco: se qualcuno li invertisse, dall'Atto III
 // in poi si vedrebbe ancora la battuta dell'Atto I e nessuno se ne accorgerebbe fino a giocarci.

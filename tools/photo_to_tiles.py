@@ -269,25 +269,30 @@ MONUMENTI = {
         # giocatore, alto due tile. Un mattone reale e' circa un sesto di tile, quindi la
         # porzione inquadrata dev'essere larga abbastanza da contenerne molti.
         "ritaglio": (0, 280, 768, 1048),
-        # QUATTRO tile di lato, non otto: la trama veniva troppo grossa. La stessa area
-        # fotografata, ridotta al doppio, da' mattoni della meta' — e un mattone reale e' circa
-        # un sesto di tile, quindi va tenuto piccolo. Costa anche meno tile.
-        "tile_w": 4,
-        "tile_h": 4,
-        "tetto_tile": 16,
+        # TRE tile di lato. Il committente, giocandoci, ha chiesto la trama ancora piu' fine di
+        # quattro; provata a due, ma li' la lisca di pesce spariva e restava una macchia rossa
+        # picchiettata. Tre e' il punto in cui i mattoni sono piccoli e il disegno a spina si
+        # legge ancora: sotto, si perde la cosa stessa che si voleva mostrare.
+        "tile_w": 3,
+        "tile_h": 3,
+        "tetto_tile": 9,
         # Solo cotto e fughe: la spina di pesce e' rossa, e la foto in ombra non basta a dirlo.
         "solo_indici": [1, 2, 3, 4],
     },
 
-    # Palazzo Pretorio: 16 tile di fronte per 4 di profondita', che e' la fascia che occupa nella
-    # griglia. Il ritaglio e' quindi ORIZZONTALE — 4:1 — e prende la fascia col portale: in una
-    # mappa vista dall'alto di un palazzo si vede la parte alta della facciata, non tutta.
+    # Palazzo Pretorio: 16 tile di fronte per 6 di profondita', che e' esattamente la fascia che
+    # occupa nella griglia (x 26..41, y 34..39). Il primo ritaglio era alto 4 e prendeva solo la
+    # fascia delle due finestre: nella mappa il palazzo veniva una macchia chiara senza segni, e
+    # sotto restavano due file di riempimento. Qui si prende TUTTA la facciata, dal sottotetto al
+    # selciato, e la si schiaccia in verticale — lo stesso compromesso del Palazzo dei Consoli:
+    # in una mappa dall'alto la facciata e' vista di scorcio, quindi schiacciarla e' cio' che si
+    # vuole, purche' i segni del palazzo (il portale ad arco, le bifore) restino leggibili.
     "pretorio_facciata": {
         "sorgente": "pretorio.jpg",
-        "ritaglio": (650, 300, 1150, 425),
+        "ritaglio": (660, 300, 1075, 670),
         "tile_w": 16,
-        "tile_h": 4,
-        "tetto_tile": 48,
+        "tile_h": 6,
+        "tetto_tile": 80,
         "solo_indici": [0, 3, 4, 5, 6, 7, 8, 9, 10, 13],
     },
 

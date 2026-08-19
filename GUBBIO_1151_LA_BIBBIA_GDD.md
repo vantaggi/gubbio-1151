@@ -883,10 +883,29 @@ Questa sezione definisce la gestione dei layer grafici, le dimensioni in tile e 
 #### 1. Mappa Hub: Piazza Grande & Palazzo dei Consoli
 * **Dimensioni Totali:** $512 \times 320$ pixel ($64 \times 40$ tile da $8 \times 8$ px).
 * **Struttura dei Livelli:**
-  * *Piano Superiore (Piazza Pensile):* Pavimentazione a mattoni rossi a spina di pesce, Palazzo dei Consoli a nord-ovest, Palazzo Pretorio a sud-est.
+  * *Piano Superiore (Piazza Pensile):* Pavimentazione a mattoni rossi a spina di pesce, Palazzo dei Consoli a **ovest**, Palazzo Pretorio a **est**, Palazzo Ranghiasci a **nord** (fuori inquadratura), ringhiera a **sud**.
   * *Ringhiera Panoramica (Sud):* Affaccio sul vuoto; layer BG3 scorre a $1/4$ della velocità per mostrare la piana eugubina e gli accampamenti nemici lontani.
   * *Piano Inferiore (Arconi di Sostruzione):* Raggiungibile da scalinate laterali; zona d'ombra con depositi di grano e postazioni di difesa.
-* **Punti di Trigger:** Portone dei Consoli (Ingresso Sala di Guerra), Fontana del Bargello (Accesso quartiere San Martino), Uscita Est verso Porta Romana.
+* **Punti di Trigger:** Portone dei Consoli (Ingresso Sala di Guerra), via dei Consoli a **nord-ovest** (discesa verso Largo del Bargello e il quartiere San Martino), via XX Settembre a **nord-est**.
+
+> **Revisione del 19 agosto 2026 — la disposizione e l'orientamento della vista.**
+> La stesura precedente metteva i Consoli a nord-ovest e il Pretorio a sud-est: è sbagliata. In
+> Piazza Grande il **Palazzo dei Consoli sta a ovest** e il **Palazzo Pretorio a est**, l'uno di
+> fronte all'altro; a **nord** corre il lato di Palazzo Ranghiasci e a **sud** il muretto sul
+> vuoto degli Arconi. I due accessi carrai sono entrambi a nord: **via dei Consoli** a nord-ovest
+> e **via XX Settembre** a nord-est, e si congiungono lungo il lato nord — che perciò non è
+> pavimentato a spina di pesce ma è **acciottolato di strada**.
+>
+> **La vista di gioco è ruotata di 90°: in alto è ovest, in basso è est.** Non è un errore di
+> orientamento ma una scelta d'inquadratura, presa perché su uno schermo 240x160 la piazza sta
+> per il verso lungo, e perché così i due palazzi che il giocatore deve riconoscere si trovano
+> uno in cima e uno in fondo allo schermo invece che ai lati. Ne segue che, sulla mappa:
+> alto = ovest = Consoli, basso = est = Pretorio, **sinistra = nord** = acciottolato con i due
+> ingressi, **destra = sud** = muretto. Chi legge `piazza_grande_collision.h` deve tenerlo a
+> mente: `y` cresce verso EST, `x` cresce verso SUD.
+>
+> **La Fontana dei Matti non è in Piazza Grande** (vedi revisione precedente): sta in Largo del
+> Bargello, sulla salita di via dei Consoli, area a sé.
 
 #### 2. Mappa Dungeon: La Gola del Bottaccione & Il Condotto
 * **Dimensioni Totali:** $256 \times 1024$ pixel ($32 \times 128$ tile a scorrimento prettamente verticale/obliquo).
