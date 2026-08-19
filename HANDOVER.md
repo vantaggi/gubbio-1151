@@ -809,6 +809,24 @@ Motivazione: fino a ieri le regole di `AGENTS.md` erano **dichiarate ma non misu
 
 * **Rilievi del committente dal gioco vero, entrambi corretti:** del Palazzo dei Consoli si vedeva solo la parte bassa (il ritaglio prendeva la sola fascia alta della foto; ora entra tutto, compresso in verticale) e la trama del selciato era troppo grossa (texture da 4 tile invece di 8).
 
+### [2026-08-19] - Sessione 19: Largo del Bargello, la seconda area
+
+* **Autore / Agente:** Claude Opus 5 (Claude Code)
+* **File creati:** `include/largo_bargello_collision.h`, `graphics/bargello_ground.{bmp,json}`
+* **File modificati:** `include/map_id.h`, `include/map_data.h`, `tools/make_piazza_art.py`, `tools/photo_to_tiles.py`, `include/piazza_grande_collision.h`, GDD (Sez. 21B)
+
+* **NASCE DA UNA CORREZIONE DEL COMMITTENTE:** la Fontana dei Matti non e' in Piazza Grande, ma in **Largo del Bargello, lungo la salita di via dei Consoli**. La legenda della Sez. 21B GDD la elencava fra i tile della piazza e il codice l'aveva ereditata. **Nessuna verifica automatica poteva trovarlo**: il gioco funzionava benissimo con la fontana nel posto sbagliato. Serviva qualcuno che conoscesse la citta'.
+
+* **La seconda area del gioco, e la prima che dimostra che l'architettura regge.** 32x24 tile in un **solo BG 256x256**, contro i quattro blocchi che Piazza Grande consuma con i suoi 512x512 — un largo non e' una piazza. Ground generato dalla foto del committente: facciata del Bargello (80 tile), fontana (9), stesso selciato della piazza, per **107 tile unici su 512**.
+
+* **Quanto e' costato aggiungerla:** un header di collisione, una riga in `MAPS[]`, un ritaglio nella tabella di `photo_to_tiles`, e una funzione di disegno. **Nessuna modifica a `ExplorationScene`**, che e' parametrizzata da `MapId` dalla Sessione 11b proprio per questo. E' la prima verifica reale di quella scelta.
+
+* **Topografia, per la regola delle adiacenze** (`city_reference.h` §3): il largo e' in salita e **Piazza Grande sta piu' in alto, a est**; l'uscita verso la piazza e' quindi sul lato orientale, e a ovest la via prosegue a scendere verso San Martino, non ancora autorato. Il varco occidentale della piazza — che apriva provvisoriamente una battaglia — porta ora dove deve.
+
+* **Tre `static_assert` per la nuova area:** la fontana e' al posto suo; il fronte del palazzo misura i 12 tile che la scala impone ai suoi 18 metri; il varco verso la piazza non e' murato — un vicolo cieco si scoprirebbe solo giocando.
+
+* **VERIFICATO SU EMULATORE:** `TRIGGER tile 4 -> scena 1 parametro 5` seguito da `=== ESPLORAZIONE: Largo del Bargello ===`. Zero errori a runtime, `test_assets.py` 9/9.
+
 ---
 
 ## 4. Prossimi Passi Immediati (Roadmap per la Prossima Sessione / IA)

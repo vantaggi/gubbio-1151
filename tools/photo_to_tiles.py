@@ -291,6 +291,17 @@ MONUMENTI = {
         "solo_indici": [0, 3, 4, 5, 6, 7, 8, 9, 10, 13],
     },
 
+    # Palazzo del Bargello: 18 m di fronte = 12 tile. La stessa foto della fontana, ritagliata
+    # sulla facciata invece che sul bacino.
+    "bargello_facciata": {
+        "sorgente": "bargello_e_fontana.jpg",
+        "ritaglio": (430, 60, 1024, 456),
+        "tile_w": 12,
+        "tile_h": 8,
+        "tetto_tile": 96,
+        "solo_indici": [0, 3, 4, 5, 6, 7, 8, 9, 10, 13],
+    },
+
     # Fontana dei Matti: 4,5 m di diametro = 3 tile (Sez. 23 GDD). Il bacino ottagonale in
     # primo piano nella foto del Bargello.
     "fontana": {

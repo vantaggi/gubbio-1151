@@ -6,10 +6,12 @@
 #include "bn_regular_bg_item.h"
 
 #include "bn_regular_bg_items_piazza_ground.h"
+#include "bn_regular_bg_items_bargello_ground.h"
 #include "bn_regular_bg_items_piazza_sky.h"
 
 #include "city_reference.h"
 #include "map_id.h"
+#include "largo_bargello_collision.h"
 #include "piazza_grande_collision.h"
 #include "scene.h"
 
@@ -86,6 +88,10 @@ inline constexpr uint8_t SPAWN_PIAZZA_DA_CONSOLI   = 1;
 inline constexpr uint8_t SPAWN_PIAZZA_DA_EST       = 2;
 inline constexpr uint8_t SPAWN_PIAZZA_DA_BARGELLO  = 3;
 
+// Spawn di Largo del Bargello.
+inline constexpr uint8_t SPAWN_BARGELLO_CENTRO    = 0;
+inline constexpr uint8_t SPAWN_BARGELLO_DA_PIAZZA = 1;
+
 // Comodita' per scrivere gli spawn in tile, che e' l'unita' in cui la piazza e' autorata,
 // depositando il giocatore al centro della cella.
 [[nodiscard]] constexpr SpawnPoint spawn_at_tile(int tx, int ty)
@@ -135,8 +141,11 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
             // 21B) ed e' una decisione di design aperta. Finche' non e' presa, questo trigger
             // e' l'unico modo di collaudare il round-trip esplorazione -> battaglia ->
             // esplorazione con HP e Fervore che sopravvivono.
-            {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::BATTLE, 0,
-             SPAWN_PIAZZA_DA_BARGELLO},   // PROVVISORIO: qui scendera' a Largo del Bargello
+            // Il varco occidentale scende a LARGO DEL BARGELLO, lungo via dei Consoli: e' li'
+            // che stanno la Fontana dei Matti e il palazzo omonimo (correzione della Sessione
+            // 18d). Prima apriva provvisoriamente una battaglia, perche' l'area non esisteva.
+            {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
+             int16_t(MapId::LARGO_BARGELLO), SPAWN_BARGELLO_DA_PIAZZA},
 
             {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
              int16_t(MapId::PIAZZA_GRANDE), SPAWN_PIAZZA_DA_EST},
@@ -145,7 +154,33 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
         }
     },
     // --- BOTTACCIONE, MURA, PIANA, MONTE_INGINO: non ancora autorate ---
-    {}, {}, {}, {}, {}
+    {}, {}, {}, {},
+
+    // --- LARGO_BARGELLO ---
+    // Un largo in salita lungo via dei Consoli, non una piazza: 32x24 tile in un solo BG 256x256,
+    // contro i quattro blocchi che Piazza Grande consuma. Qui sta la Fontana dei Matti.
+    {
+        .collision = maps::BARGELLO_GRID.data,
+        .width_tiles = maps::BARGELLO_WIDTH,
+        .height_tiles = maps::BARGELLO_HEIGHT,
+        .ground = &bn::regular_bg_items::bargello_ground,
+        .foreground = nullptr,
+        .parallax = &bn::regular_bg_items::piazza_sky,
+        .foreground_covers_full_height = false,
+        .spawns = {
+            spawn_at_tile(16, 17),   // in mezzo al largo, sotto la fontana
+            spawn_at_tile(28, 12),   // rientrando da Piazza Grande, che sta piu' in alto a est
+            spawn_at_tile(16, 17),
+            spawn_at_tile(16, 17)
+        },
+        .triggers = {
+            // Verso Piazza Grande, in salita.
+            {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
+             int16_t(MapId::PIAZZA_GRANDE), SPAWN_PIAZZA_DA_BARGELLO},
+
+            {0, SceneId::NONE, 0, 0}
+        }
+    }
 };
 
 static_assert(int(sizeof(MAPS) / sizeof(MAPS[0])) == MAP_COUNT,
@@ -178,6 +213,10 @@ static_assert(! maps::is_solid(maps::get_tile_type_px(MAPS[0].spawns[0].x, MAPS[
               ! maps::is_solid(maps::get_tile_type_px(MAPS[0].spawns[2].x, MAPS[0].spawns[2].y)) &&
               ! maps::is_solid(maps::get_tile_type_px(MAPS[0].spawns[3].x, MAPS[0].spawns[3].y)),
               "Uno spawn point di Piazza Grande cade dentro un ostacolo");
+
+static_assert(! maps::is_solid(maps::bargello_tile_type(16, 17)) &&
+              ! maps::is_solid(maps::bargello_tile_type(28, 12)),
+              "Uno spawn di Largo del Bargello cade dentro un ostacolo");
 
 // E non deve stare SU un trigger, altrimenti il rientro riattiva la transizione da cui si e'
 // appena usciti: e' il loop infinito che gli spawn point esistono per impedire.

@@ -477,6 +477,75 @@ def draw_npc():
     return w, h, px
 
 
+# ----------------------------------------------------------------------------------------------
+# 5. LARGO DEL BARGELLO — l'area dove sta davvero la Fontana dei Matti (Sessione 18d)
+# ----------------------------------------------------------------------------------------------
+
+BARGELLO_W, BARGELLO_H = 32, 24
+
+
+def bargello_tile_type(x, y):
+    """Mirror di include/largo_bargello_collision.h, come per la piazza."""
+    if x < 0 or x >= BARGELLO_W or y < 0 or y >= BARGELLO_H:
+        return WALL
+    if y <= 7:
+        return PRETORIO_FACADE if 9 <= x <= 20 else WALL
+    if y >= BARGELLO_H - 3:
+        return WALL
+    if x >= BARGELLO_W - 2 and 10 <= y <= 13:
+        return EXIT_PORTA_ROMANA
+    if x <= 1:
+        return WALL
+    if 13 <= x <= 15 and 12 <= y <= 14:
+        return FOUNTAIN
+    return GROUND
+
+
+assert bargello_tile_type(14, 13) == FOUNTAIN
+assert bargello_tile_type(14, 3) == PRETORIO_FACADE
+
+
+def draw_bargello():
+    """256x256: il largo occupa 256x192, il resto e' fuori mappa."""
+    w = h = 256
+    px = canvas(w, h, C_VOID)
+
+    cotto, cw, ch = leggi_indici_bmp4("piazza_cotto.bmp")
+    palazzo, pw, ph = leggi_indici_bmp4("bargello_facciata.bmp")
+    fontana, fw, fh = leggi_indici_bmp4("fontana.bmp")
+
+    for ty in range(BARGELLO_H):
+        for tx in range(BARGELLO_W):
+            kind = bargello_tile_type(tx, ty)
+            x0, y0 = tx * TILE, ty * TILE
+
+            for y in range(TILE):
+                for x in range(TILE):
+                    gx, gy = x0 + x, y0 + y
+
+                    if kind == GROUND or kind == EXIT_PORTA_ROMANA:
+                        # Il selciato e' lo stesso della piazza: e' la stessa citta'.
+                        c = cotto[gy % ch][gx % cw] if cotto else C_STONE
+                    elif kind == PRETORIO_FACADE:
+                        if palazzo:
+                            fx, fy = gx - 9 * TILE, gy
+                            c = (palazzo[fy][fx] if 0 <= fx < pw and 0 <= fy < ph else C_WALL)
+                        else:
+                            c = C_WALL if y % 4 != 3 else C_WALL_DARK
+                    elif kind == FOUNTAIN:
+                        if fontana:
+                            fx, fy = gx - 13 * TILE, gy - 12 * TILE
+                            c = (fontana[fy][fx] if 0 <= fx < fw and 0 <= fy < fh else C_WATER)
+                        else:
+                            c = C_WATER
+                    else:
+                        c = C_WALL_DARK if (y % 4 == 3) else C_ARCH
+
+                    px[gy][gx] = c
+
+    return w, h, px
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     print("[piazza-art] generazione degli asset segnaposto di Piazza Grande")
@@ -493,6 +562,9 @@ def main():
     # "Invalid sprite height". Emesso qui insieme al .bmp, mai scritto a mano.
     check_and_write("overworld_ubaldo", w, h, px, PALETTE_HERO, "sprite", None,
                     ',\n    "height": 16')
+
+    w, h, px = draw_bargello()
+    check_and_write("bargello_ground", w, h, px, PALETTE_GROUND, "regular_bg", MAX_TILES_GROUND)
 
     w, h, px = draw_npc()
     check_and_write("overworld_npc", w, h, px, PALETTE_HERO, "sprite", None,
