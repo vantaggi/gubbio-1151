@@ -25,7 +25,42 @@ bash tools/build_rom.sh "USERFLAGS=-DGUBBIO_BATTLE_AUTOTEST"   # ROM che si auto
 ```
 
 * Emulatore: `C:/Users/cioti/mGBA-0.10.5/mGBA.exe`. La build console `mgba-sdl.exe` stampa i
-  `BN_LOG` su stdout ed e' il modo con cui si collauda **senza guardare lo schermo**.
+  `BN_LOG` su stdout ed e' il modo con cui si collauda **senza guardare lo schermo**. Per
+  catturarlo: `timeout 200 mgba-sdl.exe gubbio1151.gba > log.txt 2>&1` **in primo piano**.
+  Lanciarlo in background e poi ucciderlo restituisce un file vuoto — il buffer non viene mai
+  scaricato, e per due sessioni si e' creduto che l'emulatore non stampasse nulla.
+
+### Comandi da tastiera: WASD
+
+Il Game Boy Advance non ha una tastiera. La ROM legge i **tasti hardware** (croce direzionale,
+A, B, L, R, Start, Select) e non sa nulla di come siano mappati: la corrispondenza vive
+nell'emulatore, non nel C++. Su richiesta del committente (Sessione 20) le frecce sono state
+sostituite da WASD in `C:/Users/cioti/mGBA-0.10.5/config.ini`, sezione `[gba.input.QT_K]`:
+
+| Tastiera | Tasto GBA | A cosa serve nel gioco |
+| :-- | :-- | :-- |
+| `W` `A` `S` `D` | croce direzionale | camminare |
+| `K` | **A** | parlare, confermare, avanzare il dialogo |
+| `J` | **B** | correre (tenuto), annullare |
+| `Q` / `E` | L / R | non ancora usati |
+| `Invio` | Start | — |
+| `Backspace` | Select | salvare su FRAM |
+
+`L` e `R` sono stati spostati su `Q` ed `E` perche' stavano proprio su `A` e `S`, che ora
+servono alla croce direzionale. Il formato del file ammette **un solo tasto per pulsante**:
+attivando WASD le frecce smettono di funzionare, non si sommano. La copia precedente e' in
+`config.ini.prima-di-wasd`.
+
+Due avvertenze che valgono la pena di essere scritte:
+
+* La modifica riguarda **l'emulatore, non il progetto**: vale per ogni ROM aperta con questo
+  mGBA, e non e' versionata perche' quel file sta fuori dal repository. Questa tabella e' la
+  sua unica copia di sicurezza dentro il progetto.
+* Il frontend **SDL** (`mgba-sdl.exe`) ha una sezione di binding propria e separata, che NON e'
+  stata toccata: li' l'input dell'autotest viene iniettato via `bn::core::init(keypad_commands)`
+  e non passa dalla tastiera, quindi rimapparla non servirebbe a nulla.
+* Quando il gioco scrive «premi A» intende sempre il **pulsante A del GBA**, che ora sta sul
+  tasto `K`. I testi non vanno cambiati: nominano l'hardware, non la tastiera.
 * Toolchain: `C:/Users/cioti/devkitPro` (installata estraendo i pacchetti pacman ufficiali, senza
   privilegi di amministratore). Butano: `../butano`, accanto al progetto.
 * Anteprima della schermata fuori dall'emulatore: `python tools/preview_battle_screen.py`.
