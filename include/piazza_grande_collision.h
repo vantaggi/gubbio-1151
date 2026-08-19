@@ -5,15 +5,36 @@
 
 namespace gubbio::maps {
 
-constexpr int PIAZZA_WIDTH = 64;
-constexpr int PIAZZA_HEIGHT = 40;
+// I DUE ASSI ERANO SCAMBIATI, e il committente lo ha reso visibile con una fotografia aerea.
+//
+// L'asse x corre da SUD a NORD, l'asse y da OVEST a EST (vedi l'orientamento piu' sotto). Fino
+// alla Sessione 20 la mappa era 64 tile su x e 40 su y: cioe' 96 metri in senso nord-sud e 60
+// in senso ovest-est, con l'asse LUNGO che andava da nord a sud.
+//
+// La piazza vera e' il contrario, e non serve la fotografia per saperlo — bastava la tabella
+// LANDMARKS di questo stesso progetto. Li' Piazza Grande e' dichiarata 130 m x 40 m, il fronte
+// dei Consoli 33 m e quello del Pretorio 25 m. I due palazzi SI FRONTEGGIANO, quindi i loro
+// fronti stanno sul lato da 40 m, e la distanza fra loro e' il lato lungo. Il lato lungo e'
+// dunque quello OVEST-EST, non quello nord-sud. Il fronte dei Consoli, largo 22 tile, stava
+// disteso sull'asse da 64: era il palazzo messo per il verso sbagliato dentro la piazza.
+//
+// Quindi 32 su x (48 m nord-sud, contro i 40 reali piu' i due margini) e 64 su y (96 m ovest-est,
+// che e' la distanza fra i palazzi compressa secondo la regola dell'illusione). La piazza aperta
+// che ne risulta e' 25 tile per 39, cioe' un rettangolo largo una volta e mezza piu' che alto —
+// che e' quello che si vede nella fotografia aerea.
+//
+// Effetto collaterale gradito: 32 x 64 tile sono 256 x 512 px, ed e' esattamente un BG regolare
+// legale. La mappa riempie il proprio sfondo senza righe sprecate, cosa che con 64 x 40 dentro
+// un 512 x 512 non accadeva.
+constexpr int PIAZZA_WIDTH = 32;
+constexpr int PIAZZA_HEIGHT = 64;
 
 // Misure in PIXEL. Servono alla camera e al clamping del giocatore, che lavorano in pixel
 // mentre la collisione lavora in tile: tenerle derivate invece che riscritte a mano e' cio'
 // che impedisce alle due unita' di divergere.
 constexpr int TILE_SIZE_PX = 8;
-constexpr int PIAZZA_WIDTH_PX = PIAZZA_WIDTH * TILE_SIZE_PX;    // 512
-constexpr int PIAZZA_HEIGHT_PX = PIAZZA_HEIGHT * TILE_SIZE_PX;  // 320
+constexpr int PIAZZA_WIDTH_PX = PIAZZA_WIDTH * TILE_SIZE_PX;    // 256
+constexpr int PIAZZA_HEIGHT_PX = PIAZZA_HEIGHT * TILE_SIZE_PX;  // 512
 
 // Legenda Collisioni (Sez. 21B GDD). I valori numerici sono quelli originali: la griglia e'
 // nata come numeri nudi e i numeri restano la rappresentazione in memoria.
@@ -41,8 +62,10 @@ enum class TileType : uint8_t
 //
 // Disposizione reale (correzione del committente, Sessione 19): **Palazzo dei Consoli a OVEST**,
 // **Pretorio a EST**, i due che si fronteggiano; a **nord** la strada in ciottolato dove via dei
-// Consoli si unisce a via XX Settembre, e oltre il Palazzo Ranghiasci; a **sud** il muretto sul
-// vuoto, perche' la piazza e' PENSILE, sospesa sopra gli Arconi.
+// Consoli si unisce a via XX Settembre, e oltre la strada il **Palazzo Ducale, i giardini
+// pensili e il Duomo** — non la Basilica di Sant'Ubaldo, che sta molto piu' in alto sul Monte
+// Ingino e non affaccia sulla piazza; a **sud** il muretto sul vuoto, perche' la piazza e'
+// PENSILE, sospesa sopra gli Arconi.
 //
 // **LA MAPPA NON E' ORIENTATA A NORD: e' orientata a OVEST**, per scelta del committente.
 // Ruotando di novanta gradi, in gioco si vede cosi':
@@ -60,22 +83,26 @@ enum class TileType : uint8_t
 // La regola delle adiacenze di `city_reference.h` resta rispettata: cambia l'orientamento della
 // vista, non l'ordine in cui le cose si incontrano.
 constexpr int CONSOLI_LAST_Y = 18;       // fascia alta: il palazzo, cioe' OVEST
-constexpr int PRETORIO_FIRST_Y = 34;     // fascia bassa: il Pretorio, cioe' EST
+constexpr int PRETORIO_FIRST_Y = 58;     // fascia bassa: il Pretorio, cioe' EST
 // A DESTRA il nord, a SINISTRA il sud. Non e' arbitrario: ruotando di 90 gradi una mappa con il
 // nord in alto — cioe' portando l'ovest in cima — il nord finisce a destra e il sud a sinistra.
 // La prima stesura li aveva scambiati, e quello non era una rotazione ma un RIBALTAMENTO: la
 // pianta risultante era l'immagine allo specchio di Gubbio, con via dei Consoli dalla parte
 // sbagliata rispetto al muretto. Chi tocca questi due numeri li tocca in coppia.
-constexpr int RAILING_LAST_X = 3;        // fascia sinistra: il muretto, cioe' SUD
-constexpr int ROAD_FIRST_X = 59;         // fascia destra: il ciottolato, cioe' NORD
+constexpr int RAILING_LAST_X = 1;        // fascia sinistra: il muretto, cioe' SUD
+constexpr int ROAD_FIRST_X = 27;         // fascia destra: il ciottolato, cioe' NORD
+// Il fronte edificato sul lato esterno della strada. Senza, la carreggiata finiva contro il
+// bordo invisibile della mappa: si camminava fino al nulla. Dietro questi muri stanno il
+// Palazzo Ducale, i giardini pensili e il Duomo, che sono a nord e sopra la piazza.
+constexpr int NORTH_FRONT_X = 31;
 
 // Fronti in scala (city_reference.h): 33 m = 22 tile per i Consoli, 25 m = 16 per il Pretorio.
-constexpr int CONSOLI_FIRST_X = 21;
-constexpr int CONSOLI_LAST_X = 42;
+constexpr int CONSOLI_FIRST_X = 3;
+constexpr int CONSOLI_LAST_X = 24;
 // Specchiate insieme al resto: x -> PIAZZA_WIDTH - 1 - x porta 26..41 in 22..37. Il fronte dei
 // Consoli, 21..42, e' simmetrico rispetto al centro e quindi non cambia.
-constexpr int PRETORIO_FIRST_X = 22;
-constexpr int PRETORIO_LAST_X = 37;
+constexpr int PRETORIO_FIRST_X = 6;
+constexpr int PRETORIO_LAST_X = 21;
 
 
 inline constexpr uint8_t get_tile_type(int x, int y) {
@@ -88,6 +115,8 @@ inline constexpr uint8_t get_tile_type(int x, int y) {
     // l'alto. Via dei Consoli entra dall'angolo verso i Consoli, via XX Settembre da quello
     // verso il Pretorio: sono gli imbocchi nord-ovest e nord-est della piazza vera, e si
     // congiungono proprio lungo questa fascia.
+    if (x >= NORTH_FRONT_X) return 1;    // fronti sul lato nord della strada
+
     if (x >= ROAD_FIRST_X) {
         if (y <= 8) return 4;                        // via dei Consoli (nord-ovest)
         if (y >= PIAZZA_HEIGHT - 9) return 5;        // via XX Settembre (nord-est)
@@ -96,21 +125,21 @@ inline constexpr uint8_t get_tile_type(int x, int y) {
 
     // ALTO = OVEST: Palazzo dei Consoli, col portone al centro del fronte.
     if (y <= CONSOLI_LAST_Y) {
-        if (y == CONSOLI_LAST_Y && (x == 31 || x == 32)) return 3;
+        if (y == CONSOLI_LAST_Y && (x == 13 || x == 14)) return 3;
         if (x >= CONSOLI_FIRST_X && x <= CONSOLI_LAST_X) return 7;
         return 1;                                    // edificato minore ai lati
     }
 
     // La scalinata a ventaglio, sul selciato davanti al portone.
-    if (y == CONSOLI_LAST_Y + 1 && x >= 29 && x <= 34) return 9;
+    if (y == CONSOLI_LAST_Y + 1 && x >= 11 && x <= 16) return 9;
 
     // BASSO = EST: Palazzo Pretorio, che fronteggia i Consoli.
     if (y >= PRETORIO_FIRST_Y) {
         if (x >= PRETORIO_FIRST_X && x <= PRETORIO_LAST_X) {
-            // 31 e 32, non 33 e 34: il portale ad arco della fotografia cade a cinque tile
-            // dall'angolo della fascia, non a otto. Finche' i due numeri non coincidono, il
-            // giocatore preme A davanti a un muro dipinto e la porta e' altrove.
-            if (y == PRETORIO_FIRST_Y && (x == 31 || x == 32)) return 10;
+            // 15 e 16: il portale ad arco della fotografia cade a nove tile dall'angolo della
+            // fascia (la foto e' specchiata, vedi photo_to_tiles.py). Finche' questo numero e il
+            // disegno non coincidono, il giocatore preme A davanti a un muro dipinto.
+            if (y == PRETORIO_FIRST_Y && (x == 15 || x == 16)) return 10;
             return 8;
         }
 
@@ -194,15 +223,15 @@ inline constexpr CollisionGrid PIAZZA_GRID = make_piazza_grid();
 
 // Punti notevoli della disposizione, verificati dal compilatore. Sono anche la documentazione
 // eseguibile dell'orientamento: se qualcuno ruotasse di nuovo la mappa, si fermerebbe qui.
-static_assert(PIAZZA_GRID.data[31 + CONSOLI_LAST_Y * PIAZZA_WIDTH] == uint8_t(TileType::DOOR_CONSOLI),
+static_assert(PIAZZA_GRID.data[13 + CONSOLI_LAST_Y * PIAZZA_WIDTH] == uint8_t(TileType::DOOR_CONSOLI),
               "Il portone dei Consoli non e' al centro del fronte");
-static_assert(PIAZZA_GRID.data[1 + 20 * PIAZZA_WIDTH] == uint8_t(TileType::RAILING),
+static_assert(PIAZZA_GRID.data[0 + 30 * PIAZZA_WIDTH] == uint8_t(TileType::RAILING),
               "Il muretto sul vuoto deve stare a SINISTRA (sud reale)");
-static_assert(PIAZZA_GRID.data[61 + 20 * PIAZZA_WIDTH] == uint8_t(TileType::ROAD),
+static_assert(PIAZZA_GRID.data[28 + 30 * PIAZZA_WIDTH] == uint8_t(TileType::ROAD),
               "Il ciottolato deve stare a DESTRA (nord reale)");
-static_assert(PIAZZA_GRID.data[61 + 2 * PIAZZA_WIDTH] == uint8_t(TileType::EXIT_SAN_MARTINO),
+static_assert(PIAZZA_GRID.data[28 + 2 * PIAZZA_WIDTH] == uint8_t(TileType::EXIT_SAN_MARTINO),
               "Via dei Consoli sbocca verso il Palazzo dei Consoli");
-static_assert(PIAZZA_GRID.data[61 + 36 * PIAZZA_WIDTH] == uint8_t(TileType::EXIT_PORTA_ROMANA),
+static_assert(PIAZZA_GRID.data[28 + 60 * PIAZZA_WIDTH] == uint8_t(TileType::EXIT_PORTA_ROMANA),
               "Via XX Settembre sbocca verso il Pretorio");
 
 // La coppia che distingue una ROTAZIONE da un ribaltamento: strada e muretto stanno su lati
@@ -210,20 +239,22 @@ static_assert(PIAZZA_GRID.data[61 + 36 * PIAZZA_WIDTH] == uint8_t(TileType::EXIT
 // nuovo l'immagine allo specchio di Gubbio, che compila e si gioca senza dare segno di se'.
 static_assert(ROAD_FIRST_X > RAILING_LAST_X,
               "Strada e muretto si sovrappongono");
-static_assert(PIAZZA_GRID.data[1 + 20 * PIAZZA_WIDTH] != PIAZZA_GRID.data[61 + 20 * PIAZZA_WIDTH],
+static_assert(PIAZZA_GRID.data[0 + 30 * PIAZZA_WIDTH] != PIAZZA_GRID.data[28 + 30 * PIAZZA_WIDTH],
               "I due lati corti non possono essere la stessa cosa");
-static_assert(PIAZZA_GRID.data[32 + 10 * PIAZZA_WIDTH] == uint8_t(TileType::CONSOLI_FACADE),
+static_assert(PIAZZA_GRID.data[NORTH_FRONT_X + 30 * PIAZZA_WIDTH] == uint8_t(TileType::WALL),
+              "La strada deve essere chiusa anche sul lato nord");
+static_assert(PIAZZA_GRID.data[14 + 10 * PIAZZA_WIDTH] == uint8_t(TileType::CONSOLI_FACADE),
               "Il Palazzo dei Consoli sta in ALTO (ovest reale)");
-static_assert(PIAZZA_GRID.data[32 + 36 * PIAZZA_WIDTH] == uint8_t(TileType::PRETORIO_FACADE),
+static_assert(PIAZZA_GRID.data[14 + 60 * PIAZZA_WIDTH] == uint8_t(TileType::PRETORIO_FACADE),
               "Il Palazzo Pretorio sta in BASSO (est reale), di fronte ai Consoli");
-static_assert(PIAZZA_GRID.data[32 + 25 * PIAZZA_WIDTH] == uint8_t(TileType::GROUND),
+static_assert(PIAZZA_GRID.data[14 + 38 * PIAZZA_WIDTH] == uint8_t(TileType::GROUND),
               "Il centro della piazza non e' calpestabile");
 static_assert(sizeof(CollisionGrid) == PIAZZA_WIDTH * PIAZZA_HEIGHT,
               "La griglia deve restare un blocco contiguo di byte");
 
 // La conversione pixel -> tile deve concordare con la griglia, altrimenti il giocatore
 // collide contro qualcosa che non e' dove crede.
-static_assert(get_tile_type_px(32 * TILE_SIZE_PX + 7, 18 * TILE_SIZE_PX + 7) ==
+static_assert(get_tile_type_px(13 * TILE_SIZE_PX + 7, 18 * TILE_SIZE_PX + 7) ==
                   uint8_t(TileType::DOOR_CONSOLI),
               "get_tile_type_px non concorda con get_tile_type sull'ultimo pixel del tile");
 static_assert(get_tile_type_px(-1, 30 * TILE_SIZE_PX) == uint8_t(TileType::WALL),

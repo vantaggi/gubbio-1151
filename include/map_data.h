@@ -122,12 +122,12 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
         .parallax = &bn::regular_bg_items::piazza_sky,
         .foreground_covers_full_height = false,
         .spawns = {
-            spawn_at_tile(32, 26),   // centro della piazza, sul selciato
-            spawn_at_tile(32, 21),   // uscendo dal portone dei Consoli, in alto
+            spawn_at_tile(14, 38),   // centro della piazza, sul selciato
+            spawn_at_tile(13, 20),   // uscendo dal portone dei Consoli, in alto
             // I rientri stanno SUL CIOTTOLATO, che e' l'unica fascia percorribile a destra:
             // la fascia alta e' tutta occupata dal Palazzo dei Consoli e dall'edificato minore.
-            spawn_at_tile(61, 28),   // rientrando da via XX Settembre
-            spawn_at_tile(61, 12)    // rientrando da via dei Consoli
+            spawn_at_tile(28, 53),   // rientrando da via XX Settembre
+            spawn_at_tile(28, 10)    // rientrando da via dei Consoli
         },
         .triggers = {
             // Il portone dei Consoli non ha ancora una mappa di destinazione: rimanda alla

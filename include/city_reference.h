@@ -111,29 +111,40 @@ static_assert([]
 
 // --- L'invariante che tiene in piedi l'illusione ---------------------------------------------
 //
-// Nella citta' vera il fronte del Palazzo dei Consoli occupa circa un quarto del lato lungo di
-// Piazza Grande (33 m su 130). Nella piazza implementata, larga 64 tile, quel rapporto va
-// conservato: il palazzo deve occupare 22 tile su 64, cioe' poco piu' di un terzo.
+// ATTENZIONE ALL'ASSE, perche' qui ci si e' gia' sbagliati. Nella griglia della piazza
+// `PIAZZA_WIDTH` e' l'asse NORD-SUD, quello CORTO (i 40 m fra il muretto e la strada), e
+// `PIAZZA_HEIGHT` e' l'asse OVEST-EST, quello LUNGO fra i due palazzi che si fronteggiano. Fino
+// alla Sessione 20 le due assert qui sotto leggevano `PIAZZA_WIDTH` come se fosse il lato lungo:
+// erano coerenti con una mappa che aveva i due assi scambiati, e hanno smesso di passare nel
+// momento in cui la mappa e' stata raddrizzata. Sono servite esattamente a questo.
 //
-// E' piu' largo, in proporzione, di quanto sia nella realta' — ed e' voluto: la piazza e' stata
-// accorciata e il palazzo no. Il vincolo qui e' che il rapporto resti nella fascia in cui l'occhio
-// legge "un grande palazzo che domina un lato", che e' cio' che deve restare vero.
+// Il fronte del Palazzo dei Consoli sta sul lato CORTO — e' li' che il palazzo si affaccia — e
+// nella citta' vera lo occupa quasi tutto: 33 m su 40. Il vincolo e' che continui a occuparlo
+// quasi tutto, perche' e' cio' che fa leggere "un palazzo che tiene un intero lato della piazza".
 inline constexpr int CONSOLI_FRONT_TILES = LANDMARKS[0].tiles_width;
 
-static_assert(CONSOLI_FRONT_TILES * 4 >= maps::PIAZZA_WIDTH &&
-              CONSOLI_FRONT_TILES * 2 <= maps::PIAZZA_WIDTH,
-              "Il fronte del Palazzo dei Consoli e' fuori proporzione rispetto alla piazza: "
-              "deve stare fra un quarto e meta' della larghezza");
+static_assert(CONSOLI_FRONT_TILES * 2 >= maps::PIAZZA_WIDTH &&
+              CONSOLI_FRONT_TILES <= maps::PIAZZA_WIDTH,
+              "Il fronte del Palazzo dei Consoli e' fuori proporzione rispetto al lato CORTO "
+              "della piazza, che e' quello su cui il palazzo si affaccia: deve occuparne fra "
+              "meta' e la totalita'");
 
-// Fattore di compressione delle distanze, dichiarato invece che subito: la piazza giocabile e'
-// larga 96 m contro i 130 reali, cioe' circa i tre quarti. Serve a chi autorera' le altre aree
-// per restare coerente — se ogni area comprimesse a piacere, le distanze relative fra i luoghi
-// smetterebbero di somigliare alla citta'.
+// La piazza deve restare piu' LUNGA che larga, e per il verso giusto. E' la forma che si vede
+// nella fotografia aerea, ed e' anche l'unica compatibile con la tabella qui sopra: due palazzi
+// che si fronteggiano da 33 e 25 metri di fronte non possono stare su un lato da 130 m.
+static_assert(maps::PIAZZA_HEIGHT > maps::PIAZZA_WIDTH,
+              "L'asse Consoli-Pretorio (ovest-est, cioe' PIAZZA_HEIGHT) deve essere il lato "
+              "LUNGO: invertirli rimette la piazza per il verso sbagliato");
+
+// Fattore di compressione delle distanze, dichiarato invece che subito. Serve a chi autora le
+// altre aree per restare coerente: se ogni area comprimesse a piacere, le distanze relative fra
+// i luoghi smetterebbero di somigliare alla citta'.
 inline constexpr int DISTANCE_PERCENT = 73;      // 96 / 130, in aritmetica intera
 
-static_assert(meters_from_tiles(maps::PIAZZA_WIDTH) * 100 / LANDMARKS[1].real_width_m ==
+static_assert(meters_from_tiles(maps::PIAZZA_HEIGHT) * 100 / LANDMARKS[1].real_width_m ==
                   DISTANCE_PERCENT,
-              "La compressione dichiarata non corrisponde a quella effettiva della piazza");
+              "La compressione dichiarata non corrisponde a quella effettiva della piazza, "
+              "misurata sul lato LUNGO");
 
 } // namespace gubbio
 

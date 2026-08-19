@@ -27,9 +27,6 @@ constexpr int EXIT_FADE_FRAMES = 16;
 // e' uno shift, non una divisione, in un calcolo che gira a ogni frame.
 constexpr int PARALLAX_SHIFT = 2;
 
-// Lato dell'immagine del suolo: 512, cioe' la misura legale di BG regolare che contiene la
-// mappa 512x320 (le dimensioni ammesse sono multipli di 256).
-constexpr int GROUND_IMAGE_SIZE = 512;
 
 // Meta' schermo: la camera non puo' avvicinarsi al bordo della mappa piu' di cosi', altrimenti
 // oltre il bordo comparirebbe il vuoto (o, peggio, il wrap del BG).
@@ -79,11 +76,16 @@ ExplorationScene::ExplorationScene(GameState& state, const SceneRequest& request
     _ground.set_priority(2);
 
     // ANCORAGGIO. In Butano l'origine di un background e' il suo CENTRO, non l'angolo: un BG
-    // 512x512 lasciato a (0,0) mette il proprio pixel centrale sull'origine del mondo, e le
-    // coordinate della mappa — che partono dall'angolo in alto a sinistra — finiscono spostate
-    // di meta' immagine. Il giocatore camminava cosi' fuori dall'area disegnata, vedendo il
-    // cielo attraverso le zone trasparenti.
-    _ground.set_position(GROUND_IMAGE_SIZE / 2, GROUND_IMAGE_SIZE / 2);
+    // lasciato a (0,0) mette il proprio pixel centrale sull'origine del mondo, e le coordinate
+    // della mappa — che partono dall'angolo in alto a sinistra — finiscono spostate di meta'
+    // immagine. Il giocatore camminava cosi' fuori dall'area disegnata, vedendo il cielo
+    // attraverso le zone trasparenti.
+    //
+    // La misura si CHIEDE al background invece di scriverla qui. Finche' esisteva una costante
+    // GROUND_IMAGE_SIZE valeva 512 su entrambi gli assi, il che era vero per una sola mappa:
+    // Piazza Grande trasposta e' 256x512 e il Bargello 256x256, e con una costante quadrata
+    // sarebbero finiti fuori centro di 128 px senza che nulla se ne accorgesse.
+    _ground.set_position(_ground.dimensions().width() / 2, _ground.dimensions().height() / 2);
 
     if(_map.parallax)
     {

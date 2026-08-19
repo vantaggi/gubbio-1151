@@ -42,8 +42,8 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "graphics")
 # in fondo alla funzione impediscono che i due divergano in silenzio.
 # ----------------------------------------------------------------------------------------------
 
-PIAZZA_WIDTH = 64
-PIAZZA_HEIGHT = 40
+PIAZZA_WIDTH = 32
+PIAZZA_HEIGHT = 64
 TILE = 8
 
 (GROUND, WALL, RAILING, DOOR_CONSOLI, EXIT_SAN_MARTINO, EXIT_PORTA_ROMANA, FOUNTAIN,
@@ -53,8 +53,8 @@ TILE = 8
 # Gli stessi nomi di include/piazza_grande_collision.h: l'angolo della fascia del Pretorio serve
 # sia alla griglia sia all'incollaggio della fotografia, e finche' era un 24 scritto a mano nel
 # punto d'incollaggio le due cose potevano scivolare l'una sull'altra — ed erano scivolate.
-PRETORIO_FIRST_X = 22
-PRETORIO_FIRST_Y = 34
+PRETORIO_FIRST_X = 6
+PRETORIO_FIRST_Y = 58
 
 
 def get_tile_type(x, y):
@@ -62,40 +62,42 @@ def get_tile_type(x, y):
     Consoli, basso = Pretorio, destra = ciottolato (nord), sinistra = muretto (sud)."""
     if x < 0 or x >= PIAZZA_WIDTH or y < 0 or y >= PIAZZA_HEIGHT:
         return WALL
-    if x <= 3:
+    if x <= 1:
         return RAILING
-    if x >= 59:
+    if x >= 31:
+        return WALL
+    if x >= 27:
         if y <= 8:
             return EXIT_SAN_MARTINO
         if y >= PIAZZA_HEIGHT - 9:
             return EXIT_PORTA_ROMANA
         return ROAD
     if y <= 18:
-        if y == 18 and x in (31, 32):
+        if y == 18 and x in (13, 14):
             return DOOR_CONSOLI
-        return CONSOLI_FACADE if 21 <= x <= 42 else WALL
-    if y == 19 and 29 <= x <= 34:
+        return CONSOLI_FACADE if 3 <= x <= 24 else WALL
+    if y == 19 and 11 <= x <= 16:
         return STAIRS
     if y >= PRETORIO_FIRST_Y:
-        if PRETORIO_FIRST_X <= x <= 37:
-            return DOOR_PRETORIO if (y == PRETORIO_FIRST_Y and x in (31, 32)) else PRETORIO_FACADE
+        if PRETORIO_FIRST_X <= x <= 21:
+            return DOOR_PRETORIO if (y == PRETORIO_FIRST_Y and x in (15, 16)) else PRETORIO_FACADE
         return WALL
     return GROUND
 
 
 # Gli stessi punti notevoli su cui il C++ ha le proprie static_assert.
-assert get_tile_type(31, 18) == DOOR_CONSOLI
-assert get_tile_type(1, 20) == RAILING
-assert get_tile_type(61, 20) == ROAD
-assert get_tile_type(32, 10) == CONSOLI_FACADE
-assert get_tile_type(32, 36) == PRETORIO_FACADE
-assert get_tile_type(32, 25) == GROUND
+assert get_tile_type(13, 18) == DOOR_CONSOLI
+assert get_tile_type(0, 30) == RAILING
+assert get_tile_type(28, 30) == ROAD
+assert get_tile_type(14, 10) == CONSOLI_FACADE
+assert get_tile_type(14, 60) == PRETORIO_FACADE
+assert get_tile_type(14, 38) == GROUND
 
 # ----------------------------------------------------------------------------------------------
 # Budget del Passo 9, in tile unici a 4bpp. Tetto duro di Butano: 1024 tile per tileset.
 # ----------------------------------------------------------------------------------------------
 
-CONSOLI_FIRST_X_PX = 21 * TILE     # dove comincia la facciata, in pixel
+CONSOLI_FIRST_X_PX = 3 * TILE     # dove comincia la facciata, in pixel
 
 MAX_TILES_GROUND = 512
 MAX_TILES_SKY = 128
@@ -262,11 +264,10 @@ def draw_ground():
     facciata, facc_w, facc_h = leggi_indici_bmp4("consoli_facciata.bmp")
     pretorio, pret_w, pret_h = leggi_indici_bmp4("pretorio_facciata.bmp")
     fontana, font_w, font_h = leggi_indici_bmp4("fontana.bmp")
-    # 512x512 e non 512x320: le dimensioni legali di un BG regolare sono multipli di 256
-    # (butano_graphics_tool.py), e un 512x256 farebbe ricomparire in cima la fascia sud della
-    # ringhiera per wrap hardware. Le righe oltre y=320 non sono mai inquadrate: la camera e'
-    # clampata prima.
-    w, h = 512, 512
+    # 256x512, che e' la misura esatta della mappa trasposta (32x64 tile) ed e' un BG regolare
+    # legale. Prima erano 512x512 per 64x40 tile: 192 righe di sfondo non inquadrabili, tenute
+    # solo perche' 512x320 non e' una misura legale. Adesso il problema non si pone piu'.
+    w, h = 256, 512
     px = canvas(w, h, C_VOID)
 
     for ty in range(PIAZZA_HEIGHT):
@@ -323,7 +324,7 @@ def draw_ground():
                                 # pensile — l'elemento che dice "questa piazza sta per aria".
                                 dentro_arco = 2 <= x <= 5 and y >= 8 - (x if x < 4 else 7 - x) * 2
                                 c = C_ARCH if dentro_arco else C_WALL
-                            elif 21 <= tx <= 22 and ty >= 4:
+                            elif 3 <= tx <= 4 and ty >= 4:
                                 # TORRE campanaria: piu' alta e spostata rispetto al centro.
                                 c = C_WALL_DARK if x in (0, 7) else C_WALL
                     elif kind == STAIRS:
