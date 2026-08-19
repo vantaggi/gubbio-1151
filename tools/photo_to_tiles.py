@@ -295,7 +295,9 @@ MONUMENTI = {
     # sulla facciata invece che sul bacino.
     "bargello_facciata": {
         "sorgente": "bargello_e_fontana.jpg",
-        "ritaglio": (430, 60, 1024, 456),
+        # Piu' in basso: il primo ritaglio prendeva il tetto e i cavi elettrici invece della
+        # facciata. Qui entrano le bifore e il portale, che sono i segni del palazzo.
+        "ritaglio": (430, 380, 1024, 776),
         "tile_w": 12,
         "tile_h": 8,
         "tetto_tile": 96,
@@ -306,7 +308,8 @@ MONUMENTI = {
     # primo piano nella foto del Bargello.
     "fontana": {
         "sorgente": "bargello_e_fontana.jpg",
-        "ritaglio": (150, 1000, 570, 1420),
+        # Centrato sul bacino ottagonale, non sul muro dietro.
+        "ritaglio": (170, 1040, 530, 1400),
         "tile_w": 3,
         "tile_h": 3,
         "tetto_tile": 9,
