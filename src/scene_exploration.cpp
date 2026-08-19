@@ -186,8 +186,12 @@ bool ExplorationScene::_check_triggers(SceneRequest& out)
         _state.player_pos_x = int16_t(_player.x());
         _state.player_pos_y = int16_t(_player.y());
 
-        BN_LOG("TRIGGER tile ", int(tile), " -> scena ", int(rule.scene),
-               " parametro ", int(rule.parameter), " rientro su spawn ", int(rule.entry_point));
+        // La POSIZIONE nel log, non solo il tile. Senza, un varco che scatta subito dopo un
+        // rientro e' indistinguibile da un varco che scatta dopo una camminata, e le due cose
+        // hanno cause opposte: la prima e' un punto di rientro troppo vicino, la seconda no.
+        BN_LOG("TRIGGER tile ", int(tile), " a x ", _player.x(), " y ", _player.y(),
+               " -> scena ", int(rule.scene), " parametro ", int(rule.parameter),
+               " rientro su spawn ", int(rule.entry_point));
 
         out = SceneRequest{rule.scene, rule.parameter};
         return true;
@@ -242,7 +246,16 @@ SceneRequest ExplorationScene::run()
         {
             const int indice = npc_at(_map_id, _player.x(), _player.y());
 
-            if(indice >= 0)
+            if(indice < 0)
+            {
+                // A premuto e nessuno con cui parlare. Sembra un non-evento e invece e' la
+                // traccia piu' utile che questa scena produca: sotto autotest e' l'unico modo di
+                // accorgersi che la camminata scritta a mano ha mancato l'NPC, invece di leggere
+                // l'assenza di "PARLA CON" e non sapere se il difetto sia nella traiettoria o
+                // nel dialogo. Un oracolo che tace quando fallisce non e' un oracolo.
+                BN_LOG("NESSUN INTERLOCUTORE a x ", _player.x(), " y ", _player.y());
+            }
+            else
             {
                 const NpcDef& npc = NPCS[indice];
                 const ScriptId script = npc_script_for_act(npc, _state.current_act);

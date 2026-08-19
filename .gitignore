@@ -37,3 +37,7 @@ desktop.ini
 #                     entrambi i casi vanno versionati (la loro sostituzione e' il lavoro d'arte).
 #   .claude/, .agents/ — le skill sono parte del progetto quanto il codice.
 ingredienti/
+
+# Cache di Python: rigenerabile, e sporca ogni diff.
+__pycache__/
+*.pyc

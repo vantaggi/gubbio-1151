@@ -58,10 +58,15 @@
 #define GUBBIO_AUTOTEST_ALIGN     GUBBIO_ALIGN_8 GUBBIO_ALIGN_8 GUBBIO_ALIGN_8 GUBBIO_ALIGN_8 "00"   /* 33 frame */
 
 // Coda di CAMMINATA, aggiunta nella Sessione 11 per collaudare l'esplorazione.
-// SINISTRA (0x020) + SU (0x040) + B (0x002) = 0x062 -> bassi 0x02 = '2', alti 0x03 = '3'.
-// In corsa (2 px/frame) dal centro della piazza servono ~127 frame per raggiungere il varco
-// occidentale a x=6 px: 256 frame lasciano margine anche se la battaglia finisce piu' tardi.
-#define GUBBIO_WALK_1    "23"
+// DESTRA (0x010) + SU (0x040) + B (0x002) = 0x052 -> bassi 0x12 = 'B', alti 0x02 = '2'.
+//
+// DESTRA e non piu' sinistra: con la piazza raddrizzata (Sessione 20) il ciottolato e i due
+// imbocchi stanno a NORD, che sulla mappa ruotata e' il lato DESTRO. Andando a sinistra il
+// giocatore trovava il muretto e ci restava appoggiato per 256 frame senza uscire mai — un
+// autotest che non fallisce e non prova nulla.
+// In corsa (2 px/frame) dal centro (116, 308) al varco di via dei Consoli (240, 64) servono
+// ~122 frame sull'asse piu' lungo: 256 lasciano margine anche se la battaglia finisce tardi.
+#define GUBBIO_WALK_1    "B2"
 #define GUBBIO_WALK_4    GUBBIO_WALK_1 GUBBIO_WALK_1 GUBBIO_WALK_1 GUBBIO_WALK_1
 #define GUBBIO_WALK_16   GUBBIO_WALK_4 GUBBIO_WALK_4 GUBBIO_WALK_4 GUBBIO_WALK_4
 #define GUBBIO_WALK_64   GUBBIO_WALK_16 GUBBIO_WALK_16 GUBBIO_WALK_16 GUBBIO_WALK_16
@@ -100,6 +105,51 @@
 // sbagliava proprio cosi', e il log lo ha mostrato subito.
 #define GUBBIO_NE_100    GUBBIO_NE_64 GUBBIO_NE_16 GUBBIO_NE_16 GUBBIO_NE_4
 
+// SINISTRA (0x020) + B (0x002) = 0x022 -> bassi 2 = '2', alti 1 = '1'.
+// GIU' (0x080) + B (0x002) = 0x082 -> bassi 2 = '2', alti 4 = '4'.
+//
+// Due tratti dritti invece di una diagonale, ed e' voluto: in diagonale entrambi gli assi
+// avanzano ogni frame, quindi la corsa supera la riga di Tano molto prima di raggiungere la sua
+// colonna e finisce contro il bordo della mappa. Con due tratti ciascun asse si ferma dove deve.
+// CERCA invece di MIRARE, e la differenza non e' stilistica.
+//
+// Lo script dei tasti e' indicizzato sul FRAME, dal frame zero, mentre la scena di esplorazione
+// comincia a un frame che dipende da quanto e' durata la battaglia e da quanti frame consuma la
+// dissolvenza d'ingresso — che ignora l'input. Una traiettoria contata al pixel ("48 frame a
+// sinistra sono 96 px sono 12 tile") e' quindi esatta solo per caso: misurata, mancava Mastro
+// Tano di 22 px sull'asse x e di 28 sull'asse y, e l'unico sintomo era l'assenza silenziosa di
+// una riga di log.
+//
+// Qui invece si cammina PREMENDO A ogni quattro frame. Non serve sapere dove si e': basta
+// passare, prima o poi, entro i 12 px di raggio d'interazione di qualcuno. Tre frame di corsa e
+// uno di pressione: abbastanza rado da non richiudere la battuta appena aperta.
+//
+// I DUE CARATTERI VANNO IN QUEST'ORDINE: prima i 5 bit BASSI, poi gli ALTI. Scriverli
+// invertiti non e' un errore che si vede — produce una combinazione di tasti diversa ma
+// perfettamente valida, e il gioco la esegue. Scritto "42" invece di "24" per GIU'+B,
+// l'autotest premeva SELECT+SU: risaliva i varchi appena attraversati facendo rimbalzare
+// il giocatore fra due aree, e intanto salvava su FRAM a ogni pressione. Il modello da
+// copiare e' GUBBIO_WALK_1, "23" per 0x062: bassi 2 primo carattere, alti 3 secondo.
+//
+// SINISTRA (0x020) + B (0x002)             = 0x022 -> bassi 2, alti 1 -> "21"
+// SINISTRA (0x020) + B (0x002) + A (0x001) = 0x023 -> bassi 3, alti 1 -> "31"
+// GIU'     (0x080) + B (0x002)             = 0x082 -> bassi 2, alti 4 -> "24"
+// GIU'     (0x080) + B (0x002) + A (0x001) = 0x083 -> bassi 3, alti 4 -> "34"
+#define GUBBIO_CERCA_O_4   "21" "21" "21" "31"
+#define GUBBIO_CERCA_O_16  GUBBIO_CERCA_O_4 GUBBIO_CERCA_O_4 GUBBIO_CERCA_O_4 GUBBIO_CERCA_O_4
+#define GUBBIO_CERCA_O_64  GUBBIO_CERCA_O_16 GUBBIO_CERCA_O_16 GUBBIO_CERCA_O_16 GUBBIO_CERCA_O_16
+// Discesa liscia verso EST, senza premere A: serve a PERCORRERE una strada, non a
+// cercare qualcuno. GIU' (0x080) + B (0x002) = 0x082 -> "24".
+#define GUBBIO_EST_1       "24"
+#define GUBBIO_EST_4       GUBBIO_EST_1 GUBBIO_EST_1 GUBBIO_EST_1 GUBBIO_EST_1
+#define GUBBIO_EST_16      GUBBIO_EST_4 GUBBIO_EST_4 GUBBIO_EST_4 GUBBIO_EST_4
+#define GUBBIO_EST_64      GUBBIO_EST_16 GUBBIO_EST_16 GUBBIO_EST_16 GUBBIO_EST_16
+#define GUBBIO_EST_256     GUBBIO_EST_64 GUBBIO_EST_64 GUBBIO_EST_64 GUBBIO_EST_64
+
+#define GUBBIO_CERCA_S_4   "24" "24" "24" "34"
+#define GUBBIO_CERCA_S_16  GUBBIO_CERCA_S_4 GUBBIO_CERCA_S_4 GUBBIO_CERCA_S_4 GUBBIO_CERCA_S_4
+#define GUBBIO_CERCA_S_48  GUBBIO_CERCA_S_16 GUBBIO_CERCA_S_16 GUBBIO_CERCA_S_16
+
 // DESTRA (0x010) + GIU' (0x080) + B (0x002) = 0x092 -> bassi 0x12 = 'B', alti 4 = '4'.
 // Porta dal punto di rientro a MASTRO TANO, accanto alla Fontana dei Matti: 136 px in corsa,
 // cioe' 68 frame. E' l'NPC su cui il gioco crashava — le sue battute hanno due righe invece di
@@ -118,13 +168,28 @@ constexpr const char* AUTOTEST_KEYPAD_SCRIPT =
     GUBBIO_AUTOTEST_ALIGN
     GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND
     GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND
-    GUBBIO_WALK_256
-    GUBBIO_SPAM_256
+    // LA CATENA DELLA CITTA', percorsa per intero. Dalla Sessione 20 il varco nord-ovest della
+    // piazza non salta piu' al Bargello: scende per VIA DEI CONSOLI, che e' un'area a se'. Il
+    // percorso collaudato qui e' quindi Piazza Grande -> via dei Consoli -> Largo del Bargello,
+    // cioe' due transizioni consecutive invece di una. E' il punto in cui nascono i loop di
+    // transizione che gli spawn point esistono per impedire, e ora ce ne sono due in fila.
+    // 128 frame e non 256: ne bastano ~122 per arrivare al varco, e i restanti continuavano a
+    // spingere VERSO L'ALTO anche dopo la transizione, ributtando il giocatore dentro il varco
+    // opposto. Un autotest che tiene premuta una direzione oltre il proprio scopo non collauda
+    // la transizione: la fa fallire.
+    GUBBIO_WALK_64 GUBBIO_WALK_64   // dal centro al varco nord-ovest, in salita a destra
     GUBBIO_IDLE_64        // attesa che la dissolvenza d'ingresso finisca
     GUBBIO_SELECT         // salvataggio su FRAM, verificabile nel `.sav` e nel log
     GUBBIO_IDLE_16
-    GUBBIO_SE_68          // raggiunge Mastro Tano, accanto alla Fontana dei Matti
-    GUBBIO_TASTO_A        // gli parla: parte lo script dell'Atto I, cinque battute
+    GUBBIO_EST_256        // percorre via dei Consoli in discesa, 59 tile fino al varco a valle
+    GUBBIO_EST_64
+    GUBBIO_IDLE_64        // attesa della seconda dissolvenza, quella verso il Bargello
+    // In Largo del Bargello sta MASTRO TANO, che ne e' il custode ed e' l'NPC su cui il gioco
+    // crashava: le sue battute hanno due righe invece di tre, ed era la riga assente a produrre
+    // il puntatore nullo. L'autotest andava solo dal Podesta', che ne ha tre, e non lo
+    // incontrava mai.
+    GUBBIO_CERCA_O_64     // batte la fascia a ovest del punto di rientro, premendo A
+    GUBBIO_CERCA_S_48     // e poi quella a sud: prima o poi Tano entra nel raggio
     GUBBIO_IDLE_256       // la macchina da scrivere percorre la prima battuta
     GUBBIO_TASTO_A GUBBIO_IDLE_64 GUBBIO_TASTO_A GUBBIO_IDLE_64
     GUBBIO_TASTO_A GUBBIO_IDLE_64 GUBBIO_TASTO_A GUBBIO_IDLE_64
