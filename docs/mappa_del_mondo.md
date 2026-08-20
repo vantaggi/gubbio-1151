@@ -146,7 +146,8 @@ perché è il punto in cui l'illusione si perde.
 
 ## 5. Il contratto tecnico di un'area
 
-Ogni area consegna **due file** e nient'altro:
+Ogni area consegna **due file** e nient'altro. **Entrambi**: un header senza il proprio script
+d'arte non produce il `.bmp`, non è cablabile in `MAPS[]` e non serve a niente. È già successo.
 
 ### `include/<nome>_collision.h`
 
@@ -177,6 +178,18 @@ constexpr int INGRESSO_DA_<AREA>_Y = ...;
 } }
 #endif
 ```
+
+> **PREFISSA OGNI COSTANTE COL NOME DELL'AREA.** Tutte le aree vivono nello **stesso**
+> `namespace gubbio::maps`. Una costante chiamata `ROAD_FIRST_X` o `INGRESSO_DA_SANT_AGOSTINO_X`
+> collide con quella di un'altra area e la build si ferma con una ridefinizione. Si scrive
+> `SAN_MARTINO_ROAD_FIRST_X`, mai `ROAD_FIRST_X`. Nella prima tornata di autori paralleli è
+> successo tre volte, e nessuno dei tre poteva accorgersene: ciascuno vedeva solo il proprio file.
+
+> **IL PUNTO DI RIENTRO STA ALMENO SEI TILE DAL PROPRIO VARCO.** Un `INGRESSO_DA_X` a due tile
+> dall'uscita verso X fa rimbalzare il giocatore fra le due aree all'infinito: gli basta tenere
+> premuta la direzione da cui è arrivato per rientrare nel frame successivo. È il **ciclo di
+> transizione**, la ragione per cui gli spawn point esistono, ed è già ricomparso una volta —
+> misurato dall'autotest come `piazza → via dei Consoli → piazza`, tre volte di fila.
 
 **Valori di tile.** Si riusano quelli di `piazza_grande_collision.h`, non se ne inventano:
 
@@ -222,7 +235,10 @@ Vincoli non negoziabili:
   punti notevoli** del C++. Due copie che divergono in silenzio sono peggio di una copia sola.
 * Misure BMP legali: larghezza e altezza devono essere **256 o 512 px**. Un BG 512×320 non esiste
   sul GBA e la build muore.
-* Tetto di **512 tile unici** per tileset. Lo strumento lo verifica e dice di quanto si sfora.
+* Tetto di **512 tile unici** per tileset, ed è un tetto vero: nella prima tornata la Basilica
+  ne ha prodotti 607 e il suo asset era inutilizzabile. Se si sfora si **semplifica il disegno** —
+  meno varietà casuale, più ripetizione — e si rifà girare finché non rientra. Lo strumento dice
+  di quanto si è fuori.
 * La `.json` dichiara sempre `"bpp_mode": "bpp_4"`. Senza, `butano_graphics_tool` promuove in
   silenzio a 8bpp: VRAM raddoppiata e tutti e 16 i banchi di palette occupati.
 
