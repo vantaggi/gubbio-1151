@@ -35,12 +35,25 @@
 //
 // Un round: Giorgio alza il Bastione Azzurro (GIU' al menu Abilita', L per scorrere alla
 // seconda abilita', A), Ubaldo lancia il Giudizio della Verga (stessa sequenza), Antonio il
+// B TENUTO PREMUTO, cioe' il fast-forward che il Passo 20 ha dato al giocatore. Serve anche
+// all'autotest: con lo stato PLAY_ROUND_ANIMATIONS ogni round dura cinque volte tanto, e senza
+// fast-forward dopo sette minuti di emulazione lo script era ancora al quarto round — la
+// camminata e il salvataggio non venivano piu' raggiunti, e il test sul .sav diventava rosso
+// senza che nulla nel gioco fosse rotto. Un oracolo che il proprio soggetto ha reso troppo lento
+// smette di misurare.
+// B (0x002) -> bassi 2 = '2', alti 0 = '0'. A passo 4 per frame, 64 frame coprono 256 frame di
+// animazione, cioe' piu' del round peggiore.
+#define GUBBIO_FF_4     "20" "20" "20" "20"
+#define GUBBIO_FF_16    GUBBIO_FF_4 GUBBIO_FF_4 GUBBIO_FF_4 GUBBIO_FF_4
+#define GUBBIO_FF_64    GUBBIO_FF_16 GUBBIO_FF_16 GUBBIO_FF_16 GUBBIO_FF_16
+
 // Fuoco (prima abilita', nessun L), poi tre frame per EXECUTE e CHECK.
 #define GUBBIO_AUTOTEST_ROUND \
     "04" "00" "0@" "00" "10" "00"   /* Giorgio -> Bastione Azzurro   */ \
     "04" "00" "0@" "00" "10" "00"   /* Ubaldo  -> Giudizio della Verga */ \
     "04" "00" "10" "00"             /* Antonio -> Fuoco di Sant'Antonio */ \
-    "00" "00" "00"                  /* EXECUTE + CHECK + assestamento  */
+    "00" "00" "00"                  /* EXECUTE + CHECK + assestamento  */ \
+    GUBBIO_FF_64                    /* PLAY_ROUND_ANIMATIONS, in fast-forward */
 
 // ALLINEAMENTO: i frame di scarto prima del primo comando utile sono
 //   1 (consumato da `bn::core::init()`) + INTRO_DURATION_FRAMES (lo stato INTRO_FADE_IN, che

@@ -65,6 +65,49 @@ Due avvertenze che valgono la pena di essere scritte:
   privilegi di amministratore). Butano: `../butano`, accanto al progetto.
 * Anteprima della schermata fuori dall'emulatore: `python tools/preview_battle_screen.py`.
 
+## PUNTO DI RIPRESA — fine Sessione 21 (24 agosto 2026)
+
+**Un test e' ROSSO, e non e' il gioco a essere rotto.** `python tests/test_save_system.py`
+fallisce sei controlli su nove con "nessuna banca con magic G115 nel .sav". I tre test sul CRC32
+passano: quelli non dipendono dall'emulatore.
+
+Causa: il Passo 20 ha aggiunto lo stato `PLAY_ROUND_ANIMATIONS`, che allunga ogni round di
+battaglia di circa cinque volte. L'autotest e' uno script di tasti a frame fissi che, dopo la
+battaglia, cammina fino a un varco e preme SELECT per salvare: con la battaglia cosi' lunga
+**non arriva piu' a quel punto** dentro una corsa di emulatore praticabile. Nella corsa piu'
+lunga provata (590 s di wall clock) era ancora dentro la battaglia. Il `.sav` che il test legge
+non viene quindi piu' rigenerato, e il test misura la sua assenza.
+
+Non e' una regressione del salvataggio: il codice FRAM non e' stato toccato, e l'ultima volta che
+un `.sav` e' stato prodotto — commit `210a378` — i nove controlli passavano.
+
+Mitigazione gia' applicata: l'autotest tiene premuto B durante le animazioni
+(`GUBBIO_FF_64` dentro `GUBBIO_AUTOTEST_ROUND`), cioe' usa il fast-forward a passo 4 che il Passo
+20 ha dato al giocatore. Ha portato la battaglia da 4 round in 420 s a 5 round in 300 s: aiuta,
+non basta.
+
+**Tre strade per chiuderla, in ordine di preferenza:**
+
+1. **Accorciare la battaglia dell'autotest.** Le otto ripetizioni di `GUBBIO_AUTOTEST_ROUND` in
+   `src/main.cpp` servivano a far morire i nemici; con `-DGUBBIO_AUTOTEST_ENCOUNTER=<id>` si puo'
+   scegliere uno scontro piu' breve, oppure ridurre le ripetizioni e accettare una FUGA come
+   uscita dalla battaglia. La parte da collaudare dopo la battaglia e' la camminata, non il
+   combattimento, che ha gia' i suoi 33 test.
+2. **Separare i due collaudi.** Una macro `-DGUBBIO_EXPLORE_AUTOTEST` che parta direttamente in
+   esplorazione, senza battaglia. E' la soluzione piu' pulita e toglie di mezzo per sempre
+   l'accoppiamento fra la durata della battaglia e il collaudo della mappa.
+3. **Alzare il passo del fast-forward** oltre 4 sotto autotest. E' la piu' rapida ed e' anche la
+   piu' fragile: lega il collaudo a una costante di design.
+
+**Il resto e' verde:** `test_assets`, `test_battle_engine` (33), `test_dialogue_quest`,
+`test_mondo` (5). Build pulita, gate zero-heap superato, e la battaglia gira su mGBA con
+`EXECUTE -> ANIMAZIONI -> CHECK`, zero assert e registro eventi mai saturo.
+
+**Dove si era arrivati:** Passi 19 e 21 del piano ancora da fare — fogli di animazione e
+`battle_animator.h`. Il Passo 20 e' chiuso.
+
+---
+
 **Le quattro regole che questo progetto ha imparato a sue spese:**
 
 0. **I log e le anteprime non sostituiscono il GIOCARE.** Alla Sessione 18 l'autotest riportava
