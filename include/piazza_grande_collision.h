@@ -55,7 +55,18 @@ enum class TileType : uint8_t
     PRETORIO_FACADE   = 8,   // Palazzo Pretorio, che gli sta di fronte: 25 m = 16 tile
     STAIRS            = 9,   // scalinata a ventaglio davanti al portone: si calpesta
     DOOR_PRETORIO     = 10,  // ingresso del Pretorio: oggi solo VISIVO, non porta altrove
-    ROAD              = 11   // ciottolato: via dei Consoli / via XX Settembre, a nord
+    ROAD              = 11,  // ciottolato: via dei Consoli / via XX Settembre, a nord
+
+    // Aggiunti nella Sessione 21, e la ragione e' un difetto trovato da chi autorava le
+    // aree. Il contratto del mondo prometteva TRE uscite per area (i valori 4, 5 e 6), ma
+    // `is_transition` ne riconosceva solo due piu' il portone: un'area con tre varchi ne
+    // otteneva uno INERTE, che non scatta e non da' alcun segno di se'. Piazza Quaranta
+    // Martiri ci e' cascata — il varco verso San Pietro era muto — e San Martino ha dovuto
+    // spacciare la Porta di Santa Lucia per il portone dei Consoli pur di averne tre che
+    // funzionassero. Il valore 6 non poteva servire: e' la FOUNTAIN, che il Monte Ingino
+    // usa davvero per il proprio fontanile di sosta.
+    EXIT_TERZA        = 12,  // trigger: terza uscita di un'area
+    EXIT_QUARTA       = 13   // trigger: quarta uscita (San Martino ne ha quattro)
 };
 
 // --- LA DISPOSIZIONE DELLA PIAZZA, E IL SUO ORIENTAMENTO ------------------------------------
@@ -96,6 +107,20 @@ constexpr int ROAD_FIRST_X = 27;         // fascia destra: il ciottolato, cioe' 
 // Palazzo Ducale, i giardini pensili e il Duomo, che sono a nord e sopra la piazza.
 constexpr int NORTH_FRONT_X = 31;
 
+// I DUE VARCHI CHE CHIUDONO L'ANELLO, aperti nella Sessione 21 quando le aree confinanti
+// sono finalmente esistite. Prima non avrebbero avuto dove portare.
+//
+// A NORD, un passaggio nel fronte edificato: e' da li' che si sale al Duomo, ai giardini
+// pensili e al Palazzo Ducale, e da li' in poi agli stradoni del monte.
+constexpr int VARCO_DUOMO_FIRST_Y = 30;
+constexpr int VARCO_DUOMO_LAST_Y  = 33;
+// A SUD, un'interruzione del muretto: la scalinata che scende SOTTO la piazza, fra gli
+// Arconi di sostruzione, fino a Piazza Quaranta Martiri. E' l'unico punto in cui il
+// parapetto non e' continuo, ed e' voluto: altrove affacciarsi sul vuoto deve restare
+// impossibile, perche' la piazza e' pensile.
+constexpr int VARCO_ARCONI_FIRST_Y = 40;
+constexpr int VARCO_ARCONI_LAST_Y  = 43;
+
 // Fronti in scala (city_reference.h): 33 m = 22 tile per i Consoli, 25 m = 16 per il Pretorio.
 constexpr int CONSOLI_FIRST_X = 3;
 constexpr int CONSOLI_LAST_X = 24;
@@ -108,14 +133,23 @@ constexpr int PRETORIO_LAST_X = 21;
 inline constexpr uint8_t get_tile_type(int x, int y) {
     if (x < 0 || x >= PIAZZA_WIDTH || y < 0 || y >= PIAZZA_HEIGHT) return 1; // Fuori mappa = muro
 
-    // SINISTRA = SUD: il muretto sul vuoto, con gli Arconi sotto.
-    if (x <= RAILING_LAST_X) return 2;
+    // SINISTRA = SUD: il muretto sul vuoto, con gli Arconi sotto — interrotto in un solo
+    // punto dalla scalinata che scende fra gli Arconi a Piazza Quaranta Martiri.
+    if (x <= RAILING_LAST_X) {
+        if (y >= VARCO_ARCONI_FIRST_Y && y <= VARCO_ARCONI_LAST_Y) return 13;
+        return 2;
+    }
 
     // DESTRA = NORD: la strada in ciottolato, che sale da EST a OVEST cioe' dal basso verso
     // l'alto. Via dei Consoli entra dall'angolo verso i Consoli, via XX Settembre da quello
     // verso il Pretorio: sono gli imbocchi nord-ovest e nord-est della piazza vera, e si
     // congiungono proprio lungo questa fascia.
-    if (x >= NORTH_FRONT_X) return 1;    // fronti sul lato nord della strada
+    // DESTRA OLTRE LA STRADA = i fronti sul lato nord, aperti in un solo punto: il passaggio
+    // che sale al Duomo, ai giardini pensili e al Palazzo Ducale.
+    if (x >= NORTH_FRONT_X) {
+        if (y >= VARCO_DUOMO_FIRST_Y && y <= VARCO_DUOMO_LAST_Y) return 12;
+        return 1;
+    }
 
     if (x >= ROAD_FIRST_X) {
         if (y <= 8) return 4;                        // via dei Consoli (nord-ovest)
@@ -185,8 +219,18 @@ inline constexpr uint8_t get_tile_type(int x, int y) {
 {
     return tile == uint8_t(TileType::DOOR_CONSOLI) ||
            tile == uint8_t(TileType::EXIT_SAN_MARTINO) ||
-           tile == uint8_t(TileType::EXIT_PORTA_ROMANA);
+           tile == uint8_t(TileType::EXIT_PORTA_ROMANA) ||
+           tile == uint8_t(TileType::EXIT_TERZA) ||
+           tile == uint8_t(TileType::EXIT_QUARTA);
 }
+
+static_assert(! is_transition(uint8_t(TileType::FOUNTAIN)),
+              "La FOUNTAIN e' un punto di interazione, non un varco: un'area che la usa "
+              "come uscita ottiene un varco muto");
+static_assert(is_transition(uint8_t(TileType::EXIT_TERZA)) &&
+              is_transition(uint8_t(TileType::EXIT_QUARTA)),
+              "Le uscite oltre la seconda devono essere riconosciute come varchi, "
+              "altrimenti tornano a essere inerti");
 
 // --- La griglia come DATO, derivata dalla funzione -------------------------------------------
 //
@@ -241,8 +285,16 @@ static_assert(ROAD_FIRST_X > RAILING_LAST_X,
               "Strada e muretto si sovrappongono");
 static_assert(PIAZZA_GRID.data[0 + 30 * PIAZZA_WIDTH] != PIAZZA_GRID.data[28 + 30 * PIAZZA_WIDTH],
               "I due lati corti non possono essere la stessa cosa");
-static_assert(PIAZZA_GRID.data[NORTH_FRONT_X + 30 * PIAZZA_WIDTH] == uint8_t(TileType::WALL),
+static_assert(PIAZZA_GRID.data[NORTH_FRONT_X + 20 * PIAZZA_WIDTH] == uint8_t(TileType::WALL),
               "La strada deve essere chiusa anche sul lato nord");
+static_assert(PIAZZA_GRID.data[NORTH_FRONT_X + VARCO_DUOMO_FIRST_Y * PIAZZA_WIDTH] ==
+                  uint8_t(TileType::EXIT_TERZA),
+              "Dal fronte nord si deve poter salire al Duomo e al Palazzo Ducale");
+static_assert(PIAZZA_GRID.data[0 + VARCO_ARCONI_FIRST_Y * PIAZZA_WIDTH] ==
+                  uint8_t(TileType::EXIT_QUARTA),
+              "Dal muretto si deve poter scendere fra gli Arconi a Piazza Quaranta Martiri");
+static_assert(PIAZZA_GRID.data[0 + 20 * PIAZZA_WIDTH] == uint8_t(TileType::RAILING),
+              "Il muretto e' interrotto SOLO alla scalinata: altrove la piazza e' pensile");
 static_assert(PIAZZA_GRID.data[14 + 10 * PIAZZA_WIDTH] == uint8_t(TileType::CONSOLI_FACADE),
               "Il Palazzo dei Consoli sta in ALTO (ovest reale)");
 static_assert(PIAZZA_GRID.data[14 + 60 * PIAZZA_WIDTH] == uint8_t(TileType::PRETORIO_FACADE),

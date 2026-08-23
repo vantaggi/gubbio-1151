@@ -9,6 +9,15 @@
 #include "bn_regular_bg_items_via_dei_consoli_ground.h"
 #include "bn_regular_bg_items_via_xx_settembre_ground.h"
 #include "bn_regular_bg_items_sant_andrea_ground.h"
+#include "bn_regular_bg_items_basilica_ground.h"
+#include "bn_regular_bg_items_bottaccione_ground.h"
+#include "bn_regular_bg_items_duomo_ducale_ground.h"
+#include "bn_regular_bg_items_monte_ingino_ground.h"
+#include "bn_regular_bg_items_piazza_quaranta_martiri_ground.h"
+#include "bn_regular_bg_items_san_martino_ground.h"
+#include "bn_regular_bg_items_san_pietro_ground.h"
+#include "bn_regular_bg_items_sant_agostino_ground.h"
+#include "bn_regular_bg_items_teatro_romano_ground.h"
 #include "bn_regular_bg_items_bargello_ground.h"
 #include "bn_regular_bg_items_piazza_sky.h"
 
@@ -17,6 +26,15 @@
 #include "largo_bargello_collision.h"
 #include "sant_andrea_collision.h"
 #include "via_dei_consoli_collision.h"
+#include "basilica_collision.h"
+#include "bottaccione_collision.h"
+#include "duomo_ducale_collision.h"
+#include "monte_ingino_collision.h"
+#include "piazza_quaranta_martiri_collision.h"
+#include "san_martino_collision.h"
+#include "san_pietro_collision.h"
+#include "sant_agostino_collision.h"
+#include "teatro_romano_collision.h"
 #include "via_xx_settembre_collision.h"
 #include "piazza_grande_collision.h"
 #include "scene.h"
@@ -29,8 +47,12 @@ namespace gubbio {
 // una classe per mappa sarebbe insostenibile: `ExplorationScene` e' parametrizzata da `MapId` e
 // legge tutto da qui.
 
-inline constexpr int MAX_SPAWNS_PER_MAP = 4;
-inline constexpr int MAX_TRIGGERS_PER_MAP = 4;
+// SEI, non quattro. Piazza Grande ha cinque varchi (portone, via dei Consoli, via XX
+// Settembre, Duomo, Arconi) e quindi altrettanti punti di rientro piu' il centro; San
+// Martino e' il nodo con quattro strade. Il vecchio tetto di quattro era dimensionato
+// su un mondo di due aree.
+inline constexpr int MAX_SPAWNS_PER_MAP = 6;
+inline constexpr int MAX_TRIGGERS_PER_MAP = 6;   // cinque varchi piu' il terminatore
 
 // Punto di comparsa, in PIXEL, riferito al centro dei piedi del giocatore.
 struct SpawnPoint
@@ -147,7 +169,13 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
             // il ciclo di transizione che gli spawn point esistono per impedire, ricomparso
             // misurato dall'autotest: piazza -> via dei Consoli -> piazza -> via dei Consoli.
             spawn_at_tile(28, 49),   // rientrando da via XX Settembre
-            spawn_at_tile(28, 14)    // rientrando da via dei Consoli
+            spawn_at_tile(28, 14),   // rientrando da via dei Consoli
+            // I due varchi aperti nella Sessione 21, quando le aree confinanti sono
+            // esistite. Entrambi i rientri stanno SEI tile dentro rispetto al proprio
+            // varco: e' la distanza sotto la quale il giocatore che tiene premuta la
+            // direzione d'arrivo rimbalza fra le due aree senza fermarsi mai.
+            spawn_at_tile(25, 31),   // rientrando dal Duomo e dal Palazzo Ducale, a nord
+            spawn_at_tile(7, 41)     // risalendo la scalinata degli Arconi, da sud
         },
         .triggers = {
             // Il portone dei Consoli non ha ancora una mappa di destinazione: rimanda alla
@@ -177,11 +205,97 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
             {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
              int16_t(MapId::VIA_XX_SETTEMBRE), SPAWN_AREA_DA_MONTE},
 
+            // A NORD si SALE al Duomo, ai giardini pensili e al Palazzo Ducale, e di li'
+            // agli stradoni del monte: e' la prima meta' dell'anello.
+            {uint8_t(maps::TileType::EXIT_TERZA), SceneId::EXPLORATION,
+             int16_t(MapId::DUOMO_DUCALE), SPAWN_AREA_DA_MONTE},
+
+            // A SUD si SCENDE fra gli Arconi, sotto la piazza pensile, fino a Piazza
+            // Quaranta Martiri, che e' il punto piu' basso della citta'.
+            {uint8_t(maps::TileType::EXIT_QUARTA), SceneId::EXPLORATION,
+             int16_t(MapId::PIAZZA_QUARANTA_MARTIRI), 2},
+
             {0, SceneId::NONE, 0, 0}      // fine elenco
         }
     },
-    // --- BOTTACCIONE, MURA, PIANA, MONTE_INGINO: non ancora autorate ---
-    {}, {}, {}, {},
+
+    // --- BOTTACCIONE ---
+    // La seconda meta' dell'anello: dalla Basilica si scende dietro il monte, lungo l'acquedotto
+    // medievale e la gola, e si rientra in citta' dalla Porta di Santa Lucia.
+    {
+        .collision = maps::BOTTACCIONE_GRID.data,
+        .width_tiles = maps::BOTTACCIONE_WIDTH,
+        .height_tiles = maps::BOTTACCIONE_HEIGHT,
+        .ground = &bn::regular_bg_items::bottaccione_ground,
+        .foreground = nullptr,
+        .parallax = &bn::regular_bg_items::piazza_sky,
+        .foreground_covers_full_height = false,
+        .spawns = {
+            spawn_at_tile(maps::BOTTACCIONE_INGRESSO_DA_BASILICA_X,
+                          maps::BOTTACCIONE_INGRESSO_DA_BASILICA_Y),   // 0: centro
+            spawn_at_tile(maps::BOTTACCIONE_INGRESSO_DA_BASILICA_X,
+                          maps::BOTTACCIONE_INGRESSO_DA_BASILICA_Y),   // 1: dalla Basilica
+            spawn_at_tile(maps::BOTTACCIONE_INGRESSO_DA_SAN_MARTINO_X,
+                          maps::BOTTACCIONE_INGRESSO_DA_SAN_MARTINO_Y),   // 2: da San Martino
+            spawn_at_tile(maps::BOTTACCIONE_INGRESSO_DA_BASILICA_X,
+                          maps::BOTTACCIONE_INGRESSO_DA_BASILICA_Y),   // 3: non usato
+            spawn_at_tile(maps::BOTTACCIONE_INGRESSO_DA_BASILICA_X,
+                          maps::BOTTACCIONE_INGRESSO_DA_BASILICA_Y),   // 4: non usato
+            spawn_at_tile(maps::BOTTACCIONE_INGRESSO_DA_BASILICA_X,
+                          maps::BOTTACCIONE_INGRESSO_DA_BASILICA_Y)   // 5: non usato
+        },
+        .triggers = {
+            // risale in vetta
+            {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
+             int16_t(MapId::BASILICA), 2},
+            // rientra in citta' dalla Porta di Santa Lucia
+            {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
+             int16_t(MapId::SAN_MARTINO), 3},
+            {0, SceneId::NONE, 0, 0}
+        }
+    },
+
+    // --- MURA: non ancora autorata ---
+    {},
+
+    // --- PIANA: non ancora autorata ---
+    {},
+
+    // --- MONTE_INGINO ---
+    // Due chilometri di sterrato che salgono alla Basilica: e' la salita lunga del gioco, e la sua
+    // natura e' il dislivello.
+    {
+        .collision = maps::MONTE_INGINO_GRID.data,
+        .width_tiles = maps::MONTE_INGINO_WIDTH,
+        .height_tiles = maps::MONTE_INGINO_HEIGHT,
+        .ground = &bn::regular_bg_items::monte_ingino_ground,
+        .foreground = nullptr,
+        .parallax = &bn::regular_bg_items::piazza_sky,
+        .foreground_covers_full_height = false,
+        .spawns = {
+            spawn_at_tile(maps::MONTE_INGINO_INGRESSO_DA_DUOMO_DUCALE_X,
+                          maps::MONTE_INGINO_INGRESSO_DA_DUOMO_DUCALE_Y),   // 0: centro
+            spawn_at_tile(maps::MONTE_INGINO_INGRESSO_DA_DUOMO_DUCALE_X,
+                          maps::MONTE_INGINO_INGRESSO_DA_DUOMO_DUCALE_Y),   // 1: dal Duomo
+            spawn_at_tile(maps::MONTE_INGINO_INGRESSO_DA_BASILICA_X,
+                          maps::MONTE_INGINO_INGRESSO_DA_BASILICA_Y),   // 2: dalla Basilica
+            spawn_at_tile(maps::MONTE_INGINO_INGRESSO_DA_DUOMO_DUCALE_X,
+                          maps::MONTE_INGINO_INGRESSO_DA_DUOMO_DUCALE_Y),   // 3: non usato
+            spawn_at_tile(maps::MONTE_INGINO_INGRESSO_DA_DUOMO_DUCALE_X,
+                          maps::MONTE_INGINO_INGRESSO_DA_DUOMO_DUCALE_Y),   // 4: non usato
+            spawn_at_tile(maps::MONTE_INGINO_INGRESSO_DA_DUOMO_DUCALE_X,
+                          maps::MONTE_INGINO_INGRESSO_DA_DUOMO_DUCALE_Y)   // 5: non usato
+        },
+        .triggers = {
+            // riscende in citta'
+            {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
+             int16_t(MapId::DUOMO_DUCALE), 2},
+            // arriva in vetta
+            {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
+             int16_t(MapId::BASILICA), 1},
+            {0, SceneId::NONE, 0, 0}
+        }
+    },
 
     // --- LARGO_BARGELLO ---
     // Un largo in salita lungo via dei Consoli, non una piazza: 32x24 tile in un solo BG 256x256,
@@ -197,6 +311,8 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
         .spawns = {
             spawn_at_tile(16, 17),   // in mezzo al largo, sotto la fontana
             spawn_at_tile(28, 12),   // rientrando da Piazza Grande, che sta piu' in alto a est
+            spawn_at_tile(8, 11),    // 2: risalendo da San Martino
+            spawn_at_tile(16, 17),
             spawn_at_tile(16, 17),
             spawn_at_tile(16, 17)
         },
@@ -205,13 +321,18 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
             {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
              int16_t(MapId::VIA_DEI_CONSOLI), SPAWN_AREA_DA_VALLE},
 
+            // A ovest la via scende a San Martino. Era murata perche' quell'area non
+            // esisteva; adesso esiste.
+            {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
+             int16_t(MapId::SAN_MARTINO), SPAWN_AREA_DA_MONTE},
+
             {0, SceneId::NONE, 0, 0}
         }
     },
 
     // --- VIA_DEI_CONSOLI ---
-    // La strada piu' caratteristica di Gubbio: stretta e ripida, 16 tile per 64. Collega Piazza
-    // Grande (a monte) a Largo del Bargello (a valle), con 25 metri di dislivello.
+    // La strada piu' caratteristica di Gubbio: stretta e ripida, 16 tile per 64. Da Piazza Grande
+    // (a monte) a Largo del Bargello (a valle), 25 metri di dislivello.
     {
         .collision = maps::VIA_DEI_CONSOLI_GRID.data,
         .width_tiles = maps::VIA_DEI_CONSOLI_WIDTH,
@@ -221,18 +342,22 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
         .parallax = &bn::regular_bg_items::piazza_sky,
         .foreground_covers_full_height = false,
         .spawns = {
-            spawn_at_tile(7, 32),
+            spawn_at_tile(7, 32),   // 0: centro
             spawn_at_tile(maps::VIA_DEI_CONSOLI_INGRESSO_DA_PIAZZA_GRANDE_X,
-                          maps::VIA_DEI_CONSOLI_INGRESSO_DA_PIAZZA_GRANDE_Y),
+                          maps::VIA_DEI_CONSOLI_INGRESSO_DA_PIAZZA_GRANDE_Y),   // 1: da Piazza Grande
             spawn_at_tile(maps::VIA_DEI_CONSOLI_INGRESSO_DA_LARGO_BARGELLO_X,
-                          maps::VIA_DEI_CONSOLI_INGRESSO_DA_LARGO_BARGELLO_Y),
-            spawn_at_tile(7, 32)
+                          maps::VIA_DEI_CONSOLI_INGRESSO_DA_LARGO_BARGELLO_Y),   // 2: da Largo del Bargello
+            spawn_at_tile(7, 32),   // 3: non usato
+            spawn_at_tile(7, 32),   // 4: non usato
+            spawn_at_tile(7, 32)   // 5: non usato
         },
         .triggers = {
+            // risale in piazza
             {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
-             int16_t(MapId::PIAZZA_GRANDE), SPAWN_PIAZZA_DA_OVEST},
+             int16_t(MapId::PIAZZA_GRANDE), 3},
+            // scende al Bargello
             {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
-             int16_t(MapId::LARGO_BARGELLO), SPAWN_BARGELLO_DA_PIAZZA},
+             int16_t(MapId::LARGO_BARGELLO), 1},
             {0, SceneId::NONE, 0, 0}
         }
     },
@@ -248,37 +373,63 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
         .parallax = &bn::regular_bg_items::piazza_sky,
         .foreground_covers_full_height = false,
         .spawns = {
-            spawn_at_tile(15, 32),
+            spawn_at_tile(15, 32),   // 0: centro
             spawn_at_tile(maps::VIA_XX_SETTEMBRE_INGRESSO_DA_PIAZZA_GRANDE_X,
-                          maps::VIA_XX_SETTEMBRE_INGRESSO_DA_PIAZZA_GRANDE_Y),
+                          maps::VIA_XX_SETTEMBRE_INGRESSO_DA_PIAZZA_GRANDE_Y),   // 1: da Piazza Grande
             spawn_at_tile(maps::VIA_XX_SETTEMBRE_INGRESSO_DA_SANT_AGOSTINO_X,
-                          maps::VIA_XX_SETTEMBRE_INGRESSO_DA_SANT_AGOSTINO_Y),
-            spawn_at_tile(15, 32)
+                          maps::VIA_XX_SETTEMBRE_INGRESSO_DA_SANT_AGOSTINO_Y),   // 2: da Sant'Agostino
+            spawn_at_tile(15, 32),   // 3: non usato
+            spawn_at_tile(15, 32),   // 4: non usato
+            spawn_at_tile(15, 32)   // 5: non usato
         },
         .triggers = {
+            // torna in piazza
             {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
-             int16_t(MapId::PIAZZA_GRANDE), SPAWN_PIAZZA_DA_EST},
-
-            // SCORCIATOIA PROVVISORIA, e va riaperta. Nella citta' vera fra qui e Sant'Andrea
-            // c'e' la zona di Sant'Agostino: il suo agente e' stato interrotto e l'area non
-            // esiste ancora. Finche' non esiste, questo varco salta direttamente a Sant'Andrea,
-            // perche' un vicolo cieco in fondo a una strada e' peggio da collaudare di un salto
-            // dichiarato. Quando sant_agostino_collision.h arrivera', questa riga torna a
-            // puntare li' e nient'altro cambia: e' esattamente il motivo per cui le uscite non
-            // sanno dove portano.
+             int16_t(MapId::PIAZZA_GRANDE), 2},
+            // prosegue a est
             {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
-             int16_t(MapId::SANT_ANDREA), SPAWN_AREA_DA_MONTE},
-
+             int16_t(MapId::SANT_AGOSTINO), 1},
             {0, SceneId::NONE, 0, 0}
         }
     },
 
-    // --- SANT_AGOSTINO: non ancora autorata ---
-    {},
+    // --- SANT_AGOSTINO ---
+    // La zona presso Porta Romana, con la chiesa duecentesca di Sant'Agostino.
+    {
+        .collision = maps::SANT_AGOSTINO_GRID.data,
+        .width_tiles = maps::SANT_AGOSTINO_WIDTH,
+        .height_tiles = maps::SANT_AGOSTINO_HEIGHT,
+        .ground = &bn::regular_bg_items::sant_agostino_ground,
+        .foreground = nullptr,
+        .parallax = &bn::regular_bg_items::piazza_sky,
+        .foreground_covers_full_height = false,
+        .spawns = {
+            spawn_at_tile(maps::SANT_AGOSTINO_INGRESSO_DA_VIA_XX_SETTEMBRE_X,
+                          maps::SANT_AGOSTINO_INGRESSO_DA_VIA_XX_SETTEMBRE_Y),   // 0: centro
+            spawn_at_tile(maps::SANT_AGOSTINO_INGRESSO_DA_VIA_XX_SETTEMBRE_X,
+                          maps::SANT_AGOSTINO_INGRESSO_DA_VIA_XX_SETTEMBRE_Y),   // 1: da via XX Settembre
+            spawn_at_tile(maps::SANT_AGOSTINO_INGRESSO_DA_SANT_ANDREA_X,
+                          maps::SANT_AGOSTINO_INGRESSO_DA_SANT_ANDREA_Y),   // 2: da Sant'Andrea
+            spawn_at_tile(maps::SANT_AGOSTINO_INGRESSO_DA_VIA_XX_SETTEMBRE_X,
+                          maps::SANT_AGOSTINO_INGRESSO_DA_VIA_XX_SETTEMBRE_Y),   // 3: non usato
+            spawn_at_tile(maps::SANT_AGOSTINO_INGRESSO_DA_VIA_XX_SETTEMBRE_X,
+                          maps::SANT_AGOSTINO_INGRESSO_DA_VIA_XX_SETTEMBRE_Y),   // 4: non usato
+            spawn_at_tile(maps::SANT_AGOSTINO_INGRESSO_DA_VIA_XX_SETTEMBRE_X,
+                          maps::SANT_AGOSTINO_INGRESSO_DA_VIA_XX_SETTEMBRE_Y)   // 5: non usato
+        },
+        .triggers = {
+            // torna verso la piazza
+            {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
+             int16_t(MapId::VIA_XX_SETTEMBRE), 2},
+            // entra nel quartiere orientale
+            {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
+             int16_t(MapId::SANT_ANDREA), 1},
+            {0, SceneId::NONE, 0, 0}
+        }
+    },
 
     // --- SANT_ANDREA ---
-    // Il quartiere orientale: tessuto edilizio minore, case-torre e vicoli attorno a un
-    // campiello. Nessun monumento maggiore, il carattere e' il tessuto stesso.
+    // Il quartiere orientale: case-torre e vicoli attorno a un campiello, senza monumenti maggiori.
     {
         .collision = maps::SANT_ANDREA_GRID.data,
         .width_tiles = maps::SANT_ANDREA_WIDTH,
@@ -288,23 +439,239 @@ inline constexpr MapDescriptor MAPS[MAP_COUNT] = {
         .parallax = &bn::regular_bg_items::piazza_sky,
         .foreground_covers_full_height = false,
         .spawns = {
-            spawn_at_tile(15, 12),
+            spawn_at_tile(15, 12),   // 0: centro del campiello
             spawn_at_tile(maps::SANT_ANDREA_INGRESSO_DA_SANT_AGOSTINO_X,
-                          maps::SANT_ANDREA_INGRESSO_DA_SANT_AGOSTINO_Y),
-            spawn_at_tile(15, 12),
-            spawn_at_tile(15, 12)
+                          maps::SANT_ANDREA_INGRESSO_DA_SANT_AGOSTINO_Y),   // 1: da Sant'Agostino
+            spawn_at_tile(15, 12),   // 2: non usato
+            spawn_at_tile(15, 12),   // 3: non usato
+            spawn_at_tile(15, 12),   // 4: non usato
+            spawn_at_tile(15, 12)   // 5: non usato
         },
         .triggers = {
-            // L'altro capo della scorciatoia provvisoria descritta qui sopra.
+            // torna a ovest
             {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
-             int16_t(MapId::VIA_XX_SETTEMBRE), SPAWN_AREA_DA_VALLE},
+             int16_t(MapId::SANT_AGOSTINO), 2},
             {0, SceneId::NONE, 0, 0}
         }
     },
 
-    // --- SAN_MARTINO, PIAZZA_QUARANTA_MARTIRI, SAN_PIETRO, DUOMO_DUCALE, BASILICA,
-    //     TEATRO_ROMANO: non ancora autorate ---
-    {}, {}, {}, {}, {}, {}
+    // --- SAN_MARTINO ---
+    // Il quartiere occidentale, e il nodo piu' trafficato del mondo: ci arrivano QUATTRO strade.
+    // Qui c'e' la Porta di Santa Lucia, da cui rientra chi scende dal monte per il Bottaccione.
+    {
+        .collision = maps::SAN_MARTINO_GRID.data,
+        .width_tiles = maps::SAN_MARTINO_WIDTH,
+        .height_tiles = maps::SAN_MARTINO_HEIGHT,
+        .ground = &bn::regular_bg_items::san_martino_ground,
+        .foreground = nullptr,
+        .parallax = &bn::regular_bg_items::piazza_sky,
+        .foreground_covers_full_height = false,
+        .spawns = {
+            spawn_at_tile(maps::SAN_MARTINO_INGRESSO_DA_LARGO_BARGELLO_X,
+                          maps::SAN_MARTINO_INGRESSO_DA_LARGO_BARGELLO_Y),   // 0: centro
+            spawn_at_tile(maps::SAN_MARTINO_INGRESSO_DA_LARGO_BARGELLO_X,
+                          maps::SAN_MARTINO_INGRESSO_DA_LARGO_BARGELLO_Y),   // 1: dal Bargello
+            spawn_at_tile(maps::SAN_MARTINO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_X,
+                          maps::SAN_MARTINO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_Y),   // 2: da Piazza Quaranta Martiri
+            spawn_at_tile(maps::SAN_MARTINO_INGRESSO_DA_BOTTACCIONE_X,
+                          maps::SAN_MARTINO_INGRESSO_DA_BOTTACCIONE_Y),   // 3: dal Bottaccione, per la Porta di Santa Lucia
+            spawn_at_tile(maps::SAN_MARTINO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_X,
+                          maps::SAN_MARTINO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_Y),   // 4: dal Teatro Romano
+            spawn_at_tile(maps::SAN_MARTINO_INGRESSO_DA_LARGO_BARGELLO_X,
+                          maps::SAN_MARTINO_INGRESSO_DA_LARGO_BARGELLO_Y)   // 5: non usato
+        },
+        .triggers = {
+            // risale al Bargello
+            {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
+             int16_t(MapId::LARGO_BARGELLO), 2},
+            // scende a valle
+            {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
+             int16_t(MapId::PIAZZA_QUARANTA_MARTIRI), 1},
+            // esce dalla Porta di Santa Lucia, verso la gola
+            {uint8_t(maps::TileType::EXIT_TERZA), SceneId::EXPLORATION,
+             int16_t(MapId::BOTTACCIONE), 2},
+            // esce dalle mura, verso il teatro
+            {uint8_t(maps::TileType::EXIT_QUARTA), SceneId::EXPLORATION,
+             int16_t(MapId::TEATRO_ROMANO), 1},
+            {0, SceneId::NONE, 0, 0}
+        }
+    },
+
+    // --- PIAZZA_QUARANTA_MARTIRI ---
+    // Il punto piu' basso della citta', quota zero di tutto il mondo. La Loggia dei Tiratori e la
+    // chiesa di San Francesco. E' la piazza d'ingresso a Gubbio, molto piu' ampia di Piazza Grande.
+    {
+        .collision = maps::PIAZZA_QUARANTA_MARTIRI_GRID.data,
+        .width_tiles = maps::PIAZZA_QUARANTA_MARTIRI_WIDTH,
+        .height_tiles = maps::PIAZZA_QUARANTA_MARTIRI_HEIGHT,
+        .ground = &bn::regular_bg_items::piazza_quaranta_martiri_ground,
+        .foreground = nullptr,
+        .parallax = &bn::regular_bg_items::piazza_sky,
+        .foreground_covers_full_height = false,
+        .spawns = {
+            spawn_at_tile(maps::PIAZZA_QUARANTA_MARTIRI_INGRESSO_DA_SAN_MARTINO_X,
+                          maps::PIAZZA_QUARANTA_MARTIRI_INGRESSO_DA_SAN_MARTINO_Y),   // 0: centro
+            spawn_at_tile(maps::PIAZZA_QUARANTA_MARTIRI_INGRESSO_DA_SAN_MARTINO_X,
+                          maps::PIAZZA_QUARANTA_MARTIRI_INGRESSO_DA_SAN_MARTINO_Y),   // 1: da San Martino
+            spawn_at_tile(maps::PIAZZA_QUARANTA_MARTIRI_INGRESSO_DA_PIAZZA_GRANDE_X,
+                          maps::PIAZZA_QUARANTA_MARTIRI_INGRESSO_DA_PIAZZA_GRANDE_Y),   // 2: da Piazza Grande, per la scalinata degli Arconi
+            spawn_at_tile(maps::PIAZZA_QUARANTA_MARTIRI_INGRESSO_DA_SAN_PIETRO_X,
+                          maps::PIAZZA_QUARANTA_MARTIRI_INGRESSO_DA_SAN_PIETRO_Y),   // 3: da San Pietro
+            spawn_at_tile(maps::PIAZZA_QUARANTA_MARTIRI_INGRESSO_DA_SAN_MARTINO_X,
+                          maps::PIAZZA_QUARANTA_MARTIRI_INGRESSO_DA_SAN_MARTINO_Y),   // 4: non usato
+            spawn_at_tile(maps::PIAZZA_QUARANTA_MARTIRI_INGRESSO_DA_SAN_MARTINO_X,
+                          maps::PIAZZA_QUARANTA_MARTIRI_INGRESSO_DA_SAN_MARTINO_Y)   // 5: non usato
+        },
+        .triggers = {
+            // risale a ovest
+            {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
+             int16_t(MapId::SAN_MARTINO), 2},
+            // risale a nord, fino alla piazza pensile
+            {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
+             int16_t(MapId::PIAZZA_GRANDE), 5},
+            // prosegue a est
+            {uint8_t(maps::TileType::EXIT_TERZA), SceneId::EXPLORATION,
+             int16_t(MapId::SAN_PIETRO), 1},
+            {0, SceneId::NONE, 0, 0}
+        }
+    },
+
+    // --- SAN_PIETRO ---
+    // Il quartiere meridionale, quasi in piano, con la chiesa romanica di San Pietro.
+    {
+        .collision = maps::SAN_PIETRO_GRID.data,
+        .width_tiles = maps::SAN_PIETRO_WIDTH,
+        .height_tiles = maps::SAN_PIETRO_HEIGHT,
+        .ground = &bn::regular_bg_items::san_pietro_ground,
+        .foreground = nullptr,
+        .parallax = &bn::regular_bg_items::piazza_sky,
+        .foreground_covers_full_height = false,
+        .spawns = {
+            spawn_at_tile(maps::SAN_PIETRO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_X,
+                          maps::SAN_PIETRO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_Y),   // 0: centro
+            spawn_at_tile(maps::SAN_PIETRO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_X,
+                          maps::SAN_PIETRO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_Y),   // 1: da Piazza Quaranta Martiri
+            spawn_at_tile(maps::SAN_PIETRO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_X,
+                          maps::SAN_PIETRO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_Y),   // 2: non usato
+            spawn_at_tile(maps::SAN_PIETRO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_X,
+                          maps::SAN_PIETRO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_Y),   // 3: non usato
+            spawn_at_tile(maps::SAN_PIETRO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_X,
+                          maps::SAN_PIETRO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_Y),   // 4: non usato
+            spawn_at_tile(maps::SAN_PIETRO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_X,
+                          maps::SAN_PIETRO_INGRESSO_DA_PIAZZA_QUARANTA_MARTIRI_Y)   // 5: non usato
+        },
+        .triggers = {
+            // torna a ovest
+            {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
+             int16_t(MapId::PIAZZA_QUARANTA_MARTIRI), 3},
+            {0, SceneId::NONE, 0, 0}
+        }
+    },
+
+    // --- DUOMO_DUCALE ---
+    // La terrazza monumentale sopra Piazza Grande: il Duomo, i giardini pensili e il Palazzo Ducale
+    // di Federico da Montefeltro. Di qui si sale al monte.
+    {
+        .collision = maps::DUOMO_DUCALE_GRID.data,
+        .width_tiles = maps::DUOMO_DUCALE_WIDTH,
+        .height_tiles = maps::DUOMO_DUCALE_HEIGHT,
+        .ground = &bn::regular_bg_items::duomo_ducale_ground,
+        .foreground = nullptr,
+        .parallax = &bn::regular_bg_items::piazza_sky,
+        .foreground_covers_full_height = false,
+        .spawns = {
+            spawn_at_tile(maps::DUOMO_DUCALE_INGRESSO_DA_PIAZZA_GRANDE_X,
+                          maps::DUOMO_DUCALE_INGRESSO_DA_PIAZZA_GRANDE_Y),   // 0: centro
+            spawn_at_tile(maps::DUOMO_DUCALE_INGRESSO_DA_PIAZZA_GRANDE_X,
+                          maps::DUOMO_DUCALE_INGRESSO_DA_PIAZZA_GRANDE_Y),   // 1: da Piazza Grande
+            spawn_at_tile(maps::DUOMO_DUCALE_INGRESSO_DA_MONTE_INGINO_X,
+                          maps::DUOMO_DUCALE_INGRESSO_DA_MONTE_INGINO_Y),   // 2: dagli stradoni del monte
+            spawn_at_tile(maps::DUOMO_DUCALE_INGRESSO_DA_PIAZZA_GRANDE_X,
+                          maps::DUOMO_DUCALE_INGRESSO_DA_PIAZZA_GRANDE_Y),   // 3: non usato
+            spawn_at_tile(maps::DUOMO_DUCALE_INGRESSO_DA_PIAZZA_GRANDE_X,
+                          maps::DUOMO_DUCALE_INGRESSO_DA_PIAZZA_GRANDE_Y),   // 4: non usato
+            spawn_at_tile(maps::DUOMO_DUCALE_INGRESSO_DA_PIAZZA_GRANDE_X,
+                          maps::DUOMO_DUCALE_INGRESSO_DA_PIAZZA_GRANDE_Y)   // 5: non usato
+        },
+        .triggers = {
+            // riscende in piazza
+            {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
+             int16_t(MapId::PIAZZA_GRANDE), 4},
+            // imbocca gli stradoni
+            {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
+             int16_t(MapId::MONTE_INGINO), 1},
+            {0, SceneId::NONE, 0, 0}
+        }
+    },
+
+    // --- BASILICA ---
+    // La vetta del Monte Ingino. E' dalle vetrate di questa basilica che viene la storia
+    // dell'assedio del 1151 che il gioco racconta.
+    {
+        .collision = maps::BASILICA_GRID.data,
+        .width_tiles = maps::BASILICA_WIDTH,
+        .height_tiles = maps::BASILICA_HEIGHT,
+        .ground = &bn::regular_bg_items::basilica_ground,
+        .foreground = nullptr,
+        .parallax = &bn::regular_bg_items::piazza_sky,
+        .foreground_covers_full_height = false,
+        .spawns = {
+            spawn_at_tile(maps::BASILICA_INGRESSO_DA_MONTE_INGINO_X,
+                          maps::BASILICA_INGRESSO_DA_MONTE_INGINO_Y),   // 0: centro
+            spawn_at_tile(maps::BASILICA_INGRESSO_DA_MONTE_INGINO_X,
+                          maps::BASILICA_INGRESSO_DA_MONTE_INGINO_Y),   // 1: dagli stradoni
+            spawn_at_tile(maps::BASILICA_INGRESSO_DA_BOTTACCIONE_X,
+                          maps::BASILICA_INGRESSO_DA_BOTTACCIONE_Y),   // 2: dal Bottaccione
+            spawn_at_tile(maps::BASILICA_INGRESSO_DA_MONTE_INGINO_X,
+                          maps::BASILICA_INGRESSO_DA_MONTE_INGINO_Y),   // 3: non usato
+            spawn_at_tile(maps::BASILICA_INGRESSO_DA_MONTE_INGINO_X,
+                          maps::BASILICA_INGRESSO_DA_MONTE_INGINO_Y),   // 4: non usato
+            spawn_at_tile(maps::BASILICA_INGRESSO_DA_MONTE_INGINO_X,
+                          maps::BASILICA_INGRESSO_DA_MONTE_INGINO_Y)   // 5: non usato
+        },
+        .triggers = {
+            // torna giu' da dove si e' saliti
+            {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
+             int16_t(MapId::MONTE_INGINO), 2},
+            // scende DIETRO il monte, sull'altro versante
+            {uint8_t(maps::TileType::EXIT_PORTA_ROMANA), SceneId::EXPLORATION,
+             int16_t(MapId::BOTTACCIONE), 1},
+            {0, SceneId::NONE, 0, 0}
+        }
+    },
+
+    // --- TEATRO_ROMANO ---
+    // FUORI dalle mura, sotto San Martino. E' l'unico monumento del gioco che nel 1151 esisteva
+    // davvero, e gia' allora come rovina.
+    {
+        .collision = maps::TEATRO_ROMANO_GRID.data,
+        .width_tiles = maps::TEATRO_ROMANO_WIDTH,
+        .height_tiles = maps::TEATRO_ROMANO_HEIGHT,
+        .ground = &bn::regular_bg_items::teatro_romano_ground,
+        .foreground = nullptr,
+        .parallax = &bn::regular_bg_items::piazza_sky,
+        .foreground_covers_full_height = false,
+        .spawns = {
+            spawn_at_tile(maps::TEATRO_ROMANO_INGRESSO_DA_SAN_MARTINO_X,
+                          maps::TEATRO_ROMANO_INGRESSO_DA_SAN_MARTINO_Y),   // 0: centro
+            spawn_at_tile(maps::TEATRO_ROMANO_INGRESSO_DA_SAN_MARTINO_X,
+                          maps::TEATRO_ROMANO_INGRESSO_DA_SAN_MARTINO_Y),   // 1: da San Martino
+            spawn_at_tile(maps::TEATRO_ROMANO_INGRESSO_DA_SAN_MARTINO_X,
+                          maps::TEATRO_ROMANO_INGRESSO_DA_SAN_MARTINO_Y),   // 2: non usato
+            spawn_at_tile(maps::TEATRO_ROMANO_INGRESSO_DA_SAN_MARTINO_X,
+                          maps::TEATRO_ROMANO_INGRESSO_DA_SAN_MARTINO_Y),   // 3: non usato
+            spawn_at_tile(maps::TEATRO_ROMANO_INGRESSO_DA_SAN_MARTINO_X,
+                          maps::TEATRO_ROMANO_INGRESSO_DA_SAN_MARTINO_Y),   // 4: non usato
+            spawn_at_tile(maps::TEATRO_ROMANO_INGRESSO_DA_SAN_MARTINO_X,
+                          maps::TEATRO_ROMANO_INGRESSO_DA_SAN_MARTINO_Y)   // 5: non usato
+        },
+        .triggers = {
+            // rientra in citta', in salita
+            {uint8_t(maps::TileType::EXIT_SAN_MARTINO), SceneId::EXPLORATION,
+             int16_t(MapId::SAN_MARTINO), 4},
+            {0, SceneId::NONE, 0, 0}
+        }
+    }
 };
 
 static_assert(int(sizeof(MAPS) / sizeof(MAPS[0])) == MAP_COUNT,

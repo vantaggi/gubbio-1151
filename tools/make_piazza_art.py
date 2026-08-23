@@ -47,7 +47,7 @@ PIAZZA_HEIGHT = 64
 TILE = 8
 
 (GROUND, WALL, RAILING, DOOR_CONSOLI, EXIT_SAN_MARTINO, EXIT_PORTA_ROMANA, FOUNTAIN,
- CONSOLI_FACADE, PRETORIO_FACADE, STAIRS, DOOR_PRETORIO, ROAD) = range(12)
+ CONSOLI_FACADE, PRETORIO_FACADE, STAIRS, DOOR_PRETORIO, ROAD, EXIT_TERZA, EXIT_QUARTA) = range(14)
 
 
 # Gli stessi nomi di include/piazza_grande_collision.h: l'angolo della fascia del Pretorio serve
@@ -63,8 +63,12 @@ def get_tile_type(x, y):
     if x < 0 or x >= PIAZZA_WIDTH or y < 0 or y >= PIAZZA_HEIGHT:
         return WALL
     if x <= 1:
+        if 40 <= y <= 43:
+            return EXIT_QUARTA        # scalinata fra gli Arconi, verso P. 40 Martiri
         return RAILING
     if x >= 31:
+        if 30 <= y <= 33:
+            return EXIT_TERZA         # passaggio a nord, verso il Duomo e il Ducale
         return WALL
     if x >= 27:
         if y <= 8:

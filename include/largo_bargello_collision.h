@@ -75,9 +75,15 @@ constexpr int FONTANA_LAST_Y = 14;
         return uint8_t(TileType::EXIT_PORTA_ROMANA);     // riusa il valore: e' un varco laterale
     }
 
-    // A ovest la via scende verso San Martino: muro finche' quell'area non esiste.
+    // A OVEST LA VIA SCENDE A SAN MARTINO. Era murata perche' quell'area non esisteva;
+    // dalla Sessione 21 esiste, e il muro e' diventato un varco.
     if(x <= 1)
     {
+        if(y >= 10 && y <= 13)
+        {
+            return uint8_t(TileType::EXIT_SAN_MARTINO);   // valore 4: verso San Martino
+        }
+
         return uint8_t(TileType::WALL);
     }
 
@@ -115,6 +121,8 @@ inline constexpr BargelloGrid BARGELLO_GRID = make_bargello_grid();
 
 // La fontana c'e', ed e' calpestabile come lo era in piazza (la sua solidita' resta una
 // decisione di design aperta, n.9 del piano).
+static_assert(BARGELLO_GRID.data[0 + 11 * BARGELLO_WIDTH] == uint8_t(TileType::EXIT_SAN_MARTINO),
+              "Dal Bargello si deve poter scendere a San Martino");
 static_assert(BARGELLO_GRID.data[14 + 13 * BARGELLO_WIDTH] == uint8_t(TileType::FOUNTAIN),
               "La Fontana dei Matti non e' in Largo del Bargello");
 
