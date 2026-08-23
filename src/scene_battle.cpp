@@ -18,6 +18,7 @@ namespace {
         case BattleState::SELECT_COMMAND_UBALDO:  return "CMD UBALDO";
         case BattleState::SELECT_COMMAND_ANTONIO: return "CMD ANTONIO";
         case BattleState::EXECUTE_ROUND_ACTIONS:  return "EXECUTE";
+        case BattleState::PLAY_ROUND_ANIMATIONS:  return "ANIMAZIONI";
         case BattleState::CHECK_ROUND_OUTCOME:    return "CHECK";
         case BattleState::VICTORY:                return "VITTORIA";
         case BattleState::DEFEAT:                 return "SCONFITTA";

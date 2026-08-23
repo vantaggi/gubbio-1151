@@ -10,6 +10,8 @@ REGOLA: ogni modifica alle formule del C++ va replicata qui e viceversa.
 Tutta l'aritmetica e' intera con troncamento verso zero, come su ARM7TDMI.
 """
 
+import os
+import re as _re
 import unittest
 from enum import Enum
 
@@ -690,5 +692,57 @@ class EnemyAiTest(unittest.TestCase):
         self.assertEqual(best.name, "Sant'Ubaldo")
 
 
+# --- Il tetto del registro degli eventi (Passo 20) --------------------------------------------
+#
+# NON simula un round: legge le costanti da include/battle_events.h e rifa' l'aritmetica del
+# caso peggiore. Serve a impedire che il tetto e la formula che lo giustifica divergano — per
+# esempio se qualcuno alzasse BOOST_HIT_COUNT senza toccare MAX_EVENTS. La static_assert nel C++
+# fa lo stesso controllo a compilazione; questo lo rende leggibile anche a chi non compila, e
+# fallisce con un messaggio che dice di QUANTO si e' fuori invece che solo "assertion failed".
+#
+# Quel che NON prova: che l'emissione reale, nel motore, produca davvero al massimo quel numero
+# di eventi. Quello lo dice solo giocare un round pieno, e il flag _event_log_overflow lo segnala
+# a runtime scartando invece di far crashare.
+
+
+
+class TettoRegistroEventiTest(unittest.TestCase):
+
+    def _costanti(self):
+        radice = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        ev = open(os.path.join(radice, "include", "battle_events.h"), encoding="utf-8").read()
+        en = open(os.path.join(radice, "include", "battle_engine.h"), encoding="utf-8").read()
+        nem = open(os.path.join(radice, "include", "enemy_data.h"), encoding="utf-8").read()
+
+        colpi = [int(v) for v in _re.search(
+            r"BOOST_HIT_COUNT\[BOOST_LEVEL_COUNT\]\s*=\s*\{([^}]*)\}", en).group(1).split(",")]
+        return {
+            "max_events": int(_re.search(r"MAX_EVENTS = (\d+)", ev).group(1)),
+            "eventi_per_colpo": int(_re.search(r"EVENTI_PER_COLPO = (\d+)", ev).group(1)),
+            "nemici": int(_re.search(r"MAX_ENEMIES_PER_ENCOUNTER = (\d+)", nem).group(1)),
+            "colpi_max": max(colpi),
+        }
+
+    def test_il_tetto_regge_il_round_peggiore(self):
+        c = self._costanti()
+        attori = 3 + c["nemici"]
+        per_attore = c["colpi_max"] * c["eventi_per_colpo"] + 1
+        peggiore = attori * per_attore + attori * 2
+
+        self.assertGreaterEqual(
+            c["max_events"], peggiore,
+            "MAX_EVENTS e' %d ma il round peggiore ne produce %d: mancano %d posti, e a "
+            "contenitore pieno la battaglia perde eventi invece di animarli"
+            % (c["max_events"], peggiore, peggiore - c["max_events"]))
+
+    def test_il_boost_a_doppio_colpo_e_contato(self):
+        """Se il doppio colpo sparisse dalle tabelle, il tetto sarebbe calcolato su meta' round."""
+        c = self._costanti()
+        self.assertGreaterEqual(c["colpi_max"], 2,
+                                "Nessun livello di Boost e' piu' un colpo multiplo: o la tabella "
+                                "e' cambiata, o il tetto del registro sta guardando il posto "
+                                "sbagliato")
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+

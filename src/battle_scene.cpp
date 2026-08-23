@@ -230,7 +230,14 @@ void BattleSceneManager::update()
             _sort_action_queue();
             _execute_all_queued_actions();
             _end_of_round_ticks();
-            _current_state = BattleState::CHECK_ROUND_OUTCOME;
+            _event_cursor = 0;
+            _event_frames = _events.empty() ? 0 :
+                    event_duration_frames(_events[0].kind);
+            _current_state = BattleState::PLAY_ROUND_ANIMATIONS;
+            break;
+
+        case BattleState::PLAY_ROUND_ANIMATIONS:
+            _play_round_animations();
             break;
 
         case BattleState::CHECK_ROUND_OUTCOME:
@@ -844,6 +851,59 @@ void BattleSceneManager::_resolve_faith_shield(BattleUnit& actor, const QueuedAc
     actor.add_fervor(FERVOR_GAIN_UBALDO_SUPPORT);
 }
 
+void BattleSceneManager::_emit(const BattleEvent& event)
+{
+    if(_events.full())
+    {
+        // SCARTA, non asserisce. Il registro e' dimensionato sul round peggiore
+        // (battle_events.h), quindi arrivarci significa che il caso peggiore e' cambiato sotto:
+        // il log lo dice, e la battaglia prosegue senza quell'animazione invece di morire.
+        if(! _event_log_overflow)
+        {
+            _event_log_overflow = true;
+            BN_LOG("EVENTI: registro pieno a ", int(MAX_EVENTS),
+                   ", il round peggiore e' cresciuto oltre il tetto derivato");
+        }
+
+        return;
+    }
+
+    _events.push_back(event);
+}
+
+void BattleSceneManager::_play_round_animations()
+{
+    // FAST-FORWARD tenendo A o B. Un round con nove attori costa 250-350 frame, cioe' 4-6
+    // secondi per ogni scontro comune: senza, si guarda la stessa sequenza per tutta la partita.
+    const int passo = (bn::keypad::a_held() || bn::keypad::b_held()) ? 4 : 1;
+
+    _event_frames -= passo;
+
+    while(_event_frames <= 0 && _event_cursor < _events.size())
+    {
+        const BattleEvent& evento = _events[_event_cursor];
+
+        // IL RINTOCCO SUONA QUI, non dove il colpo viene calcolato. Prima stava in _apply_hit:
+        // tutti gli SFX del round partivano nel frame in cui il round veniva risolto, fino a un
+        // secondo prima dell'animazione che dovrebbero accompagnare. E' il difetto che questo
+        // stato esiste per chiudere.
+        if(evento.kind == EventKind::SHIELD_BREAK)
+        {
+            CampanoneAudio::play_strike();
+        }
+
+        ++_event_cursor;
+
+        _event_frames += (_event_cursor < _events.size())
+                ? event_duration_frames(_events[_event_cursor].kind) : 0;
+    }
+
+    if(_event_cursor >= _events.size())
+    {
+        _current_state = BattleState::CHECK_ROUND_OUTCOME;
+    }
+}
+
 void BattleSceneManager::_apply_hit(BattleUnit& actor, UnitRef target_ref, const SkillData& skill,
                                     int boost_level)
 {
@@ -862,17 +922,33 @@ void BattleSceneManager::_apply_hit(BattleUnit& actor, UnitRef target_ref, const
     {
         if(target.damage_shield(BOOST_SHIELD_PER_HIT[boost_level]))
         {
-            CampanoneAudio::play_strike();
+            _emit({EventKind::SHIELD_BREAK, uint8_t(0), uint8_t(target_ref.slot),
+                   actor.is_enemy, target.is_enemy,
+                   int16_t(BOOST_SHIELD_PER_HIT[boost_level]), int16_t(target.current_hp)});
         }
     }
 
-    target.take_damage(_apply_variance(BattleSystem::calculate_damage(actor, target, skill, boost_level)));
+    const int danno = _apply_variance(BattleSystem::calculate_damage(actor, target, skill,
+                                                                    boost_level));
+    const bool era_vivo = target.is_alive();
+    target.take_damage(danno);
+
+    _emit({EventKind::HIT, uint8_t(0), uint8_t(target_ref.slot), actor.is_enemy,
+           target.is_enemy, int16_t(danno), int16_t(target.current_hp)});
+
+    if(era_vivo && ! target.is_alive())
+    {
+        _emit({EventKind::DEFEAT, uint8_t(0), uint8_t(target_ref.slot), actor.is_enemy,
+               target.is_enemy, int16_t(0), int16_t(0)});
+    }
 
     // San Giorgio converte i colpi fisici incassati in Fervore (Sezione 12A GDD).
     if(! target.is_enemy && target_ref.slot == PARTY_GIORGIO && skill.element == ElementType::PHYSICAL &&
        target.is_alive())
     {
         target.add_fervor(FERVOR_GAIN_GIORGIO_HIT);
+        _emit({EventKind::FERVOR_GAIN, uint8_t(0), uint8_t(target_ref.slot), actor.is_enemy,
+               target.is_enemy, int16_t(FERVOR_GAIN_GIORGIO_HIT), int16_t(target.current_hp)});
     }
 
     if(skill.effect == SkillEffect::ALCHEMICAL_BURN && target.is_alive())

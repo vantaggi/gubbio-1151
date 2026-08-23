@@ -4,6 +4,7 @@
 #include "bn_vector.h"
 #include "bn_random.h"
 #include "battle_engine.h"
+#include "battle_events.h"
 #include "enemy_data.h"
 #include "game_state.h"
 #include "hero_data.h"
@@ -17,6 +18,12 @@ enum class BattleState {
     SELECT_COMMAND_UBALDO,
     SELECT_COMMAND_ANTONIO,
     EXECUTE_ROUND_ACTIONS,
+    // Fra la risoluzione e il controllo dell'esito. Per ora e' un PURO
+    // TEMPORIZZATORE: scorre il registro degli eventi consumandone le durate e non
+    // anima nulla, perche' l'animatore e' il Passo 21. Deve pero' esistere gia'
+    // adesso, altrimenti il Passo 21 non ha dove agganciarsi e ci si ritrova a
+    // cambiare la macchina a stati mentre si scrivono le animazioni.
+    PLAY_ROUND_ANIMATIONS,
     CHECK_ROUND_OUTCOME,
     VICTORY,
     DEFEAT,
@@ -32,6 +39,12 @@ constexpr int PARTY_UBALDO  = 0;
 constexpr int PARTY_GIORGIO = 1;
 constexpr int PARTY_ANTONIO = 2;
 constexpr int PARTY_SIZE    = 3;
+// Il registro degli eventi dimensiona il proprio tetto su GAME_PARTY_SIZE, perche' non
+// puo' includere questo header senza chiudere un ciclo. Se i due divergessero, il tetto
+// sarebbe calcolato su un party di dimensione diversa da quello vero.
+static_assert(PARTY_SIZE == GAME_PARTY_SIZE,
+              "PARTY_SIZE e GAME_PARTY_SIZE devono coincidere: battle_events.h usa il "
+              "secondo per derivare il tetto del registro");
 
 // Abilita' di ogni eroe, indicizzate come il party (Sezione 2 GDD). Con il comando Abilita'
 // selezionato, il tasto L scorre l'elenco del Cero attivo.
@@ -151,6 +164,19 @@ public:
 
 private:
     BattleState _current_state;
+    // Il registro del round in corso, svuotato all'inizio di ogni risoluzione.
+    bn::vector<BattleEvent, MAX_EVENTS> _events;
+    int _event_cursor = 0;         // quale evento sta riproducendo il temporizzatore
+    int _event_frames = 0;         // frame che restano all'evento corrente
+    bool _event_log_overflow = false;
+
+    // Inserimento CENTRALIZZATO nel registro: e' l'unico punto che puo' aggiungere
+    // un evento, e a contenitore pieno SCARTA invece di far scattare l'assert di
+    // bn::ivector. Un'animazione persa degrada l'effetto, un assert uccide la
+    // partita: fra i due non c'e' partita.
+    void _emit(const BattleEvent& event);
+    void _play_round_animations();
+
     bn::vector<BattleUnit, PARTY_SIZE> _party;
     bn::vector<BattleUnit, MAX_ENEMIES_PER_ENCOUNTER> _enemies;
     bn::vector<QueuedAction, PARTY_SIZE + MAX_ENEMIES_PER_ENCOUNTER> _action_queue;
