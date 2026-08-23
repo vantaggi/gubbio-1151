@@ -80,7 +80,12 @@ constexpr int SANT_ANDREA_VICOLO_EST_LAST_Y  = 24;
 // indietro. E' l'unico INGRESSO_DA_*, perche' Sant'Andrea ha un solo vicino (sez. 1 del
 // contratto).
 constexpr int SANT_ANDREA_INGRESSO_DA_SANT_AGOSTINO_X = 15;
-constexpr int SANT_ANDREA_INGRESSO_DA_SANT_AGOSTINO_Y = 1;
+    // OTTO tile dentro, non uno: il contratto (docs/mappa_del_mondo.md sez. 5) impone almeno
+    // sei di margine dal proprio varco. Quest'area e' stata autorata PRIMA che quella regola
+    // esistesse, e l'autotest ha misurato il difetto che la regola previene: qualche frame
+    // residuo di spinta nella direzione d'arrivo, e il giocatore rientra da dove e' appena
+    // uscito. Nel giro completo dell'anello il risultato era prendere la strada sbagliata.
+constexpr int SANT_ANDREA_INGRESSO_DA_SANT_AGOSTINO_Y = 8;
 
 // USCITA 4 -> Sant'Agostino, verso OVEST. Il valore numerico e' quello di EXIT_SAN_MARTINO in
 // piazza_grande_collision.h: le uscite non sanno dove portano (docs/mappa_del_mondo.md sez. 5),

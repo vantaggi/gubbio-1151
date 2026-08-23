@@ -68,9 +68,14 @@ static_assert(VIA_DEI_CONSOLI_QUOTA_M > 45 && VIA_DEI_CONSOLI_QUOTA_M < 70,
 // provenienza compare comunque, per intero, nel nome della costante) senza rischiare una
 // collisione che nessuno vedrebbe finche' un'altra area non venisse aggiunta a map_data.h.
 constexpr int VIA_DEI_CONSOLI_INGRESSO_DA_PIAZZA_GRANDE_X = 7;
-constexpr int VIA_DEI_CONSOLI_INGRESSO_DA_PIAZZA_GRANDE_Y = 3;    // appena a valle dell'uscita
+    // OTTO tile dentro, non uno: il contratto (docs/mappa_del_mondo.md sez. 5) impone almeno
+    // sei di margine dal proprio varco. Quest'area e' stata autorata PRIMA che quella regola
+    // esistesse, e l'autotest ha misurato il difetto che la regola previene: qualche frame
+    // residuo di spinta nella direzione d'arrivo, e il giocatore rientra da dove e' appena
+    // uscito. Nel giro completo dell'anello il risultato era prendere la strada sbagliata.
+constexpr int VIA_DEI_CONSOLI_INGRESSO_DA_PIAZZA_GRANDE_Y = 8;    // appena a valle dell'uscita
 constexpr int VIA_DEI_CONSOLI_INGRESSO_DA_LARGO_BARGELLO_X = 7;
-constexpr int VIA_DEI_CONSOLI_INGRESSO_DA_LARGO_BARGELLO_Y = 60;  // appena a monte dell'uscita
+constexpr int VIA_DEI_CONSOLI_INGRESSO_DA_LARGO_BARGELLO_Y = 55;  // appena a monte dell'uscita
 
 // --- LA DISPOSIZIONE, in bande lungo y ---------------------------------------------------------
 

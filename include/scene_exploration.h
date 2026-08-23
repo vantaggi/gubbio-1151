@@ -2,6 +2,7 @@
 #define SCENE_EXPLORATION_H
 
 #include "bn_camera_ptr.h"
+#include "bn_sprite_text_generator.h"
 #include "bn_optional.h"
 #include "bn_regular_bg_ptr.h"
 
@@ -60,6 +61,25 @@ private:
     // Gli NPC dell'area, presi da NPCS[]. Otto e' il tetto del piano: piu' di otto personaggi
     // nella stessa schermata sarebbero comunque illeggibili a 16x16.
     bn::vector<bn::sprite_ptr, 8> _npc_sprites;
+
+    // IL NOME DELL'AREA, mostrato entrando. Fino alla Sessione 21 il giocatore attraversava
+    // quattordici aree senza che nessuna dicesse come si chiamava: il nome esisteva in
+    // MAP_NAMES e finiva solo nel log, cioe' lo leggeva chi sviluppa e non chi gioca. In una
+    // citta' vera che il gioco vuole far riconoscere, il nome del luogo E' contenuto.
+    //
+    // Sedici sprite bastano per "Piazza Quaranta Martiri", che e' il nome piu' lungo. Il
+    // tetto vero non sono gli sprite ma le ALLOCAZIONI di tile OBJ: il testo di Butano ne
+    // consuma una per sprite su un totale di 128 (BN_CFG_SPRITE_TILES_MAX_ITEMS), condivise
+    // con la finestra di dialogo, che ne usa fino a 26.
+    static constexpr int MAX_ETICHETTA_SPRITES = 16;
+    static constexpr int ETICHETTA_FRAME = 110;   // poco meno di due secondi
+
+    bn::sprite_text_generator _etichetta_generator;
+    bn::vector<bn::sprite_ptr, MAX_ETICHETTA_SPRITES> _etichetta;
+    int _etichetta_frame = ETICHETTA_FRAME;
+
+    void _mostra_nome_area();
+    void _aggiorna_etichetta();
 
     // Debounce dei trigger: preimpostato al tile di comparsa, cosi' che comparire accanto a una
     // porta non la attraversi nello stesso frame. Un trigger scatta solo quando il tile sotto i

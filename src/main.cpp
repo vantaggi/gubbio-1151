@@ -164,6 +164,50 @@
 // salvataggio scatta su `select_pressed()`, cioe' sul fronte, non finche' il tasto e' giu'.
 #define GUBBIO_SELECT    "40" "00"
 
+// --- L'ANELLO DELLA CITTA', PERCORSO PER INTERO -----------------------------------------------
+//
+// Otto aree in fila: Piazza Grande -> via dei Consoli -> Largo del Bargello -> San Martino ->
+// (Porta di Santa Lucia) -> Bottaccione -> Basilica -> stradoni del Monte -> Duomo e Palazzo
+// Ducale -> Piazza Grande. E' l'anello dettato dal committente, e questo e' il solo modo di
+// sapere che le quattordici aree sono davvero cucite: la build dice che compilano, non che si
+// attraversano.
+//
+// ZIGZAG, non spinta dritta. Il movimento risolve i due assi SEPARATAMENTE
+// (overworld_player.cpp), quindi in diagonale contro un muro si scivola invece di incollarsi.
+// Una spinta dritta funziona in un corridoio dritto e si pianta al primo tornante — e gli
+// stradoni del monte sono tutti tornanti. Alternando la componente trasversale, la componente
+// utile avanza comunque ogni frame in cui e' libera, e il percorso storto viene seguito da se'.
+//
+// Ordine dei due caratteri: prima i 5 bit BASSI, poi gli ALTI. Invertirli produce una
+// combinazione valida ma diversa, che il gioco esegue senza lamentarsi: e' gia' costato tre
+// giri a vuoto.
+//   SU        SU+B          = 0x042 -> "22"      GIU'      GIU'+B        = 0x082 -> "24"
+//   SINISTRA  SX+B          = 0x022 -> "21"      SU+SX     SU+SX+B       = 0x062 -> "23"
+//   GIU'+SX   GIU'+SX+B     = 0x0A2 -> "25"      SU+DX     SU+DX+B       = 0x052 -> "B2"
+//   GIU'+DX   GIU'+DX+B     = 0x092 -> "B4"
+#define GUBBIO_ZIG_SU_8    "22" "22" "22" "22" "23" "23" "B2" "B2"
+#define GUBBIO_ZIG_GIU_8   "24" "24" "24" "24" "25" "25" "B4" "B4"
+#define GUBBIO_ZIG_SX_8    "21" "21" "21" "21" "23" "23" "25" "25"
+
+// Spinta DRITTA a sinistra, senza ondeggiare. Lo zigzag serve solo dove il corridoio e' storto:
+// dove e' dritto e la fascia d'uscita e' stretta, l'ondeggio porta fuori bersaglio. In Largo
+// del Bargello il varco verso San Martino e' alto quattro tile e il rientro cade gia' dentro
+// quella fascia: bastava non muoversi in verticale, e lo zigzag invece ne usciva di un tile.
+#define GUBBIO_SX_8        "21" "21" "21" "21" "21" "21" "21" "21"
+
+#define GUBBIO_Q(m)        m m m m
+#define GUBBIO_ZIG_SU_32   GUBBIO_Q(GUBBIO_ZIG_SU_8)
+#define GUBBIO_ZIG_GIU_32  GUBBIO_Q(GUBBIO_ZIG_GIU_8)
+#define GUBBIO_ZIG_SX_32   GUBBIO_Q(GUBBIO_ZIG_SX_8)
+#define GUBBIO_SX_32       GUBBIO_Q(GUBBIO_SX_8)
+#define GUBBIO_SX_128      GUBBIO_Q(GUBBIO_SX_32)
+#define GUBBIO_ZIG_SU_128  GUBBIO_Q(GUBBIO_ZIG_SU_32)
+#define GUBBIO_ZIG_GIU_128 GUBBIO_Q(GUBBIO_ZIG_GIU_32)
+#define GUBBIO_ZIG_SX_128  GUBBIO_Q(GUBBIO_ZIG_SX_32)
+#define GUBBIO_ZIG_SU_512  GUBBIO_Q(GUBBIO_ZIG_SU_128)
+#define GUBBIO_ZIG_GIU_512 GUBBIO_Q(GUBBIO_ZIG_GIU_128)
+#define GUBBIO_ZIG_SX_512  GUBBIO_Q(GUBBIO_ZIG_SX_128)
+
 constexpr const char* AUTOTEST_KEYPAD_SCRIPT =
     GUBBIO_AUTOTEST_ALIGN
     GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND
@@ -177,19 +221,38 @@ constexpr const char* AUTOTEST_KEYPAD_SCRIPT =
     // spingere VERSO L'ALTO anche dopo la transizione, ributtando il giocatore dentro il varco
     // opposto. Un autotest che tiene premuta una direzione oltre il proprio scopo non collauda
     // la transizione: la fa fallire.
-    GUBBIO_WALK_64 GUBBIO_WALK_64   // dal centro al varco nord-ovest, in salita a destra
+    // TRATTA 1 - Piazza Grande: dal centro (14,38) al varco nord-ovest, in salita a destra.
+    GUBBIO_WALK_64 GUBBIO_WALK_64
     GUBBIO_IDLE_64        // attesa che la dissolvenza d'ingresso finisca
     GUBBIO_SELECT         // salvataggio su FRAM, verificabile nel `.sav` e nel log
     GUBBIO_IDLE_16
-    GUBBIO_EST_256        // percorre via dei Consoli in discesa, 59 tile fino al varco a valle
-    GUBBIO_EST_64
-    GUBBIO_IDLE_64        // attesa della seconda dissolvenza, quella verso il Bargello
-    // In Largo del Bargello sta MASTRO TANO, che ne e' il custode ed e' l'NPC su cui il gioco
-    // crashava: le sue battute hanno due righe invece di tre, ed era la riga assente a produrre
-    // il puntatore nullo. L'autotest andava solo dal Podesta', che ne ha tre, e non lo
-    // incontrava mai.
-    GUBBIO_CERCA_O_64     // batte la fascia a ovest del punto di rientro, premendo A
-    GUBBIO_CERCA_S_48     // e poi quella a sud: prima o poi Tano entra nel raggio
+    // TRATTA 2 - via dei Consoli, in discesa: 59 tile dal rientro (7,3) al varco a valle.
+    // 224 frame, non 288: dal rientro (7,8) al varco a valle ci sono 54 tile, cioe' 216
+    // frame in corsa. I 70 di troppo non si fermavano al confine dell'area — proseguivano
+    // DENTRO il Bargello spingendo il giocatore contro il muro sud, dove il varco verso San
+    // Martino non c'e', e da li' le tratte successive non riuscivano piu' a rimetterlo in
+    // riga. Una tratta troppo lunga non e' prudenza: e' un guasto per l'area seguente.
+    GUBBIO_ZIG_GIU_128 GUBBIO_ZIG_GIU_32 GUBBIO_ZIG_GIU_32 GUBBIO_ZIG_GIU_32
+    GUBBIO_IDLE_16
+    // TRATTA 3 - Largo del Bargello, verso ovest: 27 tile dal rientro (28,12) alla discesa.
+    GUBBIO_SX_128
+    GUBBIO_IDLE_16
+    // TRATTA 4 - San Martino, in giu': 29 tile dal rientro (15,9) alla Porta di Santa Lucia.
+    GUBBIO_ZIG_GIU_128
+    GUBBIO_IDLE_16
+    // TRATTA 5 - Bottaccione, in su': 51 tile dal rientro (10,57) al varco verso la vetta.
+    // 288 e non 256: il camminamento e' lungo 453 px e 256 frame ne coprono 448. Mancavano
+    // CINQUE PIXEL, e il giocatore restava fermo a un tile dal varco della vetta senza che
+    // nulla, nel log, distinguesse quel caso da un percorso sbagliato.
+    GUBBIO_ZIG_SU_128 GUBBIO_ZIG_SU_128 GUBBIO_ZIG_SU_32
+    GUBBIO_IDLE_16
+    // TRATTA 6 e 7 - Basilica e stradoni del Monte, verso ovest: 55 tile piu' 54, tutti in
+    // discesa a tornanti. Un blocco solo: cio' che avanza della tratta 6 spinge gia' nella
+    // direzione giusta della 7, invece di ributtare indietro il giocatore.
+    GUBBIO_ZIG_SX_512
+    GUBBIO_IDLE_16
+    // TRATTA 8 - Duomo e Palazzo Ducale, verso ovest: 45 tile fino alla discesa in piazza.
+    GUBBIO_ZIG_SX_128 GUBBIO_ZIG_SX_128
     GUBBIO_IDLE_256       // la macchina da scrivere percorre la prima battuta
     GUBBIO_TASTO_A GUBBIO_IDLE_64 GUBBIO_TASTO_A GUBBIO_IDLE_64
     GUBBIO_TASTO_A GUBBIO_IDLE_64 GUBBIO_TASTO_A GUBBIO_IDLE_64

@@ -64,11 +64,16 @@ constexpr int VIA_XX_SETTEMBRE_STAIRS_LAST_Y  = 35;
 // Dove il giocatore compare arrivando da Piazza Grande: un passo dentro la via, non sul varco
 // stesso, cosi' da non ritrovarsi subito sopra il trigger che lo farebbe tornare indietro.
 constexpr int VIA_XX_SETTEMBRE_INGRESSO_DA_PIAZZA_GRANDE_X = 15;
-constexpr int VIA_XX_SETTEMBRE_INGRESSO_DA_PIAZZA_GRANDE_Y = 1;
+    // OTTO tile dentro, non uno: il contratto (docs/mappa_del_mondo.md sez. 5) impone almeno
+    // sei di margine dal proprio varco. Quest'area e' stata autorata PRIMA che quella regola
+    // esistesse, e l'autotest ha misurato il difetto che la regola previene: qualche frame
+    // residuo di spinta nella direzione d'arrivo, e il giocatore rientra da dove e' appena
+    // uscito. Nel giro completo dell'anello il risultato era prendere la strada sbagliata.
+constexpr int VIA_XX_SETTEMBRE_INGRESSO_DA_PIAZZA_GRANDE_Y = 8;
 
 // Dove il giocatore compare arrivando da Sant'Agostino, con lo stesso criterio.
 constexpr int VIA_XX_SETTEMBRE_INGRESSO_DA_SANT_AGOSTINO_X = 16;
-constexpr int VIA_XX_SETTEMBRE_INGRESSO_DA_SANT_AGOSTINO_Y = VIA_XX_SETTEMBRE_HEIGHT - 2;
+constexpr int VIA_XX_SETTEMBRE_INGRESSO_DA_SANT_AGOSTINO_Y = VIA_XX_SETTEMBRE_HEIGHT - 9;
 
 // Le uscite non sanno dove portano (docs/mappa_del_mondo.md sez. 5): qui si dichiara solo che i
 // tile 4 e 5 esistono e dove. E' MAPS[] in map_data.h a collegarli a Piazza Grande e Sant'Agostino.

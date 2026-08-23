@@ -10,6 +10,7 @@
 #include "game_clock.h"
 #include "bn_sprite_items_overworld_npc.h"
 
+#include "font_gubbio.h"
 #include "npc_registry.h"
 #include "save_data.h"
 #include "scene_fade.h"
@@ -61,6 +62,9 @@ ExplorationScene::ExplorationScene(GameState& state, const SceneRequest& request
     _ground(_map.ground->create_bg(0, 0)),
     _player(_map, resolve_start_position(_map, state).x, resolve_start_position(_map, state).y,
             _camera),
+    // L'ordine qui deve seguire quello di DICHIARAZIONE nell'header, non la comodita':
+    // g++ ordina comunque per dichiarazione e avverte quando i due divergono.
+    _etichetta_generator(FONT_GUBBIO),
     _last_trigger_tile(0)
 // NOTA: `resolve_start_position` e' chiamata due volte perche' la lista di inizializzazione non
 // ammette una variabile intermedia. E' una funzione pura su due campi, valutata una volta per
@@ -133,6 +137,8 @@ ExplorationScene::ExplorationScene(GameState& state, const SceneRequest& request
     BN_LOG("=== ESPLORAZIONE: ", MAP_NAMES[request.parameter], " ===");
     BN_LOG("  comparsa a x ", _player.x(), " y ", _player.y(),
            " (entry point ", int(_state.entry_point), ")");
+
+    _mostra_nome_area();
 }
 
 void ExplorationScene::_update_camera()
@@ -149,6 +155,50 @@ void ExplorationScene::_update_camera()
         // Il cielo NON e' agganciato alla camera: si muove a un quarto, ed e' il wrap hardware
         // del BG 256x256 a farlo sembrare infinito.
         _sky->set_position(-(cam_x >> PARALLAX_SHIFT), -(cam_y >> PARALLAX_SHIFT));
+    }
+}
+
+void ExplorationScene::_mostra_nome_area()
+{
+    // CENTRATO IN ALTO, e in coordinate di SCHERMO, non di mondo: l'etichetta non ha camera, e
+    // quindi non scorre con la mappa. Un testo agganciato alla camera scivolerebbe via appena il
+    // giocatore muove un passo.
+    _etichetta.clear();
+    _etichetta_generator.set_center_alignment();
+    _etichetta_generator.set_bg_priority(0);
+    _etichetta_generator.generate(0, -60, MAP_NAMES[int(_map_id)], _etichetta);
+    _etichetta_frame = ETICHETTA_FRAME;
+}
+
+void ExplorationScene::_aggiorna_etichetta()
+{
+    if(_etichetta.empty())
+    {
+        return;
+    }
+
+    --_etichetta_frame;
+
+    if(_etichetta_frame <= 0)
+    {
+        // Si SVUOTA il vettore invece di nasconderlo: gli sprite di testo tengono impegnata una
+        // allocazione di tile OBJ ciascuno, su un tetto di 128 condiviso con la finestra di
+        // dialogo. Lasciarli vivi e invisibili significherebbe pagarli per tutta la scena, e
+        // farebbe fallire il dialogo successivo per esaurimento invece che per un difetto suo.
+        _etichetta.clear();
+        return;
+    }
+
+    // Ultimi frame in dissolvenza, cosi' il nome non sparisce di scatto.
+    if(_etichetta_frame < 24)
+    {
+        const bn::fixed alpha = bn::fixed(_etichetta_frame) / 24;
+
+        for(bn::sprite_ptr& sprite : _etichetta)
+        {
+            sprite.set_blending_enabled(true);
+            sprite.set_visible(alpha > bn::fixed(0.15));
+        }
     }
 }
 
@@ -270,7 +320,8 @@ SceneRequest ExplorationScene::run()
             }
         }
 
-        _player.update();
+        _aggiorna_etichetta();
+    _player.update();
         _update_camera();
         _dialogue_view.update(_dialogue);
 
