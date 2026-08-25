@@ -23,7 +23,23 @@
 //                       A = conferma, B = indietro.
 // ---------------------------------------------------------------------------------------------
 
-#ifdef GUBBIO_BATTLE_AUTOTEST
+// I due autotest sono SEPARATI di proposito (Sessione 22). `GUBBIO_BATTLE_AUTOTEST` combatte e
+// poi cammina; `GUBBIO_EXPLORE_AUTOTEST` parte direttamente in esplorazione e non combatte mai.
+// La ragione sta nel test rosso che li ha divisi: il Passo 20 ha allungato ogni round di circa
+// cinque volte, e la coda di camminata — quella che preme SELECT e produce il `.sav` su cui
+// `tests/test_save_system.py` misura — non veniva piu' raggiunta dentro una corsa di emulatore
+// praticabile. Il salvataggio non era rotto: era irraggiungibile. Legare il collaudo della mappa
+// alla durata della battaglia era un accoppiamento nato per come e' cresciuto lo script, non per
+// una necessita': sono due cose diverse e ora hanno due script diversi.
+#if defined(GUBBIO_BATTLE_AUTOTEST) && defined(GUBBIO_EXPLORE_AUTOTEST)
+    #error "GUBBIO_BATTLE_AUTOTEST e GUBBIO_EXPLORE_AUTOTEST si escludono a vicenda: bn::core::init() accetta UN solo script di tasti, e definirli insieme sceglierebbe in silenzio quale collaudo eseguire"
+#endif
+
+// I mattoni dei tasti servono a entrambi gli script e stanno percio' sotto una guardia sola.
+// Quelli di battaglia restano definiti anche sotto l'autotest di esplorazione: sono macro, non
+// occupano un byte se nessuno le nomina, e tenerle qui evita che le due tarature degli stessi
+// tratti si sdoppino in due elenchi liberi di divergere in silenzio.
+#if defined(GUBBIO_BATTLE_AUTOTEST) || defined(GUBBIO_EXPLORE_AUTOTEST)
 
 // Replay dei tasti nativo di Butano (`bn::core::init(keypad_commands)`): due caratteri per
 // frame, il primo con i 5 bit bassi della maschera tasti e il secondo con i 5 alti, ciascuno
@@ -221,57 +237,110 @@
 #define GUBBIO_ZIG_GIU_512 GUBBIO_Q(GUBBIO_ZIG_GIU_128)
 #define GUBBIO_ZIG_SX_512  GUBBIO_Q(GUBBIO_ZIG_SX_128)
 
+// --- LA CATENA DELLA CITTA', percorsa per intero ----------------------------------------------
+//
+// Dalla Sessione 20 il varco nord-ovest della piazza non salta piu' al Bargello: scende per VIA
+// DEI CONSOLI, che e' un'area a se'. Il percorso collaudato qui e' quindi Piazza Grande -> via
+// dei Consoli -> Largo del Bargello, cioe' due transizioni consecutive invece di una. E' il punto
+// in cui nascono i loop di transizione che gli spawn point esistono per impedire, e ora ce ne
+// sono due in fila.
+//
+// E' UNA MACRO, e non due copie: la percorrono sia l'autotest di battaglia sia quello di
+// esplorazione, e ogni tratta qui dentro e' un numero di frame MISURATO sull'emulatore. Due
+// elenchi separati sarebbero due tarature libere di divergere al primo ritocco di una mappa,
+// e la seconda smetterebbe di seguire la prima senza che nulla lo dica.
+//
+// I commenti interni sono in /* */ e non in //: dentro una macro a righe continuate la
+// giunzione delle righe avviene PRIMA della rimozione dei commenti, quindi un // si mangerebbe
+// tutto il resto della macro.
+#define GUBBIO_ANELLO_DELLA_CITTA \
+    /* TRATTA 1 - Piazza Grande: dal centro (14,38) al varco nord-ovest, in salita a destra.  */ \
+    /* 128 frame e non 256: ne bastano ~122 per arrivare al varco, e i restanti continuavano  */ \
+    /* a spingere VERSO L'ALTO anche dopo la transizione, ributtando il giocatore dentro il   */ \
+    /* varco opposto. Un autotest che tiene premuta una direzione oltre il proprio scopo non  */ \
+    /* collauda la transizione: la fa fallire.                                                */ \
+    GUBBIO_WALK_64 GUBBIO_WALK_64 \
+    GUBBIO_IDLE_64        /* attesa che la dissolvenza d'ingresso finisca                     */ \
+    GUBBIO_SELECT         /* salvataggio su FRAM, verificabile nel .sav e nel log             */ \
+    GUBBIO_IDLE_16 \
+    /* TRATTA 2 - via dei Consoli, in discesa: 59 tile dal rientro (7,3) al varco a valle.    */ \
+    /* 224 frame, non 288: dal rientro (7,8) al varco a valle ci sono 54 tile, cioe' 216      */ \
+    /* frame in corsa. I 70 di troppo non si fermavano al confine dell'area - proseguivano    */ \
+    /* DENTRO il Bargello spingendo il giocatore contro il muro sud, dove il varco verso San  */ \
+    /* Martino non c'e', e da li' le tratte successive non riuscivano piu' a rimetterlo in    */ \
+    /* riga. Una tratta troppo lunga non e' prudenza: e' un guasto per l'area seguente.       */ \
+    GUBBIO_ZIG_GIU_128 GUBBIO_ZIG_GIU_32 GUBBIO_ZIG_GIU_32 GUBBIO_ZIG_GIU_32 \
+    GUBBIO_IDLE_16 \
+    /* TRATTA 3 - Largo del Bargello, verso ovest: 27 tile dal rientro (28,12) alla discesa.  */ \
+    GUBBIO_SX_128 \
+    GUBBIO_IDLE_16 \
+    /* TRATTA 4 - San Martino, in giu': 29 tile dal rientro (15,9) alla Porta di Santa Lucia. */ \
+    GUBBIO_ZIG_GIU_128 \
+    GUBBIO_IDLE_16 \
+    /* TRATTA 5 - Bottaccione, in su': 51 tile dal rientro (10,57) al varco verso la vetta.   */ \
+    /* 288 e non 256: il camminamento e' lungo 453 px e 256 frame ne coprono 448. Mancavano   */ \
+    /* CINQUE PIXEL, e il giocatore restava fermo a un tile dal varco della vetta senza che   */ \
+    /* nulla, nel log, distinguesse quel caso da un percorso sbagliato.                       */ \
+    GUBBIO_ZIG_SU_128 GUBBIO_ZIG_SU_128 GUBBIO_ZIG_SU_32 \
+    GUBBIO_IDLE_16 \
+    /* TRATTA 6 e 7 - Basilica e stradoni del Monte, verso ovest: 55 tile piu' 54, tutti in   */ \
+    /* discesa a tornanti. Un blocco solo: cio' che avanza della tratta 6 spinge gia' nella   */ \
+    /* direzione giusta della 7, invece di ributtare indietro il giocatore.                   */ \
+    GUBBIO_ZIG_SX_512 \
+    GUBBIO_IDLE_16 \
+    /* TRATTA 8 - Duomo e Palazzo Ducale, verso ovest: 45 tile fino alla discesa in piazza.   */ \
+    GUBBIO_ZIG_SX_128 GUBBIO_ZIG_SX_128
+
+#endif   // uno dei due autotest
+
+#ifdef GUBBIO_BATTLE_AUTOTEST
+
 constexpr const char* AUTOTEST_KEYPAD_SCRIPT =
     GUBBIO_AUTOTEST_ALIGN
     GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND
     GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND GUBBIO_AUTOTEST_ROUND
-    // LA CATENA DELLA CITTA', percorsa per intero. Dalla Sessione 20 il varco nord-ovest della
-    // piazza non salta piu' al Bargello: scende per VIA DEI CONSOLI, che e' un'area a se'. Il
-    // percorso collaudato qui e' quindi Piazza Grande -> via dei Consoli -> Largo del Bargello,
-    // cioe' due transizioni consecutive invece di una. E' il punto in cui nascono i loop di
-    // transizione che gli spawn point esistono per impedire, e ora ce ne sono due in fila.
-    // 128 frame e non 256: ne bastano ~122 per arrivare al varco, e i restanti continuavano a
-    // spingere VERSO L'ALTO anche dopo la transizione, ributtando il giocatore dentro il varco
-    // opposto. Un autotest che tiene premuta una direzione oltre il proprio scopo non collauda
-    // la transizione: la fa fallire.
-    // TRATTA 1 - Piazza Grande: dal centro (14,38) al varco nord-ovest, in salita a destra.
-    GUBBIO_WALK_64 GUBBIO_WALK_64
-    GUBBIO_IDLE_64        // attesa che la dissolvenza d'ingresso finisca
-    GUBBIO_SELECT         // salvataggio su FRAM, verificabile nel `.sav` e nel log
-    GUBBIO_IDLE_16
-    // TRATTA 2 - via dei Consoli, in discesa: 59 tile dal rientro (7,3) al varco a valle.
-    // 224 frame, non 288: dal rientro (7,8) al varco a valle ci sono 54 tile, cioe' 216
-    // frame in corsa. I 70 di troppo non si fermavano al confine dell'area — proseguivano
-    // DENTRO il Bargello spingendo il giocatore contro il muro sud, dove il varco verso San
-    // Martino non c'e', e da li' le tratte successive non riuscivano piu' a rimetterlo in
-    // riga. Una tratta troppo lunga non e' prudenza: e' un guasto per l'area seguente.
-    GUBBIO_ZIG_GIU_128 GUBBIO_ZIG_GIU_32 GUBBIO_ZIG_GIU_32 GUBBIO_ZIG_GIU_32
-    GUBBIO_IDLE_16
-    // TRATTA 3 - Largo del Bargello, verso ovest: 27 tile dal rientro (28,12) alla discesa.
-    GUBBIO_SX_128
-    GUBBIO_IDLE_16
-    // TRATTA 4 - San Martino, in giu': 29 tile dal rientro (15,9) alla Porta di Santa Lucia.
-    GUBBIO_ZIG_GIU_128
-    GUBBIO_IDLE_16
-    // TRATTA 5 - Bottaccione, in su': 51 tile dal rientro (10,57) al varco verso la vetta.
-    // 288 e non 256: il camminamento e' lungo 453 px e 256 frame ne coprono 448. Mancavano
-    // CINQUE PIXEL, e il giocatore restava fermo a un tile dal varco della vetta senza che
-    // nulla, nel log, distinguesse quel caso da un percorso sbagliato.
-    GUBBIO_ZIG_SU_128 GUBBIO_ZIG_SU_128 GUBBIO_ZIG_SU_32
-    GUBBIO_IDLE_16
-    // TRATTA 6 e 7 - Basilica e stradoni del Monte, verso ovest: 55 tile piu' 54, tutti in
-    // discesa a tornanti. Un blocco solo: cio' che avanza della tratta 6 spinge gia' nella
-    // direzione giusta della 7, invece di ributtare indietro il giocatore.
-    GUBBIO_ZIG_SX_512
-    GUBBIO_IDLE_16
-    // TRATTA 8 - Duomo e Palazzo Ducale, verso ovest: 45 tile fino alla discesa in piazza.
-    GUBBIO_ZIG_SX_128 GUBBIO_ZIG_SX_128
+    GUBBIO_ANELLO_DELLA_CITTA
     GUBBIO_IDLE_256       // la macchina da scrivere percorre la prima battuta
     GUBBIO_TASTO_A GUBBIO_IDLE_64 GUBBIO_TASTO_A GUBBIO_IDLE_64
     GUBBIO_TASTO_A GUBBIO_IDLE_64 GUBBIO_TASTO_A GUBBIO_IDLE_64
     GUBBIO_TASTO_A GUBBIO_IDLE_64;
 
-#endif
+#endif   // GUBBIO_BATTLE_AUTOTEST
+
+#ifdef GUBBIO_EXPLORE_AUTOTEST
+
+// SCRIPT DELLA SOLA ESPLORAZIONE. Nessun allineamento in testa, e non e' una dimenticanza:
+// `bn::core::init()` consuma il primo comando e lo lascia valido fino al primo `core_update()`,
+// quindi il comando di indice 0 e' proprio quello che il primo giro del ciclo di
+// `ExplorationScene::run()` legge. La scena di esplorazione, a differenza della battaglia, NON
+// ha uno stato d'ingresso cieco: la sua dissolvenza (ENTRY_FADE_FRAMES, 20 frame in
+// src/scene_exploration.cpp) legge i tasti e muove il giocatore come tutti gli altri frame, e
+// l'unica cosa che sospende sono i TRIGGER. Per questo l'allineamento a 33 frame della battaglia
+// qui non serve, e i 33 frame di GUBBIO_AUTOTEST_ALIGN sarebbero 33 frame rubati alla prima
+// tratta.
+//
+// IL SALVATAGGIO E' LA PRIMA COSA CHE SI FA, prima ancora di camminare. E' il punto di questo
+// script: il `.sav` che `tests/test_save_system.py` legge deve esistere anche se la corsa
+// dell'emulatore viene interrotta dopo pochi secondi. Con il SELECT in fondo alla camminata —
+// dove sta nell'autotest di battaglia — il file esisteva solo a collaudo completo, e bastava che
+// qualcosa piu' a monte si allungasse perche' il test diventasse rosso senza che nulla fosse
+// rotto. E' esattamente cio' che il Passo 20 ha fatto.
+//
+// Due SELECT e non uno, e nemmeno questo e' di troppo: `test_ping_pong_fra_le_banche` verifica
+// che due scritture consecutive finiscano in banche diverse, ma con una sola banca scritta salta
+// il controllo e passa senza aver provato nulla. Il secondo SELECT e' quello dentro
+// GUBBIO_ANELLO_DELLA_CITTA, dopo la prima transizione: con due record in due banche
+// quell'oracolo torna a poter fallire.
+//
+// La coda di battute dell'autotest di battaglia (GUBBIO_TASTO_A) non e' ripetuta qui: i dialoghi
+// restano collaudati di la', e ogni frame in piu' qui e' tempo di emulatore speso prima che il
+// giro fra le aree si chiuda.
+constexpr const char* EXPLORE_KEYPAD_SCRIPT =
+    GUBBIO_SELECT
+    GUBBIO_ANELLO_DELLA_CITTA
+    GUBBIO_IDLE_64;       // l'ultima area finisce la dissolvenza e stampa il proprio nome
+
+#endif   // GUBBIO_EXPLORE_AUTOTEST
 
 #ifndef GUBBIO_AUTOTEST_ENCOUNTER
 #define GUBBIO_AUTOTEST_ENCOUNTER 0
@@ -279,8 +348,10 @@ constexpr const char* AUTOTEST_KEYPAD_SCRIPT =
 
 int main()
 {
-#ifdef GUBBIO_BATTLE_AUTOTEST
+#if defined(GUBBIO_BATTLE_AUTOTEST)
     bn::core::init(AUTOTEST_KEYPAD_SCRIPT);
+#elif defined(GUBBIO_EXPLORE_AUTOTEST)
+    bn::core::init(EXPLORE_KEYPAD_SCRIPT);
 #else
     bn::core::init();
 #endif
@@ -290,8 +361,22 @@ int main()
     // Caricamento all'avvio. Uno slot corrotto NON viene riformattato: si comincia una partita
     // nuova in memoria e i byte sul chip restano come sono, cosi' che il giocatore possa
     // decidere se sovrascriverli e chi indaga possa ancora leggerli (Passo 8).
-    const gubbio::SlotStatus stato_slot = gubbio::SaveSystem::probe(gubbio::SAVE_SLOT_DEFAULT);
     bool caricata = false;
+
+#ifdef GUBBIO_EXPLORE_AUTOTEST
+    // IL CARICAMENTO SI SALTA, sotto l'autotest di esplorazione, e la partita e' sempre nuova.
+    // Non e' una scorciatoia: lo script dei tasti e' una traiettoria contata in frame a partire
+    // dallo spawn di default di Piazza Grande, e una partita caricata comparirebbe invece dove
+    // l'aveva lasciata la corsa PRECEDENTE — cioe' dove il SELECT dell'anello ha salvato, con
+    // `entry_point` a ENTRY_POINT_RESUME. La prima corsa collauderebbe l'anello e tutte le
+    // successive camminerebbero altrove, senza che nulla nel log distingua i due casi: un
+    // autotest il cui esito dipende dalla corsa precedente non fallisce, mente.
+    // Il `.sav` non viene toccato da questa scelta: `SaveSystem::save` legge comunque le banche
+    // esistenti per il proprio ping-pong, quindi il contatore di scrittura continua a crescere
+    // fra una corsa e l'altra.
+    BN_LOG("AUTOTEST ESPLORAZIONE: slot ignorato in lettura, si parte sempre da partita nuova");
+#else
+    const gubbio::SlotStatus stato_slot = gubbio::SaveSystem::probe(gubbio::SAVE_SLOT_DEFAULT);
 
     if(stato_slot == gubbio::SlotStatus::VALID)
     {
@@ -304,6 +389,7 @@ int main()
     {
         BN_LOG("SLOT 0 non caricabile (stato ", int(stato_slot), "): nuova partita");
     }
+#endif
 
     if(! caricata)
     {
@@ -311,10 +397,13 @@ int main()
     }
 
     // Il gioco comincia dall'hub: Piazza Grande.
-    // Sotto autotest comincia invece dalla battaglia, perche' lo script a tasti fissi e' tarato
-    // sui 33 frame di scarto di quello scontro (vedi GUBBIO_AUTOTEST_ALIGN) e ogni frame speso
-    // altrove lo disallineerebbe. La coda di camminata dello script porta poi il giocatore sul
-    // varco occidentale, che riapre una battaglia: e' cosi' che il round-trip viene collaudato.
+    // Sotto GUBBIO_BATTLE_AUTOTEST comincia invece dalla battaglia, perche' lo script a tasti
+    // fissi e' tarato sui 33 frame di scarto di quello scontro (vedi GUBBIO_AUTOTEST_ALIGN) e
+    // ogni frame speso altrove lo disallineerebbe. La coda di camminata dello script porta poi
+    // il giocatore sul varco occidentale, che riapre una battaglia: e' cosi' che il round-trip
+    // viene collaudato.
+    // Sotto GUBBIO_EXPLORE_AUTOTEST si parte dall'hub come nel gioco vero, ed e' il senso di
+    // quella macro: la battaglia non deve avere voce in capitolo sul collaudo della mappa.
 #ifdef GUBBIO_BATTLE_AUTOTEST
     gubbio::SceneRequest request = gubbio::SceneRequest::battle(GUBBIO_AUTOTEST_ENCOUNTER);
 #else

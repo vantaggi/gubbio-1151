@@ -139,6 +139,16 @@ public:
     [[nodiscard]] bool is_finished() const;
 
     [[nodiscard]] BattleState state() const { return _current_state; }
+    // IL REGISTRO E IL SUO CURSORE, in sola lettura. Li chiede l'HUD (Passo 21): le barre si
+    // alimentano da `hp_after` dell'ULTIMO EVENTO RIPRODOTTO, non dallo stato gia' risolto nel
+    // modello, altrimenti scendono prima dell'animazione che dovrebbe farle scendere — ed e'
+    // il difetto che il registro esiste per chiudere.
+    //
+    // Restituiti per riferimento CONST: chi legge non deve poter avanzare il cursore ne'
+    // aggiungere eventi. L'unico che inserisce e' _emit(), che a contenitore pieno scarta.
+    [[nodiscard]] const bn::vector<BattleEvent, MAX_EVENTS>& events() const { return _events; }
+    [[nodiscard]] int event_cursor() const { return _event_cursor; }
+
     [[nodiscard]] const bn::vector<BattleUnit, PARTY_SIZE>& party() const { return _party; }
     [[nodiscard]] const bn::vector<BattleUnit, MAX_ENEMIES_PER_ENCOUNTER>& enemies() const { return _enemies; }
     [[nodiscard]] const bn::vector<QueuedAction, PARTY_SIZE + MAX_ENEMIES_PER_ENCOUNTER>& action_queue() const
@@ -147,6 +157,10 @@ public:
     }
     [[nodiscard]] MenuCommand selected_command() const { return MenuCommand(_selected_menu_index); }
     [[nodiscard]] int boost_level() const { return _boost_level; }
+    // Serve alla firma dell'HUD: l'abilita' selezionata e' stato VISIBILE a schermo, e ogni
+    // campo visibile che non entra in _signature() e' un elemento che resta congelato mentre
+    // il gioco cambia sotto. E' il bug della Sessione 07D, dove mancava is_enemy.
+    [[nodiscard]] int selected_skill_index() const { return _selected_skill_index; }
     [[nodiscard]] UnitRef selected_target() const { return _selected_target; }
     [[nodiscard]] int round_number() const { return _round_number; }
 
@@ -217,10 +231,11 @@ private:
     void _resolve_faith_shield(BattleUnit& actor, const QueuedAction& action);
     void _resolve_guard(BattleUnit& actor, int boost_level);
     [[nodiscard]] UnitRef _redirect_if_guarded(UnitRef target_ref) const;
-    void _apply_hit(BattleUnit& actor, UnitRef target_ref, const SkillData& skill, int boost_level);
+    void _apply_hit(BattleUnit& actor, UnitRef actor_ref, UnitRef target_ref,
+                    const SkillData& skill, int boost_level);
     [[nodiscard]] int _apply_variance(int damage);
     void _end_of_round_ticks();
-    void _tick_status(BattleUnit& unit);
+    void _tick_status(BattleUnit& unit, UnitRef ref);
 
     // --- Condizioni di uscita ---
     [[nodiscard]] bool _all_enemies_dead() const;

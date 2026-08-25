@@ -805,7 +805,7 @@ void BattleSceneManager::_resolve_offensive_action(BattleUnit& actor, const Queu
 
             if(_unit_at(target).is_alive())
             {
-                _apply_hit(actor, target, skill, boost);
+                _apply_hit(actor, action.actor, target, skill, boost);
             }
         }
 
@@ -829,7 +829,7 @@ void BattleSceneManager::_resolve_offensive_action(BattleUnit& actor, const Queu
             break;
         }
 
-        _apply_hit(actor, target, skill, boost);
+        _apply_hit(actor, action.actor, target, skill, boost);
     }
 }
 
@@ -904,8 +904,14 @@ void BattleSceneManager::_play_round_animations()
     }
 }
 
-void BattleSceneManager::_apply_hit(BattleUnit& actor, UnitRef target_ref, const SkillData& skill,
-                                    int boost_level)
+// `actor_ref` NON e' ricavabile da `actor`: BattleUnit sa se e' nemico ma non in quale
+// slot sta, e risalirci per indirizzo sarebbe fragile. Va passato da chi il colpo lo
+// ordina. Prima non c'era e i quattro _emit scrivevano uno ZERO LETTERALE come
+// actor_slot: l'HUD lo usa per scegliere quale sprite animare, quindi animava sempre
+// il primo Cero qualunque fosse l'attore. Trovato dalla verifica avversariale, non
+// dalla build: e' un difetto che compila benissimo.
+void BattleSceneManager::_apply_hit(BattleUnit& actor, UnitRef actor_ref, UnitRef target_ref,
+                                    const SkillData& skill, int boost_level)
 {
     target_ref = _redirect_if_guarded(target_ref);
 
@@ -922,7 +928,7 @@ void BattleSceneManager::_apply_hit(BattleUnit& actor, UnitRef target_ref, const
     {
         if(target.damage_shield(BOOST_SHIELD_PER_HIT[boost_level]))
         {
-            _emit({EventKind::SHIELD_BREAK, uint8_t(0), uint8_t(target_ref.slot),
+            _emit({EventKind::SHIELD_BREAK, uint8_t(actor_ref.slot), uint8_t(target_ref.slot),
                    actor.is_enemy, target.is_enemy,
                    int16_t(BOOST_SHIELD_PER_HIT[boost_level]), int16_t(target.current_hp)});
         }
@@ -933,12 +939,12 @@ void BattleSceneManager::_apply_hit(BattleUnit& actor, UnitRef target_ref, const
     const bool era_vivo = target.is_alive();
     target.take_damage(danno);
 
-    _emit({EventKind::HIT, uint8_t(0), uint8_t(target_ref.slot), actor.is_enemy,
+    _emit({EventKind::HIT, uint8_t(actor_ref.slot), uint8_t(target_ref.slot), actor.is_enemy,
            target.is_enemy, int16_t(danno), int16_t(target.current_hp)});
 
     if(era_vivo && ! target.is_alive())
     {
-        _emit({EventKind::DEFEAT, uint8_t(0), uint8_t(target_ref.slot), actor.is_enemy,
+        _emit({EventKind::DEFEAT, uint8_t(actor_ref.slot), uint8_t(target_ref.slot), actor.is_enemy,
                target.is_enemy, int16_t(0), int16_t(0)});
     }
 
@@ -947,7 +953,7 @@ void BattleSceneManager::_apply_hit(BattleUnit& actor, UnitRef target_ref, const
        target.is_alive())
     {
         target.add_fervor(FERVOR_GAIN_GIORGIO_HIT);
-        _emit({EventKind::FERVOR_GAIN, uint8_t(0), uint8_t(target_ref.slot), actor.is_enemy,
+        _emit({EventKind::FERVOR_GAIN, uint8_t(actor_ref.slot), uint8_t(target_ref.slot), actor.is_enemy,
                target.is_enemy, int16_t(FERVOR_GAIN_GIORGIO_HIT), int16_t(target.current_hp)});
     }
 
@@ -967,23 +973,38 @@ int BattleSceneManager::_apply_variance(int damage)
 
 void BattleSceneManager::_end_of_round_ticks()
 {
-    for(BattleUnit& enemy : _enemies)
+    for(int slot = 0; slot < _enemies.size(); ++slot)
     {
-        _tick_status(enemy);
+        _tick_status(_enemies[slot], UnitRef{true, slot});
     }
 
-    for(BattleUnit& hero : _party)
+    for(int slot = 0; slot < _party.size(); ++slot)
     {
-        _tick_status(hero);
+        _tick_status(_party[slot], UnitRef{false, slot});
     }
 }
 
-void BattleSceneManager::_tick_status(BattleUnit& unit)
+void BattleSceneManager::_tick_status(BattleUnit& unit, UnitRef ref)
 {
     // Ustione Alchemica: danno assoluto per carica a fine turno, fissato all'applicazione.
     if(unit.burn_stacks > 0 && unit.is_alive())
     {
-        unit.take_damage(unit.burn_damage_per_stack * unit.burn_stacks);
+        const int danno_ustione = unit.burn_damage_per_stack * unit.burn_stacks;
+        unit.take_damage(danno_ustione);
+
+        // L'ustione e' l'unico danno che il giocatore subisce senza vedere un colpo:
+        // se non lascia un evento, la barra scende e nulla sullo schermo dice perche'.
+        // Prima EventKind::BURN_TICK era codice morto — dichiarato, con una durata di
+        // riproduzione, e mai emesso da nessuno.
+        _emit({EventKind::BURN_TICK, uint8_t(ref.slot), uint8_t(ref.slot),
+               unit.is_enemy, unit.is_enemy, int16_t(danno_ustione),
+               int16_t(unit.current_hp)});
+
+        if(! unit.is_alive())
+        {
+            _emit({EventKind::DEFEAT, uint8_t(ref.slot), uint8_t(ref.slot),
+                   unit.is_enemy, unit.is_enemy, int16_t(0), int16_t(0)});
+        }
 
         if(unit.is_enemy && _party[PARTY_ANTONIO].is_alive())
         {

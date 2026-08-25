@@ -35,9 +35,12 @@ STATUS_X, STATUS_Y, STATUS_LINE = 84, 118, 12
 NUMBERS_X = 133
 SHORT = ["Ubaldo", "Giorgio", "Antonio"]
 BAR_HP_X, BAR_FER_X = 157, 193
-BAR_FRAMES = 17
-BAR_FERVOR_OFFSET = 17
 TIMELINE_X, TIMELINE_Y, TIMELINE_STEP = 228, 12, 15
+
+# L'ordine di AnimActor in include/battle_anim_table.h (Passo 19): stesso ordine di ACTORS in
+# tools/make_placeholder_art.py. Serve a indicizzare ANIM_SHEETS senza ricopiarne i valori.
+ANIM_ACTOR_ORDER = ["ubaldo", "giorgio", "antonio",
+                    "enemy_fante", "enemy_balestriere", "enemy_corrado"]
 # Ordine previsto del round 1: Giorgio 42, Antonio 38, Balestriere 34, Ubaldo 30, Fanti 26.
 TIMELINE_ORDER = [1, 2, 4, 0, 3, 3]
 
@@ -66,6 +69,45 @@ def load_rgba(name, transparent_index_0=True):
                 continue
             out[x, y] = (pal[i * 3], pal[i * 3 + 1], pal[i * 3 + 2], 255)
     return rgba
+
+
+def load_anim_table():
+    """Legge include/battle_anim_table.h, generato da tools/make_placeholder_art.py.
+
+    E' la stessa fonte di verita' che usa src/battle_hud.cpp: senza questa lettura, le misure
+    di fotogramma, barra e gettone andrebbero ricopiate a mano qui - esattamente il difetto
+    dichiarato nella Sessione 05 che il Passo 19 esiste per chiudere."""
+    header = os.path.join(ROOT, "include", "battle_anim_table.h")
+    with open(header, encoding="utf-8") as f:
+        text = f.read()
+
+    def const(name):
+        m = re.search(r"inline constexpr int %s = (\d+);" % name, text)
+        return int(m.group(1))
+
+    sheets_block = text.split("ANIM_SHEETS[ANIM_ACTOR_COUNT] = {")[1].split("};")[0]
+    sheets = [tuple(int(v) for v in triple)
+              for triple in re.findall(r"\{\s*(\d+),\s*(\d+),\s*(\d+)\s*\}", sheets_block)]
+    assert len(sheets) == len(ANIM_ACTOR_ORDER), \
+        "ANIM_SHEETS ha %d voci, l'anteprima ne aspetta %d: le due tabelle sono divergiute" % (
+            len(sheets), len(ANIM_ACTOR_ORDER))
+
+    return {
+        "sheets": dict(zip(ANIM_ACTOR_ORDER, sheets)),   # nome -> (width, frame_height, total)
+        "bar_frames": const("HUD_BAR_FRAMES"),
+        "bar_fervor_offset": const("HUD_BAR_FERVOR_OFFSET"),
+        "bar_width": const("HUD_BAR_WIDTH"),
+        "bar_frame_height": const("HUD_BAR_FRAME_HEIGHT"),
+        "timeline_size": const("TIMELINE_ICON_SIZE"),
+    }
+
+
+def actor_idle_frame(anim, name):
+    """Il fotogramma 0 (IDLE, FERMO) ritagliato dal foglio: e' l'unico fotogramma che
+    l'anteprima disegna, e la sua posizione (0,0) e' garantita dall'invariante di
+    compatibilita' con create_sprite(x, y) verificato in _verifica_tabelle()."""
+    width, frame_height, _ = anim["sheets"][name]
+    return load_rgba(name).crop((0, 0, width, frame_height))
 
 
 # Le accentate stanno in coda alle 94 celle ASCII, nell'ordine in cui make_font.py le emette.
@@ -130,10 +172,10 @@ def paste_centered(dst, sprite, cx, cy):
     dst.alpha_composite(sprite, (cx - sprite.size[0] // 2, cy - sprite.size[1] // 2))
 
 
-def bar_frame(current, maximum):
+def bar_frame(current, maximum, bar_frames):
     if maximum <= 0:
         return 0
-    return max(0, min(BAR_FRAMES - 1, current * (BAR_FRAMES - 1) // maximum))
+    return max(0, min(bar_frames - 1, current * (bar_frames - 1) // maximum))
 
 
 def main():
@@ -142,31 +184,36 @@ def main():
     ap.add_argument("--scale", type=int, default=3)
     args = ap.parse_args()
 
+    anim = load_anim_table()
+
     bg = load_rgba("battle_bg", transparent_index_0=False).crop((0, 0, SCREEN_W, SCREEN_H))
     screen = Image.new("RGBA", (SCREEN_W, SCREEN_H))
     screen.alpha_composite(bg)
 
     for slot, name in enumerate(ENEMIES):
-        paste_centered(screen, load_rgba(name), ENEMY_X[slot], ENEMY_Y[slot])
+        paste_centered(screen, actor_idle_frame(anim, name), ENEMY_X[slot], ENEMY_Y[slot])
 
     for i, name in enumerate(HERO_FILES):
-        paste_centered(screen, load_rgba(name), HERO_X[i], HERO_Y[i])
+        paste_centered(screen, actor_idle_frame(anim, name), HERO_X[i], HERO_Y[i])
 
     cursor = load_rgba("target_cursor")
     paste_centered(screen, cursor, ENEMY_X[TARGET_SLOT], ENEMY_Y[TARGET_SLOT] - 28)
 
+    bar_w, bar_fh = anim["bar_width"], anim["bar_frame_height"]
     bars = load_rgba("hud_bar")
     for hero in range(3):
         _, hp, max_hp, fer, max_fer = PARTY[hero]
         y = STATUS_Y + hero * STATUS_LINE + 3
-        for bx, frame in ((BAR_HP_X, bar_frame(hp, max_hp)),
-                          (BAR_FER_X, BAR_FERVOR_OFFSET + bar_frame(fer, max_fer))):
-            cell = bars.crop((0, frame * 8, 32, frame * 8 + 8))
-            paste_centered(screen, cell, bx + 16, y)
+        for bx, frame in ((BAR_HP_X, bar_frame(hp, max_hp, anim["bar_frames"])),
+                          (BAR_FER_X, anim["bar_fervor_offset"] +
+                           bar_frame(fer, max_fer, anim["bar_frames"]))):
+            cell = bars.crop((0, frame * bar_fh, bar_w, frame * bar_fh + bar_fh))
+            paste_centered(screen, cell, bx + bar_w // 2, y)
 
+    ts = anim["timeline_size"]
     icons = load_rgba("timeline_icons")
     for i, frame in enumerate(TIMELINE_ORDER):
-        cell = icons.crop((0, frame * 16, 16, frame * 16 + 16))
+        cell = icons.crop((0, frame * ts, ts, frame * ts + ts))
         paste_centered(screen, cell, TIMELINE_X, TIMELINE_Y + i * TIMELINE_STEP)
 
     sheet, widths = load_font()

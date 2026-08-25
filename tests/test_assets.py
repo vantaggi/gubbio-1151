@@ -96,16 +96,39 @@ class AssetTest(unittest.TestCase):
             self.assertIn(meta["bpp_mode"], ("bpp_4", "bpp_4_auto", "bpp_8"),
                           f"{nome[:-4]}.json: bpp_mode '{meta['bpp_mode']}' non riconosciuto")
 
+    def test_sprite_dichiara_bpp_mode_e_height(self):
+        """Passo 19: ogni .json di tipo sprite deve dichiarare sia bpp_mode sia height, non
+        una delle due. test_misure_sprite_legali tollera height assente (meta.get con
+        default), perche' le usa per calcolare la misura del fotogramma; qui invece si esige
+        che il campo esista davvero nel file, altrimenti un foglio a un solo fotogramma
+        passerebbe zitto finche' qualcuno non lo allunga in una striscia di animazione."""
+        for nome in self.bmp:
+            meta_path = os.path.join(self.root, nome[:-4] + ".json")
+            if not os.path.exists(meta_path):
+                continue
+            meta = json.load(open(meta_path, encoding="utf-8"))
+            if meta.get("type") != "sprite":
+                continue
+
+            self.assertIn("bpp_mode", meta, f"{nome}: sprite senza bpp_mode dichiarato")
+            self.assertIn("height", meta, f"{nome}: sprite senza height dichiarata")
+
     def test_misure_dei_ceri_conformi_al_gdd(self):
         """Sezione 23A GDD: Giorgio 32x32, Ubaldo e Antonio 16x32. La Sez. 28B li contraddice
-        (dice 24x32 / 32x48): finche' la contraddizione non e' sciolta, vale la 23A."""
+        (dice 24x32 / 32x48): finche' la contraddizione non e' sciolta, vale la 23A.
+
+        Dal Passo 19 il .bmp e' un foglio di animazione (una striscia verticale di
+        fotogrammi): la misura che deve rispettare la 23A e' quella del FOTOGRAMMA, dichiarata
+        da "height" nel .json, non l'altezza dell'intero foglio."""
         attese = {"giorgio.bmp": (32, 32), "ubaldo.bmp": (16, 32), "antonio.bmp": (16, 32)}
         for nome, misura in attese.items():
             percorso = os.path.join(self.root, nome)
             if not os.path.exists(percorso):
                 continue
             larghezza, altezza, _ = leggi_bmp(percorso)
-            self.assertEqual((larghezza, altezza), misura,
+            meta = json.load(open(os.path.join(self.root, nome[:-4] + ".json"), encoding="utf-8"))
+            altezza_frame = meta.get("height", altezza)
+            self.assertEqual((larghezza, altezza_frame), misura,
                              f"{nome} non rispetta la Sez. 23A del GDD")
 
 

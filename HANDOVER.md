@@ -65,48 +65,37 @@ Due avvertenze che valgono la pena di essere scritte:
   privilegi di amministratore). Butano: `../butano`, accanto al progetto.
 * Anteprima della schermata fuori dall'emulatore: `python tools/preview_battle_screen.py`.
 
-## PUNTO DI RIPRESA — fine Sessione 21 (24 agosto 2026)
+## PUNTO DI RIPRESA — fine Sessione 22 (24 agosto 2026)
 
-**Un test e' ROSSO, e non e' il gioco a essere rotto.** `python tests/test_save_system.py`
-fallisce sei controlli su nove con "nessuna banca con magic G115 nel .sav". I tre test sul CRC32
-passano: quelli non dipendono dall'emulatore.
+**Tutti e cinque i gruppi di test sono verdi.** Il rosso della sessione precedente e' chiuso: il
+collaudo dell'esplorazione e quello della battaglia sono ora due macro separate, e la durata
+dell'una non ha piu' voce in capitolo sull'altra.
 
-Causa: il Passo 20 ha aggiunto lo stato `PLAY_ROUND_ANIMATIONS`, che allunga ogni round di
-battaglia di circa cinque volte. L'autotest e' uno script di tasti a frame fissi che, dopo la
-battaglia, cammina fino a un varco e preme SELECT per salvare: con la battaglia cosi' lunga
-**non arriva piu' a quel punto** dentro una corsa di emulatore praticabile. Nella corsa piu'
-lunga provata (590 s di wall clock) era ancora dentro la battaglia. Il `.sav` che il test legge
-non viene quindi piu' rigenerato, e il test misura la sua assenza.
+```bash
+bash tools/build_rom.sh "USERFLAGS=-DGUBBIO_EXPLORE_AUTOTEST"   # parte in esplorazione, salva a 3s
+bash tools/build_rom.sh "USERFLAGS=-DGUBBIO_BATTLE_AUTOTEST"    # collauda la battaglia
+```
+Le due macro si escludono a vicenda e una `#error` lo impone: `bn::core::init()` accetta un solo
+script di tasti.
 
-Non e' una regressione del salvataggio: il codice FRAM non e' stato toccato, e l'ultima volta che
-un `.sav` e' stato prodotto — commit `210a378` — i nove controlli passavano.
+**Passi 19, 20 e 21 chiusi.** Il piano non ha piu' passi aperti.
 
-Mitigazione gia' applicata: l'autotest tiene premuto B durante le animazioni
-(`GUBBIO_FF_64` dentro `GUBBIO_AUTOTEST_ROUND`), cioe' usa il fast-forward a passo 4 che il Passo
-20 ha dato al giocatore. Ha portato la battaglia da 4 round in 420 s a 5 round in 300 s: aiuta,
-non basta.
+**Quel che resta aperto, e che nessuno ha ancora guardato:**
 
-**Tre strade per chiuderla, in ordine di preferenza:**
-
-1. **Accorciare la battaglia dell'autotest.** Le otto ripetizioni di `GUBBIO_AUTOTEST_ROUND` in
-   `src/main.cpp` servivano a far morire i nemici; con `-DGUBBIO_AUTOTEST_ENCOUNTER=<id>` si puo'
-   scegliere uno scontro piu' breve, oppure ridurre le ripetizioni e accettare una FUGA come
-   uscita dalla battaglia. La parte da collaudare dopo la battaglia e' la camminata, non il
-   combattimento, che ha gia' i suoi 33 test.
-2. **Separare i due collaudi.** Una macro `-DGUBBIO_EXPLORE_AUTOTEST` che parta direttamente in
-   esplorazione, senza battaglia. E' la soluzione piu' pulita e toglie di mezzo per sempre
-   l'accoppiamento fra la durata della battaglia e il collaudo della mappa.
-3. **Alzare il passo del fast-forward** oltre 4 sotto autotest. E' la piu' rapida ed e' anche la
-   piu' fragile: lega il collaudo a una costante di design.
-
-**Il resto e' verde:** `test_assets`, `test_battle_engine` (33), `test_dialogue_quest`,
-`test_mondo` (5). Build pulita, gate zero-heap superato, e la battaglia gira su mGBA con
-`EXECUTE -> ANIMAZIONI -> CHECK`, zero assert e registro eventi mai saturo.
-
-**Dove si era arrivati:** Passi 19 e 21 del piano ancora da fare — fogli di animazione e
-`battle_animator.h`. Il Passo 20 e' chiuso.
-
----
+1. **La verifica su VRAM OBJ e zero-heap dell'animatore non e' mai girata** — l'agente e' caduto
+   sul limite di sessione. La regola "un solo attore animato per volta" e' rispettata nei
+   commenti; che lo sia anche in ogni percorso del codice **non e' stato controllato da nessuno**.
+   E' il primo controllo da rifare.
+2. **`_refresh_timeline` legge il modello gia' risolto**, non gli eventi: durante le animazioni
+   la timeline mostra l'ordine del round successivo invece di quello in corso. Segnalato dalla
+   verifica, non corretto.
+3. **Difetti minori segnalati e non corretti**: `_soggetto()` ripiega sull'indice 0 anche con
+   `_enemy_sprites` vuoto (assert di `bn::ivector::operator[]`); il cursore bersaglio si nasconde
+   sulle abilita' a bersaglio alleato invece di puntare l'alleato; i gettoni della timeline con
+   nove unita' cadono dentro la fascia HUD; `BARRIER_ABSORB` e `GUARD_REDIRECT` sono ancora
+   codice morto, perche' il motore non li emette.
+4. **L'autotest non chiude ancora l'anello camminando.** Arriva a cinque aree in fila; la
+   topologia e' pero' verificata per intero da `tests/test_mondo.py`, che legge `MAPS[]`.
 
 **Le quattro regole che questo progetto ha imparato a sue spese:**
 
