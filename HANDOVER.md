@@ -67,46 +67,41 @@ Due avvertenze che valgono la pena di essere scritte:
 
 ## PUNTO DI RIPRESA — Sessione 24 (25 agosto 2026)
 
-### APERTO E GRAVE: "Invalid character" a ogni dialogo
+### "Invalid character" a ogni dialogo: il percorso del dialogo e' ESCLUSO
 
-Il committente, GIOCANDO, vede `ERROR in bn_sprite_text_generator.cpp _paint::1025 — Invalid
-character:` ogni volta che parla con un personaggio. Il gioco si ferma.
+```bash
+bash tools/build_rom.sh "USERFLAGS=-DGUBBIO_DIALOGUE_AUTOTEST"
+```
 
-**Non e' riprodotto.** L'autotest fa parlare Podesta' Guido e Mastro Tano, recita le loro
-battute e riporta ZERO assert. E' la Regola 0 nella sua forma piu' pura: l'oracolo passa, il
-gioco crasha.
+Terzo modo di autotest, e non cammina: apre i sette copioni uno a uno e li fa scorrere carattere
+per carattere chiamando le stesse `DialogueManager::update` e `DialogueView::update` che girano in
+gioco, quindi generando gli stessi sprite di testo. **Esito: 7 copioni, 47 righe, 1389 byte
+disegnati, zero crash, e ZERO code scartate** — cioe' la guardia difensiva non e' mai intervenuta,
+quindi non sta nascondendo nulla. Ogni coda passata al generatore era un numero intero di
+caratteri, su ogni fotogramma, per ogni riga.
 
-**Cosa e' stato escluso, con prove:**
+**Ne segue che l'errore visto dal committente non nasce in `DialogueView`.** Restano da guardare
+gli altri generatori di testo, in quest'ordine:
 
-* Non e' un carattere fuori lista nei sorgenti. `tests/test_caratteri_stampabili.py` legge TUTTE
-  le stringhe di tutte le tabelle di testo e verifica ogni codepoint contro
-  `FONT_UTF8_CHARACTERS`: passa.
-* Non e' `_close_tail` che avanzava `_stable_bytes` dei byte grezzi. Sembrava la causa perfetta,
-  ma una simulazione dell'algoritmo su tutte le battute ha mostrato che quella forma non produce
-  MAI un taglio storto — `coda` e' per costruzione la differenza fra due offset gia' allineati.
-  La simulazione e' stata cancellata invece che lasciata verde: un oracolo che non puo' fallire
-  e' peggio di nessun oracolo.
-* Non e' il font incoerente. Butano vuole `94 + utf8` glifi e `1 + 94 + utf8` larghezze: il
-  progetto ha 106 e 107 con 12 accentate. Torna.
-* Non e' il cursore della macchina da scrivere: avanza per `bn::utf8_character::size()` e ha
-  gia' una `BN_ASSERT` sul confine.
+1. **L'etichetta col nome dell'area** (`ExplorationScene::_mostra_nome_area`), che disegna
+   `MAP_NAMES[int(_map_id)]`. E' il generatore piu' GIOVANE del progetto, aggiunto nella Sessione
+   22, e non e' mai stato collaudato con un `_map_id` fuori intervallo.
+2. **L'HUD di battaglia** (`BattleHud::_refresh`), che il Passo 21 ha appena riscritto.
+3. **Il nome del parlante** dentro la finestra, se e' preso dall'NPC invece che dal copione: in
+   quel caso l'autotest dei copioni non lo copre, perche' li' lo imposta il copione.
 
-**L'indizio non ancora sfruttato.** Butano stampa `"Invalid character: ", character, " (text: ",
-text, ")"`. Nello schermo del committente dopo i due punti non c'e' NULLA: manca il carattere e
-manca tutto il `(text: ...)`. Un messaggio troncato cosi' e' il sintomo di una `bn::string_view`
-con `data() == nullptr` e `size() > 0`: il generatore legge dall'indirizzo 0, che sul GBA e' BIOS
-leggibile, e ci trova byte qualunque. **Cercare chi passa una view con dati nulli a
-`generate()`**, non chi taglia male.
+**Perche' campionare non bastava, messo a verbale.** L'autotest precedente CAMMINAVA fino a un
+NPC e recitava le sue battute: copriva i copioni che quel percorso incontrava, e di ciascuno solo
+le righe che quella corsa faceva in tempo a scoprire. Su un difetto che si manifesta a colpo
+sicuro, campionare e' il modo piu' efficace di non trovarlo mai.
 
-**Mitigazione applicata, che NON e' la correzione.** `DialogueView` non passa piu' al generatore
-una coda che non sia un numero intero di caratteri o che abbia dati nulli: salta il disegno per
-quel fotogramma e mette a log byte, offset e riga. Il carattere compare un sessantesimo di
-secondo dopo e nessuno se ne accorge; soprattutto **il gioco non si ferma piu'**. Il BN_LOG e'
-li' perche' la prossima riproduzione dica finalmente QUALE testo la provoca.
+### Mitigazione in piedi
 
-**Prossimo passo consigliato:** un autotest che renderizzi OGNI riga di OGNI script fino in
-fondo, invece di recitarne qualcuna. Finche' si campiona, questo difetto puo' continuare a
-nascondersi.
+`DialogueView` non passa piu' al generatore una coda che non sia un numero intero di caratteri o
+che abbia dati nulli: salta il disegno per quel fotogramma e mette a log byte, offset e riga. Il
+carattere compare un sessantesimo di secondo dopo; il gioco non si ferma. Va tenuta finche' la
+causa non e' trovata, e il suo `BN_LOG` e' l'unico modo perche' la prossima riproduzione dica
+finalmente quale testo la provoca.
 
 **Le quattro regole che questo progetto ha imparato a sue spese:**
 

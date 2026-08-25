@@ -390,9 +390,100 @@ constexpr const char* EXPLORE_KEYPAD_SCRIPT =
 #define GUBBIO_AUTOTEST_ENCOUNTER 0
 #endif
 
+#ifdef GUBBIO_DIALOGUE_AUTOTEST
+
+// --- OGNI RIGA DI OGNI COPIONE, RENDERIZZATA DAVVERO ------------------------------------------
+//
+// PERCHE' ESISTE. Il committente vedeva "Invalid character" a ogni dialogo mentre l'autotest
+// riportava zero assert. La ragione e' che l'autotest CAMMINA fino a un NPC e recita le sue
+// battute: copre i copioni che quel percorso incontra, non tutti, e di ciascuno solo le righe
+// che quella corsa ha fatto in tempo a scoprire. Basta che il carattere che rompe stia altrove
+// e l'oracolo tace. Campionare, su un difetto che si manifesta a colpo sicuro, e' il modo piu'
+// efficace di non trovarlo mai.
+//
+// Qui non si cammina e non si preme niente. Si aprono i copioni UNO A UNO e li si fa scorrere
+// carattere per carattere, chiamando le stesse `DialogueManager::update` e `DialogueView::update`
+// che girano in gioco — quindi generando gli stessi sprite di testo, che e' il punto: e' il
+// generatore a fermarsi, non il modello.
+//
+// Non dipende dallo script dei tasti, e questo conta piu' di quanto sembri: una traiettoria
+// contata in frame e' esatta solo finche' nessuno cambia una mappa o la durata di una
+// dissolvenza, e in questo progetto ha gia' sbagliato bersaglio quattro volte.
+void esegui_autotest_dei_copioni()
+{
+    gubbio::DialogueManager dialogo;
+    gubbio::DialogueView vista;
+    gubbio::DialogueRunner runner;
+
+    int righe_totali = 0;
+    int byte_totali = 0;
+    int scartate = 0;
+
+    for(int i = 0; i < int(gubbio::ScriptId::COUNT); ++i)
+    {
+        const gubbio::ScriptId copione = gubbio::ScriptId(i);
+        const int attese = gubbio::dialogue_script(copione).line_count;
+
+        BN_LOG("COPIONE ", i, ": ", attese, " battute");
+        runner.start(copione, dialogo);
+
+        // TETTO DI FRAME, perche' un copione che si blocca non deve bloccare il collaudo. Una
+        // battuta lunga si scopre in un centinaio di frame; diecimila sono due ordini di
+        // grandezza di margine, e superarli e' esso stesso una scoperta da mettere a log.
+        int frame = 0;
+        int righe = 0;
+
+        while((runner.is_running() || dialogo.is_active()) && frame < 10000)
+        {
+            const int riga_prima = dialogo.active_row();
+
+            dialogo.update();       // la macchina da scrivere scopre un carattere
+            vista.update(dialogo);  // e QUI si generano gli sprite: e' il punto che si rompe
+
+            if(dialogo.is_active() && dialogo.is_complete())
+            {
+                for(int r = 0; r < dialogo.row_count(); ++r)
+                {
+                    byte_totali += dialogo.visible_row(r).size();
+                }
+
+                righe += dialogo.row_count();
+                dialogo.close();
+                vista.update(dialogo);   // il box si chiude: anche questo va disegnato
+            }
+
+            runner.update(dialogo, gubbio::g_game_state);
+            gubbio::core_update();   // l'unico punto che conta i frame di gioco
+            ++frame;
+
+            if(dialogo.is_active() && dialogo.active_row() != riga_prima)
+            {
+                ++righe_totali;
+            }
+        }
+
+        if(frame >= 10000)
+        {
+            ++scartate;
+            BN_LOG("  COPIONE ", i, " NON SI CHIUDE in 10000 frame");
+        }
+        else
+        {
+            BN_LOG("  copione ", i, " completo: ", righe, " righe in ", frame, " frame");
+        }
+    }
+
+    BN_LOG("=== COPIONI: ", int(gubbio::ScriptId::COUNT), " copioni, ", byte_totali,
+           " byte disegnati, ", scartate, " non chiusi ===");
+}
+
+#endif   // GUBBIO_DIALOGUE_AUTOTEST
+
 int main()
 {
-#if defined(GUBBIO_BATTLE_AUTOTEST)
+#if defined(GUBBIO_DIALOGUE_AUTOTEST)
+    bn::core::init();   // nessuno script di tasti: questo collaudo non preme nulla
+#elif defined(GUBBIO_BATTLE_AUTOTEST)
     bn::core::init(AUTOTEST_KEYPAD_SCRIPT);
 #elif defined(GUBBIO_EXPLORE_AUTOTEST)
     bn::core::init(EXPLORE_KEYPAD_SCRIPT);
@@ -401,6 +492,16 @@ int main()
 #endif
 
     BN_LOG("=== GUBBIO 1151: avvio ===");
+
+#ifdef GUBBIO_DIALOGUE_AUTOTEST
+    esegui_autotest_dei_copioni();
+
+    while(true)
+    {
+        gubbio::core_update();   // finito: si resta fermi, il log ha gia' detto tutto
+    }
+#endif
+
 
     // Caricamento all'avvio. Uno slot corrotto NON viene riformattato: si comincia una partita
     // nuova in memoria e i byte sul chip restano come sono, cosi' che il giocatore possa
