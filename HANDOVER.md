@@ -65,37 +65,36 @@ Due avvertenze che valgono la pena di essere scritte:
   privilegi di amministratore). Butano: `../butano`, accanto al progetto.
 * Anteprima della schermata fuori dall'emulatore: `python tools/preview_battle_screen.py`.
 
-## PUNTO DI RIPRESA — fine Sessione 22 (24 agosto 2026)
+## PUNTO DI RIPRESA — fine Sessione 23 (25 agosto 2026)
 
-**Tutti e cinque i gruppi di test sono verdi.** Il rosso della sessione precedente e' chiuso: il
-collaudo dell'esplorazione e quello della battaglia sono ora due macro separate, e la durata
-dell'una non ha piu' voce in capitolo sull'altra.
+**Cinque gruppi di test verdi, e la verifica su VRAM e zero-heap e' finalmente girata.**
 
-```bash
-bash tools/build_rom.sh "USERFLAGS=-DGUBBIO_EXPLORE_AUTOTEST"   # parte in esplorazione, salva a 3s
-bash tools/build_rom.sh "USERFLAGS=-DGUBBIO_BATTLE_AUTOTEST"    # collauda la battaglia
-```
-Le due macro si escludono a vicenda e una `#error` lo impone: `bn::core::init()` accetta un solo
-script di tasti.
+**Il dialogo con un NPC e' collaudato a runtime, per la prima volta.** L'autotest di
+esplorazione ora sale dal centro della piazza al Podesta' Guido premendo A ogni quattro frame, e
+gli fa scorrere tutte e cinque le battute: `PARLA CON Podesta' Guido (atto 1, script 0, 5
+battute)`, zero assert. E' la prima prova che la correzione UTF-8 della Sessione 18 regge — il
+crash "Invalid character" nasceva dal fatto che la finestra taglia le righe ai confini degli
+SPRITE, misurati in pixel, che non sanno nulla della codifica.
 
-**Passi 19, 20 e 21 chiusi.** Il piano non ha piu' passi aperti.
+**Quel che resta aperto:**
 
-**Quel che resta aperto, e che nessuno ha ancora guardato:**
-
-1. **La verifica su VRAM OBJ e zero-heap dell'animatore non e' mai girata** — l'agente e' caduto
-   sul limite di sessione. La regola "un solo attore animato per volta" e' rispettata nei
-   commenti; che lo sia anche in ogni percorso del codice **non e' stato controllato da nessuno**.
-   E' il primo controllo da rifare.
-2. **`_refresh_timeline` legge il modello gia' risolto**, non gli eventi: durante le animazioni
+1. **`_refresh_timeline` legge il modello gia' risolto**, non gli eventi: durante le animazioni
    la timeline mostra l'ordine del round successivo invece di quello in corso. Segnalato dalla
-   verifica, non corretto.
-3. **Difetti minori segnalati e non corretti**: `_soggetto()` ripiega sull'indice 0 anche con
-   `_enemy_sprites` vuoto (assert di `bn::ivector::operator[]`); il cursore bersaglio si nasconde
-   sulle abilita' a bersaglio alleato invece di puntare l'alleato; i gettoni della timeline con
-   nove unita' cadono dentro la fascia HUD; `BARRIER_ABSORB` e `GUARD_REDIRECT` sono ancora
-   codice morto, perche' il motore non li emette.
-4. **L'autotest non chiude ancora l'anello camminando.** Arriva a cinque aree in fila; la
-   topologia e' pero' verificata per intero da `tests/test_mondo.py`, che legge `MAPS[]`.
+   verifica sulla firma dell'HUD, non corretto.
+2. **`_soggetto()` maschera in silenzio uno slot fuori intervallo** ripiegando sull'indice 0
+   (`src/battle_hud.cpp:336`). E' la stessa forma del difetto di `actor_slot` appena chiuso: un
+   valore sbagliato verrebbe di nuovo mappato sul primo attore senza lasciare traccia. Con
+   `_enemy_sprites` vuoto anche l'indice 0 e' fuori intervallo e fa scattare l'assert di
+   `bn::ivector::operator[]` — oggi irraggiungibile, perche' ogni incontro ha almeno un nemico.
+3. **`BARRIER_ABSORB` e `GUARD_REDIRECT` sono codice morto**: dichiarati, con una durata di
+   riproduzione e un ramo nell'animatore, e mai emessi dal motore. `_redirect_if_guarded` sposta
+   il colpo senza lasciare evento, quindi il giocatore non vede che il Bastione ha parato.
+4. **Il cursore bersaglio si nasconde sulle abilita' a bersaglio alleato** invece di puntare
+   l'alleato: Muro della Fede e Bastione Azzurro si lanciano senza vedere su chi.
+5. **I gettoni della timeline con nove unita' cadono dentro la fascia HUD** (y 132 su una fascia
+   che parte a 112). Oggi nessun incontro ne ha nove.
+6. **L'autotest non chiude l'anello camminando**: arriva a cinque aree in fila. La topologia e'
+   pero' verificata per intero da `tests/test_mondo.py`, che legge `MAPS[]` invece di percorrerla.
 
 **Le quattro regole che questo progetto ha imparato a sue spese:**
 

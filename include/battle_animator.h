@@ -91,7 +91,18 @@ inline constexpr int BYTES_PER_TILE_4BPP = 32;
 
     for(int actor = 0; actor < ANIM_ACTOR_COUNT; ++actor)
     {
-        const int costo = anim_frame_bytes(actor) * anim_max_clip_frames(actor);
+        // PIU' UNO, e non e' prudenza: e' il picco vero, misurato sul codice di Butano.
+        // `_assign_graphics_indexes` crea TUTTI i sprite_tiles_ptr della clip dentro il
+        // costruttore dell'animate action, mentre il primo fotogramma viene assegnato allo
+        // sprite solo alla prima update(), cioe' un tick dopo. In quell'intervallo il
+        // fotogramma IDLE e' ancora legato allo sprite e i fotogrammi della posa sono gia'
+        // in VRAM: coesistono.
+        //
+        // Contando i soli fotogrammi della clip, questa funzione dichiarava 10 KB dove il
+        // picco era 12: il budget consumato al 100 per cento invece che all'83. La
+        // static_assert sarebbe passata anche allungando ATTACK di Corrado a sei
+        // fotogrammi — 14 KB reali su un tetto di 12 — proprio nel caso per cui esiste.
+        const int costo = anim_frame_bytes(actor) * (anim_max_clip_frames(actor) + 1);
 
         if(costo > massimo)
         {
@@ -106,8 +117,9 @@ inline constexpr int BYTES_PER_TILE_4BPP = 32;
 // 6 nemici (3 KB al peggio), le 6 barre e il cursore (~0,9 KB), i 9 gettoni della timeline
 // (~1,2 KB) e il testo dell'HUD (~2 KB), cioe' poco piu' di 8 KB. Restano circa 24 KB: 12 e'
 // meta' di quel margine, e lascia spazio alle particelle della Sez. 35 senza doverlo ricontare.
-// Oggi il caso peggiore misura 10 KB (Corrado, 5 fotogrammi di ATTACK): il margine e' reale,
-// non e' un tetto ritagliato sul valore corrente.
+// Oggi il caso peggiore misura 12 KB tondi: il budget e' consumato per intero e NON c'e'
+// margine. Allungare una posa di Corrado di un solo fotogramma sfonda il tetto, ed e'
+// esattamente cio' che la static_assert deve fermare.
 inline constexpr int ANIM_VRAM_BUDGET_BYTES = 12 * 1024;
 
 static_assert(anim_vram_caso_peggiore() <= ANIM_VRAM_BUDGET_BYTES,
@@ -127,7 +139,7 @@ inline constexpr int LUNGE_PIXELS = 8;
 inline constexpr int LUNGE_ATTACK_FRAMES = 4;   // frame dell'andata; il resto e' il rientro
 inline constexpr int SHAKE_FRAMES = 10;
 inline constexpr int SHAKE_PIXELS = 2;
-inline constexpr int SHAKE_HALF_PERIOD = 2;     // frame per ogni mezza oscillazione
+inline constexpr int SHAKE_HALF_PERIOD = 3   /* DISPARI, vedi _applica_scossone */;     // frame per ogni mezza oscillazione
 inline constexpr int FLASH_FRAMES = 8;
 inline constexpr int FLASH_FRAMES_BREAK = 16;   // la rottura dello scudo e' il momento che il
                                                 // giocatore cerca: dura il doppio
@@ -209,7 +221,10 @@ static_assert(pose_entro_le_durate(),
 // CONFLITTO DI INPUT, gia' a verbale nel piano: A e B sono assegnati tre volte (fast-forward,
 // salto del typewriter, corsa/interazione). La regola presa: durante un dialogo in battaglia il
 // fast-forward e' SOSPESO, e il box lo dichiara col proprio prompt.
-inline constexpr int FAST_FORWARD_STEP = 4;
+// FAST_FORWARD_STEP vive in battle_events.h, non qui: era duplicato, e una delle due
+// copie sarebbe prima o poi cambiata da sola. Sta li' perche' e' li' che le durate
+// degli eventi devono restargli sopra, e la static_assert che lo impone ha bisogno
+// di entrambi nello stesso file.
 
 [[nodiscard]] inline int passo_riproduzione()
 {
@@ -472,6 +487,12 @@ private:
         _attore->sprite.set_position(_attore->x + direzione * offset, _attore->y);
     }
 
+    // IL SEMIPERIODO E' DISPARI, e non e' un gusto. In fast-forward tick(4) avanza il contatore
+    // quattro volte per frame di gioco e disegna solo l'ultima posizione: con un semiperiodo
+    // PARI i frame renderizzati cadevano tutti sulla stessa fase, e lo scossone diventava uno
+    // spostamento costante di due pixel invece di un'oscillazione. Non tremava mai.
+    // Non se ne accorgeva nessuno perche' l'autotest gira interamente in fast-forward:
+    // l'oracolo era cieco proprio sul percorso che degradava.
     void _applica_scossone()
     {
         if(! _scossone || ! _bersaglio || _frame > SHAKE_FRAMES)

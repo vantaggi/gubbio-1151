@@ -875,7 +875,7 @@ void BattleSceneManager::_play_round_animations()
 {
     // FAST-FORWARD tenendo A o B. Un round con nove attori costa 250-350 frame, cioe' 4-6
     // secondi per ogni scontro comune: senza, si guarda la stessa sequenza per tutta la partita.
-    const int passo = (bn::keypad::a_held() || bn::keypad::b_held()) ? 4 : 1;
+    const int passo = (bn::keypad::a_held() || bn::keypad::b_held()) ? FAST_FORWARD_STEP : 1;
 
     _event_frames -= passo;
 

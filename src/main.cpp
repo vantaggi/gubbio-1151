@@ -335,8 +335,41 @@ constexpr const char* AUTOTEST_KEYPAD_SCRIPT =
 // La coda di battute dell'autotest di battaglia (GUBBIO_TASTO_A) non e' ripetuta qui: i dialoghi
 // restano collaudati di la', e ogni frame in piu' qui e' tempo di emulatore speso prima che il
 // giro fra le aree si chiuda.
+// --- PARLARE CON UN NPC, che e' la cosa che questo autotest non ha mai collaudato ------------
+//
+// Il Podesta' Guido sta in Piazza Grande a (16,21), due tile sotto il fronte dei Consoli; il
+// giocatore compare al centro della piazza, a (14,38). Servono sedici pixel a destra e centotrenta
+// in su.
+//
+// SI CERCA, non si mira. Lo script e' indicizzato sul frame e la dissolvenza d'ingresso ne
+// consuma un numero che dipende da quanto e' durata la scena precedente: una traiettoria contata
+// al pixel e' esatta solo per caso, e ha gia' mancato Mastro Tano di 22 pixel. Qui invece si
+// cammina PREMENDO A ogni quattro frame: non serve sapere dove si e', basta passare entro i
+// dodici pixel di raggio d'interazione. Tre frame di corsa e uno di pressione, abbastanza rado
+// da non richiudere la battuta appena aperta.
+//
+// DESTRA+B         = 0x012 -> "B0"      SU+B      = 0x042 -> "22"
+// SU+B+A           = 0x043 -> "32"
+#define GUBBIO_DESTRA_8    "B0" "B0" "B0" "B0" "B0" "B0" "B0" "B0"
+#define GUBBIO_CERCA_N_4   "22" "22" "22" "32"
+#define GUBBIO_CERCA_N_16  GUBBIO_CERCA_N_4 GUBBIO_CERCA_N_4 GUBBIO_CERCA_N_4 GUBBIO_CERCA_N_4
+#define GUBBIO_CERCA_N_96  GUBBIO_CERCA_N_16 GUBBIO_CERCA_N_16 GUBBIO_CERCA_N_16                            GUBBIO_CERCA_N_16 GUBBIO_CERCA_N_16 GUBBIO_CERCA_N_16
+
+// Cinque battute da far scorrere: A per aprire la successiva, e il tempo perche' la macchina da
+// scrivere percorra la riga in mezzo. E' qui che si vede se il testo con le accentate regge: la
+// finestra di dialogo taglia le righe ai confini degli SPRITE, misurati in pixel, che non sanno
+// nulla di UTF-8 — ed e' stato un crash vero.
+#define GUBBIO_DIALOGO     GUBBIO_IDLE_256 GUBBIO_TASTO_A GUBBIO_IDLE_64 GUBBIO_TASTO_A                            GUBBIO_IDLE_64 GUBBIO_TASTO_A GUBBIO_IDLE_64 GUBBIO_TASTO_A                            GUBBIO_IDLE_64 GUBBIO_TASTO_A GUBBIO_IDLE_64
+
 constexpr const char* EXPLORE_KEYPAD_SCRIPT =
+    // L'attesa PRIMA del salvataggio non e' cortesia: SELECT premuto al frame zero cade
+    // dentro la dissolvenza d'ingresso, che non legge input, e il .sav resta di zero byte.
+    // Il test lo riportava come "saltato", cioe' verde a colpo d'occhio.
+    GUBBIO_IDLE_64
     GUBBIO_SELECT
+    GUBBIO_DESTRA_8       // si allinea alla colonna del Podesta'
+    GUBBIO_CERCA_N_96     // sale verso il Palazzo dei Consoli premendo A
+    GUBBIO_DIALOGO        // e gli fa dire tutte e cinque le battute
     GUBBIO_ANELLO_DELLA_CITTA
     GUBBIO_IDLE_64;       // l'ultima area finisce la dissolvenza e stampa il proprio nome
 

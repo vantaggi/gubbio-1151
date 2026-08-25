@@ -135,6 +135,28 @@ static_assert(sizeof(BattleEvent) <= 12,
     }
 }
 
+// NESSUN EVENTO PUO' DURARE MENO DEL PASSO DI FAST-FORWARD. `_play_round_animations()` ha un
+// `while`, non un `if`: con una durata sotto il passo il cursore avanzerebbe di DUE o piu' eventi
+// in un solo frame di gioco, e l'HUD — che confronta il cursore col precedente e riproduce solo
+// l'ultimo — salterebbe in silenzio le pose e i flash di quelli in mezzo. Gli HP resterebbero
+// corretti, quindi ne' la firma dell'HUD ne' i test se ne accorgerebbero: sparirebbero soltanto
+// delle animazioni, che e' il difetto piu' difficile da vedere.
+inline constexpr int FAST_FORWARD_STEP = 4;
+
+static_assert([]
+{
+    for(int k = 0; k < int(EventKind::COUNT); ++k)
+    {
+        if(event_duration_frames(EventKind(k)) <= FAST_FORWARD_STEP)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}(), "Un evento dura meno del passo di fast-forward: in riproduzione accelerata verrebbe saltato "
+     "senza che nulla lo segnali");
+
 static_assert(event_duration_frames(EventKind::DEFEAT) >= event_duration_frames(EventKind::HIT),
               "Una sconfitta non puo' durare meno di un colpo qualunque: e' l'evento che chiude "
               "la vita di un'unita' e il giocatore deve vederlo");

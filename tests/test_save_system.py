@@ -101,10 +101,21 @@ def leggi_banche():
     return dati, banche
 
 
-@unittest.skipUnless(os.path.exists(SAV) and os.path.getsize(SAV) > 0,
-                     "gubbio1151.sav assente o vuoto: eseguire prima la ROM di autotest")
+# NIENTE skipUnless. Un .sav assente veniva riportato come "OK (skipped=6)", che a colpo
+# d'occhio si legge verde: sei controlli sul salvataggio non venivano eseguiti e nessuno se
+# ne accorgeva. E' la seconda regola di questo progetto — un oracolo che non puo' fallire non
+# e' un oracolo — e qui era violata proprio nel gruppo di test che dipende da un artefatto
+# esterno, cioe' quello che ha piu' modi di non esserci.
+#
+# Adesso fallisce, e il messaggio dice il comando esatto da lanciare.
 class SavRealeTest(unittest.TestCase):
     def setUp(self):
+        self.assertTrue(
+            os.path.exists(SAV) and os.path.getsize(SAV) > 0,
+            "gubbio1151.sav assente o vuoto: il salvataggio non e' stato verificato. "
+            "Rigenerarlo con: "
+            "bash tools/build_rom.sh 'USERFLAGS=-DGUBBIO_EXPLORE_AUTOTEST' "
+            "e poi mgba-sdl.exe gubbio1151.gba in primo piano.")
         self.dati, self.banche = leggi_banche()
         self.assertTrue(self.banche, "nessuna banca con magic G115 nel .sav")
 
