@@ -65,36 +65,48 @@ Due avvertenze che valgono la pena di essere scritte:
   privilegi di amministratore). Butano: `../butano`, accanto al progetto.
 * Anteprima della schermata fuori dall'emulatore: `python tools/preview_battle_screen.py`.
 
-## PUNTO DI RIPRESA — fine Sessione 23 (25 agosto 2026)
+## PUNTO DI RIPRESA — Sessione 24 (25 agosto 2026)
 
-**Cinque gruppi di test verdi, e la verifica su VRAM e zero-heap e' finalmente girata.**
+### APERTO E GRAVE: "Invalid character" a ogni dialogo
 
-**Il dialogo con un NPC e' collaudato a runtime, per la prima volta.** L'autotest di
-esplorazione ora sale dal centro della piazza al Podesta' Guido premendo A ogni quattro frame, e
-gli fa scorrere tutte e cinque le battute: `PARLA CON Podesta' Guido (atto 1, script 0, 5
-battute)`, zero assert. E' la prima prova che la correzione UTF-8 della Sessione 18 regge — il
-crash "Invalid character" nasceva dal fatto che la finestra taglia le righe ai confini degli
-SPRITE, misurati in pixel, che non sanno nulla della codifica.
+Il committente, GIOCANDO, vede `ERROR in bn_sprite_text_generator.cpp _paint::1025 — Invalid
+character:` ogni volta che parla con un personaggio. Il gioco si ferma.
 
-**Quel che resta aperto:**
+**Non e' riprodotto.** L'autotest fa parlare Podesta' Guido e Mastro Tano, recita le loro
+battute e riporta ZERO assert. E' la Regola 0 nella sua forma piu' pura: l'oracolo passa, il
+gioco crasha.
 
-1. **`_refresh_timeline` legge il modello gia' risolto**, non gli eventi: durante le animazioni
-   la timeline mostra l'ordine del round successivo invece di quello in corso. Segnalato dalla
-   verifica sulla firma dell'HUD, non corretto.
-2. **`_soggetto()` maschera in silenzio uno slot fuori intervallo** ripiegando sull'indice 0
-   (`src/battle_hud.cpp:336`). E' la stessa forma del difetto di `actor_slot` appena chiuso: un
-   valore sbagliato verrebbe di nuovo mappato sul primo attore senza lasciare traccia. Con
-   `_enemy_sprites` vuoto anche l'indice 0 e' fuori intervallo e fa scattare l'assert di
-   `bn::ivector::operator[]` — oggi irraggiungibile, perche' ogni incontro ha almeno un nemico.
-3. **`BARRIER_ABSORB` e `GUARD_REDIRECT` sono codice morto**: dichiarati, con una durata di
-   riproduzione e un ramo nell'animatore, e mai emessi dal motore. `_redirect_if_guarded` sposta
-   il colpo senza lasciare evento, quindi il giocatore non vede che il Bastione ha parato.
-4. **Il cursore bersaglio si nasconde sulle abilita' a bersaglio alleato** invece di puntare
-   l'alleato: Muro della Fede e Bastione Azzurro si lanciano senza vedere su chi.
-5. **I gettoni della timeline con nove unita' cadono dentro la fascia HUD** (y 132 su una fascia
-   che parte a 112). Oggi nessun incontro ne ha nove.
-6. **L'autotest non chiude l'anello camminando**: arriva a cinque aree in fila. La topologia e'
-   pero' verificata per intero da `tests/test_mondo.py`, che legge `MAPS[]` invece di percorrerla.
+**Cosa e' stato escluso, con prove:**
+
+* Non e' un carattere fuori lista nei sorgenti. `tests/test_caratteri_stampabili.py` legge TUTTE
+  le stringhe di tutte le tabelle di testo e verifica ogni codepoint contro
+  `FONT_UTF8_CHARACTERS`: passa.
+* Non e' `_close_tail` che avanzava `_stable_bytes` dei byte grezzi. Sembrava la causa perfetta,
+  ma una simulazione dell'algoritmo su tutte le battute ha mostrato che quella forma non produce
+  MAI un taglio storto — `coda` e' per costruzione la differenza fra due offset gia' allineati.
+  La simulazione e' stata cancellata invece che lasciata verde: un oracolo che non puo' fallire
+  e' peggio di nessun oracolo.
+* Non e' il font incoerente. Butano vuole `94 + utf8` glifi e `1 + 94 + utf8` larghezze: il
+  progetto ha 106 e 107 con 12 accentate. Torna.
+* Non e' il cursore della macchina da scrivere: avanza per `bn::utf8_character::size()` e ha
+  gia' una `BN_ASSERT` sul confine.
+
+**L'indizio non ancora sfruttato.** Butano stampa `"Invalid character: ", character, " (text: ",
+text, ")"`. Nello schermo del committente dopo i due punti non c'e' NULLA: manca il carattere e
+manca tutto il `(text: ...)`. Un messaggio troncato cosi' e' il sintomo di una `bn::string_view`
+con `data() == nullptr` e `size() > 0`: il generatore legge dall'indirizzo 0, che sul GBA e' BIOS
+leggibile, e ci trova byte qualunque. **Cercare chi passa una view con dati nulli a
+`generate()`**, non chi taglia male.
+
+**Mitigazione applicata, che NON e' la correzione.** `DialogueView` non passa piu' al generatore
+una coda che non sia un numero intero di caratteri o che abbia dati nulli: salta il disegno per
+quel fotogramma e mette a log byte, offset e riga. Il carattere compare un sessantesimo di
+secondo dopo e nessuno se ne accorge; soprattutto **il gioco non si ferma piu'**. Il BN_LOG e'
+li' perche' la prossima riproduzione dica finalmente QUALE testo la provoca.
+
+**Prossimo passo consigliato:** un autotest che renderizzi OGNI riga di OGNI script fino in
+fondo, invece di recitarne qualcuna. Finche' si campiona, questo difetto puo' continuare a
+nascondersi.
 
 **Le quattro regole che questo progetto ha imparato a sue spese:**
 

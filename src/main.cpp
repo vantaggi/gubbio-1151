@@ -335,6 +335,15 @@ constexpr const char* AUTOTEST_KEYPAD_SCRIPT =
 // La coda di battute dell'autotest di battaglia (GUBBIO_TASTO_A) non e' ripetuta qui: i dialoghi
 // restano collaudati di la', e ogni frame in piu' qui e' tempo di emulatore speso prima che il
 // giro fra le aree si chiuda.
+// Berto il Tagliapietre sta a (4,40), verso il muretto; il giocatore compare a (14,38). Dieci
+// tile a sinistra. E' il SECONDO interlocutore della piazza e ha un copione diverso dal
+// Podesta': collaudare un solo NPC non dice nulla sugli altri, ed e' proprio quello che era
+// successo — l'autotest passava, il committente giocando crashava.
+// SINISTRA+B = 0x022 -> "21"      SINISTRA+B+A = 0x023 -> "31"
+#define GUBBIO_CERCA_SX_4    "21" "21" "21" "31"
+#define GUBBIO_CERCA_SX_16   GUBBIO_CERCA_SX_4 GUBBIO_CERCA_SX_4 GUBBIO_CERCA_SX_4 GUBBIO_CERCA_SX_4
+#define GUBBIO_CERCA_SX_64   GUBBIO_CERCA_SX_16 GUBBIO_CERCA_SX_16 GUBBIO_CERCA_SX_16                              GUBBIO_CERCA_SX_16
+
 // --- PARLARE CON UN NPC, che e' la cosa che questo autotest non ha mai collaudato ------------
 //
 // Il Podesta' Guido sta in Piazza Grande a (16,21), due tile sotto il fronte dei Consoli; il
@@ -367,6 +376,8 @@ constexpr const char* EXPLORE_KEYPAD_SCRIPT =
     // Il test lo riportava come "saltato", cioe' verde a colpo d'occhio.
     GUBBIO_IDLE_64
     GUBBIO_SELECT
+    GUBBIO_CERCA_SX_64    // cerca BERTO, verso il muretto
+    GUBBIO_DIALOGO        // e gli fa dire le sue battute
     GUBBIO_DESTRA_8       // si allinea alla colonna del Podesta'
     GUBBIO_CERCA_N_96     // sale verso il Palazzo dei Consoli premendo A
     GUBBIO_DIALOGO        // e gli fa dire tutte e cinque le battute

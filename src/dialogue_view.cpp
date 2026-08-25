@@ -7,6 +7,9 @@
 
 #include "bn_regular_bg_items_dialogue_frame.h"
 
+#include "bn_log.h"
+#include "bn_utf8_character.h"
+
 #include "font_gubbio.h"
 
 namespace gubbio {
@@ -113,7 +116,14 @@ void DialogueView::_close_tail(bn::string_view riga)
 
     _tail.clear();
     _tail_x += _generator.width(chiuso);
-    _stable_bytes += _tail_bytes;
+    // Si avanza della lunghezza ALLINEATA appena disegnata, non dei byte grezzi della coda.
+    // I due valori coincidono sempre — `coda` e' per costruzione la differenza fra due
+    // offset gia' allineati — e una simulazione dell'algoritmo su tutte le battute lo ha
+    // confermato: la vecchia forma NON produceva mai un taglio storto. Resta questa perche'
+    // dice cosa intende fare invece di appoggiarsi a una coincidenza, ma va messo a verbale
+    // che NON e' la causa dell'errore "Invalid character" visto dal committente: quella e'
+    // ancora aperta.
+    _stable_bytes = inizio + (quanti > 0 ? quanti : 0);
     _tail_bytes = 0;
 }
 
@@ -179,6 +189,14 @@ void DialogueView::update(const DialogueManager& dialogue)
     if(_generator.width(coda) > SPRITE_TEXT_WIDTH)
     {
         _close_tail(visibile);
+
+        // RIALLINEARE ANCHE DOPO. L'allineamento di poche righe sopra vale per il
+        // `_stable_bytes` con cui si e' MISURATA la coda; `_close_tail` lo sposta in
+        // avanti, e quel nuovo valore non era controllato da nessuno. Due chiamate a una
+        // funzione che costa una manciata di confronti sono il prezzo per non dover
+        // dimostrare, ogni volta che si tocca questo file, che il secondo punto non ne ha
+        // bisogno.
+        _stable_bytes = allinea_a_carattere(visibile, _stable_bytes);
     }
 
     _tail_bytes = byte_visibili - _stable_bytes;
@@ -187,8 +205,39 @@ void DialogueView::update(const DialogueManager& dialogue)
     if(_tail_bytes > 0)
     {
         const bn::string_view nuova_coda(visibile.data() + _stable_bytes, _tail_bytes);
-        BN_BASIC_ASSERT((uint8_t(nuova_coda.data()[0]) & 0xC0) != 0x80,
-                        "Coda del dialogo che comincia a meta' di un carattere UTF-8");
+        // NON SI ASSERISCE, SI RINUNCIA AL FOTOGRAMMA. Passare al generatore una coda che non
+        // sia un numero intero di caratteri lo fa terminare con BN_ERROR("Invalid character"),
+        // cioe' FERMA IL GIOCO davanti a chi sta giocando; saltare il disegno per un frame
+        // costa invece un carattere che compare un sessantesimo di secondo dopo, e nessuno se
+        // ne accorge — al fotogramma successivo la coda e' cresciuta e torna valida.
+        //
+        // Fra un difetto che interrompe la partita e uno che ritarda un glifo, la scelta non e'
+        // discutibile. Il BN_LOG resta perche' l'occasione di sapere QUALE testo lo provoca non
+        // vada persa: e' l'informazione che finora e' mancata per correggerlo alla radice.
+        bool coda_intera = nuova_coda.data() != nullptr;
+        int passo = 0;
+
+        while(coda_intera && passo < _tail_bytes)
+        {
+            const int larghezza_carattere = bn::utf8_character(nuova_coda.data()[passo]).size();
+
+            if(larghezza_carattere <= 0 || passo + larghezza_carattere > _tail_bytes)
+            {
+                coda_intera = false;
+                break;
+            }
+
+            passo += larghezza_carattere;
+        }
+
+        if(! coda_intera)
+        {
+            BN_LOG("DIALOGO: coda scartata, ", _tail_bytes, " byte da ", _stable_bytes,
+                   " sulla riga ", _row, " (primo byte ",
+                   nuova_coda.data() ? int(uint8_t(nuova_coda.data()[0])) : -1, ")");
+            return;
+        }
+
         _generator.generate(_tail_x, _row_y(_row), nuova_coda, _tail);
     }
 }
