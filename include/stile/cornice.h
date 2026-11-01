@@ -63,6 +63,7 @@ inline constexpr int DIALOGO_RIGHE = 7;
 inline constexpr int DIALOGO_RIGHE_TESTO_MAX = 3;
 inline constexpr int CARTIGLIO_NOME_X = 8;
 inline constexpr int CARTIGLIO_NOME_Y = 96;
+inline constexpr int CARTIGLIO_NOME_COLONNE = 6;
 inline constexpr int CARTIGLIO_NOME_RIGHE = 2;
 inline constexpr int MENU_X = 168;
 inline constexpr int MENU_Y = 8;

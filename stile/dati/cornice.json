@@ -211,6 +211,7 @@
   "cartiglio_nome": {
    "x": 8,
    "y": 96,
+   "colonne": 6,
    "righe": 2
   },
   "menu": {
