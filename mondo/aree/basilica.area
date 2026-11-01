@@ -1,0 +1,45 @@
+# Area importata dal prototipo (tag prototipo-v0): BASILICA_GRID, MapId 14.
+id basilica
+etichetta AREA_BASILICA
+dimensioni 64 32
+spawn 0 8 24
+spawn 1 8 24
+spawn 2 56 28
+spawn 3 8 24
+spawn 4 8 24
+spawn 5 8 24
+uscita A monte_ingino 1
+uscita B bottaccione 2
+griglia
+################################################################
+################################################################
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC###############
+###############CCCCCCCCCCCCCCCCddCCCCCCCCCCCCCCCC###############
+............................SSSSSSSS............................
+AA............................................................##
+AA............................................................##
+AA............................................................##
+##............................................................##
+##............................................................BB
+##............................................................BB
+##............................................................BB
+================================================================
+================================================================

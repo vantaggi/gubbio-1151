@@ -100,9 +100,10 @@ class Generatore(unittest.TestCase):
 # indice). Un accesso diretto "TABELLA[" altrove scavalcherebbe il controllo.
 TABELLE = ["GLIFI", "BYTE_GLIFO", "X_GLIFO", "RIGHE", "TAGLI", "TESTI", "CONTESTO_LARGHEZZA",
            "CONTESTO_RIGHE", "FONT", "CORNICE_PALETTE", "CORNICE_TILE", "LATO_ORIZZONTALE",
-           "LATO_VERTICALE"]
+           "LATO_VERTICALE", "AREE", "ANELLO", "TILE_FONDALE", "PALETTE_FONDALI", "TILE_GIOCATORE",
+           "PALETTE_GIOCATORE"]
 # I file che le definiscono o le avvolgono: header generati e la funzione d'accesso.
-DEFINIZIONI = {"include/testi.h", "include/tabella.h"}
+DEFINIZIONI = {"include/testi.h", "include/tabella.h", "include/mondo.h"}
 ACCESSO_DIRETTO = re.compile(r"\b(" + "|".join(TABELLE) + r")\s*\[")
 
 
