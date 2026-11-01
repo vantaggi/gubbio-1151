@@ -9,7 +9,8 @@
 # Righe vuote e righe che iniziano con # sono ignorate.
 
 AREA_PIAZZA_GRANDE        | AREA | Piazza Grande
-AREA_BOTTACCIONE          | AREA | Gola del Bottaccione
+AREA_BOTTACCIONE          | AREA | Strada del Bottaccione
+AREA_GOLA_BOTTACCIONE     | AREA | Gola del Bottaccione
 AREA_MONTE_INGINO         | AREA | Monte Ingino
 AREA_LARGO_BARGELLO       | AREA | Largo del Bargello
 AREA_VIA_DEI_CONSOLI      | AREA | Via dei Consoli

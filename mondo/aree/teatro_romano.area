@@ -1,0 +1,45 @@
+# Area importata dal prototipo (tag prototipo-v0): TEATRO_ROMANO_GRID, MapId 15.
+id teatro_romano
+etichetta AREA_TEATRO_ROMANO
+quota -10
+dimensioni 64 32
+spawn 0 55 24
+spawn 1 55 24
+spawn 2 55 24
+spawn 3 55 24
+spawn 4 55 24
+spawn 5 55 24
+uscita A san_martino 4
+griglia
+#########CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#########
+#########CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#########
+#########CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#########
+#########CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC#########
+###########SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS###########
+###########SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS###########
+###########SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS###########
+###########SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS###########
+###########SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS###########
+###########SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS###########
+###########SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS###########
+###########SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS###########
+###########SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS###########
+###########SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS###########
+###########,,,,,,##,,,,,,##,,,,,,##,,,,,,##,,,,,,##,,,,#########
+###########,,,,,,##,,,,,,##,,,,,,##,,,,,,##,,,,,,##,,,,#########
+###########,,,,,,##,,,,,,##,,,,,,##,,,,,,##,,,,,,##,,,,#########
+...............................................................#
+...............................................................#
+...............................................................#
+...............................................................#
+...............................................................#
+...............................................................#
+...............................................................#
+...............................................................A
+...............................................................A
+...............................................................#
+...............................................................#
+...............................................................#
+...............................................................#
+...............................................................#
+...............................................................#
