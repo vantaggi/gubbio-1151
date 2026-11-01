@@ -1,0 +1,42 @@
+# Testi di prova della fase F1: nomi delle 14 aree, etichette dell'HUD e battute lunghe e
+# accentate. Il copione vero arrivera' nello stesso formato e passera' dallo stesso generatore.
+# L'estensione e' .testi e non .txt: tests/test_stile_font.py legge i .txt come testo a schermo,
+# qui ci sono anche ID e separatori. Le frasi a schermo le controlla in include/testi.h.
+#
+# Formato: ID | CONTESTO | testo
+#   ID        maiuscole, cifre e trattini bassi; diventa TestoId::ID
+#   CONTESTO  DIALOGO (3 righe da 224 px), AREA (1 riga da 192 px), HUD (1 riga da 96 px)
+# Righe vuote e righe che iniziano con # sono ignorate.
+
+AREA_PIAZZA_GRANDE        | AREA | Piazza Grande
+AREA_BOTTACCIONE          | AREA | Gola del Bottaccione
+AREA_MONTE_INGINO         | AREA | Monte Ingino
+AREA_LARGO_BARGELLO       | AREA | Largo del Bargello
+AREA_VIA_DEI_CONSOLI      | AREA | Via dei Consoli
+AREA_VIA_XX_SETTEMBRE     | AREA | Via XX Settembre
+AREA_SANT_AGOSTINO        | AREA | Sant'Agostino
+AREA_SANT_ANDREA          | AREA | Sant'Andrea
+AREA_SAN_MARTINO          | AREA | San Martino
+AREA_QUARANTA_MARTIRI     | AREA | Piazza Quaranta Martiri
+AREA_SAN_PIETRO           | AREA | San Pietro
+AREA_DUOMO_DUCALE         | AREA | Duomo e Palazzo Ducale
+AREA_BASILICA             | AREA | Basilica di Sant'Ubaldo
+AREA_TEATRO_ROMANO        | AREA | Teatro Romano
+
+HUD_PV                    | HUD  | PV
+HUD_PM                    | HUD  | PM
+HUD_ORO                   | HUD  | Oro
+HUD_LIVELLO               | HUD  | Livello
+HUD_ATTACCA               | HUD  | Attacca
+HUD_OGGETTI               | HUD  | Oggetti
+HUD_ATTENDI               | HUD  | Attendi
+HUD_FUGGI                 | HUD  | Fuggi
+HUD_AUTOTEST              | HUD  | Autotest
+HUD_ERRORI                | HUD  | Errori
+
+PROVA_ANNO_1151           | DIALOGO | È l'anno 1151. Undici città marciano su Gubbio, e il vescovo Ubaldo sale sulle mura: «Non abbiate paura. Chi può, resti al suo posto.»
+PROVA_ACCENTI             | DIALOGO | Perché là, più in su, c'è già chi ricorderà: È, À, Ì, Ò, Ù e É non si perdono per strada, né qui né lì.
+PROVA_MAIUSCOLE_LUNGHE    | DIALOGO | MAMMA MIA, MESSER PODESTÀ, WOW: MWMWMWMW MWMWMWMW MWMWMWMW MWMWMWMW MWMWMWMW MWMWMW.
+PROVA_UBALDO              | DIALOGO | «Figlioli, la città non è fatta di pietre ma di chi le abita.» Così parlò Ubaldo, e nessuno osò rispondere.
+PROVA_CORTA               | DIALOGO | Sì.
+PROVA_PUNTEGGIATURA       | DIALOGO | Tre ceri (Sant'Ubaldo, San Giorgio, Sant'Antonio): 15 maggio, 100% di corsa - e poi? Silenzio; solo il Campanone.
