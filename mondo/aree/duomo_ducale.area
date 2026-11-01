@@ -3,42 +3,44 @@ id duomo_ducale
 etichetta AREA_DUOMO_DUCALE
 dimensioni 64 32
 spawn 0 17 19
-spawn 1 17 19
+spawn 1 3 9
 spawn 2 59 22
 spawn 3 17 19
 spawn 4 17 19
 spawn 5 17 19
 # F2: lati dei varchi da mondo/varchi.json: il Monte Ingino (B) e' in basso (est). Il varco
 # del prototipo sul bordo destro e' murato e si scende da un passaggio nel parapetto, in fondo.
+# F2, grafo reale: Piazza Grande (A) e' in alto (ovest). Il varco del prototipo sul bordo
+# sinistro e' murato; dalla piazza si scende dall'angolo in alto a sinistra.
 uscita A piazza_grande 1
 uscita B monte_ingino 2
 griglia
-######CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
-######CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
-######CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP####............########
-######CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
-######CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
-######CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP####............########
-######CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
-######CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
-######CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP####............########
-######CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
-######CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
-######CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP####............########
-######CCCCddCCCC####PPPPPPPPPddPPPPPPPPP######.##.##.##.########
+#AAAA#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
+#AAAA#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
+#,,,,#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP####............########
+#,,,,#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
+#,,,,#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
+#,,,,#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP####............########
+#,,,,#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
+#,,,,#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
+#,,,,#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP####............########
+#,,,,#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
+#,,,,#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########
+#,,,,#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP####............########
+#,,,,#CCCCddCCCC####PPPPPPPPPddPPPPPPPPP######.##.##.##.########
 ..........SS.................SS.................................
-AA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
-AA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
-AA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
-AA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
-AA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
-AA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
-AA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
-AA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
-AA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
-AA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
-AA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
-AA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
+##,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
+##,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
+##,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
+##,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
+##,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
+##,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
+##,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
+##,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
+##,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
+##,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
+##,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
+##,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,##
 ==========================================================,,,,==
 ==========================================================,,,,==
 ##########################################################,,,,##

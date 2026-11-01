@@ -1,5 +1,5 @@
 {
-  "_leggimi": "Il mondo di Gubbio come dati: le 14 aree dell'anello, la loro quota e i varchi che le cuciono. Fonte: docs/mappa_del_mondo.md del prototipo (dettato da Cioti), con le correzioni del 1 nov 2026 (rientro dal Bottaccione da Porta Metauro; Bottaccione dungeon separato con ingresso dalla sua area). Le direzioni dei varchi sono BUSSOLA REALE; il lato dello schermo lo calcola tools/mondo_dati.py con la rotazione del gioco (alto = ovest). Verificato da tests/test_mondo_dati.py.",
+  "_leggimi": "Il mondo di Gubbio come dati: le 14 aree dell'anello, la loro quota e i varchi che le cuciono. Fonte: docs/mappa_del_mondo.md del prototipo (dettato da Cioti), con le correzioni del 1 nov 2026 (rientro dal Bottaccione da Porta Metauro; Bottaccione dungeon separato con ingresso dalla sua area). Le direzioni dei varchi sono BUSSOLA REALE; il lato dello schermo lo calcola tools/mondo_dati.py con la rotazione del gioco (alto = ovest). Verificato da tests/test_mondo_dati.py. Riallineato alla città vera il 1 nov 2026 (rilievo OSM + DEM). Restano scelte di stile: quote esagerate, il ponte del Bargello in discesa, il versante della discesa dalla Basilica.",
   "aree": [
     {"id": "PIAZZA_GRANDE",           "nome": "Piazza Grande",            "quota_m": [70, 70],   "ancora": "piazza_grande",  "monumenti": ["consoli", "pretorio", "piazza_grande", "ranghiasci"]},
     {"id": "VIA_DEI_CONSOLI",         "nome": "Via dei Consoli",          "quota_m": [50, 68],   "ancora": "case_consoli",   "monumenti": ["case_consoli"]},
@@ -8,9 +8,9 @@
     {"id": "TEATRO_ROMANO",           "nome": "Teatro Romano",            "quota_m": [-10, -10], "ancora": "teatro_romano",  "monumenti": ["teatro_romano"]},
     {"id": "PIAZZA_QUARANTA_MARTIRI", "nome": "Piazza Quaranta Martiri",  "quota_m": [0, 0],     "ancora": "san_francesco",  "monumenti": ["san_francesco", "loggia_tiratori", "santa_maria_laici"]},
     {"id": "SAN_PIETRO",              "nome": "San Pietro",               "quota_m": [5, 5],     "ancora": "san_pietro",     "monumenti": ["san_pietro", "porta_san_pietro"]},
-    {"id": "VIA_XX_SETTEMBRE",        "nome": "Via XX Settembre",         "quota_m": [60, 70],   "ancora": null, "ancora_stimata": [43.3517, 12.5815], "monumenti": ["case_xx_settembre"]},
-    {"id": "SANT_AGOSTINO",           "nome": "Sant'Agostino",            "quota_m": [60, 60],   "ancora": "sant_agostino",  "monumenti": ["sant_agostino", "porta_romana"]},
-    {"id": "SANT_ANDREA",             "nome": "Sant'Andrea",              "quota_m": [55, 55],   "ancora": "san_marziale",   "monumenti": ["san_marziale", "arco_san_marziale", "santa_maria_nuova"]},
+    {"id": "VIA_XX_SETTEMBRE",        "nome": "Via XX Settembre",         "quota_m": [70, 72],   "ancora": null, "ancora_stimata": [43.3517, 12.5815], "monumenti": ["case_xx_settembre"]},
+    {"id": "SANT_AGOSTINO",           "nome": "Sant'Agostino",            "quota_m": [55, 55],   "ancora": "sant_agostino",  "monumenti": ["sant_agostino", "porta_romana"]},
+    {"id": "SANT_ANDREA",             "nome": "Sant'Andrea",              "quota_m": [72, 72],   "ancora": "san_marziale",   "monumenti": ["san_marziale", "arco_san_marziale", "santa_maria_nuova"]},
     {"id": "DUOMO_DUCALE",            "nome": "Duomo e Palazzo Ducale",   "quota_m": [90, 90],   "ancora": "duomo",          "monumenti": ["duomo", "ducale", "canonici"]},
     {"id": "MONTE_INGINO",            "nome": "Monte Ingino",             "quota_m": [100, 350], "ancora": null, "ancora_stimata": [43.3549, 12.5838], "monumenti": ["porta_sant_ubaldo", "mura_rocca"]},
     {"id": "BASILICA",                "nome": "Basilica di Sant'Ubaldo",  "quota_m": [380, 380], "ancora": "basilica",       "monumenti": ["basilica"]},
@@ -22,19 +22,17 @@
     {"da": "LARGO_BARGELLO",          "a": "SAN_MARTINO",             "verso": "O",  "come": "si scende, oltre il ponte sul Camignano"},
     {"da": "SAN_MARTINO",             "a": "PIAZZA_QUARANTA_MARTIRI", "verso": "S",  "come": "si scende ancora, verso sud"},
     {"da": "SAN_MARTINO",             "a": "TEATRO_ROMANO",           "verso": "SO", "come": "fuori le mura, piu' in basso"},
-    {"da": "PIAZZA_QUARANTA_MARTIRI", "a": "PIAZZA_GRANDE",           "verso": "N",  "come": "si sale a nord"},
-    {"da": "PIAZZA_QUARANTA_MARTIRI", "a": "SAN_PIETRO",              "verso": "E",  "come": "verso est"},
-    {"da": "PIAZZA_GRANDE",           "a": "VIA_XX_SETTEMBRE",        "verso": "E",  "come": "via XX Settembre"},
-    {"da": "VIA_XX_SETTEMBRE",        "a": "SANT_AGOSTINO",           "verso": "SE", "come": "in fondo alla via, verso Porta Romana"},
-    {"da": "SANT_AGOSTINO",           "a": "SANT_ANDREA",             "verso": "E",  "come": "verso est"},
-    {"da": "PIAZZA_GRANDE",           "a": "DUOMO_DUCALE",            "verso": "N",  "come": "a nord, in salita"},
+    {"da": "PIAZZA_QUARANTA_MARTIRI", "a": "PIAZZA_GRANDE",           "verso": "NE", "come": "la salita ripida: via della Repubblica, poi le scale"},
+    {"da": "PIAZZA_QUARANTA_MARTIRI", "a": "SAN_PIETRO",              "verso": "SE", "come": "via Mazzini"},
+    {"da": "PIAZZA_GRANDE",           "a": "VIA_XX_SETTEMBRE",        "verso": "SE", "come": "dall'angolo sud-est oltre il Pretorio, in piano"},
+    {"da": "VIA_XX_SETTEMBRE",        "a": "SANT_ANDREA",             "verso": "SE", "come": "in fondo alla via, San Marziale"},
+    {"da": "SANT_ANDREA",             "a": "SANT_AGOSTINO",           "verso": "SE", "come": "si scende fuori da Porta Romana"},
+    {"da": "PIAZZA_GRANDE",           "a": "DUOMO_DUCALE",            "verso": "NE", "come": "a nord, in salita"},
     {"da": "DUOMO_DUCALE",            "a": "MONTE_INGINO",            "verso": "E",  "come": "in salita, verso la vetta"},
     {"da": "MONTE_INGINO",            "a": "BASILICA",                "verso": "NE", "come": "2 km di sterrato: la salita lunga"},
     {"da": "BASILICA",                "a": "BOTTACCIONE",             "verso": "NO", "come": "si scende dietro il monte"},
     {"da": "BOTTACCIONE",             "a": "SAN_MARTINO",             "verso": "SO", "come": "rientro in citta' da Porta Metauro"}
   ],
   "anello": ["PIAZZA_GRANDE", "DUOMO_DUCALE", "MONTE_INGINO", "BASILICA", "BOTTACCIONE", "SAN_MARTINO", "LARGO_BARGELLO", "VIA_DEI_CONSOLI", "PIAZZA_GRANDE"],
-  "direzioni_da_confermare": {
-    "SANT_AGOSTINO>SANT_ANDREA": "Il contratto del prototipo dice 'verso est', ma San Marziale (ancora di Sant'Andrea) sta a nord-ovest di Sant'Agostino. Da confermare con Cioti: si tiene il contratto."
-  }
+  "direzioni_da_confermare": {}
 }

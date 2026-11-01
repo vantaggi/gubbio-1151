@@ -6,8 +6,10 @@ spawn 0 14 38
 spawn 1 13 20
 spawn 2 28 49
 spawn 3 28 14
-spawn 4 25 31
+spawn 4 4 54
 spawn 5 7 41
+# F2, grafo reale (1 nov 2026): il Duomo (E) e via XX Settembre (B) stanno tutti e due in basso
+# (est). Il varco del Duomo passa dal bordo destro all'angolo in basso a sinistra, accanto al Pretorio.
 uscita A via_dei_consoli 3
 uscita B via_xx_settembre 2
 uscita E duomo_ducale 4
@@ -45,10 +47,10 @@ griglia
 ==.........................,,,,#
 ==.........................,,,,#
 ==.........................,,,,#
-==.........................,,,,E
-==.........................,,,,E
-==.........................,,,,E
-==.........................,,,,E
+==.........................,,,,#
+==.........................,,,,#
+==.........................,,,,#
+==.........................,,,,#
 ==.........................,,,,#
 ==.........................,,,,#
 ==.........................,,,,#
@@ -73,9 +75,9 @@ GG.........................,,,,#
 ==.........................BBBB#
 ==.........................BBBB#
 ==.........................BBBB#
-==####PPPPPPPPPddPPPPP#####BBBB#
-==####PPPPPPPPPPPPPPPP#####BBBB#
-==####PPPPPPPPPPPPPPPP#####BBBB#
-==####PPPPPPPPPPPPPPPP#####BBBB#
-==####PPPPPPPPPPPPPPPP#####BBBB#
-==####PPPPPPPPPPPPPPPP#####BBBB#
+==,,,,PPPPPPPPPddPPPPP#####BBBB#
+==,,,,PPPPPPPPPPPPPPPP#####BBBB#
+==,,,,PPPPPPPPPPPPPPPP#####BBBB#
+==,,,,PPPPPPPPPPPPPPPP#####BBBB#
+==EEEEPPPPPPPPPPPPPPPP#####BBBB#
+==EEEEPPPPPPPPPPPPPPPP#####BBBB#

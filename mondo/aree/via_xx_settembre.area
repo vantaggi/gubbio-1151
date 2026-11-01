@@ -4,14 +4,14 @@ etichetta AREA_VIA_XX_SETTEMBRE
 dimensioni 32 64
 spawn 0 15 32
 spawn 1 15 8
-spawn 2 9 57
+spawn 2 16 55
 spawn 3 15 32
 spawn 4 15 32
 spawn 5 15 32
-# F2: lati dei varchi da mondo/varchi.json: Sant'Agostino (B) e' a sinistra (sud). La strada
-# non esce piu' dal fondo: in fondo si gira a sinistra.
+# F2, grafo reale (1 nov 2026): in fondo alla via (B, in basso) c'e' Sant'Andrea, non piu'
+# Sant'Agostino; la strada torna a uscire dal fondo come nel prototipo.
 uscita A piazza_grande 1
-uscita B sant_agostino 2
+uscita B sant_andrea 2
 griglia
 #############AAAAAA#############
 #############,,,,,,#############
@@ -69,11 +69,11 @@ griglia
 #############,,,,,,#############
 #############,,,,,,#############
 #############,,,,,,#############
-BB,,,,,,,,,,,,,,,,,#############
-BB,,,,,,,,,,,,,,,,,#############
-BB,,,,,,,,,,,,,,,,,#############
-BB,,,,,,,,,,,,,,,,,#############
 #############,,,,,,#############
 #############,,,,,,#############
 #############,,,,,,#############
-################################
+#############,,,,,,#############
+#############,,,,,,#############
+#############,,,,,,#############
+#############,,,,,,#############
+#############BBBBBB#############

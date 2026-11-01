@@ -1,17 +1,25 @@
 # La mappa del mondo di Gubbio 1151
 
 > **Aggiornamento della ripartenza (fase F2, 1 novembre 2026).** Questo documento viene dal
-> prototipo (tag `prototipo-v0`) e resta il contratto del mondo, con tre decisioni prese dopo:
+> prototipo (tag `prototipo-v0`) e resta il contratto del mondo, con le decisioni prese dopo:
 >
 > * **Il Bottaccione.** L'area dell'anello e' la **Strada del Bottaccione** (`mondo/aree/bottaccione.area`);
 >   la **Gola del Bottaccione** e' un dungeon separato che si apre da quell'area. In F2 c'e' solo
 >   l'ingresso (varco `I` nel parapetto, verso la gola).
 > * **Il rientro in citta' dal Bottaccione e' Porta Metauro**, non la Porta di Santa Lucia
->   (confermato da Cioti). Dove sotto si legge "Porta di Santa Lucia", va letto Porta Metauro.
+>   (confermato da Cioti).
+> * **Grafo riallineato alla citta' vera** (1 novembre 2026, rilievo OSM + DEM): via XX Settembre
+>   esce dall'angolo sud-est della piazza e porta a Sant'Andrea, e da Sant'Andrea si scende a
+>   Sant'Agostino fuori da Porta Romana; Duomo, Quaranta Martiri > Piazza Grande e San Pietro hanno
+>   le direzioni vere. Restano scelte di stile: quote esagerate, il ponte del Bargello in discesa,
+>   il versante della discesa dalla Basilica.
 > * **Il foreground copre solo la fascia alta** (tetti, archi, chiome).
 >
 > Le aree non sono piu' header C++: sono i file `mondo/aree/*.area`, e `tools/genera_mondo.py`
 > ne fa `include/mondo.h`. I riferimenti a header e costanti qui sotto descrivono il prototipo.
+>
+> **La fonte di verita' del grafo e' `mondo/grafo.json`** (aree, quote, archi, direzioni, anello):
+> dove questo documento e grafo.json non coincidono, vale grafo.json.
 
 Questo documento è **il contratto** a cui ogni area di gioco deve obbedire. Esiste perché le aree
 vengono autorate in parallelo da persone e agenti diversi: senza un contratto scritto prima, dieci
@@ -35,21 +43,21 @@ gira attorno al monte**, e il giocatore lo percorre salendo da un lato e ridisce
                             /                        (dietro il monte, con l'acquedotto)
               DUOMO - GIARDINI PENSILI                        \
                    - PALAZZO DUCALE                            \
-                            |                            Porta di Santa Lucia
-                            | (a nord e sopra)                  |
-                     PIAZZA GRANDE  ------- via XX Settembre --> SANT'AGOSTINO --> SANT'ANDREA
-                            |                                    (est)              (est)
+                            |                              Porta Metauro
+                            | (a nord-est e sopra)              |
+                     PIAZZA GRANDE  -- via XX Settembre --> SANT'ANDREA --> SANT'AGOSTINO
+                            |          (sud-est)            (sud-est)     (sud-est, Porta Romana)
                      via dei Consoli
                             |
                     LARGO DEL BARGELLO   (Fontana dei Matti)
                             |  si scende
-                       SAN MARTINO  <---- rientro dal Bottaccione, Porta di Santa Lucia
+                       SAN MARTINO  <---- rientro dal Bottaccione, Porta Metauro
                         /        \
                        |          \  fuori le mura, piu' in basso
                  si scende a sud    TEATRO ROMANO
                        |
               PIAZZA QUARANTA MARTIRI ------> SAN PIETRO
-                  (il punto piu' basso)          (est)
+                  (il punto piu' basso)       (sud-est)
 ```
 
 **Gli archi, per esteso.** Ogni riga è percorribile nei due sensi salvo dove detto.
@@ -57,22 +65,23 @@ gira attorno al monte**, e il giocatore lo percorre salendo da un lato e ridisce
 | Da | Verso | Come |
 | :-- | :-- | :-- |
 | Piazza Grande | Largo del Bargello | via dei Consoli, in discesa dal varco **nord-ovest** |
-| Piazza Grande | Sant'Agostino | via XX Settembre, dal varco **nord-est** |
-| Piazza Grande | Duomo / Giardini Pensili / Palazzo Ducale | a **nord**, e in salita |
-| Sant'Agostino | Sant'Andrea | verso **est** |
+| Piazza Grande | via XX Settembre | dall'angolo **sud-est** oltre il Pretorio, in piano |
+| via XX Settembre | Sant'Andrea | **sud-est**: in fondo alla via, San Marziale |
+| Sant'Andrea | Sant'Agostino | **sud-est**: si scende fuori da Porta Romana |
+| Piazza Grande | Duomo / Giardini Pensili / Palazzo Ducale | a **nord-est**, e in salita |
 | Duomo / Ducale | Stradoni del Monte | in salita, verso la vetta |
 | Stradoni del Monte | Basilica di Sant'Ubaldo | 2 km di sterrato: è la salita lunga del gioco |
 | Basilica | Strada del Bottaccione | si scende **dietro** il monte, sul versante ovest |
-| Strada del Bottaccione | San Martino | rientro in città dalla **Porta di Santa Lucia** |
+| Strada del Bottaccione | San Martino | rientro in città da **Porta Metauro** |
 | Largo del Bargello | San Martino | si scende |
 | San Martino | Piazza Quaranta Martiri | si scende ancora, verso **sud** |
 | San Martino | Teatro Romano | **fuori le mura cittadine**, piu' in basso |
 | Piazza Quaranta Martiri | San Martino | a **ovest** |
-| Piazza Quaranta Martiri | Piazza Grande | a **nord** |
-| Piazza Quaranta Martiri | San Pietro | a **est** |
+| Piazza Quaranta Martiri | Piazza Grande | a **nord-est**: la salita ripida, via della Repubblica, poi le scale |
+| Piazza Quaranta Martiri | San Pietro | a **sud-est**, via Mazzini |
 
-**L'anello si chiude.** Piazza Grande → Ducale → stradoni → Basilica → Bottaccione → Porta di
-Santa Lucia → San Martino → Bargello → via dei Consoli → Piazza Grande. Chi autora un'area che sta
+**L'anello si chiude.** Piazza Grande → Ducale → stradoni → Basilica → Bottaccione → Porta
+Metauro → San Martino → Bargello → via dei Consoli → Piazza Grande. Chi autora un'area che sta
 sull'anello sta autorando un pezzo di un percorso circolare, non un vicolo cieco.
 
 ---
@@ -100,8 +109,9 @@ Quote di riferimento (approssimate, ma l'**ordine** è vincolante e non si discu
 | San Martino | 25 m | |
 | Largo del Bargello | 45 m | |
 | Piazza Grande | 70 m | piazza **pensile**, sospesa sopra gli Arconi |
-| Sant'Agostino | 60 m | |
-| Sant'Andrea | 55 m | |
+| via XX Settembre | da 70 m a 72 m | in piano dalla piazza |
+| Sant'Andrea | 72 m | |
+| Sant'Agostino | 55 m | fuori da Porta Romana, piu' in basso |
 | Duomo / Giardini Pensili / Palazzo Ducale | 90 m | sopra Piazza Grande |
 | Strada del Bottaccione | da 300 m a 30 m | scende dietro il monte |
 | Stradoni del Monte | da 100 m a 350 m | 2 km di sterrato |

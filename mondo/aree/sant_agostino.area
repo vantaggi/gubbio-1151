@@ -8,10 +8,9 @@ spawn 2 28 47
 spawn 3 28 16
 spawn 4 28 16
 spawn 5 28 16
-# F2: lati dei varchi da mondo/varchi.json: via XX Settembre (A) e' a destra (nord). La strada
-# non sale piu' fino al bordo alto: il varco si apre nel muro di destra.
-uscita A via_xx_settembre 1
-uscita B sant_andrea 2
+# F2: lati dei varchi da mondo/varchi.json. Grafo reale (1 nov 2026): si arriva solo da
+# Sant'Andrea, a destra (nord), dal varco A nel muro; il varco del prototipo in fondo e' murato.
+uscita A sant_andrea 1
 griglia
 #########CCCCCCCCCC#############
 #########CCCCCCCCCC#############
@@ -68,12 +67,12 @@ griglia
 ###########################,,,,#
 ###########################,,,,#
 ###########################,,,,#
-###########################BBBB#
-###########################BBBB#
-###########################BBBB#
-###########################BBBB#
-###########################BBBB#
-###########################BBBB#
-###########################BBBB#
-###########################BBBB#
-###########################BBBB#
+################################
+################################
+################################
+################################
+################################
+################################
+################################
+################################
+################################

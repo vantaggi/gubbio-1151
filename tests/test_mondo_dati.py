@@ -129,11 +129,26 @@ class Direzioni(unittest.TestCase):
         self.assertTrue(err[0].startswith("PIAZZA_GRANDE>VIA_DEI_CONSOLI"))
 
     def test_eccezione_necessaria(self):
-        """L'unica direzione da confermare e' davvero fuori tolleranza: se smette di esserlo va tolta."""
+        """Riallineato alla citta' vera: senza eccezioni nessuna direzione e' fuori tolleranza."""
         g = guasto()
         g["direzioni_da_confermare"] = {}
-        err = M.errori_direzioni(g, CENS)
-        self.assertEqual([e.split(" ")[0] for e in err], list(GRAFO["direzioni_da_confermare"]))
+        self.assertEqual(M.errori_direzioni(g, CENS), [])
+        self.assertEqual(M.errori_eccezioni_superflue(GRAFO, CENS), [])
+
+    def test_eccezione_superflua_presa(self):
+        """Prova negativa: un'eccezione per un arco che torna con la carta va segnalata."""
+        g = guasto()
+        g["direzioni_da_confermare"] = {"PIAZZA_GRANDE>VIA_DEI_CONSOLI": "prova"}
+        self.assertEqual(M.errori_eccezioni_superflue(g, CENS),
+                         ["eccezione non piu' necessaria: PIAZZA_GRANDE>VIA_DEI_CONSOLI"])
+        self.assertIn("eccezione non piu' necessaria: PIAZZA_GRANDE>VIA_DEI_CONSOLI", M.tutti_gli_errori(g, CENS))
+
+    def test_eccezione_per_arco_tolto_presa(self):
+        """Prova negativa: la vecchia eccezione SANT_AGOSTINO>SANT_ANDREA, ora che l'arco non c'e'."""
+        g = guasto()
+        g["direzioni_da_confermare"] = {"SANT_AGOSTINO>SANT_ANDREA": "prova"}
+        self.assertEqual(M.errori_eccezioni_superflue(g, CENS),
+                         ["eccezione per un arco che non c'e': SANT_AGOSTINO>SANT_ANDREA"])
 
     def test_varchi_andata_e_ritorno(self):
         self.assertEqual(M.errori_lati_varchi(M.calcola_varchi(GRAFO, CENS)), [])
@@ -145,12 +160,19 @@ class Direzioni(unittest.TestCase):
         self.assertTrue(any("rientra" in e for e in M.errori_lati_varchi(var)))
 
     def test_lati_attesi(self):
-        """Piazza Grande: via dei Consoli in alto (ovest), via XX Settembre in basso (est), Duomo a destra (nord)."""
+        """Piazza Grande: via dei Consoli in alto (ovest); via XX Settembre (SE) e il Duomo (NE, ma il
+        Duomo sta piu' a est che a nord) in basso (est); Quaranta Martiri a sinistra (sud)."""
         lati = {v["verso"]: v["lato"] for v in M.calcola_varchi(GRAFO, CENS)["PIAZZA_GRANDE"]}
-        self.assertEqual(lati["VIA_DEI_CONSOLI"], "alto")
-        self.assertEqual(lati["VIA_XX_SETTEMBRE"], "basso")
-        self.assertEqual(lati["DUOMO_DUCALE"], "destra")
-        self.assertEqual(lati["PIAZZA_QUARANTA_MARTIRI"], "sinistra")
+        self.assertEqual(lati, {"VIA_DEI_CONSOLI": "alto", "VIA_XX_SETTEMBRE": "basso",
+                                "DUOMO_DUCALE": "basso", "PIAZZA_QUARANTA_MARTIRI": "sinistra"})
+
+    def test_lati_attesi_ordine_nuovo(self):
+        """Via XX Settembre > Sant'Andrea > Sant'Agostino, tutti verso sud-est."""
+        var = M.calcola_varchi(GRAFO, CENS)
+        lati = lambda aid: {v["verso"]: v["lato"] for v in var[aid]}  # noqa: E731
+        self.assertEqual(lati("VIA_XX_SETTEMBRE"), {"PIAZZA_GRANDE": "alto", "SANT_ANDREA": "basso"})
+        self.assertEqual(lati("SANT_ANDREA"), {"VIA_XX_SETTEMBRE": "alto", "SANT_AGOSTINO": "sinistra"})
+        self.assertEqual(lati("SANT_AGOSTINO"), {"SANT_ANDREA": "destra"})
 
 
 class Monumenti(unittest.TestCase):

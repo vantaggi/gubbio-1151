@@ -4,11 +4,14 @@ etichetta AREA_SANT_ANDREA
 dimensioni 32 32
 spawn 0 15 12
 spawn 1 15 8
-spawn 2 15 12
+spawn 2 9 11
 spawn 3 15 12
 spawn 4 15 12
 spawn 5 15 12
-uscita A sant_agostino 1
+# F2, grafo reale: via XX Settembre (A) in alto, Sant'Agostino (B) a sinistra (sud), in fondo
+# al vicolo di sinistra.
+uscita A via_xx_settembre 1
+uscita B sant_agostino 2
 griglia
 ##############AAAA##############
 ##############,,,,##############
@@ -21,8 +24,8 @@ griglia
 ##############,,,,##############
 ##############,,,,##############
 ##########............##########
-####,,,,,,............,,,,,,####
-####,,,,,,............,,,,,,####
+BB,,,,,,,,............,,,,,,####
+BB,,,,,,,,............,,,,,,####
 ##########............##########
 ##########............##########
 ##############,,################

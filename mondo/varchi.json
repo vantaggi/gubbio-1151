@@ -5,15 +5,15 @@
     "PIAZZA_GRANDE": [
       {
         "verso": "DUOMO_DUCALE",
-        "bussola": "N",
-        "lato": "destra",
+        "bussola": "NE",
+        "lato": "basso",
         "come": "a nord, in salita"
       },
       {
         "verso": "PIAZZA_QUARANTA_MARTIRI",
-        "bussola": "S",
+        "bussola": "SO",
         "lato": "sinistra",
-        "come": "si sale a nord (al contrario)"
+        "come": "la salita ripida: via della Repubblica, poi le scale (al contrario)"
       },
       {
         "verso": "VIA_DEI_CONSOLI",
@@ -23,9 +23,9 @@
       },
       {
         "verso": "VIA_XX_SETTEMBRE",
-        "bussola": "E",
+        "bussola": "SE",
         "lato": "basso",
-        "come": "via XX Settembre"
+        "come": "dall'angolo sud-est oltre il Pretorio, in piano"
       }
     ],
     "VIA_DEI_CONSOLI": [
@@ -93,9 +93,9 @@
     "PIAZZA_QUARANTA_MARTIRI": [
       {
         "verso": "PIAZZA_GRANDE",
-        "bussola": "N",
+        "bussola": "NE",
         "lato": "destra",
-        "come": "si sale a nord"
+        "come": "la salita ripida: via della Repubblica, poi le scale"
       },
       {
         "verso": "SAN_MARTINO",
@@ -105,53 +105,53 @@
       },
       {
         "verso": "SAN_PIETRO",
-        "bussola": "E",
+        "bussola": "SE",
         "lato": "basso",
-        "come": "verso est"
+        "come": "via Mazzini"
       }
     ],
     "SAN_PIETRO": [
       {
         "verso": "PIAZZA_QUARANTA_MARTIRI",
-        "bussola": "O",
+        "bussola": "NO",
         "lato": "alto",
-        "come": "verso est (al contrario)"
+        "come": "via Mazzini (al contrario)"
       }
     ],
     "VIA_XX_SETTEMBRE": [
       {
         "verso": "PIAZZA_GRANDE",
-        "bussola": "O",
+        "bussola": "NO",
         "lato": "alto",
-        "come": "via XX Settembre (al contrario)"
+        "come": "dall'angolo sud-est oltre il Pretorio, in piano (al contrario)"
       },
       {
-        "verso": "SANT_AGOSTINO",
+        "verso": "SANT_ANDREA",
         "bussola": "SE",
-        "lato": "sinistra",
-        "come": "in fondo alla via, verso Porta Romana"
+        "lato": "basso",
+        "come": "in fondo alla via, San Marziale"
       }
     ],
     "SANT_AGOSTINO": [
       {
         "verso": "SANT_ANDREA",
-        "bussola": "E",
-        "lato": "basso",
-        "come": "verso est"
-      },
-      {
-        "verso": "VIA_XX_SETTEMBRE",
         "bussola": "NO",
         "lato": "destra",
-        "come": "in fondo alla via, verso Porta Romana (al contrario)"
+        "come": "si scende fuori da Porta Romana (al contrario)"
       }
     ],
     "SANT_ANDREA": [
       {
         "verso": "SANT_AGOSTINO",
-        "bussola": "O",
+        "bussola": "SE",
+        "lato": "sinistra",
+        "come": "si scende fuori da Porta Romana"
+      },
+      {
+        "verso": "VIA_XX_SETTEMBRE",
+        "bussola": "NO",
         "lato": "alto",
-        "come": "verso est (al contrario)"
+        "come": "in fondo alla via, San Marziale (al contrario)"
       }
     ],
     "DUOMO_DUCALE": [
@@ -163,8 +163,8 @@
       },
       {
         "verso": "PIAZZA_GRANDE",
-        "bussola": "S",
-        "lato": "sinistra",
+        "bussola": "SO",
+        "lato": "alto",
         "come": "a nord, in salita (al contrario)"
       }
     ],
