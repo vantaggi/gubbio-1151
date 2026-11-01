@@ -12,5 +12,6 @@ DEVKITARM_GCC=16.1.0
 # Emulatore usato per le prove a mano
 MGBA_VERSION=0.10.5
 
-# Immagine usata in CI (tag 20260610 su Docker Hub), bloccata per digest
+# Immagine usata in CI (tag 20260610 su Docker Hub), bloccata per digest. La ROM ufficiale e'
+# quella compilata qui: la build sul PC ha lo stesso gcc ma un altro SHA-256 (vedi README.md).
 DOCKER_IMAGE=devkitpro/devkitarm@sha256:116afba8df8453961de2936ffab20dd441edf4d682856c1ec8b0e53d7ed0bbf5

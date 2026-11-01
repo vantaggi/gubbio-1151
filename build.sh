@@ -94,3 +94,10 @@ make -j"$(nproc 2> /dev/null || echo 4)" "$@"
 bash tools/check_zero_heap.sh gubbio1151.elf
 
 echo "[rom] SHA-256 $(sha256sum gubbio1151.gba | awk '{print $1}')  gubbio1151.gba"
+
+# La ROM che fa fede e' quella della CI, compilata nell'immagine bloccata per digest in
+# toolchain.lock: e' identica run dopo run. Quella del PC (devkitARM per Windows) mette alcune
+# funzioni di maxmod in IWRAM in un altro ordine e ha un altro SHA-256: serve solo per provare.
+if [ -z "${GITHUB_ACTIONS:-}" ]; then
+    echo "[rom] ATTENZIONE: build locale, il suo SHA-256 non fa fede. La ROM ufficiale e' l'artifact della CI."
+fi
