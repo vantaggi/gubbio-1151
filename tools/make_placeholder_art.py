@@ -694,7 +694,16 @@ def make_battle_bg():
                           "skyline_assedio.bmp")
     _skyline = None
 
-    if _os.path.exists(_ingr):
+    # LE FOTO SONO OPT-IN, e il default e' la versione PUBBLICABILE. Le fotografie da cui nascono
+    # gli ingredienti sono state prese dal web (Sessione 25): i loro derivati non possono stare in
+    # una repository pubblica. Finche' la lettura era automatica, bastava che `ingredienti/`
+    # esistesse sul disco perche' qualunque rigenerazione rimettesse quei pixel negli sfondi
+    # versionati — e in questo progetto gli sfondi si rigenerano di continuo, a mano e dagli
+    # agenti. Il primo push successivo li avrebbe ripubblicati senza che nessuno lo decidesse.
+    #
+    # Per vedere il gioco con le foto, in locale: GUBBIO_FOTO_LOCALI=1 prima del comando.
+    # MAI committare sfondi generati cosi'.
+    if _os.environ.get("GUBBIO_FOTO_LOCALI") == "1" and _os.path.exists(_ingr):
         import struct as _st
         _d = open(_ingr, "rb").read()
         _off = _st.unpack_from("<I", _d, 10)[0]

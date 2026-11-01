@@ -199,6 +199,18 @@ def leggi_indici_bmp4(nome):
 
     Gli ingredienti stanno in `ingredienti/` e NON in `graphics/`: quest'ultima e' il territorio
     di grit, che pretende un `.json` accanto a ogni `.bmp` e fallisce la build su chi non ce l'ha."""
+    # LE FOTO SONO OPT-IN, e il default e' la versione PUBBLICABILE. Le fotografie da cui nascono
+    # gli ingredienti sono state prese dal web (Sessione 25): i loro derivati non possono stare in
+    # una repository pubblica. Finche' la lettura era automatica, bastava che `ingredienti/`
+    # esistesse sul disco perche' qualunque rigenerazione rimettesse quei pixel negli sfondi
+    # versionati — e in questo progetto gli sfondi si rigenerano di continuo, a mano e dagli
+    # agenti. Il primo push successivo li avrebbe ripubblicati senza che nessuno lo decidesse.
+    #
+    # Per vedere il gioco con le foto, in locale: GUBBIO_FOTO_LOCALI=1 prima del comando.
+    # MAI committare sfondi generati cosi'.
+    if os.environ.get("GUBBIO_FOTO_LOCALI") != "1":
+        return None, 0, 0
+
     percorso = os.path.join(os.path.dirname(OUT), "ingredienti", nome)
 
     if not os.path.exists(percorso):

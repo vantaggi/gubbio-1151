@@ -65,6 +65,22 @@ Due avvertenze che valgono la pena di essere scritte:
   privilegi di amministratore). Butano: `../butano`, accanto al progetto.
 * Anteprima della schermata fuori dall'emulatore: `python tools/preview_battle_screen.py`.
 
+## LA REPOSITORY E' PUBBLICA (1 novembre 2026)
+
+`https://github.com/vantaggi/gubbio-1151` — pubblica per scelta del committente. Tre regole che
+ne discendono e che valgono per chiunque lavori qui, persona o agente:
+
+1. **Gli sfondi si generano SENZA foto.** Le immagini in `riferimenti/` sono prese dal web e i
+   loro derivati non possono stare in una repo pubblica. I generatori leggono gli ingredienti
+   solo con `GUBBIO_FOTO_LOCALI=1`; senza, disegnano in procedurale. Quella variabile serve a
+   vedere il gioco con le foto sul proprio PC e **non va mai usata prima di un commit**.
+2. **L'email nei commit e' quella anonima di GitHub**, `44920875+vantaggi@users.noreply.github.com`,
+   impostata nella configurazione locale del repository. La cronologia e' stata riscritta per
+   togliere quella personale da tutti i commit precedenti.
+3. **La cronologia e' stata riscritta una volta**, per le due ragioni qui sopra. Il backup
+   completo di prima e' un bundle git nella cartella temporanea della sessione del 1° novembre;
+   chi ne avesse bisogno lo ricrea da li' con `git clone <bundle>`.
+
 ## PUNTO DI RIPRESA — Sessione 24 (25 agosto 2026)
 
 ### "Invalid character" a ogni dialogo: il percorso del dialogo e' ESCLUSO
