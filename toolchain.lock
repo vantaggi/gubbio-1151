@@ -1,0 +1,16 @@
+# Versioni bloccate della toolchain. build.sh lo legge e si rifiuta di compilare se il
+# submodule Butano o il compilatore non coincidono. Formato: CHIAVE=valore, letto da bash.
+
+# Butano: ultima release taggata di https://github.com/GValiente/butano
+BUTANO_TAG=21.9.0
+BUTANO_COMMIT=a9426cf21b8b6372e4f43678464345a1bf4594de
+
+# devkitARM: la release e il gcc che contiene
+DEVKITARM_RELEASE=r68
+DEVKITARM_GCC=16.1.0
+
+# Emulatore usato per le prove a mano
+MGBA_VERSION=0.10.5
+
+# Immagine usata in CI (tag 20260610 su Docker Hub), bloccata per digest
+DOCKER_IMAGE=devkitpro/devkitarm@sha256:116afba8df8453961de2936ffab20dd441edf4d682856c1ec8b0e53d7ed0bbf5
