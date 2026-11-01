@@ -175,6 +175,13 @@ void VistaTesto::rivela_tutto()
     }
 }
 
+void VistaTesto::nascondi()
+{
+    _pulisci();
+    _testo = nullptr;
+    _rivelati = 0;
+}
+
 bool VistaTesto::completo() const
 {
     return _testo && _rivelati == _testo->glifi;
