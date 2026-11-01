@@ -34,6 +34,13 @@ HUD_ATTENDI               | HUD  | Attendi
 HUD_FUGGI                 | HUD  | Fuggi
 HUD_AUTOTEST              | HUD  | Autotest
 HUD_ERRORI                | HUD  | Errori
+HUD_ARCHI                 | HUD  | Archi
+HUD_PIXEL                 | HUD  | Pixel
+HUD_SPRITE                | HUD  | Sprite
+HUD_TILE_OBJ              | HUD  | Tile OBJ
+HUD_BLOCCHI_BG            | HUD  | Blocchi BG
+HUD_STACK                 | HUD  | Stack IWRAM
+HUD_PREMI_A               | HUD  | Premi A
 
 PROVA_ANNO_1151           | DIALOGO | È l'anno 1151. Undici città marciano su Gubbio, e il vescovo Ubaldo sale sulle mura: «Non abbiate paura. Chi può, resti al suo posto.»
 PROVA_ACCENTI             | DIALOGO | Perché là, più in su, c'è già chi ricorderà: È, À, Ì, Ò, Ù e É non si perdono per strada, né qui né lì.

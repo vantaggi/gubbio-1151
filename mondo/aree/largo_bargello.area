@@ -4,7 +4,9 @@ etichetta AREA_LARGO_BARGELLO
 quota 45
 dimensioni 32 24
 spawn 0 16 17
-spawn 1 28 12
+# F2: lo spawn 1 (arrivo da via dei Consoli) stava in 28 12, a 2 tile dal varco B: chi teneva
+# premuta la direzione d'arrivo rimbalzava indietro. Spostato 4 tile dentro.
+spawn 1 24 12
 spawn 2 8 11
 spawn 3 16 17
 spawn 4 16 17

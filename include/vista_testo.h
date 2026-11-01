@@ -28,6 +28,7 @@ public:
     void mostra(testo::TestoId id);
     void avanza();          // un passo della macchina da scrivere
     void rivela_tutto();
+    void nascondi();
     [[nodiscard]] bool completo() const;
     [[nodiscard]] int rivelati() const;
 

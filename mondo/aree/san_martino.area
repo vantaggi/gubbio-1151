@@ -7,7 +7,11 @@ spawn 0 15 9
 spawn 1 15 9
 spawn 2 8 25
 spawn 3 15 31
-spawn 4 8 25
+# F2: nel prototipo la regola del varco G (verso il Teatro Romano) era coperta da quella del
+# varco B, valutata prima: il varco non compariva e il Teatro era irraggiungibile. Aperto un
+# passaggio dal campiello verso sud-ovest (sinistra), fuori le mura, con il varco G sul bordo;
+# lo spawn 4, l'arrivo dal Teatro, sta all'imbocco del passaggio.
+spawn 4 7 20
 spawn 5 15 9
 uscita A largo_bargello 2
 uscita B piazza_quaranta_martiri 1
@@ -34,8 +38,8 @@ griglia
 ##############,,,,##############
 ##########....,,,,....##########
 ##########....,,,,....##########
-##########....,,,,....##########
-##########....,,,,....##########
+GG,,,,,,,,....,,,,....##########
+GG,,,,,,,,....,,,,....##########
 ##########....,,,,....##########
 ##########....,,,,....##########
 BB,,SSS,,,,,,,,,,,##############
