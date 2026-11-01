@@ -1,0 +1,1522 @@
+{
+ "nota": "Scelta 11. Scheletro unico per tutti i personaggi: gli strati (veste, elmo, armi) si appoggiano ai giunti. Coordinate in pixel dentro lo sprite 16x32, origine in alto a sinistra. Tempi in vblank (1/60 s). Sinistra = destra con flip orizzontale hardware. Polvere e scintille sono particelle separate.",
+ "sprite": [
+  16,
+  32
+ ],
+ "corpo": [
+  16,
+  24
+ ],
+ "linea_piedi": 31,
+ "vblank_al_secondo": 60,
+ "giunti": [
+  "testa",
+  "collo",
+  "bacino",
+  "mano_a",
+  "mano_b",
+  "piede_a",
+  "piede_b"
+ ],
+ "direzioni": [
+  "giu",
+  "su",
+  "destra"
+ ],
+ "specchiate": {
+  "sinistra": "destra"
+ },
+ "animazioni": {
+  "camminata": {
+   "ciclo": true,
+   "fotogrammi": [
+    {
+     "vblank": 6,
+     "giunti": {
+      "destra": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        6,
+        23
+       ],
+       "mano_b": [
+        10,
+        23
+       ],
+       "piede_a": [
+        11,
+        31
+       ],
+       "piede_b": [
+        5,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        30
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        30
+       ]
+      }
+     }
+    },
+    {
+     "vblank": 6,
+     "giunti": {
+      "destra": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        23
+       ],
+       "mano_a": [
+        7,
+        22
+       ],
+       "mano_b": [
+        9,
+        22
+       ],
+       "piede_a": [
+        9,
+        31
+       ],
+       "piede_b": [
+        7,
+        30
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        23
+       ],
+       "mano_a": [
+        3,
+        23
+       ],
+       "mano_b": [
+        12,
+        21
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        29
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        23
+       ],
+       "mano_a": [
+        3,
+        23
+       ],
+       "mano_b": [
+        12,
+        21
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        29
+       ]
+      }
+     }
+    },
+    {
+     "vblank": 6,
+     "giunti": {
+      "destra": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        23
+       ],
+       "mano_a": [
+        9,
+        22
+       ],
+       "mano_b": [
+        7,
+        22
+       ],
+       "piede_a": [
+        7,
+        31
+       ],
+       "piede_b": [
+        9,
+        30
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        23
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        21
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        30
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        23
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        21
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        30
+       ]
+      }
+     }
+    },
+    {
+     "vblank": 6,
+     "giunti": {
+      "destra": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        10,
+        23
+       ],
+       "mano_b": [
+        6,
+        23
+       ],
+       "piede_a": [
+        5,
+        31
+       ],
+       "piede_b": [
+        11,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        30
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        30
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      }
+     }
+    },
+    {
+     "vblank": 6,
+     "giunti": {
+      "destra": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        23
+       ],
+       "mano_a": [
+        9,
+        22
+       ],
+       "mano_b": [
+        7,
+        22
+       ],
+       "piede_a": [
+        7,
+        30
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        23
+       ],
+       "mano_a": [
+        3,
+        21
+       ],
+       "mano_b": [
+        12,
+        23
+       ],
+       "piede_a": [
+        6,
+        29
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        23
+       ],
+       "mano_a": [
+        3,
+        21
+       ],
+       "mano_b": [
+        12,
+        23
+       ],
+       "piede_a": [
+        6,
+        29
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      }
+     }
+    },
+    {
+     "vblank": 6,
+     "giunti": {
+      "destra": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        23
+       ],
+       "mano_a": [
+        7,
+        22
+       ],
+       "mano_b": [
+        9,
+        22
+       ],
+       "piede_a": [
+        9,
+        30
+       ],
+       "piede_b": [
+        7,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        23
+       ],
+       "mano_a": [
+        3,
+        21
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        30
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        23
+       ],
+       "mano_a": [
+        3,
+        21
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        30
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "riposo": {
+   "ciclo": true,
+   "fotogrammi": [
+    {
+     "vblank": 30,
+     "giunti": {
+      "destra": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        8,
+        23
+       ],
+       "mano_b": [
+        8,
+        23
+       ],
+       "piede_a": [
+        8,
+        31
+       ],
+       "piede_b": [
+        8,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      }
+     }
+    },
+    {
+     "vblank": 30,
+     "giunti": {
+      "destra": {
+       "testa": [
+        8,
+        14
+       ],
+       "collo": [
+        8,
+        18
+       ],
+       "bacino": [
+        8,
+        25
+       ],
+       "mano_a": [
+        8,
+        24
+       ],
+       "mano_b": [
+        8,
+        24
+       ],
+       "piede_a": [
+        8,
+        31
+       ],
+       "piede_b": [
+        8,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        14
+       ],
+       "collo": [
+        8,
+        18
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        14
+       ],
+       "collo": [
+        8,
+        18
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "attacco": {
+   "ciclo": false,
+   "fotogrammi": [
+    {
+     "posa": "pronto",
+     "vblank": 12,
+     "giunti": {
+      "destra": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        9,
+        19
+       ],
+       "mano_b": [
+        8,
+        23
+       ],
+       "piede_a": [
+        11,
+        31
+       ],
+       "piede_b": [
+        5,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        20
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        20
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      }
+     },
+     "arma": {
+      "mano": "mano_a",
+      "punta": [
+       0,
+       -8
+      ]
+     }
+    },
+    {
+     "posa": "anticipa",
+     "vblank": 10,
+     "giunti": {
+      "destra": {
+       "testa": [
+        6,
+        13
+       ],
+       "collo": [
+        6,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        19
+       ],
+       "mano_b": [
+        6,
+        23
+       ],
+       "piede_a": [
+        9,
+        31
+       ],
+       "piede_b": [
+        7,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        17
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        17
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      }
+     },
+     "arma": {
+      "mano": "mano_a",
+      "punta": [
+       -10,
+       -2
+      ]
+     }
+    },
+    {
+     "posa": "colpo",
+     "vblank": 3,
+     "giunti": {
+      "destra": {
+       "testa": [
+        10,
+        13
+       ],
+       "collo": [
+        10,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        15,
+        19
+       ],
+       "mano_b": [
+        10,
+        23
+       ],
+       "piede_a": [
+        12,
+        31
+       ],
+       "piede_b": [
+        4,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        24
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        24
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      }
+     },
+     "arma": {
+      "mano": "mano_a",
+      "punta": [
+       9,
+       0
+      ]
+     },
+     "scia": true
+    },
+    {
+     "posa": "tenuta",
+     "vblank": 12,
+     "giunti": {
+      "destra": {
+       "testa": [
+        10,
+        13
+       ],
+       "collo": [
+        10,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        15,
+        19
+       ],
+       "mano_b": [
+        10,
+        23
+       ],
+       "piede_a": [
+        12,
+        31
+       ],
+       "piede_b": [
+        4,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        24
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        24
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      }
+     },
+     "arma": {
+      "mano": "mano_a",
+      "punta": [
+       9,
+       0
+      ]
+     }
+    },
+    {
+     "posa": "rientro",
+     "vblank": 8,
+     "giunti": {
+      "destra": {
+       "testa": [
+        9,
+        13
+       ],
+       "collo": [
+        9,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        12,
+        19
+       ],
+       "mano_b": [
+        9,
+        23
+       ],
+       "piede_a": [
+        10,
+        31
+       ],
+       "piede_b": [
+        6,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        20
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        20
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      }
+     },
+     "arma": {
+      "mano": "mano_a",
+      "punta": [
+       6,
+       0
+      ]
+     }
+    }
+   ]
+  },
+  "colpito": {
+   "ciclo": false,
+   "provvisorio": "durate non fissate dalla guida: da provare in F1",
+   "fotogrammi": [
+    {
+     "posa": "lampo",
+     "vblank": 4,
+     "lampo": true,
+     "giunti": {
+      "destra": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        8,
+        23
+       ],
+       "mano_b": [
+        8,
+        23
+       ],
+       "piede_a": [
+        8,
+        31
+       ],
+       "piede_b": [
+        8,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        13
+       ],
+       "collo": [
+        8,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      }
+     }
+    },
+    {
+     "posa": "arretramento",
+     "vblank": 8,
+     "giunti": {
+      "destra": {
+       "testa": [
+        6,
+        13
+       ],
+       "collo": [
+        6,
+        17
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        6,
+        23
+       ],
+       "mano_b": [
+        6,
+        23
+       ],
+       "piede_a": [
+        9,
+        31
+       ],
+       "piede_b": [
+        7,
+        31
+       ]
+      },
+      "giu": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      },
+      "su": {
+       "testa": [
+        8,
+        12
+       ],
+       "collo": [
+        8,
+        16
+       ],
+       "bacino": [
+        8,
+        24
+       ],
+       "mano_a": [
+        3,
+        22
+       ],
+       "mano_b": [
+        12,
+        22
+       ],
+       "piede_a": [
+        6,
+        31
+       ],
+       "piede_b": [
+        9,
+        31
+       ]
+      }
+     }
+    }
+   ]
+  }
+ }
+}

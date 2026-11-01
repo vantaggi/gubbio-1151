@@ -1,0 +1,225 @@
+{
+ "nota": "Scelta 9. Tile 8x8 a 4bpp, una cifra esadecimale per pixel = indice nella sottopalette 'colori' (0 trasparente). Un riquadro di qualunque misura (almeno 3x3 tile) si compone con 'regole' (stile.componi_cornice): angolo con flip hardware, lati a tessere alternate, centro pieno. Il cartiglio e' alto 2 tile: la riga di sotto e' quella di sopra con vflip, l'estremita' destra e' la sinistra con hflip.",
+ "colori": [
+  null,
+  [
+   "legno e cuoio",
+   0
+  ],
+  [
+   "neutri",
+   4
+  ],
+  [
+   "vermiglio comunale",
+   2
+  ],
+  [
+   "oro e bronzo",
+   2
+  ],
+  [
+   "cielo e acqua",
+   2
+  ],
+  [
+   "verde dei monti",
+   3
+  ],
+  [
+   "cielo e acqua",
+   3
+  ],
+  [
+   "vermiglio comunale",
+   1
+  ],
+  [
+   "oro e bronzo",
+   3
+  ],
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "ruoli": {
+  "piombo": 1,
+  "fondo": 2,
+  "riflesso": 2,
+  "testo": 1,
+  "testo_cartiglio": 2,
+  "tessere": [
+   3,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "rosetta": 9
+ },
+ "tile": {
+  "angolo": [
+   "11111111",
+   "11999911",
+   "19999991",
+   "19933991",
+   "19933991",
+   "19999991",
+   "11999911",
+   "11111111"
+  ],
+  "oriz_0": [
+   "11111111",
+   "33333331",
+   "32333331",
+   "33333331",
+   "33333331",
+   "33333331",
+   "33333331",
+   "11111111"
+  ],
+  "oriz_1": [
+   "11111111",
+   "44444441",
+   "42444441",
+   "44444441",
+   "44444441",
+   "44444441",
+   "44444441",
+   "11111111"
+  ],
+  "oriz_2": [
+   "11111111",
+   "55555551",
+   "52555551",
+   "55555551",
+   "55555551",
+   "55555551",
+   "55555551",
+   "11111111"
+  ],
+  "vert_0": [
+   "16666661",
+   "16266661",
+   "16666661",
+   "16666661",
+   "16666661",
+   "16666661",
+   "16666661",
+   "11111111"
+  ],
+  "vert_1": [
+   "17777771",
+   "17277771",
+   "17777771",
+   "17777771",
+   "17777771",
+   "17777771",
+   "17777771",
+   "11111111"
+  ],
+  "vert_2": [
+   "18888881",
+   "18288881",
+   "18888881",
+   "18888881",
+   "18888881",
+   "18888881",
+   "18888881",
+   "11111111"
+  ],
+  "centro": [
+   "22222222",
+   "22222222",
+   "22222222",
+   "22222222",
+   "22222222",
+   "22222222",
+   "22222222",
+   "22222222"
+  ],
+  "cartiglio_sx": [
+   "11111111",
+   "13333333",
+   "13333333",
+   "13333333",
+   "13333333",
+   "13333333",
+   "13333333",
+   "13333333"
+  ],
+  "cartiglio_centro": [
+   "11111111",
+   "33333333",
+   "33333333",
+   "33333333",
+   "33333333",
+   "33333333",
+   "33333333",
+   "33333333"
+  ],
+  "cursore": [
+   "00000000",
+   "11000000",
+   "13100000",
+   "13310000",
+   "13331000",
+   "13310000",
+   "13100000",
+   "11000000"
+  ]
+ },
+ "regole": {
+  "angolo": "angolo",
+  "lato_orizzontale": [
+   "oriz_0",
+   "oriz_1",
+   "oriz_2"
+  ],
+  "lato_verticale": [
+   "vert_0",
+   "vert_1",
+   "vert_2"
+  ],
+  "centro": "centro",
+  "cartiglio": [
+   "cartiglio_sx",
+   "cartiglio_centro"
+  ],
+  "cursore": "cursore"
+ },
+ "disposizione": {
+  "dialogo": {
+   "x": 0,
+   "y": 104,
+   "colonne": 30,
+   "righe": 7,
+   "righe_testo_max": 3,
+   "testo": [
+    8,
+    112
+   ],
+   "ritratto": [
+    10,
+    113
+   ]
+  },
+  "cartiglio_nome": {
+   "x": 8,
+   "y": 96,
+   "righe": 2
+  },
+  "menu": {
+   "x": 168,
+   "y": 8,
+   "colonne": 8,
+   "righe": 6,
+   "passo_voci": 10,
+   "voci_max": 3
+  }
+ }
+}
