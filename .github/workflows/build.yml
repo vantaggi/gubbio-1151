@@ -40,6 +40,15 @@ jobs:
       - name: Test
         run: python3 -m unittest discover -s tests -p "test_*.py" -v
 
+      - name: Impronta della toolchain (per confrontare la build con quella del PC)
+        run: |
+          arm-none-eabi-gcc -v 2>&1 | tail -1 || "$DEVKITARM/bin/arm-none-eabi-gcc" -v 2>&1 | tail -1
+          "$DEVKITARM/bin/arm-none-eabi-ld" -v
+          (dkp-pacman -Q 2> /dev/null || pacman -Q 2> /dev/null) | grep -iE "devkitarm|gba|newlib|binutils|gcc" || true
+          LIB="$DEVKITARM/arm-none-eabi/lib"
+          sha256sum "$("$DEVKITARM/bin/arm-none-eabi-gcc" -print-libgcc-file-name)" "$LIB/libc.a" "$LIB/libstdc++.a" "$LIB/libm.a" "$LIB/gba_crt0.o" "$LIB/libsysbase.a" 2>&1 || true
+          python3 --version
+
       - name: Build (toolchain.lock, compilazione, gate zero-heap, SHA-256)
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -55,4 +64,5 @@ jobs:
           path: |
             gubbio1151.gba
             gubbio1151.gba.sha256
+            gubbio1151.elf
           if-no-files-found: error
