@@ -7,10 +7,11 @@ TARGET          :=  gubbio1151
 BUILD           :=  build
 PYTHON          ?=  python
 # Il font della schermata di prova viene dalla libreria `common` di Butano (zlib).
+# graphics/ e' generata da stile/genera_bmp.py: non si modifica a mano.
 SOURCES         :=  src
 INCLUDES        :=  include butano/common/include
 DATA            :=
-GRAPHICS        :=  butano/common/graphics
+GRAPHICS        :=  graphics butano/common/graphics
 AUDIO           :=
 AUDIOBACKEND    :=  maxmod
 AUDIOTOOL       :=

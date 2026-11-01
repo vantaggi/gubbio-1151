@@ -93,7 +93,7 @@ def cornice():
         "disposizione": {
             "dialogo": {"x": 0, "y": 104, "colonne": 30, "righe": 7, "righe_testo_max": 3,
                         "testo": [8, 112], "ritratto": [10, 113]},
-            "cartiglio_nome": {"x": 8, "y": 96, "righe": 2},
+            "cartiglio_nome": {"x": 8, "y": 96, "colonne": 6, "righe": 2},
             "menu": {"x": 168, "y": 8, "colonne": 8, "righe": 6, "passo_voci": 10, "voci_max": 3},
         },
     }
