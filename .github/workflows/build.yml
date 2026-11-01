@@ -1,0 +1,58 @@
+# Compila la ROM nell'immagine devkitARM bloccata per digest (lo stesso di toolchain.lock),
+# esegue gate e test, e carica la ROM con il suo SHA-256.
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rom:
+    runs-on: ubuntu-24.04
+    container:
+      image: devkitpro/devkitarm@sha256:116afba8df8453961de2936ffab20dd441edf4d682856c1ec8b0e53d7ed0bbf5
+    env:
+      PYTHON: python3
+    steps:
+      - name: Strumenti di base (git per il submodule, python3 per Butano e i test)
+        run: |
+          if ! command -v git > /dev/null || ! command -v python3 > /dev/null; then
+            apt-get update
+            apt-get install -y --no-install-recommends git python3 ca-certificates
+          fi
+          git --version
+          python3 --version
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Il digest dell'immagine e' quello di toolchain.lock
+        run: grep -qx "DOCKER_IMAGE=devkitpro/devkitarm@sha256:116afba8df8453961de2936ffab20dd441edf4d682856c1ec8b0e53d7ed0bbf5" toolchain.lock
+
+      - name: Nessun test si salta da solo
+        run: python3 tools/check_no_skip.py
+
+      - name: Test
+        run: python3 -m unittest discover -s tests -p "test_*.py" -v
+
+      - name: Build (toolchain.lock, compilazione, gate zero-heap, SHA-256)
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/butano"
+          bash build.sh
+          sha256sum gubbio1151.gba | tee gubbio1151.gba.sha256
+          echo "### SHA-256 della ROM" >> "$GITHUB_STEP_SUMMARY"
+          echo '`'"$(cut -d' ' -f1 gubbio1151.gba.sha256)"'`' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gubbio1151-rom
+          path: |
+            gubbio1151.gba
+            gubbio1151.gba.sha256
+          if-no-files-found: error
