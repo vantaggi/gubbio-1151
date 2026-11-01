@@ -1,0 +1,214 @@
+{
+  "_leggimi": "Generato da tools/mondo_dati.py dal censimento F3 (OSM, (c) contributori OpenStreetMap, ODbL) e da mondo/grafo.json. Non modificare a mano.",
+  "rotazione": "alto=ovest, basso=est, destra=nord, sinistra=sud",
+  "varchi": {
+    "PIAZZA_GRANDE": [
+      {
+        "verso": "DUOMO_DUCALE",
+        "bussola": "N",
+        "lato": "destra",
+        "come": "a nord, in salita"
+      },
+      {
+        "verso": "PIAZZA_QUARANTA_MARTIRI",
+        "bussola": "S",
+        "lato": "sinistra",
+        "come": "si sale a nord (al contrario)"
+      },
+      {
+        "verso": "VIA_DEI_CONSOLI",
+        "bussola": "NO",
+        "lato": "alto",
+        "come": "via dei Consoli, in discesa"
+      },
+      {
+        "verso": "VIA_XX_SETTEMBRE",
+        "bussola": "E",
+        "lato": "basso",
+        "come": "via XX Settembre"
+      }
+    ],
+    "VIA_DEI_CONSOLI": [
+      {
+        "verso": "LARGO_BARGELLO",
+        "bussola": "NO",
+        "lato": "alto",
+        "come": "si scende lungo la via"
+      },
+      {
+        "verso": "PIAZZA_GRANDE",
+        "bussola": "SE",
+        "lato": "basso",
+        "come": "via dei Consoli, in discesa (al contrario)"
+      }
+    ],
+    "LARGO_BARGELLO": [
+      {
+        "verso": "SAN_MARTINO",
+        "bussola": "O",
+        "lato": "alto",
+        "come": "si scende, oltre il ponte sul Camignano"
+      },
+      {
+        "verso": "VIA_DEI_CONSOLI",
+        "bussola": "SE",
+        "lato": "basso",
+        "come": "si scende lungo la via (al contrario)"
+      }
+    ],
+    "SAN_MARTINO": [
+      {
+        "verso": "BOTTACCIONE",
+        "bussola": "NE",
+        "lato": "destra",
+        "come": "rientro in citta' da Porta Metauro (al contrario)"
+      },
+      {
+        "verso": "LARGO_BARGELLO",
+        "bussola": "E",
+        "lato": "basso",
+        "come": "si scende, oltre il ponte sul Camignano (al contrario)"
+      },
+      {
+        "verso": "PIAZZA_QUARANTA_MARTIRI",
+        "bussola": "S",
+        "lato": "sinistra",
+        "come": "si scende ancora, verso sud"
+      },
+      {
+        "verso": "TEATRO_ROMANO",
+        "bussola": "SO",
+        "lato": "sinistra",
+        "come": "fuori le mura, piu' in basso"
+      }
+    ],
+    "TEATRO_ROMANO": [
+      {
+        "verso": "SAN_MARTINO",
+        "bussola": "NE",
+        "lato": "destra",
+        "come": "fuori le mura, piu' in basso (al contrario)"
+      }
+    ],
+    "PIAZZA_QUARANTA_MARTIRI": [
+      {
+        "verso": "PIAZZA_GRANDE",
+        "bussola": "N",
+        "lato": "destra",
+        "come": "si sale a nord"
+      },
+      {
+        "verso": "SAN_MARTINO",
+        "bussola": "N",
+        "lato": "destra",
+        "come": "si scende ancora, verso sud (al contrario)"
+      },
+      {
+        "verso": "SAN_PIETRO",
+        "bussola": "E",
+        "lato": "basso",
+        "come": "verso est"
+      }
+    ],
+    "SAN_PIETRO": [
+      {
+        "verso": "PIAZZA_QUARANTA_MARTIRI",
+        "bussola": "O",
+        "lato": "alto",
+        "come": "verso est (al contrario)"
+      }
+    ],
+    "VIA_XX_SETTEMBRE": [
+      {
+        "verso": "PIAZZA_GRANDE",
+        "bussola": "O",
+        "lato": "alto",
+        "come": "via XX Settembre (al contrario)"
+      },
+      {
+        "verso": "SANT_AGOSTINO",
+        "bussola": "SE",
+        "lato": "sinistra",
+        "come": "in fondo alla via, verso Porta Romana"
+      }
+    ],
+    "SANT_AGOSTINO": [
+      {
+        "verso": "SANT_ANDREA",
+        "bussola": "E",
+        "lato": "basso",
+        "come": "verso est"
+      },
+      {
+        "verso": "VIA_XX_SETTEMBRE",
+        "bussola": "NO",
+        "lato": "destra",
+        "come": "in fondo alla via, verso Porta Romana (al contrario)"
+      }
+    ],
+    "SANT_ANDREA": [
+      {
+        "verso": "SANT_AGOSTINO",
+        "bussola": "O",
+        "lato": "alto",
+        "come": "verso est (al contrario)"
+      }
+    ],
+    "DUOMO_DUCALE": [
+      {
+        "verso": "MONTE_INGINO",
+        "bussola": "E",
+        "lato": "basso",
+        "come": "in salita, verso la vetta"
+      },
+      {
+        "verso": "PIAZZA_GRANDE",
+        "bussola": "S",
+        "lato": "sinistra",
+        "come": "a nord, in salita (al contrario)"
+      }
+    ],
+    "MONTE_INGINO": [
+      {
+        "verso": "BASILICA",
+        "bussola": "NE",
+        "lato": "destra",
+        "come": "2 km di sterrato: la salita lunga"
+      },
+      {
+        "verso": "DUOMO_DUCALE",
+        "bussola": "O",
+        "lato": "alto",
+        "come": "in salita, verso la vetta (al contrario)"
+      }
+    ],
+    "BASILICA": [
+      {
+        "verso": "BOTTACCIONE",
+        "bussola": "NO",
+        "lato": "destra",
+        "come": "si scende dietro il monte"
+      },
+      {
+        "verso": "MONTE_INGINO",
+        "bussola": "SO",
+        "lato": "sinistra",
+        "come": "2 km di sterrato: la salita lunga (al contrario)"
+      }
+    ],
+    "BOTTACCIONE": [
+      {
+        "verso": "BASILICA",
+        "bussola": "SE",
+        "lato": "sinistra",
+        "come": "si scende dietro il monte (al contrario)"
+      },
+      {
+        "verso": "SAN_MARTINO",
+        "bussola": "SO",
+        "lato": "sinistra",
+        "come": "rientro in citta' da Porta Metauro"
+      }
+    ]
+  }
+}

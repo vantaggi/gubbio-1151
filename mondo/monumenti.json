@@ -1,0 +1,703 @@
+{
+  "_leggimi": "Generato da tools/mondo_dati.py dal censimento F3 (OSM, (c) contributori OpenStreetMap, ODbL) e da mondo/grafo.json. Non modificare a mano.",
+  "metri_per_tile": 1.5,
+  "rotazione": "alto=ovest, basso=est, destra=nord, sinistra=sud",
+  "monumenti": {
+    "acquedotto": {
+      "nome": "Acquedotto medievale del Bottaccione",
+      "area": "BOTTACCIONE",
+      "ruolo": "canonico",
+      "tipo": "tracciato",
+      "lunghezza_m": 1267.6,
+      "dall_ancora_m": [
+        -41.4,
+        93.4
+      ],
+      "dall_ancora_tile": [
+        -28,
+        62
+      ]
+    },
+    "arco_san_marziale": {
+      "nome": "Arco di San Marziale / Porta Vehia",
+      "area": "SANT_ANDREA",
+      "ruolo": "sfondo",
+      "tipo": "senza_misura"
+    },
+    "bargello": {
+      "nome": "Palazzo del Bargello",
+      "area": "LARGO_BARGELLO",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        15.7,
+        9.6
+      ],
+      "misure_tile": [
+        10,
+        6
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 104,
+      "asse_lungo_schermo": "verticale",
+      "facciata_bussola": 104,
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
+      "dall_ancora_m": [
+        0.0,
+        0.0
+      ],
+      "dall_ancora_tile": [
+        0,
+        0
+      ]
+    },
+    "basilica": {
+      "nome": "Basilica di Sant'Ubaldo",
+      "area": "BASILICA",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        50.0,
+        22.0
+      ],
+      "misure_tile": [
+        33,
+        15
+      ],
+      "fonte_misure": "eccezione",
+      "asse_lungo_bussola": 91,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        0.0,
+        0.0
+      ],
+      "dall_ancora_tile": [
+        0,
+        0
+      ]
+    },
+    "canonici": {
+      "nome": "Palazzo dei Canonici (Museo diocesano) e giardini pensili",
+      "area": "DUOMO_DUCALE",
+      "ruolo": "sfondo",
+      "tipo": "senza_misura",
+      "dall_ancora_m": [
+        -80.3,
+        15.4
+      ],
+      "dall_ancora_tile": [
+        -54,
+        10
+      ]
+    },
+    "capitano_popolo": {
+      "nome": "Palazzo del Capitano del Popolo",
+      "area": "SAN_MARTINO",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        17.7,
+        13.0
+      ],
+      "misure_tile": [
+        12,
+        9
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 51,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        202.4,
+        98.3
+      ],
+      "dall_ancora_tile": [
+        135,
+        66
+      ]
+    },
+    "case_consoli": {
+      "nome": "Case medievali con porta del morto",
+      "area": "VIA_DEI_CONSOLI",
+      "ruolo": "generico",
+      "tipo": "tracciato",
+      "lunghezza_m": 277.2,
+      "dall_ancora_m": [
+        0.0,
+        0.0
+      ],
+      "dall_ancora_tile": [
+        0,
+        0
+      ]
+    },
+    "case_xx_settembre": {
+      "nome": "Tessuto medievale di via XX Settembre",
+      "area": "VIA_XX_SETTEMBRE",
+      "ruolo": "generico",
+      "tipo": "senza_misura"
+    },
+    "consoli": {
+      "nome": "Palazzo dei Consoli",
+      "area": "PIAZZA_GRANDE",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        39.6,
+        34.5
+      ],
+      "misure_tile": [
+        26,
+        23
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 33,
+      "asse_lungo_schermo": "orizzontale",
+      "facciata_bussola": 123,
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
+      "dall_ancora_m": [
+        23.1,
+        -57.2
+      ],
+      "dall_ancora_tile": [
+        15,
+        -38
+      ]
+    },
+    "ducale": {
+      "nome": "Palazzo Ducale",
+      "area": "DUOMO_DUCALE",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        56.3,
+        47.0
+      ],
+      "misure_tile": [
+        38,
+        31
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 48,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        36.2,
+        -44.7
+      ],
+      "dall_ancora_tile": [
+        24,
+        -30
+      ]
+    },
+    "duomo": {
+      "nome": "Cattedrale dei Santi Mariano e Giacomo",
+      "area": "DUOMO_DUCALE",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        63.1,
+        32.7
+      ],
+      "misure_tile": [
+        42,
+        22
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 125,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        0.0,
+        0.0
+      ],
+      "dall_ancora_tile": [
+        0,
+        0
+      ]
+    },
+    "fontana_matti": {
+      "nome": "Fontana dei Matti (del Bargello)",
+      "area": "LARGO_BARGELLO",
+      "ruolo": "canonico",
+      "tipo": "senza_misura",
+      "dall_ancora_m": [
+        -1.9,
+        10.9
+      ],
+      "dall_ancora_tile": [
+        -1,
+        7
+      ]
+    },
+    "gola_bottaccione": {
+      "nome": "Gola del Bottaccione (limite K-Pg)",
+      "area": "BOTTACCIONE",
+      "ruolo": "canonico",
+      "tipo": "tracciato",
+      "lunghezza_m": 1351.0,
+      "dall_ancora_m": [
+        0.0,
+        0.0
+      ],
+      "dall_ancora_tile": [
+        0,
+        0
+      ]
+    },
+    "loggia_tiratori": {
+      "nome": "Loggia dei Tiratori della Lana",
+      "area": "PIAZZA_QUARANTA_MARTIRI",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        65.1,
+        18.5
+      ],
+      "misure_tile": [
+        43,
+        12
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 147,
+      "asse_lungo_schermo": "orizzontale",
+      "facciata_bussola": 327,
+      "facciata_lato_schermo": "destra",
+      "facciata_vista": "fianco destro",
+      "dall_ancora_m": [
+        60.9,
+        67.7
+      ],
+      "dall_ancora_tile": [
+        41,
+        45
+      ]
+    },
+    "mura_rocca": {
+      "nome": "Mura sul crinale e ruderi della Rocca",
+      "area": "MONTE_INGINO",
+      "ruolo": "sfondo",
+      "tipo": "senza_misura",
+      "dall_ancora_m": [
+        489.1,
+        172.4
+      ],
+      "dall_ancora_tile": [
+        326,
+        115
+      ]
+    },
+    "piazza_grande": {
+      "nome": "Piazza Grande pensile sugli Arconi",
+      "area": "PIAZZA_GRANDE",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        75.9,
+        40.0
+      ],
+      "misure_tile": [
+        51,
+        27
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 120,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        0.0,
+        0.0
+      ],
+      "dall_ancora_tile": [
+        0,
+        0
+      ]
+    },
+    "ponte_san_martino": {
+      "nome": "Ponte di San Martino (sul Camignano)",
+      "area": "SAN_MARTINO",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        13.7,
+        0.2
+      ],
+      "misure_tile": [
+        9,
+        1
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 86,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        21.2,
+        117.5
+      ],
+      "dall_ancora_tile": [
+        14,
+        78
+      ]
+    },
+    "porta_metauro": {
+      "nome": "Porta Metauro (di Santa Croce)",
+      "area": "SAN_MARTINO",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        11.5,
+        5.0
+      ],
+      "misure_tile": [
+        8,
+        3
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 114,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        222.1,
+        122.0
+      ],
+      "dall_ancora_tile": [
+        148,
+        81
+      ]
+    },
+    "porta_romana": {
+      "nome": "Torre di Porta Romana",
+      "area": "SANT_AGOSTINO",
+      "ruolo": "sfondo",
+      "tipo": "edificio",
+      "misure_m": [
+        8.0,
+        4.8
+      ],
+      "misure_tile": [
+        5,
+        3
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 37,
+      "asse_lungo_schermo": "orizzontale",
+      "dall_ancora_m": [
+        26.9,
+        -41.9
+      ],
+      "dall_ancora_tile": [
+        18,
+        -28
+      ]
+    },
+    "porta_san_giuliano": {
+      "nome": "Porta San Giuliano / Porta Tessenaca",
+      "area": "LARGO_BARGELLO",
+      "ruolo": "sfondo",
+      "tipo": "senza_misura"
+    },
+    "porta_san_pietro": {
+      "nome": "Porta San Pietro e Porta Vittoria (porta doppia)",
+      "area": "SAN_PIETRO",
+      "ruolo": "sfondo",
+      "tipo": "senza_misura",
+      "dall_ancora_m": [
+        -24.9,
+        -90.6
+      ],
+      "dall_ancora_tile": [
+        -17,
+        -60
+      ]
+    },
+    "porta_sant_ubaldo": {
+      "nome": "Porta di Sant'Ubaldo (dell'Angelo)",
+      "area": "MONTE_INGINO",
+      "ruolo": "canonico",
+      "tipo": "senza_misura"
+    },
+    "pretorio": {
+      "nome": "Palazzo Pretorio (del Podesta')",
+      "area": "PIAZZA_GRANDE",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        40.5,
+        30.4
+      ],
+      "misure_tile": [
+        27,
+        20
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 30,
+      "asse_lungo_schermo": "orizzontale",
+      "facciata_bussola": 300,
+      "facciata_lato_schermo": "alto",
+      "facciata_vista": "retro (solo tetto)",
+      "dall_ancora_m": [
+        -20.0,
+        27.0
+      ],
+      "dall_ancora_tile": [
+        -13,
+        18
+      ]
+    },
+    "ranghiasci": {
+      "nome": "Palazzo Ranghiasci-Brancaleoni",
+      "area": "PIAZZA_GRANDE",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        90.3,
+        15.7
+      ],
+      "misure_tile": [
+        60,
+        10
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 122,
+      "asse_lungo_schermo": "verticale",
+      "facciata_bussola": 212,
+      "facciata_lato_schermo": "sinistra",
+      "facciata_vista": "fianco sinistro",
+      "dall_ancora_m": [
+        25.5,
+        2.7
+      ],
+      "dall_ancora_tile": [
+        17,
+        2
+      ]
+    },
+    "san_domenico": {
+      "nome": "Chiesa di San Domenico (gia' San Martino)",
+      "area": "SAN_MARTINO",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        75.6,
+        40.0
+      ],
+      "misure_tile": [
+        50,
+        27
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 90,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        0.0,
+        0.0
+      ],
+      "dall_ancora_tile": [
+        0,
+        0
+      ]
+    },
+    "san_francesco": {
+      "nome": "Chiesa di San Francesco",
+      "area": "PIAZZA_QUARANTA_MARTIRI",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        56.7,
+        26.6
+      ],
+      "misure_tile": [
+        38,
+        18
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 111,
+      "asse_lungo_schermo": "verticale",
+      "facciata_bussola": 291,
+      "facciata_lato_schermo": "alto",
+      "facciata_vista": "retro (solo tetto)",
+      "dall_ancora_m": [
+        0.0,
+        0.0
+      ],
+      "dall_ancora_tile": [
+        0,
+        0
+      ]
+    },
+    "san_marziale": {
+      "nome": "San Marziale (in origine Sant'Andrea)",
+      "area": "SANT_ANDREA",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        33.3,
+        17.1
+      ],
+      "misure_tile": [
+        22,
+        11
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 119,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        0.0,
+        0.0
+      ],
+      "dall_ancora_tile": [
+        0,
+        0
+      ]
+    },
+    "san_pietro": {
+      "nome": "Chiesa e abbazia di San Pietro",
+      "area": "SAN_PIETRO",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        45.9,
+        23.2
+      ],
+      "misure_tile": [
+        31,
+        15
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 60,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        0.0,
+        0.0
+      ],
+      "dall_ancora_tile": [
+        0,
+        0
+      ]
+    },
+    "sant_agostino": {
+      "nome": "Chiesa di Sant'Agostino",
+      "area": "SANT_AGOSTINO",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        43.3,
+        19.1
+      ],
+      "misure_tile": [
+        29,
+        13
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 132,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        0.0,
+        0.0
+      ],
+      "dall_ancora_tile": [
+        0,
+        0
+      ]
+    },
+    "sant_ambrogio": {
+      "nome": "Eremo di Sant'Ambrogio",
+      "area": "BOTTACCIONE",
+      "ruolo": "sfondo",
+      "tipo": "edificio",
+      "misure_m": [
+        45.2,
+        25.4
+      ],
+      "misure_tile": [
+        30,
+        17
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 40,
+      "asse_lungo_schermo": "orizzontale",
+      "dall_ancora_m": [
+        -317.8,
+        -311.9
+      ],
+      "dall_ancora_tile": [
+        -212,
+        -208
+      ]
+    },
+    "santa_maria_laici": {
+      "nome": "Santa Maria dei Laici (dei Bianchi)",
+      "area": "PIAZZA_QUARANTA_MARTIRI",
+      "ruolo": "sfondo",
+      "tipo": "edificio",
+      "misure_m": [
+        24.4,
+        19.3
+      ],
+      "misure_tile": [
+        16,
+        13
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 148,
+      "asse_lungo_schermo": "orizzontale",
+      "facciata_bussola": 238,
+      "facciata_lato_schermo": "alto",
+      "facciata_vista": "retro (solo tetto)",
+      "dall_ancora_m": [
+        95.7,
+        42.3
+      ],
+      "dall_ancora_tile": [
+        64,
+        28
+      ]
+    },
+    "santa_maria_nuova": {
+      "nome": "Santa Maria Nuova",
+      "area": "SANT_ANDREA",
+      "ruolo": "sfondo",
+      "tipo": "edificio",
+      "misure_m": [
+        27.5,
+        14.6
+      ],
+      "misure_tile": [
+        18,
+        10
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 132,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        -66.4,
+        -23.2
+      ],
+      "dall_ancora_tile": [
+        -44,
+        -15
+      ]
+    },
+    "teatro_romano": {
+      "nome": "Teatro romano",
+      "area": "TEATRO_ROMANO",
+      "ruolo": "canonico",
+      "tipo": "edificio",
+      "misure_m": [
+        69.9,
+        38.7
+      ],
+      "misure_tile": [
+        47,
+        26
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 127,
+      "asse_lungo_schermo": "verticale",
+      "dall_ancora_m": [
+        0.0,
+        0.0
+      ],
+      "dall_ancora_tile": [
+        0,
+        0
+      ]
+    }
+  }
+}
