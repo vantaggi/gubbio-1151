@@ -1,0 +1,260 @@
+{
+ "_nota": "Censimento della simbologia di Gubbio, 1 novembre 2026. Ogni fatto ha la sua fonte in 'fonti' (chiave = id). 'stato': confermato (fonte esplicita), dedotto (ragionamento mio, da verificare), da_confermare (chiedere a Cioti), scartato (GDD senza fonte o in contrasto con le fonti). Le immagini di riferimento non entrano nel repo: 'commons' serve solo a cerca_licenze.py sul PC.",
+ "fonti": {
+  "araldicacivica": "https://www.araldicacivica.it/comune/gubbio/",
+  "heraldrywiki": "https://heraldry-wiki.com/wiki/Gubbio",
+  "comuni_italiani": "https://www.comuni-italiani.it/054/024/stemma.html",
+  "comune_torneo_2026": "https://comune.gubbio.pg.it/en/news/torneo-dei-quartieri-53-edizione",
+  "maggio_palio_2026": "https://www.maggioeugubino.it/2026/08/torneo-dei-quartieri-2026-presentazione-palio/",
+  "cronaca_torneo_2026": "https://www.cronacaeugubina.it/2026/08/15/torneo-dei-quartieri-2026-vince-san-pietro-con-marcello-cerbella-miglior-corteo-storico-san-giuliano/",
+  "maggio_torneo": "https://www.maggioeugubino.it/tornei-dei-quartieri/",
+  "umbriatourism_torneo": "https://www.umbriatourism.it/en/w/torneo-dei-quartieri-event",
+  "wiki_palio_balestra": "https://it.wikipedia.org/wiki/Palio_della_Balestra",
+  "wiki_ceri": "https://it.wikipedia.org/wiki/Festa_dei_Ceri",
+  "ceri_it": "https://www.ceri.it/i-ceri/",
+  "ceri_it_programma": "https://www.ceri.it/programma-della-corsa/",
+  "wikivoyage": "https://it.wikivoyage.org/wiki/Gubbio",
+  "wiki_tavole": "https://it.wikipedia.org/wiki/Tavole_eugubine",
+  "wiki_iguvine_en": "https://en.wikipedia.org/wiki/Iguvine_Tablets",
+  "eugubini_balestrieri": "http://www.eugubininelmondo.com/Balestrieri.html",
+  "cronaca_cece_2018": "https://www.cronacaeugubina.it/2018/02/01/di-rosso-alla-corona-doro-alla-societa-operaia-fabrizio-cece-ha-spiegato-la-storia-dello-stemma-del-quartiere-di-san-martino/",
+  "umbriadomani_2017": "https://www.umbriadomani.it/umbria-in-pillole/gubbio-agli-sbandieratori-lo-stemma-araldico-della-citta-174448/",
+  "treccani_eam": "https://www.treccani.it/enciclopedia/gubbio_(Enciclopedia-dell'-Arte-Medievale)/"
+ },
+ "stemma_comune": {
+  "blasonatura": "Di rosso al monte d'argento a cinque cime caricato del lambello a sei pendenti con cinque gigli d'oro in campo azzurro",
+  "fonti": [
+   "araldicacivica",
+   "heraldrywiki",
+   "comuni_italiani",
+   "umbriadomani_2017"
+  ],
+  "concessione": {
+   "testo": "Regio Decreto, 20 settembre 1934",
+   "fonti": [
+    "araldicacivica",
+    "heraldrywiki"
+   ]
+  },
+  "stato": "confermato",
+  "nel_gioco": "Solo campo rosso + monte d'argento a cinque cime. Il lambello coi gigli d'oro (segno angioino-guelfo) e' tolto perche' nel 1151 non poteva esistere.",
+  "lambello_anacronistico": {
+   "stato": "dedotto",
+   "perche": "Il lambello coi gigli e' la brisura angioina: gli Angio' arrivano in Italia nel 1266. Le fonti lette non datano l'aggiunta allo stemma di Gubbio."
+  },
+  "commons": [
+   "Category:Coats of arms of Gubbio"
+  ],
+  "cerca": "stemma",
+  "stemma_piu_antico": {
+   "testo": "Sul portale del Palazzo dei Consoli: sfondo rosso e un monte bianco; i gigli indicano l'adesione al partito angioino (guelfo)",
+   "fonti": [
+    "cronaca_cece_2018"
+   ]
+  }
+ },
+ "gonfalone": {
+  "testo": "Drappo di rosso con lo stemma comunale",
+  "fonti": [
+   "araldicacivica"
+  ],
+  "stato": "confermato",
+  "nota": "Blasonatura completa troncata nella pagina: ornamenti e iscrizione non trovati."
+ },
+ "bandiera_comune": {
+  "testo": "Drappo di bianco caricato al centro dallo stemma comunale",
+  "fonti": [
+   "araldicacivica"
+  ],
+  "stato": "confermato",
+  "nota": "Nessuna fonte parla di 'colori civici' espliciti; il rosso viene da campo dello stemma e gonfalone."
+ },
+ "quartieri": [
+  {
+   "nome": "San Martino",
+   "sigla": "SM",
+   "colore": "blu",
+   "palette": [
+    "cielo e acqua",
+    2
+   ],
+   "fonti": [
+    "comune_torneo_2026",
+    "maggio_palio_2026",
+    "cronaca_torneo_2026"
+   ],
+   "figura_stato": "confermato da fonte (Cece 2018) e da Cioti",
+   "figura": "corona",
+   "figura_colore": [
+    "oro e bronzo",
+    3
+   ],
+   "stemma_storico": {
+    "blasonatura": "Di rosso alla corona d'oro (corona reale)",
+    "fonti": [
+     "cronaca_cece_2018"
+    ],
+    "datazione": "documentato dal XVI secolo (foglio volante di Gabriele Gabrielli, circa 1580); quartiere citato dal 1279"
+   }
+  },
+  {
+   "nome": "Sant'Andrea",
+   "sigla": "SA",
+   "colore": "rosso",
+   "palette": [
+    "vermiglio comunale",
+    2
+   ],
+   "fonti": [
+    "comune_torneo_2026",
+    "maggio_palio_2026",
+    "cronaca_torneo_2026"
+   ],
+   "figura_stato": "confermato dall'immagine di Cioti",
+   "figura": "palme e bastoni in croce",
+   "figura_colore": [
+    "neutri",
+    4
+   ],
+   "stemma_storico": {
+    "descrizione": "Campo rosso; tre palme (o piume) d'argento a ventaglio, attraversate da due bastoni d'argento in croce di Sant'Andrea",
+    "fonti": [
+     "immagine mandata da Cioti il 1 nov 2026 (stemma stampato con la scritta 'S. Andrea', origine non indicata; non entra nel repo)"
+    ]
+   }
+  },
+  {
+   "nome": "San Giuliano",
+   "sigla": "SG",
+   "colore": "ocra",
+   "palette": [
+    "oro e bronzo",
+    1
+   ],
+   "fonti": [
+    "comune_torneo_2026",
+    "maggio_palio_2026",
+    "cronaca_torneo_2026"
+   ],
+   "figura_stato": "confermato da Cioti (eugubino), 1 nov 2026; nessuna fonte scritta trovata",
+   "figura": "falcone",
+   "figura_colore": [
+    "neutri",
+    4
+   ]
+  },
+  {
+   "nome": "San Pietro",
+   "sigla": "SP",
+   "colore": "verde",
+   "palette": [
+    "verde dei monti",
+    2
+   ],
+   "fonti": [
+    "comune_torneo_2026",
+    "maggio_palio_2026",
+    "cronaca_torneo_2026"
+   ],
+   "figura_stato": "confermato da Cioti (eugubino), 1 nov 2026; nessuna fonte scritta trovata",
+   "figura": "rosa",
+   "figura_colore": [
+    "neutri",
+    4
+   ]
+  }
+ ],
+ "quartieri_nota": "Citazione: 'I 4 costumi sono stati ideati rispettando i colori dei quartieri (blu san Martino, rosso sant'Andrea, ocra san Giuliano e verde san Pietro)'. Le fonti non dicono se gli stessi colori valgano per bandiere e drappi. Nessuna fonte letta descrive le figure degli stemmi. Figure confermate da Cioti: corona, palme incrociate, falcone, rosa. Cioti conferma che anche le bandiere usano questi colori.",
+ "compagnie_1461": {
+  "testo": "Corona, santa Croce, Sole, Fonte de Fosso, santo Pietro",
+  "fonti": [
+   "wiki_palio_balestra"
+  ],
+  "nota": "Compagnie citate dalla cronaca di Ser Silvestri Angelelli Manni (1461); nomi storici, non l'elenco dei quartieri di oggi. La 'Corona' e' coerente con la figura che il GDD 9 da' a San Martino, ma il legame non e' provato."
+ },
+ "ceri": [
+  {
+   "cero": "Sant'Ubaldo",
+   "colore": "giallo",
+   "corporazione": "muratori e scalpellini",
+   "statua": "in veste episcopale, benedicente"
+  },
+  {
+   "cero": "San Giorgio",
+   "colore": "azzurro",
+   "corporazione": "merciai, commercianti e artigiani",
+   "statua": "a cavallo con lancia, scudo, armatura e mantello azzurro"
+  },
+  {
+   "cero": "Sant'Antonio",
+   "colore": "nero",
+   "corporazione": "contadini (asinari nell'incipit di Wikipedia)",
+   "statua": "saio, fuoco in mano"
+  }
+ ],
+ "ceri_comune": {
+  "divisa": "pantaloni bianchi, fascia rossa (fusciacca) in vita, fazzoletto rosso sulle spalle",
+  "forma": "due prismi ottagonali sovrapposti a clessidra, tavolette di abete su anima di olmo, barella a H, quattro manicchie",
+  "misure": "circa 4,9-5,0 m con statua, 263-287 kg",
+  "fonti": [
+   "wiki_ceri",
+   "ceri_it",
+   "wikivoyage"
+  ],
+  "origine": "festa legata alla morte di Ubaldo (16 maggio 1160): nel 1151 i Ceri non esistono ancora",
+  "fonte_origine": "ceri_it_programma",
+  "commons": [
+   "Category:Festa dei Ceri"
+  ],
+  "cerca": "Ceri"
+ },
+ "regione_umbria": {
+  "testo": "Dal 1973 i tre Ceri stilizzati sono nel gonfalone e nella bandiera della Regione Umbria",
+  "fonti": [
+   "wiki_ceri"
+  ],
+  "nel_gioco": "Non usare: e' l'emblema di un ente."
+ },
+ "tavole_eugubine": {
+  "testo": "Sette tavole di bronzo, 12 facce scritte, lingua umbra in alfabeto umbro (derivato dall'etrusco) e latino, III-I sec. a.C.; ritrovamento tradizionalmente datato 1444 (vendita sicura nel 1456); oggi nel Palazzo dei Consoli",
+  "fonti": [
+   "wiki_tavole",
+   "wiki_iguvine_en"
+  ],
+  "nel_gioco_1151": "Sepolte e dimenticate: possono comparire solo come reperto trovato.",
+  "commons": [
+   "Category:Iguvine Tablets"
+  ],
+  "cerca": "Tavole eugubine"
+ },
+ "balestrieri_sbandieratori": {
+  "testo": "Societa' Balestrieri erede della Congrega dei Balestrieri, sede al Bargello; Sbandieratori nati nel 1968, societa' autonoma dal 1999",
+  "fonti": [
+   "eugubini_balestrieri",
+   "wiki_palio_balestra"
+  ],
+  "nota": "Colori e stemmi delle loro bandiere non trovati (siti non leggibili dal cloud)."
+ },
+ "contrade_1300": {
+  "testo": "A meta' del '300 ogni quartiere fu diviso in 6 contrade, ognuna col suo vessillo; colori ignoti, si pensa sfondo rosso come lo stemma del Comune",
+  "fonti": [
+   "cronaca_cece_2018"
+  ]
+ },
+ "ceri_nel_gioco": "Esclusi (decisione di Cioti, 1 nov 2026): le divise sono dei ceraioli durante la festa, recenti e non legate ai santi. Nessun codice colore del party preso dai Ceri.",
+ "quartieri_formato_comune": {
+  "testo": "Nella presentazione comune i quattro stemmi sono tutti in campo rosso con la figura d'argento (San Martino: corona d'oro); poi ogni quartiere ha i suoi colori e una sua versione dello stemma",
+  "fonti": [
+   "Cioti, 1 nov 2026",
+   "cronaca_cece_2018"
+  ],
+  "varianti_proprie": "non trovate: siti dei Balestrieri e del Comune senza araldica, pagine Facebook dei quartieri non leggibili dal cloud"
+ },
+ "quartieri_origine": {
+  "testo": "I quartieri sostituiscono la divisione in vici fra il settimo e l'ottavo decennio del XIII secolo: Sant'Andrea (alto, nuova cattedrale), San Giuliano (citta' vecchia), San Martino (vicus ultra aquam), San Pietro (il piu' recente)",
+  "fonti": [
+   "treccani_eam"
+  ]
+ },
+ "quartieri_nel_gioco": "Drappo rosso con figura d'argento (corona di San Martino in oro), come nella presentazione comune; il colore proprio del quartiere (Torneo) solo come bordo del drappo e nel diario delle quest. Nel 1151 i quartieri non esistono ancora (XIII sec.): restano come fazioni del gioco, licenza dichiarata."
+}

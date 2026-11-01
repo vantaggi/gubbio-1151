@@ -1,0 +1,27 @@
+{
+ "_nota": "Stemmi delle undici citta' della coalizione (elenco della Sez. 3 del GDD, scelta del copione). Fonte di tutte le blasonature: araldicacivica.it, pagina /comune/<nome>/, letta il 1 nov 2026. 'gioco' e' la versione semplificata per un drappo 14x26: campo, eventuale seconda meta' (partito), bande, figura principale. Le semplificazioni sono scelte di design (Claude), non araldica.",
+ "citta": [
+  {"id": "perugia", "nome": "Perugia", "blasonatura": "Di rosso al grifone d'argento, coronato d'oro", "gonfalone": "rosso con ornamenti d'oro", "attestazione": "non indicata",
+   "gioco": {"campo": ["vermiglio comunale", 1], "figura": "grifo", "figura_colore": ["neutri", 4], "secondo_colore": ["oro e bronzo", 3]}},
+  {"id": "spoleto", "nome": "Spoleto", "blasonatura": "Partito: al primo d'argento croce rossa; al secondo di rosso, al cavaliere armato [...] d'argento su cavallo inalberato [...]. Corona ducale", "gonfalone": "vermiglio", "attestazione": "cavaliere dalla fine del XII secolo (esemplare lapideo nella fonte di Piazza del Mercato)",
+   "gioco": {"campo": ["neutri", 4], "campo_destro": ["vermiglio comunale", 2], "figura": "croce", "figura_colore": ["vermiglio comunale", 2], "nota": "il cavaliere e' tolto: illeggibile a 8 px"}},
+  {"id": "cagli", "nome": "Cagli", "blasonatura": "Di rosso, al capriolo d'argento, accompagnato da tre palle d'oro, due in capo ed una in punta", "gonfalone": "partito di rosso e di giallo", "attestazione": "non indicata",
+   "gioco": {"campo": ["vermiglio comunale", 2], "figura": "capriolo", "figura_colore": ["neutri", 4], "secondo_colore": ["oro e bronzo", 3]}},
+  {"id": "foligno", "nome": "Foligno", "blasonatura": "Semitroncato-partito: nel primo d'argento alla croce potenziata e scorciata di rosso; nel secondo di rosso, nel terzo di rosso al giglio d'oro. Corona marchionale", "gonfalone": "partito di bianco e di rosso", "attestazione": "giglio e croce in scudi separati dal 1350 (condizionale nella fonte)",
+   "gioco": {"campo": ["vermiglio comunale", 2], "figura": "giglio", "figura_colore": ["oro e bronzo", 3], "nota": "resta solo il giglio d'oro, per non confondersi con Spoleto"}},
+  {"id": "todi", "nome": "Todi", "blasonatura": "Di rosso, all'aquila di argento col volo abbassato [...] coronata [...] afferrante con gli artigli il bastone [...] col drappo di argento", "gonfalone": "interzato in palo rosso, bianco, rosso", "attestazione": "esemplare piu' antico scolpito nel 1267 sul Palazzo del Popolo",
+   "gioco": {"campo": ["vermiglio comunale", 2], "figura": "aquila", "figura_colore": ["neutri", 4]}},
+  {"id": "nocera", "nome": "Nocera", "blasonatura": "non trovata (stemma non ufficiale)", "gonfalone": "non trovato", "attestazione": "non indicata",
+   "gioco": {"campo": ["legno e cuoio", 2], "figura": null, "nota": "drappo bruno senza figura finche' non si trova una fonte"}},
+  {"id": "gualdo", "nome": "Gualdo Tadino", "blasonatura": "D'argento alle tre bande di rosso", "gonfalone": "verde con capo rosso", "attestazione": "non indicata",
+   "gioco": {"campo": ["neutri", 4], "bande": ["vermiglio comunale", 2], "figura": null}},
+  {"id": "fossato", "nome": "Fossato di Vico", "blasonatura": "Grifo dorato [...] che impugna [...] un gladio d'argento [...] sovrasta un castello d'argento con due torri [...] in campo azzurro e pianura verde", "gonfalone": "giallo", "attestazione": "non indicata",
+   "gioco": {"campo": ["cielo e acqua", 1], "figura": "torre", "figura_colore": ["neutri", 4], "nota": "resta il castello: il grifo e' gia' di Perugia"}},
+  {"id": "assisi", "nome": "Assisi", "blasonatura": "non trovata (la pagina cita solo, nella storia, 'il leone rampante sulla campagna verde')", "gonfalone": "non trovato", "attestazione": "non indicata",
+   "gioco": {"campo": ["verde dei monti", 1], "figura": "leone", "figura_colore": ["oro e bronzo", 3], "nota": "campo verde e leone d'oro sono una scelta provvisoria: la fonte da' solo leone e campagna verde"}},
+  {"id": "bettona", "nome": "Bettona", "blasonatura": "Scudo in campo rosso, tagliato fino ai limiti di una croce bianca e sopra l'incrociatura a destra tre foglie di bettonica verde [...] corona murale", "gonfalone": "partito di rosso e di bianco", "attestazione": "non indicata",
+   "gioco": {"campo": ["vermiglio comunale", 2], "figura": "croce", "figura_colore": ["neutri", 4]}},
+  {"id": "spello", "nome": "Spello", "blasonatura": "Di rosso, alla torre merlata alla guelfa, aperta e finestrata di nero e sostenuta da due leoni d'oro controrampanti affrontati [...] campagna di verde", "gonfalone": "partito di rosso e di bianco", "attestazione": "non indicata",
+   "gioco": {"campo": ["vermiglio comunale", 2], "figura": "torre", "figura_colore": ["oro e bronzo", 3], "nota": "torre senza leoni; in oro per staccare dalla torre d'argento di Fossato"}}
+ ]
+}
