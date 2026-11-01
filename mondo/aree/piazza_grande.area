@@ -1,7 +1,6 @@
 # Area importata dal prototipo (tag prototipo-v0): PIAZZA_GRID, MapId 0.
 id piazza_grande
 etichetta AREA_PIAZZA_GRANDE
-quota 70
 dimensioni 32 64
 spawn 0 14 38
 spawn 1 13 20
@@ -9,10 +8,10 @@ spawn 2 28 49
 spawn 3 28 14
 spawn 4 25 31
 spawn 5 7 41
-uscita A via_dei_consoli 1
-uscita B via_xx_settembre 1
-uscita E duomo_ducale 1
-uscita G piazza_quaranta_martiri 2
+uscita A via_dei_consoli 3
+uscita B via_xx_settembre 2
+uscita E duomo_ducale 4
+uscita G piazza_quaranta_martiri 5
 # F2: il portone dei Consoli (D) rimandava alla piazza stessa, segnaposto del prototipo
 # per collaudare il rientro. Gli interni non ci sono ancora: diventa un portone visivo (d).
 griglia

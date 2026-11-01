@@ -1,24 +1,36 @@
 #!/usr/bin/env python3
 """Generatore di include/mondo.h: le aree, il grafo dei varchi e i fondali procedurali.
 
-Legge mondo/aree/*.area e i dati di stile (palette), e scrive in un solo header:
+Legge mondo/aree/*.area, il grafo del mondo (mondo/grafo.json, con le funzioni di
+tools/mondo_dati.py) e i dati di stile (palette), e scrive in un solo header:
   - le griglie delle aree, una cella per tile, con i varchi numerati per area;
   - il grafo: per ogni varco l'area e lo spawn d'arrivo (o il dungeon, che in F2 e' solo un
     ingresso);
   - i fondali: un'unica serie di tile 8x8 a 4bpp disegnati qui con la palette, la luce da
     sinistra e i contorni della Guida di stile, e per ogni area la mappa di quei tile.
 
+Una sola fonte per il grafo: mondo/grafo.json dice quali aree ci sono, la loro quota, quali archi
+le collegano e l'anello; mondo/varchi.json (calcolato da quel grafo) dice su quale lato dello
+schermo si apre ogni varco. Un file .area tiene solo la griglia, gli spawn e dove stanno le
+uscite: "uscita A largo_bargello 2" vuol dire che il varco A della griglia e' l'arco verso il
+Largo del Bargello, e che chi arriva da li' compare sullo spawn 2 di quest'area.
+
 Prima di scrivere controlla il mondo e si rifiuta se trova: un carattere sconosciuto, una riga
-di lunghezza sbagliata, un varco senza riga "uscita" o viceversa, una destinazione o uno spawn
-che non esistono, uno spawn su una cella non calpestabile o a meno di DISTANZA_MIN_SPAWN tile da
-un varco, un varco che da uno spawn d'arrivo non si raggiunge camminando, un varco senza ritorno,
-l'anello spezzato. Gli stessi controlli, e la camminata vera, li rifa' l'autotest C++
+di lunghezza sbagliata, un varco senza riga "uscita" o viceversa, uno spawn che non esiste, una
+uscita senza arco in grafo.json o un arco senza uscita, un varco che non sta sul bordo indicato da
+varchi.json, uno spawn d'arrivo a meno di DISTANZA_MIN_SPAWN_USCITA tile dalla propria uscita o a
+meno di DISTANZA_MIN_SPAWN da un altro varco, uno spawn su una cella non calpestabile, un varco
+che da uno spawn d'arrivo non si raggiunge camminando. Spawn e camminata li rifa' l'autotest C++
 (include/mondo_autotest.h) a tempo di compilazione.
+
+Debito aperto (F2): le griglie sono quelle del prototipo, con le sole uscite spostate sul lato
+giusto; la scala di 1 tile = 1,5 m dei monumenti (mondo/monumenti.json) non vi e' ancora applicata.
 
     python tools/genera_mondo.py              # rigenera include/mondo.h
     python tools/genera_mondo.py --controlla  # esce con 1 se include/mondo.h non e' aggiornato
 """
 import glob
+import json
 import os
 import sys
 from collections import deque
@@ -28,12 +40,11 @@ sys.path.insert(0, os.path.join(RADICE, "stile"))
 
 import stile as S  # noqa: E402
 
+sys.path.insert(0, os.path.join(RADICE, "tools"))
+import mondo_dati as M  # noqa: E402
+
 AREE_GLOB = os.path.join(RADICE, "mondo", "aree", "*.area")
 USCITA = os.path.join(RADICE, "include", "mondo.h")
-
-# L'anello di docs/mappa_del_mondo.md, nell'ordine in cui lo si percorre salendo dal Duomo.
-ANELLO = ["piazza_grande", "duomo_ducale", "monte_ingino", "basilica", "bottaccione",
-          "san_martino", "largo_bargello", "via_dei_consoli"]
 
 # Destinazioni che non sono aree dell'anello: in F2 esiste solo il loro ingresso.
 DUNGEON = {"gola_bottaccione": "AREA_GOLA_BOTTACCIONE"}
@@ -43,6 +54,9 @@ AREE_DEL_MONTE = {"monte_ingino", "bottaccione"}
 
 # Uno spawn d'arrivo a 2 tile dal varco rimanda indietro chi tiene premuta la direzione.
 DISTANZA_MIN_SPAWN = 3
+# Dalla propria uscita, quella da cui si e' entrati, lo spawn sta piu' lontano: si arriva gia'
+# dentro l'area, non sulla soglia.
+DISTANZA_MIN_SPAWN_USCITA = 6
 
 # Celle della griglia: carattere del file .area -> (nome C++, solida).
 CELLE = {
@@ -273,21 +287,26 @@ def leggi_area(nome_file, testo):
                 a["id"] = t[1]
             elif t[0] == "etichetta":
                 a["etichetta"] = t[1]
-            elif t[0] == "quota":
-                a["quota"] = [int(v) for v in t[1:]]
             elif t[0] == "dimensioni":
                 a["larghezza"], a["altezza"] = int(t[1]), int(t[2])
             elif t[0] == "spawn":
                 a["spawn"][int(t[1])] = (int(t[2]), int(t[3]))
             elif t[0] == "uscita":
-                a["uscite"].append((t[1], t[2], int(t[3]), n))
+                if t[2] in DUNGEON:
+                    if len(t) != 3:
+                        raise ValueError
+                    a["uscite"].append((t[1], t[2], None, n))
+                else:
+                    if len(t) != 4:
+                        raise ValueError
+                    a["uscite"].append((t[1], t[2], int(t[3]), n))
             elif t[0] == "griglia":
                 in_griglia = True
             else:
                 raise ErroreMondo(f"{nome_file}:{n}: riga '{t[0]}' sconosciuta")
         except (IndexError, ValueError):
             raise ErroreMondo(f"{nome_file}:{n}: riga malformata: {riga}") from None
-    for campo in ("id", "etichetta", "quota", "larghezza"):
+    for campo in ("id", "etichetta", "larghezza"):
         if campo not in a:
             raise ErroreMondo(f"{nome_file}: manca '{campo}'")
     if len(a["griglia"]) != a["altezza"]:
@@ -319,40 +338,96 @@ def raggiungibili(a, inizio):
     return visti
 
 
-def controlla(aree):
-    per_id = {a["id"]: a for a in aree}
-    if set(ANELLO) - set(per_id):
-        raise ErroreMondo(f"aree dell'anello mancanti: {sorted(set(ANELLO) - set(per_id))}")
+def lati_del_varco(a, lettera):
+    """I bordi della griglia toccati dal varco ('alto', 'basso', 'sinistra', 'destra')."""
+    lati = set()
+    for x, y in celle_varco(a, lettera):
+        if x == 0:
+            lati.add("sinistra")
+        if x == a["larghezza"] - 1:
+            lati.add("destra")
+        if y == 0:
+            lati.add("alto")
+        if y == a["altezza"] - 1:
+            lati.add("basso")
+    return lati
 
-    arrivi = set()
+
+def distanza_dal_varco(a, punto, lettera):
+    px, py = punto
+    return min(max(abs(px - x), abs(py - y)) for x, y in celle_varco(a, lettera))
+
+
+def controlla(aree, mondo):
+    """mondo: {"grafo": grafo.json, "varchi": varchi per area come in mondo/varchi.json}."""
+    grafo, lati_attesi = mondo["grafo"], mondo["varchi"]
+    per_id = {a["id"]: a for a in aree}
+    nel_grafo = {g["id"].lower(): g for g in grafo["aree"]}
+    for aid in sorted(set(nel_grafo) - set(per_id)):
+        raise ErroreMondo(f"l'area {aid} di grafo.json non ha un file .area")
+    for a in aree:
+        if a["id"] not in nel_grafo:
+            raise ErroreMondo(f"{a['file']}: l'area {a['id']} non e' in grafo.json")
+
     for a in aree:
         dichiarate = {u[0] for u in a["uscite"]}
         presenti = {c for r in a["griglia"] for c in r if c in VARCHI}
         for lettera in presenti - dichiarate:
             raise ErroreMondo(f"{a['file']}: varco '{lettera}' nella griglia senza riga 'uscita'")
-        for lettera, dest, spawn, n in a["uscite"]:
+        for lettera, _, _, n in a["uscite"]:
             if lettera not in presenti:
                 raise ErroreMondo(f"{a['file']}:{n}: uscita '{lettera}' che non e' nella griglia")
+
+    # (a) ogni uscita e' un arco di grafo.json, e ogni arco ha la sua uscita ai due capi
+    archi = {}
+    for e in grafo["archi"]:
+        archi.setdefault(e["da"].lower(), set()).add(e["a"].lower())
+        archi.setdefault(e["a"].lower(), set()).add(e["da"].lower())
+    for a in aree:
+        verso = [u[1] for u in a["uscite"] if u[1] not in DUNGEON]
+        for lettera, dest, _, n in a["uscite"]:
+            if dest in DUNGEON:
+                if not nel_grafo[a["id"]].get("dungeon"):
+                    raise ErroreMondo(f"{a['file']}:{n}: ingresso a {dest}, ma grafo.json non da' "
+                                      f"un dungeon all'area {a['id']}")
+            elif dest not in archi.get(a["id"], set()):
+                raise ErroreMondo(f"{a['file']}:{n}: uscita '{lettera}' verso {dest}, ma grafo.json "
+                                  f"non ha l'arco {a['id']}-{dest}")
+            elif verso.count(dest) > 1:
+                raise ErroreMondo(f"{a['file']}:{n}: due uscite verso {dest}")
+        for dest in sorted(archi.get(a["id"], set()) - set(verso)):
+            raise ErroreMondo(f"{a['file']}: grafo.json ha l'arco {a['id']}-{dest}, ma l'area non ha "
+                              f"l'uscita")
+
+    for a in aree:
+        for lettera, dest, spawn, n in a["uscite"]:
             if dest in DUNGEON:
                 continue
-            if dest not in per_id:
-                raise ErroreMondo(f"{a['file']}:{n}: destinazione '{dest}' sconosciuta")
-            if spawn not in per_id[dest]["spawn"]:
-                raise ErroreMondo(f"{a['file']}:{n}: {dest} non ha lo spawn {spawn}")
-            if not any(u[1] == a["id"] for u in per_id[dest]["uscite"]):
-                raise ErroreMondo(f"{a['file']}:{n}: da {a['id']} si va a {dest}, ma non si torna")
-            arrivi.add((dest, spawn))
+            # (b) il varco sta sul bordo che varchi.json da' a quell'arco
+            atteso = [v["lato"] for v in lati_attesi[a["id"].upper()] if v["verso"] == dest.upper()]
+            lati = lati_del_varco(a, lettera)
+            if lati != set(atteso):
+                trovato = ", ".join(sorted(lati)) or "nessun bordo"
+                raise ErroreMondo(f"{a['file']}:{n}: il varco '{lettera}' verso {dest} sta su {trovato}, "
+                                  f"varchi.json lo vuole a {atteso[0]}")
+            if spawn not in a["spawn"]:
+                raise ErroreMondo(f"{a['file']}:{n}: manca lo spawn {spawn}")
 
     for a in aree:
         varchi = [(x, y) for y, r in enumerate(a["griglia"]) for x, c in enumerate(r) if c in VARCHI]
-        usati = sorted({s for d, s in arrivi if d == a["id"]} | {0})
-        for s in usati:
+        arrivi = [(0, None)] + [(u[2], u[0]) for u in a["uscite"] if u[1] not in DUNGEON]
+        for s, propria in arrivi:
             if s not in a["spawn"]:
                 raise ErroreMondo(f"{a['file']}: manca lo spawn {s}")
             sx, sy = a["spawn"][s]
-            if not (0 <= sx < a["larghezza"] and 0 <= sy < a["altezza"]) or solida(a["griglia"][sy][sx]) \
-                    or a["griglia"][sy][sx] in VARCHI:
+            if not (0 <= sx < a["larghezza"] and 0 <= sy < a["altezza"]) or solida(a["griglia"][sy][sx])                     or a["griglia"][sy][sx] in VARCHI:
                 raise ErroreMondo(f"{a['file']}: lo spawn {s} ({sx}, {sy}) non e' su una cella calpestabile")
+            # (c) lontano dalla propria uscita, e comunque non addosso a un altro varco
+            if propria is not None:
+                distanza = distanza_dal_varco(a, (sx, sy), propria)
+                if distanza < DISTANZA_MIN_SPAWN_USCITA:
+                    raise ErroreMondo(f"{a['file']}: lo spawn {s} ({sx}, {sy}) e' a {distanza} tile dalla "
+                                      f"sua uscita '{propria}', ne servono almeno {DISTANZA_MIN_SPAWN_USCITA}")
             distanza = min(max(abs(sx - x), abs(sy - y)) for x, y in varchi)
             if distanza < DISTANZA_MIN_SPAWN:
                 raise ErroreMondo(f"{a['file']}: lo spawn {s} ({sx}, {sy}) e' a {distanza} tile da un varco, "
@@ -365,9 +440,10 @@ def controlla(aree):
                     raise ErroreMondo(f"{a['file']}:{n}: il varco '{lettera}' non si raggiunge "
                                       f"camminando dallo spawn {s}")
 
-    for da, verso in zip(ANELLO, ANELLO[1:] + ANELLO[:1]):
-        if not any(u[1] == verso for u in per_id[da]["uscite"]):
-            raise ErroreMondo(f"l'anello si spezza fra {da} e {verso}")
+
+def anello(grafo):
+    """L'anello di grafo.json, senza la ripetizione finale della prima area."""
+    return [aid.lower() for aid in grafo["anello"][:-1]]
 
 
 # --- Uscita C++ -------------------------------------------------------------------------------
@@ -387,19 +463,23 @@ def a_blocchi(valori, per_riga=16, formato=str):
                      for i in range(0, len(valori), per_riga))
 
 
-def ordina(aree):
-    altre = sorted(a["id"] for a in aree if a["id"] not in ANELLO)
+def ordina(aree, giro):
+    altre = sorted(a["id"] for a in aree if a["id"] not in giro)
     per_id = {a["id"]: a for a in aree}
-    return [per_id[i] for i in ANELLO + altre]
+    return [per_id[i] for i in giro + altre]
 
 
-def scrivi_header(aree, palette_stile):
-    aree = ordina(aree)
+def scrivi_header(aree, grafo, palette_stile):
+    giro = anello(grafo)
+    quote = {g["id"].lower(): g["quota_m"] for g in grafo["aree"]}
+    aree = ordina(aree, giro)
+    per_id = {a["id"]: a for a in aree}
     indice = {a["id"]: i for i, a in enumerate(aree)}
     colore = lambda rif: S.colore(palette_stile, rif)  # noqa: E731
 
     out = [
-        "// GENERATO da tools/genera_mondo.py a partire da mondo/aree/*.area e stile/dati/palette.json.",
+        "// GENERATO da tools/genera_mondo.py a partire da mondo/aree/*.area, mondo/grafo.json,",
+        "// mondo/varchi.json e stile/dati/palette.json.",
         "// Non modificare a mano: si accede ai dati solo da include/mondo_logica.h.",
         "#ifndef GUBBIO_MONDO_H",
         "#define GUBBIO_MONDO_H",
@@ -435,9 +515,9 @@ def scrivi_header(aree, palette_stile):
         "};",
         "",
         f"inline constexpr int AREE_CONTEGGIO = {len(aree)};",
-        f"inline constexpr int ANELLO_CONTEGGIO = {len(ANELLO)};",
+        f"inline constexpr int ANELLO_CONTEGGIO = {len(giro)};",
         "inline constexpr AreaId ANELLO[ANELLO_CONTEGGIO] = {",
-        "    " + ", ".join(f"AreaId::{i.upper()}" for i in ANELLO) + ",",
+        "    " + ", ".join(f"AreaId::{i.upper()}" for i in giro) + ",",
         "};",
         "",
         "inline constexpr int DUNGEON = -1;   // destinazione di un ingresso che in F2 non porta altrove",
@@ -490,13 +570,15 @@ def scrivi_header(aree, palette_stile):
     out += ["inline constexpr Area AREE[AREE_CONTEGGIO] = {"]
     for a in aree:
         nome = a["id"].upper()
-        q = a["quota"] + a["quota"][:1]
+        q = quote[a["id"]]
         varchi = []
-        for lettera, dest, spawn, _ in a["uscite"]:
+        for lettera, dest, _, _ in a["uscite"]:
             if dest in DUNGEON:
                 varchi.append(f"{{ DUNGEON, 0, testi::TestoId::{DUNGEON[dest]} }}")
             else:
-                varchi.append(f"{{ {indice[dest]}, {spawn}, testi::TestoId::{a['etichetta']} }}")
+                # si arriva sullo spawn che l'area di destinazione da' alla sua uscita verso di noi
+                arrivo = [u[2] for u in per_id[dest]["uscite"] if u[1] == a["id"]][0]
+                varchi.append(f"{{ {indice[dest]}, {arrivo}, testi::TestoId::{a['etichetta']} }}")
         while len(varchi) < len(VARCHI):
             varchi.append(f"{{ DUNGEON, 0, testi::TestoId::{a['etichetta']} }}")
         spawn = [a["spawn"].get(i, a["spawn"][0]) for i in range(6)]
@@ -538,11 +620,19 @@ def scrivi_header(aree, palette_stile):
     return "\n".join(out)
 
 
-def genera(sorgenti, palette_stile):
+def mondo_del_repo():
+    """Il grafo (mondo/grafo.json) e i lati dei varchi (mondo/varchi.json) del repo."""
+    with open(M.OUT_VARCHI, encoding="utf-8") as f:
+        varchi = json.load(f)["varchi"]
+    return {"grafo": M.carica_grafo(), "varchi": varchi}
+
+
+def genera(sorgenti, palette_stile, mondo=None):
     """sorgenti: lista di (nome, testo). Ritorna il testo di include/mondo.h."""
+    mondo = mondo or mondo_del_repo()
     aree = [leggi_area(nome, testo) for nome, testo in sorgenti]
-    controlla(aree)
-    return scrivi_header(aree, palette_stile)
+    controlla(aree, mondo)
+    return scrivi_header(aree, mondo["grafo"], palette_stile)
 
 
 def sorgenti_del_repo():

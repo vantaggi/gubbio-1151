@@ -1,7 +1,6 @@
 # Area importata dal prototipo (tag prototipo-v0): BOTTACCIONE_GRID, MapId 1.
 id bottaccione
 etichetta AREA_BOTTACCIONE
-quota 300 30
 dimensioni 32 64
 spawn 0 10 6
 spawn 1 10 6
@@ -9,15 +8,18 @@ spawn 2 10 57
 spawn 3 10 6
 spawn 4 10 6
 spawn 5 10 6
-uscita A basilica 2
-uscita B san_martino 3
+# F2: lati dei varchi da mondo/varchi.json: la Basilica (A) e San Martino (B) stanno tutti e
+# due a sinistra (sud). I varchi del prototipo in testa e in fondo alla strada sono murati e
+# si esce da due passaggi nel parapetto, in cima e in fondo.
+uscita A basilica 1
+uscita B san_martino 2
 # F2: l'area dell'anello e' la Strada del Bottaccione; la Gola e' un dungeon separato che
 # si apre da qui (I), con un varco nel parapetto verso la gola, a sud. In F2 c'e' solo l'ingresso.
-uscita I gola_bottaccione 0
+uscita I gola_bottaccione
 griglia
-#########=AAP###################
-#########=,,P###################
-#########=,,P###################
+#########=##P###################
+AA,,,,,,,,,,P###################
+AA,,,,,,,,,,P###################
 #########=,,P###################
 #########=,,P###################
 #########=,,P###################
@@ -76,6 +78,6 @@ griglia
 #########=,,P###################
 #########=,,P###################
 #########=,,P###################
-#########=,,P###################
-#########=,,P###################
-#########=BBP###################
+BB,,,,,,,,,,P###################
+BB,,,,,,,,,,P###################
+#########=##P###################

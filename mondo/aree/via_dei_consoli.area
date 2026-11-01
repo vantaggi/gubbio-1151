@@ -1,7 +1,6 @@
 # Area importata dal prototipo (tag prototipo-v0): VIA_DEI_CONSOLI_GRID, MapId 6.
 id via_dei_consoli
 etichetta AREA_VIA_DEI_CONSOLI
-quota 58
 dimensioni 16 64
 spawn 0 7 32
 spawn 1 7 8
@@ -9,8 +8,10 @@ spawn 2 7 55
 spawn 3 7 32
 spawn 4 7 32
 spawn 5 7 32
-uscita A piazza_grande 3
-uscita B largo_bargello 1
+# F2: lati dei varchi da mondo/varchi.json (alto = ovest): il Largo del Bargello e' in alto,
+# Piazza Grande in basso. Scambiate le destinazioni dei due varchi del prototipo.
+uscita A largo_bargello 1
+uscita B piazza_grande 2
 griglia
 ##,,,,AAAA,,,,##
 ##,,,,AAAA,,,,##

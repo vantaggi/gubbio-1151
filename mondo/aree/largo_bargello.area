@@ -1,33 +1,34 @@
 # Area importata dal prototipo (tag prototipo-v0): BARGELLO_GRID, MapId 5.
 id largo_bargello
 etichetta AREA_LARGO_BARGELLO
-quota 45
 dimensioni 32 24
 spawn 0 16 17
-# F2: lo spawn 1 (arrivo da via dei Consoli) stava in 28 12, a 2 tile dal varco B: chi teneva
-# premuta la direzione d'arrivo rimbalzava indietro. Spostato 4 tile dentro.
-spawn 1 24 12
-spawn 2 8 11
+# F2: gli spawn 1 e 2 (arrivi da via dei Consoli e da San Martino) seguono i varchi spostati,
+# ad almeno 6 tile dalla propria uscita: chi tiene premuta la direzione d'arrivo non rimbalza.
+spawn 1 26 15
+spawn 2 4 9
 spawn 3 16 17
 spawn 4 16 17
 spawn 5 16 17
-uscita B via_dei_consoli 2
-uscita A san_martino 1
+# F2: lati dei varchi da mondo/varchi.json: San Martino (A) in alto (ovest), via dei Consoli
+# (B) in basso. I due varchi del prototipo ai lati sono chiusi.
+uscita B via_dei_consoli 1
+uscita A san_martino 2
 griglia
-#########PPPPPPPPPPPP###########
-#########PPPPPPPPPPPP###########
-#########PPPPPPPPPPPP###########
-#########PPPPPPPPPPPP###########
-#########PPPPPPPPPPPP###########
-#########PPPPPPPPPPPP###########
-#########PPPPPPPPPPPP###########
-#########PPPPPPPPPPPP###########
+###AAAA##PPPPPPPPPPPP###########
+###AAAA##PPPPPPPPPPPP###########
+###....##PPPPPPPPPPPP###########
+###....##PPPPPPPPPPPP###########
+###....##PPPPPPPPPPPP###########
+###....##PPPPPPPPPPPP###########
+###....##PPPPPPPPPPPP###########
+###....##PPPPPPPPPPPP###########
 ##..............................
 ##..............................
-AA............................BB
-AA............................BB
-AA...........FFF..............BB
-AA...........FFF..............BB
+##..............................
+##..............................
+##...........FFF................
+##...........FFF................
 ##...........FFF................
 ##..............................
 ##..............................
@@ -35,6 +36,6 @@ AA...........FFF..............BB
 ##..............................
 ##..............................
 ##..............................
-################################
-################################
-################################
+#########################....###
+#########################BBBB###
+#########################BBBB###
