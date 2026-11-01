@@ -325,6 +325,23 @@ def errori_direzioni(grafo, censimento, tolleranza=90.0):
     return err
 
 
+def errori_eccezioni_superflue(grafo, censimento, tolleranza=90.0):
+    """Ogni direzione da confermare e' un arco vero e davvero fuori tolleranza: se smette di
+    esserlo l'eccezione va tolta, perche' nasconderebbe un errore futuro."""
+    aree = {a["id"]: a for a in grafo["aree"]}
+    archi = {"%s>%s" % (e["da"], e["a"]): e for e in grafo["archi"]}
+    err = []
+    for chiave in sorted(grafo.get("direzioni_da_confermare", {})):
+        e = archi.get(chiave)
+        if e is None:
+            err.append("eccezione per un arco che non c'e': %s" % chiave)
+            continue
+        vero = rilevamento(ancora_area(aree[e["da"]], censimento), ancora_area(aree[e["a"]], censimento))
+        if differenza_angolare(vero, BUSSOLA[e["verso"]]) < tolleranza:
+            err.append("eccezione non piu' necessaria: %s" % chiave)
+    return err
+
+
 def errori_monumenti(grafo, censimento):
     """Ogni monumento del censimento sta in una e una sola area, e viceversa."""
     err = []
@@ -363,6 +380,7 @@ def errori_lati_varchi(varchi):
 def tutti_gli_errori(grafo, censimento):
     return (errori_archi(grafo) + errori_connessione(grafo) + errori_anello(grafo)
             + errori_quote(grafo) + errori_direzioni(grafo, censimento)
+            + errori_eccezioni_superflue(grafo, censimento)
             + errori_monumenti(grafo, censimento)
             + errori_lati_varchi(calcola_varchi(grafo, censimento)))
 
