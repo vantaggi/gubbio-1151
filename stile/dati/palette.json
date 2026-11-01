@@ -1,0 +1,248 @@
+{
+ "nota": "Scelta 3. Parole BGR555 (bit 0-4 rosso, 5-9 verde, 10-14 blu), toni dal piu' scuro al piu' chiaro. 'notte' e' la stessa rampa trasformata: vale per la notte e per il Bottaccione. Non modificare a mano: cambiare 'parametri' e lanciare stile/genera.py.",
+ "parametri": {
+  "hue_shift_per_tono": 10,
+  "rampe": [
+   {
+    "nome": "pietra calcarea",
+    "tinta": 40,
+    "toni": 6,
+    "saturazione_max": 0.28,
+    "luce_min": 0.3,
+    "luce_max": 0.95
+   },
+   {
+    "nome": "cotto e coppi",
+    "tinta": 14,
+    "toni": 6,
+    "saturazione_max": 0.62,
+    "luce_min": 0.22,
+    "luce_max": 0.88
+   },
+   {
+    "nome": "vermiglio comunale",
+    "tinta": 356,
+    "toni": 4,
+    "saturazione_max": 0.85,
+    "luce_min": 0.22,
+    "luce_max": 0.85
+   },
+   {
+    "nome": "verde dei monti",
+    "tinta": 100,
+    "toni": 5,
+    "saturazione_max": 0.45,
+    "luce_min": 0.2,
+    "luce_max": 0.8
+   },
+   {
+    "nome": "cielo e acqua",
+    "tinta": 205,
+    "toni": 5,
+    "saturazione_max": 0.5,
+    "luce_min": 0.35,
+    "luce_max": 0.95
+   },
+   {
+    "nome": "legno e cuoio",
+    "tinta": 28,
+    "toni": 4,
+    "saturazione_max": 0.55,
+    "luce_min": 0.18,
+    "luce_max": 0.65
+   },
+   {
+    "nome": "oro e bronzo",
+    "tinta": 45,
+    "toni": 4,
+    "saturazione_max": 0.75,
+    "luce_min": 0.4,
+    "luce_max": 0.95
+   },
+   {
+    "nome": "pelle",
+    "tinta": 22,
+    "toni": 3,
+    "saturazione_max": 0.4,
+    "luce_min": 0.55,
+    "luce_max": 0.92
+   },
+   {
+    "nome": "neutri",
+    "tinta": 230,
+    "toni": 5,
+    "saturazione_max": 0.1,
+    "luce_min": 0.08,
+    "luce_max": 0.98
+   }
+  ],
+  "notte": {
+   "luce": 0.55,
+   "saturazione": 0.6,
+   "blu": 1.15,
+   "canali": [
+    [
+     200,
+     10
+    ],
+    [
+     215,
+     14
+    ],
+    [
+     235,
+     30
+    ]
+   ]
+  }
+ },
+ "rampe": [
+  {
+   "nome": "pietra calcarea",
+   "giorno": [
+    8457,
+    11661,
+    13809,
+    17045,
+    22329,
+    27581
+   ],
+   "notte": [
+    8357,
+    10471,
+    12584,
+    13674,
+    15821,
+    16976
+   ]
+  },
+  {
+   "nome": "cotto e coppi",
+   "giorno": [
+    5287,
+    6347,
+    7439,
+    9619,
+    13911,
+    21307
+   ],
+   "notte": [
+    7300,
+    8357,
+    9415,
+    10505,
+    12619,
+    13774
+   ]
+  },
+  {
+   "nome": "vermiglio comunale",
+   "giorno": [
+    5255,
+    5261,
+    6356,
+    16986
+   ],
+   "notte": [
+    7300,
+    7302,
+    9417,
+    12621
+   ]
+  },
+  {
+   "nome": "verde dei monti",
+   "giorno": [
+    5318,
+    7529,
+    9707,
+    13967,
+    21300
+   ],
+   "notte": [
+    7300,
+    8389,
+    9478,
+    12616,
+    14793
+   ]
+  },
+  {
+   "nome": "cielo e acqua",
+   "giorno": [
+    11624,
+    15818,
+    21002,
+    26224,
+    30487
+   ],
+   "notte": [
+    10437,
+    12550,
+    14630,
+    18760,
+    24936
+   ]
+  },
+  {
+   "nome": "legno e cuoio",
+   "giorno": [
+    4229,
+    6410,
+    8591,
+    15988
+   ],
+   "notte": [
+    6275,
+    8357,
+    9447,
+    13641
+   ]
+  },
+  {
+   "nome": "oro e bronzo",
+   "giorno": [
+    8524,
+    7634,
+    9912,
+    20413
+   ],
+   "notte": [
+    9414,
+    9480,
+    10602,
+    12880
+   ]
+  },
+  {
+   "nome": "pelle",
+   "giorno": [
+    14833,
+    14903,
+    24412
+   ],
+   "notte": [
+    12584,
+    12619,
+    14799
+   ]
+  },
+  {
+   "nome": "neutri",
+   "giorno": [
+    2114,
+    9513,
+    16879,
+    24278,
+    31677
+   ],
+   "notte": [
+    5218,
+    9413,
+    13608,
+    17802,
+    25004
+   ]
+  }
+ ]
+}
