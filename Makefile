@@ -21,7 +21,10 @@ ROMTITLE        :=  GUBBIO1151
 ROMCODE         :=  GU11
 USERFLAGS       :=
 # Il GBA non ha FPU: ogni promozione a double e' una routine software. Errore, non avviso.
-USERCXXFLAGS    :=  -Wdouble-promotion -Wfloat-conversion -Werror=double-promotion -Werror=float-conversion
+# Gli autotest dei testi e del formattatore girano a tempo di compilazione (src/autotest_testi.cpp):
+# la prova su tutto int16 supera il limite predefinito di operazioni constexpr di gcc.
+USERCXXFLAGS    :=  -Wdouble-promotion -Wfloat-conversion -Werror=double-promotion -Werror=float-conversion \
+                    -fconstexpr-ops-limit=1073741824
 USERASFLAGS     :=
 USERLDFLAGS     :=
 USERLIBDIRS     :=
