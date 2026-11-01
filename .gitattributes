@@ -1,0 +1,8 @@
+# Si sviluppa su Windows ma gli script girano in bash (Git Bash e Linux in CI): uno script
+# con CRLF fallisce con `$'\r': command not found`. I testi vanno sempre in LF.
+* text=auto eol=lf
+
+*.bmp  binary
+*.png  binary
+*.gba  binary
+*.sav  binary

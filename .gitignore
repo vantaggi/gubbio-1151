@@ -1,0 +1,27 @@
+# --- Riferimenti fotografici: MAI nel repository -----------------------------------------------
+# Le foto di riferimento vengono dal web e appartengono ai loro autori. Il repository e'
+# pubblico: ne' le foto ne' i loro derivati (bmp, png, tile, "ingredienti") vanno committati.
+# Si escludono DI PROPOSITO le due cartelle intere, compreso docs/riferimenti/FONTI.md: nel
+# prototipo FONTI.md finiva escluso per sbaglio (la riga `riferimenti/` valeva a ogni livello);
+# qui lo e' per scelta, perche' descrive le foto e resta un documento locale.
+/riferimenti/
+/docs/riferimenti/
+/ingredienti/
+
+# --- Artefatti di build -------------------------------------------------------------------------
+build/
+*.gba
+*.elf
+*.sym
+*.map
+
+# --- Salvataggi dell'emulatore ------------------------------------------------------------------
+*.sav
+
+# --- Python, sistema operativo, editor ----------------------------------------------------------
+__pycache__/
+*.pyc
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp

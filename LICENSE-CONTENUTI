@@ -1,0 +1,19 @@
+Gubbio 1151 - Licenza dei contenuti
+
+Copyright (c) 2026 Cioti / vantaggi
+
+Il CODICE di questo repository e' distribuito con licenza MIT (vedi LICENSE).
+
+I CONTENUTI - grafica, testi, dialoghi, storia, personaggi, musica ed effetti
+sonori - sono distribuiti con licenza Creative Commons
+Attribuzione - Non commerciale 4.0 Internazionale (CC BY-NC 4.0):
+
+    https://creativecommons.org/licenses/by-nc/4.0/deed.it
+    https://creativecommons.org/licenses/by-nc/4.0/legalcode.it
+
+In sintesi: si possono condividere e modificare citando l'autore, indicando le
+modifiche e senza scopo commerciale.
+
+Fanno eccezione gli asset di terzi elencati in CREDITI.md, che restano sotto
+la licenza dei rispettivi autori. La libreria Butano (cartella butano/, un
+submodule) e' di Gustavo Valiente ed e' distribuita con licenza zlib.
