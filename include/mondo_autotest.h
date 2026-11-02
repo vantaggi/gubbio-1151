@@ -6,7 +6,8 @@
 // Autotest del mondo: percorre l'anello camminando, nei due sensi, poi ogni altro arco del grafo
 // nei due sensi e ogni ingresso, guidato dal Navigatore (strada cercata sulla griglia, non tasti
 // a frame fissi). Fallisce al primo errore e su un arco mai attraversato. Prima della camminata
-// controlla gli spawn d'arrivo: calpestabili e ad almeno DISTANZA_MIN_SPAWN tile da ogni varco.
+// controlla gli spawn d'arrivo: calpestabili, ad almeno DISTANZA_MIN_SPAWN tile da ogni varco e ad
+// almeno DISTANZA_MIN_SPAWN_USCITA dalla propria uscita, quella da cui si e' entrati.
 namespace gubbio::mondo
 {
 
@@ -22,6 +23,8 @@ enum class ErroreMondo : int
     ARRIVO_SBAGLIATO,          // dopo il varco non si e' nell'area attesa
     AREA_IRRAGGIUNGIBILE,      // nessuna catena di archi porta all'area
     ARCO_NON_PERCORSO,         // a fine giro un arco non e' mai stato attraversato
+    SPAWN_VICINO_ALLA_USCITA,  // uno spawn d'arrivo e' a meno di DISTANZA_MIN_SPAWN_USCITA tile dalla
+                               // propria uscita
 };
 
 struct EsitoMondo
@@ -159,6 +162,32 @@ private:
                         if(varco(cella(arrivo, x, y)) && dx < DISTANZA_MIN_SPAWN && dy < DISTANZA_MIN_SPAWN)
                         {
                             return _fallisci(ErroreMondo::SPAWN_VICINO_AL_VARCO, v.destinazione, v.spawn);
+                        }
+                    }
+                }
+
+                // La propria uscita: il varco dell'area d'arrivo che riporta qui.
+                int ritorno = -1;
+
+                for(int j = 0; j < arrivo.varchi; ++j)
+                {
+                    if(varco_di(arrivo, j).destinazione == a)
+                    {
+                        ritorno = j;
+                    }
+                }
+
+                for(int y = 0; y < arrivo.altezza; ++y)
+                {
+                    for(int x = 0; x < arrivo.larghezza; ++x)
+                    {
+                        int dx = x > p.x ? x - p.x : p.x - x;
+                        int dy = y > p.y ? y - p.y : p.y - y;
+
+                        if(cella(arrivo, x, y) == PRIMO_VARCO + ritorno && dx < DISTANZA_MIN_SPAWN_USCITA &&
+                           dy < DISTANZA_MIN_SPAWN_USCITA)
+                        {
+                            return _fallisci(ErroreMondo::SPAWN_VICINO_ALLA_USCITA, v.destinazione, v.spawn);
                         }
                     }
                 }
