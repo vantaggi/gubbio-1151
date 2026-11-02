@@ -55,6 +55,15 @@ namespace
         s.x = int16_t(100 + n);
         s.y = int16_t(200 + n);
         s.area = uint8_t(n);
+
+        for(int e = 0; e < 3; ++e)
+        {
+            s.esperienza[e] = uint16_t(50 * n + e);
+            s.livello[e] = uint8_t(n);
+        }
+
+        s.oggetti[0] = uint8_t(n);
+        s.scontri_vinti[0] = uint8_t(n);
         return s;
     }
 }

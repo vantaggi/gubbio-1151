@@ -28,7 +28,8 @@ static_assert(MAGIC == 0x35313147u, "il magic non e' G115");
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__, "il magic e' definito byte per byte: serve little-endian");
 
 // Versione del FORMATO: un salvataggio di un'altra versione si rifiuta, non si reinterpreta.
-inline constexpr uint16_t VERSIONE = 1;
+// 2: GameState di 64 byte (esperienza, livelli, oggetti, scontri vinti).
+inline constexpr uint16_t VERSIONE = 2;
 inline constexpr int PAYLOAD_BYTE = 256;
 inline constexpr int SLOT = 2;
 inline constexpr int BANCHE = 2;

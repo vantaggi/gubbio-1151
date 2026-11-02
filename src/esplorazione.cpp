@@ -129,6 +129,26 @@ void Esplorazione::riprendi(mondo::AreaId id, int x, int y)
     _carica_fondale();
 }
 
+void Esplorazione::sospendi()
+{
+    nascondi_etichetta();
+    _giocatore.set_visible(false);
+    _fondale.reset();
+    _tiles.reset();
+}
+
+void Esplorazione::ricompari()
+{
+    _carica_fondale();
+    _giocatore.set_visible(true);
+}
+
+void Esplorazione::colloca_sulla_mappa(bn::sprite_ptr& sprite, int x, int y, int altezza) const
+{
+    sprite.set_camera(_camera);
+    sprite.set_position(x - _mezza_larghezza_mappa, y - altezza / 2 - _mezza_altezza_mappa);
+}
+
 void Esplorazione::_carica_fondale()
 {
     // Le celle sono gia' in ROM (include/mondo.h): Butano le copia in VRAM, o per una big map ne

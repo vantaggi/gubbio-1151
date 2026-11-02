@@ -28,6 +28,14 @@ public:
     // Rimette il giocatore dove l'ha lasciato un salvataggio: area e piedi in pixel.
     void riprendi(mondo::AreaId id, int x, int y);
 
+    // Per una battaglia: lo sfondo si libera (i suoi tile servono alla scena) e il giocatore si
+    // nasconde; ricompari() rimette tutto com'era.
+    void sospendi();
+    void ricompari();
+
+    // Uno sprite che sta sulla mappa (un nemico): sulla camera dell'area, coi piedi in (x, y) pixel.
+    void colloca_sulla_mappa(bn::sprite_ptr& sprite, int x, int y, int altezza) const;
+
     // Input di un frame: dx, dy in -1..1, 'passi' pixel per asse. Ignorato durante una dissolvenza.
     void muovi(int dx, int dy, int passi);
 

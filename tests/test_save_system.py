@@ -29,11 +29,12 @@ STATO_H = open(os.path.join(RADICE, "include", "game_state.h"), encoding="utf-8"
 PAYLOAD_BYTE = 256
 RECORD = 276
 SLOT, BANCHE = 2, 2
-VERSIONE = 1
+VERSIONE = 2
 MAGIC = b"G115"
 OFF_MAGIC, OFF_CONTATORE, OFF_TEMPO, OFF_VERSIONE, OFF_PAYLOAD_BYTE, OFF_PAYLOAD, OFF_CHECKSUM = 0, 4, 8, 12, 14, 16, 272
-STATO = 16                  # sizeof(GameState)
-FORMATO_STATO = "<IIhhB3x"  # frames, tempo_frames, x, y, area, riservato
+STATO = 64                  # sizeof(GameState)
+# frames, tempo_frames, esperienza x3, x, y, area, livello x3, oggetti x8, scontri_vinti x4, riservato
+FORMATO_STATO = "<II3HhhB3B8B4B30x"
 
 
 def crc32_nibble(dati):
@@ -144,7 +145,10 @@ class SavDiMgba(unittest.TestCase):
     def test_gli_stati_ritrovati(self):
         """Lo slot 0 carica lo stato 3 (la banca piu' recente), lo slot 1 lo stato 4: i numeri di
         stato_di_prova() in src/titolo.cpp."""
-        attesi = {0: (3000, 3 * 3600 + 7, 103, 203, 3), 1: (4000, 4 * 3600 + 7, 104, 204, 4)}
+        def atteso(n):
+            return ((1000 * n, 3600 * n + 7, 50 * n, 50 * n + 1, 50 * n + 2, 100 + n, 200 + n, n, n, n, n, n)
+                    + (0,) * 7 + (n, 0, 0, 0))
+        attesi = {0: atteso(3), 1: atteso(4)}
         for slot, atteso in attesi.items():
             a, b = banche(self.dati, slot)
             k = banca_da_caricare(a, b)

@@ -95,6 +95,37 @@ class Grafica(unittest.TestCase):
         self.assertEqual(tuple(map(tuple, a.px)), tuple(map(tuple, b.px)))
 
 
+PROGRESSIONE = open(os.path.join(RADICE, "include", "progressione.h"), encoding="utf-8").read()
+
+
+def scontri_sulla_mappa(sorgente):
+    """(area, incontro, bandiera) degli scontri sulla mappa scritti in include/progressione.h."""
+    return re.findall(r"\{ mondo::AreaId::(\w+), \d+, \d+, (\d), Bandiera::(\w+) \}", sorgente)
+
+
+class ScontriSullaMappa(unittest.TestCase):
+    """Dove stanno i nemici sulla mappa: dal copione v1 (le regole di posto e contatto sono provate
+    a tempo di compilazione in src/autotest_progressione.cpp)."""
+
+    def test_dal_copione(self):
+        self.assertIn("copione v1", PROGRESSIONE)
+        self.assertEqual(scontri_sulla_mappa(PROGRESSIONE), [
+            ("TEATRO_ROMANO", "0", "PATTUGLIA_SCONFITTA"),
+            ("MONTE_INGINO", "1", "IMBOSCATA_SCONFITTA"),
+            ("BOTTACCIONE", "2", "CORRADO_SCONFITTO"),
+        ])
+
+    def test_negativa_corrado_fuori_posto(self):
+        finto = PROGRESSIONE.replace("{ mondo::AreaId::BOTTACCIONE, 31, 31, 2", "{ mondo::AreaId::SANT_AGOSTINO, 29, 20, 2")
+        self.assertNotEqual(scontri_sulla_mappa(finto)[2][0], "BOTTACCIONE")
+
+    def test_le_prove_a_tempo_di_compilazione(self):
+        autotest = open(os.path.join(RADICE, "src", "autotest_progressione.cpp"), encoding="utf-8").read()
+        for prova in ("curva_buona(ESPERIENZA_PER_LIVELLO)", "! curva_buona(CURVA_SBAGLIATA)", "crescita_buona()",
+                      "livello_dopo_i_tre_scontri() == 4", "i_livelli_contano()", "posti_dei_nemici()", "contatto()"):
+            self.assertIn("static_assert(" + prova, autotest)
+
+
 class Scena(unittest.TestCase):
 
     def test_le_barre_si_leggono_dalla_vista(self):

@@ -4,8 +4,10 @@
 #include <cstdint>
 
 #include "bn_sprite_palette_ptr.h"
+#include "bn_sprite_ptr.h"
 
 #include "battaglia.h"
+#include "game_state.h"
 
 namespace gubbio
 {
@@ -22,8 +24,14 @@ enum class Guida : uint8_t
 // numeri del danno, la scritta IMMUNE con l'indizio del fuoco, il menu dei comandi. Con
 // istantanee=true scrive nel log "Istantanea battaglia_<incontro>_<momento>" nei momenti da
 // fotografare (tools/istantanee.py --battaglia). Ritorna l'esito.
+// Con una partita, i Santi combattono al loro livello e una vittoria da' l'esperienza (con il
+// messaggio di chi sale di livello).
 battaglia::Esito scena_battaglia(int incontro, uint32_t seme, Guida guida,
-                                 const bn::sprite_palette_ptr& palette_testo, bool istantanee = false);
+                                 const bn::sprite_palette_ptr& palette_testo, bool istantanee = false,
+                                 GameState* partita = nullptr);
+
+// Il nemico di uno scontro come si vede sulla mappa: il primo dello schieramento, fermo.
+[[nodiscard]] bn::sprite_ptr sprite_sulla_mappa(int incontro);
 
 // GUBBIO_AVVIO=4: il menu dei tre scontri, giocabili a mano. Non ritorna.
 [[noreturn]] void menu_battaglie(const bn::sprite_palette_ptr& palette_testo);

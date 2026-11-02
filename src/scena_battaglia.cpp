@@ -23,6 +23,7 @@
 
 #include "battaglia_grafica.h"
 #include "game_state.h"
+#include "progressione.h"
 #include "tabella.h"
 #include "vista_battaglia.h"
 #include "vista_testo.h"
@@ -53,6 +54,7 @@ namespace
     constexpr int FRAME_EVENTO = 28;
     constexpr int FRAME_FERVORE = 6;
     constexpr int FRAME_ESITO = 150;
+    constexpr int FRAME_LIVELLO = 75;
     constexpr int FRECCIA_Y_MIN = -72;                  // la freccia del bersaglio resta tutta sullo schermo
     constexpr int PASSO_SCATTO = 2;                     // pixel per frame dello scatto verso il bersaglio
 
@@ -263,7 +265,7 @@ namespace
             aggiorna_barre();
         }
 
-        Esito gioca()
+        Esito gioca(GameState* partita)
         {
             bool colpo_fotografato = false;
             bool immune_fotografato = false;
@@ -332,6 +334,25 @@ namespace
             _titolo.rivela_tutto();
             _voce.nascondi();
             _aiuto.nascondi();
+            // l'esperienza dello scontro vinto, e chi sale di livello
+            if(esito == Esito::VITTORIA && partita)
+            {
+                bool saliti[EROI] = {};
+                progressione::assegna_esperienza(*partita, _incontro, saliti);
+                constexpr TestoId SALE[EROI] = { TestoId::BATT_SALE_UBALDO, TestoId::BATT_SALE_GIORGIO,
+                                                 TestoId::BATT_SALE_ANTONIO };
+
+                for(int e = 0; e < EROI; ++e)
+                {
+                    if(saliti[e])
+                    {
+                        _voce.mostra(GUBBIO_VOCE(SALE, e));
+                        _voce.rivela_tutto();
+                        attendi(FRAME_LIVELLO);
+                    }
+                }
+            }
+
             attendi(30);
             scatta(nome_istantanea("esito"), _istantanee);
 
@@ -688,20 +709,39 @@ namespace
 }
 
 Esito scena_battaglia(int incontro, uint32_t seme, Guida guida, const bn::sprite_palette_ptr& palette_testo,
-                      bool istantanee)
+                      bool istantanee, GameState* partita)
 {
-    g_scena.ricomincia(incontro, seme, false);
+    // i Santi al loro livello, se c'e' una partita; se no al livello 1 (il menu di prova, le istantanee)
+    Statistiche eroi[EROI] = {};
+
+    for(int e = 0; e < EROI; ++e)
+    {
+        int livello = partita ? partita->livello[e] : 1;
+        eroi[e] = progressione::statistiche_al_livello(GUBBIO_VOCE(STATISTICHE_EROI, e),
+                                                      livello < 1 ? 1 : (livello > progressione::LIVELLO_MAX ?
+                                                                         progressione::LIVELLO_MAX : livello));
+    }
+
+    g_scena.ricomincia(incontro, seme, false, eroi);
     Esito esito;
 
     {
         Scena scena(incontro, guida, palette_testo, istantanee);
-        esito = scena.gioca();
+        esito = scena.gioca(partita);
     }
 
     // Butano libera i tile e gli sprite della scena al prossimo aggiornamento: prima di crearne
     // un'altra si lascia passare un frame
     attendi(1);
     return esito;
+}
+
+bn::sprite_ptr sprite_sulla_mappa(int incontro)
+{
+    const Figura& f = GUBBIO_VOCE(FIGURE_NEMICI, int(GUBBIO_VOCE(INCONTRO, incontro).schieramento[0]));
+    bn::sprite_tiles_item tiles = tiles_di(f);
+    return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(f.lato, f.lato), tiles.create_tiles(0),
+                                  crea_palette(COLORI_NEMICI));
 }
 
 void menu_battaglie(const bn::sprite_palette_ptr& palette_testo)

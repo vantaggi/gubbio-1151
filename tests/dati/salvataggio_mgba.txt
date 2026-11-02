@@ -1,14 +1,14 @@
 SALVATAGGIO vuoto OK
-SALVA: slot 0 banca 0 scrittura n. 1 tempo 60s crc 21747:49562
+SALVA: slot 0 banca 0 scrittura n. 1 tempo 60s crc 40457:21094
 SALVATAGGIO salva OK
 SALVATAGGIO ricarica uguale OK
-SALVA: slot 0 banca 1 scrittura n. 2 tempo 120s crc 4339:41838
+SALVA: slot 0 banca 1 scrittura n. 2 tempo 120s crc 22163:59156
 SALVATAGGIO ping-pong OK
 SALVATAGGIO banca corrotta OK
 SALVATAGGIO entrambe corrotte OK
-SALVA: slot 0 banca 0 scrittura n. 1 tempo 60s crc 21747:49562
+SALVA: slot 0 banca 0 scrittura n. 1 tempo 60s crc 40457:21094
 SALVATAGGIO risalva OK
-SALVA: slot 0 banca 1 scrittura n. 2 tempo 180s crc 58328:12308
-SALVA: slot 1 banca 0 scrittura n. 1 tempo 240s crc 20738:45940
+SALVA: slot 0 banca 1 scrittura n. 2 tempo 180s crc 13999:41765
+SALVA: slot 1 banca 0 scrittura n. 1 tempo 240s crc 22381:37470
 SALVATAGGIO slot finali OK
 Salvataggio: 8 prove riuscite, 0 fallite
