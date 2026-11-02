@@ -9,11 +9,13 @@
 > * **Il rientro in citta' dal Bottaccione e' Porta Metauro**, non la Porta di Santa Lucia
 >   (confermato da Cioti).
 > * **Grafo riallineato alla citta' vera** (1 novembre 2026, rilievo OSM + DEM), con la **regola
->   di Cioti**: a Piazza Grande si entra **solo** da via dei Consoli e da via XX Settembre, e
->   tutte e due salgono da Piazza Quaranta Martiri (via Baldassini, via della Repubblica). Il
->   Duomo non confina piu' con la piazza: ci si arriva da San Martino per via della Cattedrale e
->   dal Monte; da via XX Settembre si sale al Monte per via Colomboni e via del Monte. Le quote
->   sono quelle vere x 1,6 sopra Piazza Quaranta Martiri.
+>   di Cioti**: a Piazza Grande si entra **solo** da via dei Consoli e da via XX Settembre; da
+>   Piazza Quaranta Martiri ci si arriva per scale laterali che sbucano nelle due vie **poco prima
+>   della piazza** (le vie non finiscono a Quaranta Martiri). Le quote sono quelle vere x 1,6 sopra
+>   Piazza Quaranta Martiri.
+> * **Archi ricostruiti dalla rete stradale OSM** (2 novembre 2026): i 20 archi sono i percorsi piu'
+>   brevi fra le aree sulle strade vere. Monte Ingino e' tutto il monte con gli stradoni, la Basilica
+>   la cima.
 > * **Il foreground copre solo la fascia alta** (tetti, archi, chiome).
 >
 > Le aree non sono piu' header C++: sono i file `mondo/aree/*.area`, e `tools/genera_mondo.py`
@@ -38,58 +40,53 @@ Gubbio è costruita sulle pendici del Monte Ingino. La città non è una griglia
 gira attorno al monte**, e il giocatore lo percorre salendo da un lato e ridiscendendo dall'altro.
 
 ```
-                          BASILICA DI SANT'UBALDO  (vetta del Monte Ingino)
-                                 /                \
-              STRADONI DEL MONTE (2 km sterrati)   STRADA DEL BOTTACCIONE
-               /             \                       (versante nord, con l'acquedotto)
-   via Colomboni,           DUOMO - PALAZZO DUCALE                \
-   via del Monte              |  via della Cattedrale              \
-           |                  |  (si scende dal Voltone)         Porta Metauro
-           |                  |                                     |
-  SANT'AGOSTINO <-- SANT'ANDREA <-- VIA XX SETTEMBRE                |
-  (Porta Romana)   (San Marziale)    |  \                           |
-                                     |   PIAZZA GRANDE              |
-                                     |   (solo da qui e da          |
-                                     |    via dei Consoli)          |
-                                     |          |                   |
-                                     |    VIA DEI CONSOLI           |
-                                     |      |        \              |
-                                     |      |   LARGO DEL BARGELLO  |
-                                     |      |    (Fontana dei Matti)|
-                                     |      |        |  in piano, sul ponte del Camignano
-                                     |      |    SAN MARTINO <------+   (anche dal Duomo)
-                                     |      |     /        \
-                                     |      |    |          TEATRO ROMANO (fuori le mura)
-                                     |      |    |
-                          PIAZZA QUARANTA MARTIRI ------> SAN PIETRO
-                              (il punto piu' basso)       (sud-est, via Mazzini)
+L'anello (in salita a destra, in discesa a sinistra):
+
+  PIAZZA GRANDE -> via XX Settembre -> DUOMO / DUCALE -> MONTE INGINO (gli stradoni) -> BASILICA
+        ^                                                                                  |
+        |                                                                                  v
+  via dei Consoli <- LARGO DEL BARGELLO <- SAN MARTINO <- Porta Metauro <- STRADA DEL BOTTACCIONE
+
+Fuori dall'anello:
+
+  PIAZZA QUARANTA MARTIRI   scale laterali  -> via dei Consoli e via XX Settembre, poco prima della piazza
+  (il punto piu' basso)     via Cavour      -> San Martino
+                            Porta Ortacci   -> Teatro Romano (anche da San Martino, fuori Porta Castello)
+                            via Mazzatinti  -> San Pietro -> corso Garibaldi -> Sant'Agostino
+  via XX Settembre          in fondo        -> Sant'Andrea -> Porta Romana -> Sant'Agostino
+  Sant'Andrea               via Appennino   -> Monte Ingino
+  Duomo / Ducale            via della Cattedrale -> Largo del Bargello
 ```
 
 **Gli archi, per esteso.** Ogni riga è percorribile nei due sensi salvo dove detto.
 
 | Da | Verso | Come |
 | :-- | :-- | :-- |
-| Piazza Grande | via dei Consoli | in discesa dal varco **nord-ovest** |
-| Piazza Grande | via XX Settembre | dall'angolo **sud-est** oltre il Pretorio, in piano |
-| via dei Consoli | Largo del Bargello | si scende lungo la via, verso **nord-ovest** |
-| via XX Settembre | Sant'Andrea | **sud-est**: in fondo alla via, San Marziale |
-| Sant'Andrea | Sant'Agostino | **sud-est**: si scende fuori da Porta Romana |
-| via XX Settembre | Stradoni del Monte | **nord-est**: via Colomboni a scale, poi via del Monte fino a Porta Sant'Ubaldo |
-| Duomo / Ducale | Stradoni del Monte | in salita, verso **est** |
-| Duomo / Ducale | San Martino | **ovest**: si scende dal Voltone per via della Cattedrale |
-| Stradoni del Monte | Basilica di Sant'Ubaldo | 2 km di sterrato: è la salita lunga del gioco |
-| Basilica | Strada del Bottaccione | si scende sul versante **nord** |
-| Strada del Bottaccione | San Martino | rientro in città da **Porta Metauro** |
-| Largo del Bargello | San Martino | in piano, sul ponte del Camignano |
-| San Martino | Piazza Quaranta Martiri | si scende ancora, verso **sud** |
-| San Martino | Teatro Romano | **fuori le mura cittadine**, piu' in basso |
-| Piazza Quaranta Martiri | via dei Consoli | a **nord**, in salita per via Baldassini e le scale |
-| Piazza Quaranta Martiri | via XX Settembre | a **est**, in salita per via della Repubblica e le scale |
-| Piazza Quaranta Martiri | San Pietro | a **sud-est**, via Mazzini |
+| Piazza Grande | Via dei Consoli | **nord-ovest**: via dei Consoli, in discesa |
+| Via dei Consoli | Largo del Bargello | **nord-ovest**: si scende lungo via dei Consoli |
+| Largo del Bargello | San Martino | **ovest**: via dei Consoli prosegue in piano sul Ponte di San Martino fino alla piazza |
+| Strada del Bottaccione | San Martino | **sud-ovest**: rientro in citta' da Porta Metauro, via di Giove Pennino e via Gabrielli |
+| San Martino | Piazza Quaranta Martiri | **sud**: si scende per via Cavour |
+| San Martino | Teatro Romano | **sud-ovest**: via Cavour, poi il sentiero fuori Porta Castello, piu' in basso |
+| Piazza Quaranta Martiri | Teatro Romano | **ovest**: via degli Ortacci e Porta degli Ortacci, poi via Buozzi |
+| Piazza Quaranta Martiri | Via dei Consoli | **nord**: si sale per via Piccardi e via Gattapone e si sbuca in via dei Consoli poco prima di Piazza Grande |
+| Piazza Quaranta Martiri | Via XX Settembre | **nord-est**: si sale per via della Repubblica e le scale di via Oderigi Lucarelli e si sbuca in via XX Settembre poco dopo Piazza Grande |
+| Piazza Quaranta Martiri | San Pietro | **sud-est**: Largo di Porta Marmorea, via Mazzatinti, via Reposati |
+| Piazza Grande | Via XX Settembre | **sud-est**: dall'angolo sud-est oltre il Pretorio, in piano |
+| Via XX Settembre | Sant'Andrea | **sud-est**: in fondo alla via, Largo San Marziale |
+| Sant'Andrea | Sant'Agostino | **sud-est**: via Dante e Porta Romana, si scende |
+| Via XX Settembre | Duomo e Palazzo Ducale | **nord**: si sale per via Federico da Montefeltro, dall'inizio della via vicino a Piazza Grande |
+| Duomo e Palazzo Ducale | Monte Ingino (gli stradoni) | **est**: in salita per via Sant'Ubaldo fino a Porta Sant'Ubaldo |
+| Sant'Andrea | Monte Ingino (gli stradoni) | **nord**: in salita per via Appennino fino a Porta Sant'Ubaldo |
+| Duomo e Palazzo Ducale | Largo del Bargello | **ovest**: si scende per via della Cattedrale fino al Camignano |
+| San Pietro | Sant'Agostino | **est**: via Armanni, corso Garibaldi, via Dante |
+| Monte Ingino (gli stradoni) | Basilica di Sant'Ubaldo | **nord-est**: gli stradoni: la salita lunga fino alla cima |
+| Basilica di Sant'Ubaldo | Strada del Bottaccione | **nord-ovest**: si scende sul versante nord |
 
-**L'anello si chiude.** Piazza Grande → via XX Settembre → stradoni → Basilica → Bottaccione →
-Porta Metauro → San Martino → Bargello → via dei Consoli → Piazza Grande. Chi autora un'area che
-sta sull'anello sta autorando un pezzo di un percorso circolare, non un vicolo cieco.
+**L'anello si chiude.** Piazza Grande → via XX Settembre → Duomo → Monte Ingino (gli stradoni) →
+Basilica → Bottaccione → Porta Metauro → San Martino → Bargello → via dei Consoli → Piazza Grande.
+Chi autora un'area che sta sull'anello sta autorando un pezzo di un percorso circolare, non un
+vicolo cieco.
 
 ---
 

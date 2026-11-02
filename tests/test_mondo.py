@@ -16,6 +16,7 @@ l'autotest C++ in include/mondo_autotest.h.
 import copy
 import importlib.util
 import os
+import re
 import unittest
 
 from _stile import S, RADICE
@@ -213,13 +214,13 @@ class Mondo(unittest.TestCase):
 
     def test_negativa_spawn_a_due_tile_da_un_altro_varco(self):
         """L'arrivo da via dei Consoli spostato a 2 tile dal varco verso San Martino."""
-        sorgenti = sorgenti_con("largo_bargello.area", lambda t: t.replace("spawn 1 15 22", "spawn 1 15 3"))
+        sorgenti = sorgenti_con("largo_bargello.area", lambda t: t.replace("spawn 1 9 22", "spawn 1 15 3"))
         with self.assertRaisesRegex(G.ErroreMondo, "a 2 tile da un varco"):
             G.genera(sorgenti, PALETTE)
 
     def test_negativa_spawn_vicino_alla_propria_uscita(self):
         """(c) L'arrivo da via dei Consoli a 5 tile dal varco B, da cui si entra."""
-        sorgenti = sorgenti_con("largo_bargello.area", lambda t: t.replace("spawn 1 15 22", "spawn 1 18 25"))
+        sorgenti = sorgenti_con("largo_bargello.area", lambda t: t.replace("spawn 1 9 22", "spawn 1 9 25"))
         with self.assertRaisesRegex(G.ErroreMondo, "a 5 tile dalla sua uscita 'B', ne servono almeno 6"):
             G.genera(sorgenti, PALETTE)
 
@@ -317,6 +318,90 @@ class Mondo(unittest.TestCase):
         sorgenti = sorgenti_con("teatro_romano.area", lambda t: t.replace("spawn 1 54 31", "spawn 1 0 0"))
         with self.assertRaisesRegex(G.ErroreMondo, "non e' su una cella calpestabile"):
             G.genera(sorgenti, PALETTE)
+
+    def test_scale_laterali_vicine_a_piazza_grande(self):
+        """Le scale da Quaranta Martiri sbucano nelle due vie poco prima di Piazza Grande: il varco
+        e il suo spawn stanno entro il vicino_a dichiarato dal varco verso la piazza."""
+        consoli = self.aree["via_dei_consoli"]
+        self.assertEqual(consoli["vicino"]["G"][:2], ("B", 16))
+        self.assertLessEqual(G.distanza_dal_varco(consoli, consoli["spawn"][3], "B"), 16)
+        settembre = self.aree["via_xx_settembre"]
+        self.assertEqual({k: v[:2] for k, v in settembre["vicino"].items()}, {"E": ("A", 16), "G": ("A", 20)})
+
+    def test_negativa_scala_laterale_lontana(self):
+        sorgenti = sorgenti_con("via_dei_consoli.area", lambda t: t.replace("vicino_a B 16", "vicino_a B 2"))
+        with self.assertRaisesRegex(G.ErroreMondo, "il varco 'G' e' a \\d+ tile dal varco 'B', ne vuole al massimo 2"):
+            G.genera(sorgenti, PALETTE)
+
+    def test_negativa_spawn_della_scala_laterale_lontano(self):
+        """Il varco resta in cima alla via, ma chi sale da Quaranta Martiri comparirebbe a meta' via."""
+        sorgenti = sorgenti_con("via_xx_settembre.area", lambda t: re.sub(r"spawn 3 \d+ \d+", "spawn 3 16 40", t))
+        with self.assertRaisesRegex(G.ErroreMondo, "lo spawn d'arrivo da 'E' e' a \\d+ tile dal varco 'A'"):
+            G.genera(sorgenti, PALETTE)
+
+    def test_negativa_vicino_a_un_varco_che_non_c_e(self):
+        sorgenti = sorgenti_con("via_dei_consoli.area", lambda t: t.replace("vicino_a B 16", "vicino_a Z 16"))
+        with self.assertRaisesRegex(G.ErroreMondo, "'G' vicino_a 'Z', ma 'Z' non e' un'uscita"):
+            G.genera(sorgenti, PALETTE)
+
+
+def griglie_e_mappe(header):
+    """Da include/mondo.h: {area: (griglia, mappa)} come liste di interi, quelle che usa la ROM."""
+    out = {}
+    for tipo, nome, corpo in re.findall(r"inline constexpr uint8_t (GRIGLIA|MAPPA)_(\w+)\[\d+\] = \{([^}]*)\}", header):
+        out.setdefault(nome, {})[tipo] = [int(v) for v in corpo.replace("\n", " ").split(",") if v.strip()]
+    return {k: (v["GRIGLIA"], v["MAPPA"]) for k, v in out.items()}
+
+
+TILE_CALPESTABILI = {"SUOLO", "STRADA", "SCALINATA", "PORTONE", "VARCO", "INGRESSO"}
+
+
+def errori_fondale(griglia, mappa):
+    """Sotto ogni cella calpestabile (o varco) un tile di suolo, selciato, scala, portone o varco."""
+    prima_solida = list(G.CELLE).index("F")
+    nomi = [n for n, _ in G.TILE_FONDALI]
+    return [(i, nomi[t]) for i, (c, t) in enumerate(zip(griglia, mappa))
+            if (c < prima_solida or c >= G.PRIMO_VARCO) and nomi[t] not in TILE_CALPESTABILI]
+
+
+class FondaleControGriglia(unittest.TestCase):
+    """La mappa BG generata e la griglia di collisione dicono la stessa cosa: dove si cammina non si
+    vede mai un tetto o un muro. Si controllano gli array veri di include/mondo.h."""
+
+    def setUp(self):
+        with open(G.USCITA, encoding="utf-8") as f:
+            self.aree = griglie_e_mappe(f.read())
+
+    def test_quattordici_coppie(self):
+        self.assertEqual(len(self.aree), 14)
+        for nome, (griglia, mappa) in self.aree.items():
+            self.assertEqual(len(griglia), len(mappa), nome)
+
+    def test_dove_si_cammina_mai_tetto_ne_muro(self):
+        for nome, (griglia, mappa) in self.aree.items():
+            self.assertEqual(errori_fondale(griglia, mappa), [], nome)
+
+    def test_negativa_tetto_sotto_una_cella_calpestabile(self):
+        griglia, mappa = self.aree["VIA_DEI_CONSOLI"]
+        i = griglia.index(list(G.CELLE).index(","))
+        mappa = list(mappa)
+        mappa[i] = G.INDICE_TILE["TETTO"]
+        self.assertEqual(errori_fondale(griglia, mappa), [(i, "TETTO")])
+
+    def test_selciato_non_in_cotto(self):
+        """Il selciato e' di pietra: con i colori dei coppi (6-9) si confonderebbe con i tetti."""
+        cotto = {6, 7, 8, 9}
+        self.assertFalse({v for r in G._tile(G.tile_strada) for v in r} & cotto)
+        self.assertTrue({v for r in G._tile(G.tile_tetto) for v in r} & cotto)
+
+    def test_negativa_selciato_in_cotto_preso(self):
+        """Il selciato del primo giro (cotto a spina di pesce) viene riconosciuto come cotto."""
+        def vecchio(x, y):
+            blocco = ((x // 4) + (y // 4)) % 2
+            posizione = (x % 4 if blocco else y % 4)
+            return [9, 8, 8, 7][posizione] if (x + y) % 4 != 3 else 6
+        self.assertTrue({v for r in G._tile(vecchio) for v in r} & {6, 7, 8, 9})
+
 
 class Fondali(unittest.TestCase):
 

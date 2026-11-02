@@ -79,9 +79,11 @@ class Grafo(unittest.TestCase):
         self.assertEqual(M.errori_connessione(GRAFO), [])
 
     def test_arco_tolto_isola_un_area(self):
-        """Prova negativa: senza l'arco San Martino > Teatro, il Teatro resta isolato."""
+        """Prova negativa: senza i due archi del Teatro (da San Martino e da Quaranta Martiri) il
+        Teatro resta isolato."""
         g = guasto()
         g["archi"].remove(arco(g, "SAN_MARTINO", "TEATRO_ROMANO"))
+        g["archi"].remove(arco(g, "PIAZZA_QUARANTA_MARTIRI", "TEATRO_ROMANO"))
         self.assertEqual(M.errori_connessione(g), ["area irraggiungibile: TEATRO_ROMANO"])
 
     def test_anello_chiuso(self):
@@ -190,20 +192,23 @@ class Direzioni(unittest.TestCase):
 
     def test_lati_attesi_quaranta_martiri(self):
         """Quaranta Martiri: San Martino e via dei Consoli a destra (nord), San Pietro e via XX
-        Settembre in basso (est)."""
+        Settembre in basso (est), il Teatro in alto (ovest)."""
         lati = {v["verso"]: v["lato"] for v in M.calcola_varchi(GRAFO, CENS)["PIAZZA_QUARANTA_MARTIRI"]}
-        self.assertEqual(lati, {"SAN_MARTINO": "destra", "VIA_DEI_CONSOLI": "destra",
-                                "SAN_PIETRO": "basso", "VIA_XX_SETTEMBRE": "basso"})
+        self.assertEqual(lati, {"SAN_MARTINO": "destra", "VIA_DEI_CONSOLI": "destra", "SAN_PIETRO": "basso",
+                                "VIA_XX_SETTEMBRE": "basso", "TEATRO_ROMANO": "alto"})
 
     def test_lati_attesi_ordine_nuovo(self):
-        """Via XX Settembre > Sant'Andrea > Sant'Agostino, tutti verso sud-est; da via XX Settembre si
-        sale anche al Monte (a destra, nord) e si scende a Quaranta Martiri (in alto, ovest)."""
+        """Rete stradale OSM: da via XX Settembre si va a Sant'Andrea (in basso, sud-est), si sale al
+        Duomo (a destra, nord) e si scende a Quaranta Martiri (in alto); da Sant'Andrea al Monte."""
         var = M.calcola_varchi(GRAFO, CENS)
         lati = lambda aid: {v["verso"]: v["lato"] for v in var[aid]}  # noqa: E731
         self.assertEqual(lati("VIA_XX_SETTEMBRE"), {"PIAZZA_GRANDE": "alto", "SANT_ANDREA": "basso",
-                                                    "PIAZZA_QUARANTA_MARTIRI": "alto", "MONTE_INGINO": "destra"})
-        self.assertEqual(lati("SANT_ANDREA"), {"VIA_XX_SETTEMBRE": "alto", "SANT_AGOSTINO": "sinistra"})
-        self.assertEqual(lati("SANT_AGOSTINO"), {"SANT_ANDREA": "destra"})
+                                                    "PIAZZA_QUARANTA_MARTIRI": "alto", "DUOMO_DUCALE": "destra"})
+        self.assertEqual(lati("SANT_ANDREA"), {"VIA_XX_SETTEMBRE": "alto", "SANT_AGOSTINO": "sinistra",
+                                               "MONTE_INGINO": "destra"})
+        self.assertEqual(lati("SANT_AGOSTINO"), {"SANT_ANDREA": "destra", "SAN_PIETRO": "alto"})
+        self.assertEqual(lati("DUOMO_DUCALE"), {"LARGO_BARGELLO": "alto", "MONTE_INGINO": "basso",
+                                                "VIA_XX_SETTEMBRE": "sinistra"})
 
 
 class Monumenti(unittest.TestCase):
