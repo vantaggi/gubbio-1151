@@ -134,17 +134,17 @@ namespace
     {
         Battaglia b(0, 1);
 
-        if(bersaglio_predefinito(b, Puntamento::NEMICI) != 0 || prossimo_bersaglio(b, Puntamento::NEMICI, 0, 1) != 1 ||
-           prossimo_bersaglio(b, Puntamento::NEMICI, 2, 1) != 0 || prossimo_bersaglio(b, Puntamento::NEMICI, 0, -1) != 2 ||
-           prossimo_bersaglio(b, Puntamento::ALLEATI, 2, 1) != 0)
+        if(bersaglio_predefinito(b, Puntamento::NEMICO) != 0 || prossimo_bersaglio(b, Puntamento::NEMICO, 0, 1) != 1 ||
+           prossimo_bersaglio(b, Puntamento::NEMICO, 2, 1) != 0 || prossimo_bersaglio(b, Puntamento::NEMICO, 0, -1) != 2 ||
+           prossimo_bersaglio(b, Puntamento::ALLEATO, 2, 1) != 0)
         {
             return false;
         }
 
-        if(mira_del_comando({ TipoComando::USA_ABILITA, AbilitaId::MURO_DELLA_FEDE, -1, 0 }) != Puntamento::ALLEATI ||
-           mira_del_comando({ TipoComando::USA_ABILITA, AbilitaId::BASTIONE_AZZURRO, -1, 0 }) != Puntamento::NESSUNA ||
-           mira_del_comando({ TipoComando::SUPREMA, AbilitaId::FENDENTE_DEL_DRAGO, -1, 3 }) != Puntamento::NESSUNA ||
-           mira_del_comando({ TipoComando::USA_ABILITA, AbilitaId::ATTACCO, -1, 0 }) != Puntamento::NEMICI)
+        if(mira_del_comando({ TipoComando::USA_ABILITA, AbilitaId::MURO_DELLA_FEDE, -1, 0 }) != Puntamento::ALLEATO ||
+           mira_del_comando({ TipoComando::USA_ABILITA, AbilitaId::BASTIONE_AZZURRO, -1, 0 }) != Puntamento::NESSUNO ||
+           mira_del_comando({ TipoComando::SUPREMA, AbilitaId::FENDENTE_DEL_DRAGO, -1, 3 }) != Puntamento::NESSUNO ||
+           mira_del_comando({ TipoComando::USA_ABILITA, AbilitaId::ATTACCO, -1, 0 }) != Puntamento::NEMICO)
         {
             return false;
         }
@@ -158,7 +158,7 @@ namespace
         {
             for(int passo = -1; passo <= 1; passo += 2)
             {
-                int j = prossimo_bersaglio(b, Puntamento::NEMICI, i, passo);
+                int j = prossimo_bersaglio(b, Puntamento::NEMICO, i, passo);
 
                 if(! b.nemico(j).vivo() && (b.nemico(0).vivo() || b.nemico(1).vivo() || b.nemico(2).vivo()))
                 {

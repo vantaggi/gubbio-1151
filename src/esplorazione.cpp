@@ -120,6 +120,15 @@ void Esplorazione::entra(mondo::AreaId id, int spawn)
     _carica_fondale();
 }
 
+void Esplorazione::riprendi(mondo::AreaId id, int x, int y)
+{
+    _e.area = id;
+    _e.x = x;
+    _e.y = y;
+    _e.varco_sotto = -1;
+    _carica_fondale();
+}
+
 void Esplorazione::_carica_fondale()
 {
     // Le celle sono gia' in ROM (include/mondo.h): Butano le copia in VRAM, o per una big map ne

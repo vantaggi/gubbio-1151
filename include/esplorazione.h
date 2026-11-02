@@ -25,6 +25,9 @@ public:
 
     void entra(mondo::AreaId id, int spawn);
 
+    // Rimette il giocatore dove l'ha lasciato un salvataggio: area e piedi in pixel.
+    void riprendi(mondo::AreaId id, int x, int y);
+
     // Input di un frame: dx, dy in -1..1, 'passi' pixel per asse. Ignorato durante una dissolvenza.
     void muovi(int dx, int dy, int passi);
 
