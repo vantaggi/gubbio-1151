@@ -1,9 +1,9 @@
 # La prova del motore di regia (F7, pezzo U): quattro piani in parallasse, due stacchi, il narratore
 # nelle bande. Le cutscene vere (C1-C4) arrivano coi pezzi W e X.
 cutscene C0 | Prova del motore di regia
-inquadratura 8 | cielo monti citta prato | 12
+inquadratura 8 | cielo_prova monti citta prato | 12
 narratore R_P_01_00
 narratore R_P_01_01
-inquadratura 5 | cielo monti | 12
+inquadratura 5 | cielo_prova monti | 12
 narratore R_P_01_02
-inquadratura 4 | cielo citta prato | 24
+inquadratura 4 | cielo_prova citta prato | 24

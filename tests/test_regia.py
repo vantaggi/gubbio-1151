@@ -20,7 +20,7 @@ GT = importlib.util.module_from_spec(_spec_t)
 _spec_t.loader.exec_module(GT)
 
 PALETTE = S.carica("palette")
-PROVA = "cutscene CX | prova\ninquadratura {secondi} | cielo monti | 12\nnarratore {battuta}\n"
+PROVA = "cutscene CX | prova\ninquadratura {secondi} | cielo_prova monti | 12\nnarratore {battuta}\n"
 
 
 class Regia(unittest.TestCase):
@@ -67,11 +67,54 @@ class Regia(unittest.TestCase):
             GR.leggi("cinque.regia", "cutscene C9 | x\ninquadratura 2 | cielo monti citta prato cielo | 12\n")
 
     def test_piani_con_la_palette_bloccata(self):
-        colori = {c for r in PALETTE["rampe"] for c in r["giorno"]}
-        self.assertTrue(all(S.colore(PALETTE, r) in colori for r in GR.PALETTE_SFONDO))
+        giorno = {c for r in PALETTE["rampe"] for c in r["giorno"]}
+        notte = {c for r in PALETTE["rampe"] for c in r["notte"]}
         for nome, pittore in GR.PIANI.items():
-            usati = {c for riga in pittore().px for c in riga}
-            self.assertTrue(usati <= set(range(16)), nome)
+            for momento in GR.PP.MOMENTI:
+                tela, palette, di_notte = pittore(momento)
+                self.assertEqual(len(palette), 16, nome)
+                colori = {S.colore(PALETTE, r, di_notte) for r in palette}
+                self.assertTrue(colori <= (notte if di_notte else giorno), (nome, momento))
+                self.assertTrue({c for riga in tela.px for c in riga} <= set(range(16)), nome)
+
+
+class Panorami(unittest.TestCase):
+    """Pezzo V: Gubbio vista dalla valle (tools/pittore_panorami.py), dal censimento."""
+
+    def test_monumenti_dal_censimento(self):
+        m = {nome: (x, base, alto) for nome, x, base, alto, _ in GR.PP.monumenti_dalla_valle()}
+        for nome in ("consoli", "duomo", "san_francesco", "san_pietro", "sant_agostino", "san_domenico"):
+            self.assertIn(nome, m)
+        # vista da sud-ovest: San Domenico (a nord-ovest) a sinistra di Sant'Agostino (a sud-est)
+        self.assertLess(m["san_domenico"][0], m["sant_agostino"][0])
+        # la torre dei Consoli (60 m) e' il monumento piu' alto
+        self.assertEqual(max(m, key=lambda k: m[k][2]), "consoli")
+        # il Duomo (109 m) sta piu' in alto sul pendio di San Francesco (0 m)
+        self.assertLess(m["duomo"][1], m["san_francesco"][1])
+
+    def test_negativa_monumento_inventato(self):
+        self.assertNotIn("torre_inventata", {n for n, _, _, _, _ in GR.PP.monumenti_dalla_valle()})
+
+    def test_la_notte_e_la_trasformata(self):
+        for nome in ("cielo", "monte", "gubbio", "campo"):
+            _, palette, notte = GR.PIANI[nome]("notte")
+            _, palette_g, giorno_notte = GR.PIANI[nome]("giorno")
+            self.assertTrue(notte)
+            self.assertFalse(giorno_notte)
+            self.assertNotEqual([S.colore(PALETTE, r, True) for r in palette], [S.colore(PALETTE, r) for r in palette_g])
+
+    def test_i_fuochi_del_campo_di_notte(self):
+        def fuochi(momento):
+            tela, _, _ = GR.PP.campo(momento)
+            return sum(r.count(GR.PP.ORO) for r in tela.px)
+        self.assertGreater(fuochi("notte"), 50)
+        self.assertEqual(fuochi("giorno"), 0)
+
+    def test_i_panorami_nel_budget(self):
+        dipinti = GR.dipingi_piani(["cielo:notte", "monte:notte", "gubbio:notte", "campo:notte"])
+        tile = sum(len(v[0]) for v in dipinti.values())
+        self.assertLessEqual(max(len(v[0]) for v in dipinti.values()), GR.TILE_MAX_PER_PIANO)
+        self.assertLess(tile * 32 + 4 * 2048 * 2, 64 * 1024, "tile e mappe di un'inquadratura nella VRAM dei BG")
 
     def test_prove_del_lettore_in_cpp(self):
         autotest = open(os.path.join(RADICE, "src", "autotest_regia.cpp"), encoding="utf-8").read()
