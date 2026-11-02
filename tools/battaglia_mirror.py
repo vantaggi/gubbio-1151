@@ -38,9 +38,10 @@ FERVORE_ANTONIO_USTIONE = 10
 VARIANZA_MINIMA, VARIANZA_PASSI = 90, 21
 ROUND_MAX = 40
 
-NEMICO_B, ALLEATO_B = 0, 1
-NESSUN_EFFETTO, USTIONE, MURO, BASTIONE = range(4)
-ATTACCO, MURO_DELLA_FEDE, GIUDIZIO, FENDENTE, BASTIONE_AZZURRO, FUOCO, COLPO_NEMICO = range(7)
+NEMICO_B, ALLEATO_B, SE_STESSO_B = 0, 1, 2
+NESSUN_EFFETTO, USTIONE, MURO, BASTIONE, DIFESA_SU = range(5)
+DIFESA_SU_PERCENTO = 50
+ATTACCO, MURO_DELLA_FEDE, GIUDIZIO, FENDENTE, BASTIONE_AZZURRO, FUOCO, COLPO_NEMICO, SCUDO_DI_FORGIA, MARTELLO = range(9)
 # (elemento, bersaglio, effetto, costo, potenza, danno_mistico, perforazione, priorita)
 ABILITA = [
     (FISICO, NEMICO_B, NESSUN_EFFETTO, 0, 100, 0, 0, 0),
@@ -50,6 +51,8 @@ ABILITA = [
     (NESSUNO, ALLEATO_B, BASTIONE, 15, 0, 0, 0, 8),
     (FIAMMA, NEMICO_B, USTIONE, 15, 0, 40, 0, 0),
     (FISICO, NEMICO_B, NESSUN_EFFETTO, 0, 100, 0, 0, 0),
+    (NESSUNO, SE_STESSO_B, DIFESA_SU, 0, 0, 0, 0, 6),
+    (FISICO, NEMICO_B, NESSUN_EFFETTO, 0, 220, 0, 25, -4),
 ]
 EROI, UBALDO, GIORGIO, ANTONIO = 3, 0, 1, 2
 # (pv, fervore, attacco, difesa, mistico, resistenza, velocita, scudo, debolezza, resiste)
@@ -60,19 +63,34 @@ STATISTICHE_EROI = [
 ]
 FERVORE_INIZIALE = [80, 45, 20]
 ABILITA_FIRMA = [GIUDIZIO, FENDENTE, FUOCO]
-# (statistiche, azioni per turno, immune al taglio)
+# IA a regole: (condizione, param, limite, abilita, mira, param_mira)
+SEMPRE, ROUND_UGUALE, ROUND_PARI, ROUND_DISPARI = range(4)
+RIPETIBILE, UNA_PER_ROUND, UNA_PER_BATTAGLIA = range(3)
+MENO_DIFESA, MENO_PV, EROE, SE_STESSO = range(4)
+REGOLE = [
+    (SEMPRE, 0, RIPETIBILE, COLPO_NEMICO, MENO_DIFESA, 0),
+    (SEMPRE, 0, RIPETIBILE, COLPO_NEMICO, MENO_PV, 0),
+    (ROUND_UGUALE, 1, UNA_PER_BATTAGLIA, SCUDO_DI_FORGIA, SE_STESSO, 0),
+    (ROUND_PARI, 0, UNA_PER_ROUND, MARTELLO, EROE, GIORGIO),
+    (SEMPRE, 0, RIPETIBILE, COLPO_NEMICO, MENO_DIFESA, 0),
+]
+SCRIPT_MOB, SCRIPT_SPIA, SCRIPT_CORRADO = range(3)
+SCRIPT = [(0, 1), (1, 1), (2, 3)]
+# (statistiche, azioni per turno, immune al taglio, script)
 NEMICI = [
-    ((228, 0, 45, 40, 8, 20, 26, 2, FIAMMA, NESSUNO), 1, False),
-    ((456, 0, 62, 55, 12, 26, 34, 3, FEDE, FISICO), 1, False),
-    ((1520, 0, 95, 60, 20, 30, 22, 4, FIAMMA, FISICO), 2, True),
+    ((228, 0, 45, 40, 8, 20, 26, 2, FIAMMA, NESSUNO), 1, False, SCRIPT_MOB),
+    ((456, 0, 62, 55, 12, 26, 34, 3, FEDE, FISICO), 1, False, SCRIPT_MOB),
+    ((1520, 0, 95, 60, 20, 30, 22, 4, FIAMMA, FISICO), 2, True, SCRIPT_CORRADO),
+    ((180, 0, 50, 30, 10, 22, 44, 2, FEDE, NESSUNO), 1, False, SCRIPT_SPIA),
 ]
 NEMICI_MAX = 6
-INCONTRO = [[0, 0, 1], [2]]
+INCONTRO = [[0, 0, 1], [3, 3, 3], [2]]
+NOMI_INCONTRI = ["Pattuglia Perugina", "Imboscata agli Stradoni", "Duello con Corrado"]
 
 (HIT, SHIELD_BREAK, BARRIER_ABSORB, GUARD_REDIRECT, FERVOR_GAIN, BURN_TICK, DEFEAT, BARRIER_UP, GUARD_UP,
- CHARGE, BREAK_SKIP, IMMUNE) = range(12)
+ CHARGE, BREAK_SKIP, IMMUNE, FERVOR_SPEND, DEF_UP) = range(14)
 EVENT_KINDS = ["HIT", "SHIELD_BREAK", "BARRIER_ABSORB", "GUARD_REDIRECT", "FERVOR_GAIN", "BURN_TICK", "DEFEAT",
-               "BARRIER_UP", "GUARD_UP", "CHARGE", "BREAK_SKIP", "IMMUNE"]
+               "BARRIER_UP", "GUARD_UP", "CHARGE", "BREAK_SKIP", "IMMUNE", "FERVOR_SPEND", "DEF_UP"]
 IN_CORSO, VITTORIA, SCONFITTA, PARITA = range(4)
 T_ABILITA, T_CARICA, T_SUPREMA = range(3)
 M32 = 0xFFFFFFFF
@@ -115,12 +133,18 @@ class Unita:
         self.nemico = nemico
         self.azioni = 1
         self.immune_al_taglio = False
+        self.difesa_bonus = 0
+        self.script = 0
+        self.ia_round = 0
+        self.ia_battaglia = 0
+        self.ia_round_bit = 0
 
     def vivo(self):
         return self.pv > 0
 
     def difesa_effettiva(self):
-        return idiv(self.difesa, 2) if self.rotto > 0 else self.difesa
+        d = idiv(self.difesa * (100 + self.difesa_bonus), 100)
+        return idiv(d, 2) if self.rotto > 0 else d
 
     def resistenza_effettiva(self):
         return idiv(self.resistenza, 2) if self.rotto > 0 else self.resistenza
@@ -164,9 +188,10 @@ class Firma:
 class Battaglia:
     """Opzioni per le prove negative: senza_redirect toglie l'emissione di GUARD_REDIRECT."""
 
-    def __init__(self, incontro, seme, senza_redirect=False):
+    def __init__(self, incontro, seme, senza_redirect=False, pilota_debole=False):
         self.caso = Caso(seme)
         self.senza_redirect = senza_redirect
+        self.pilota_debole = pilota_debole
         self.eroi = []
         for e in range(EROI):
             u = Unita(STATISTICHE_EROI[e], False)
@@ -174,10 +199,11 @@ class Battaglia:
             self.eroi.append(u)
         self.nemici = []
         for n in INCONTRO[incontro]:
-            s, azioni, immune = NEMICI[n]
+            s, azioni, immune, script = NEMICI[n]
             u = Unita(s, True)
             u.azioni = azioni
             u.immune_al_taglio = immune
+            u.script = script
             self.nemici.append(u)
         self.firma = Firma()
         self.comandi = [None] * EROI
@@ -218,6 +244,9 @@ class Battaglia:
         for e, eroe in enumerate(self.eroi):
             if not eroe.vivo():
                 self.comandi[e] = (T_ABILITA, ATTACCO, -1, 0)
+                continue
+            if self.pilota_debole:
+                self.comandi[e] = (T_ABILITA, ATTACCO, self.primo_vivo(True), 0)
                 continue
             firma = ABILITA_FIRMA[e]
             costo_suprema = ABILITA[firma][3] + BOOST_COSTO[BOOST_SUPREMA]
@@ -261,6 +290,18 @@ class Battaglia:
                     c = (T_ABILITA, ATTACCO, self.primo_vivo(True), 0)
             self.comandi[e] = c
 
+    def mira(self, m, param):
+        if m == EROE and 0 <= param < EROI and self.eroi[param].vivo():
+            return param
+        scelto = -1
+        for e, eroe in enumerate(self.eroi):
+            if not eroe.vivo():
+                continue
+            if scelto < 0 or (eroe.pv < self.eroi[scelto].pv if m == MENO_PV
+                              else eroe.difesa_effettiva() < self.eroi[scelto].difesa_effettiva()):
+                scelto = e
+        return scelto
+
     def prepara_coda(self):
         self.azioni = []
         for e, eroe in enumerate(self.eroi):
@@ -272,19 +313,38 @@ class Battaglia:
         for n, nemico in enumerate(self.nemici):
             if not nemico.vivo() or fine:
                 continue
-            for k in range(nemico.azioni):
-                scelto = -1
-                for e, eroe in enumerate(self.eroi):
-                    if not eroe.vivo():
-                        continue
-                    if scelto < 0 or (eroe.difesa_effettiva() < self.eroi[scelto].difesa_effettiva() if k == 0
-                                      else eroe.pv < self.eroi[scelto].pv):
-                        scelto = e
-                if scelto < 0:
-                    fine = True
+            if nemico.rotto > 0:
+                for _ in range(nemico.azioni):
+                    self.azioni.append((True, n, (T_ABILITA, COLPO_NEMICO, -1, 0), nemico.velocita))
+                continue
+            nemico.ia_round += 1
+            for _ in range(nemico.azioni):
+                if fine:
                     break
-                self.azioni.append((True, n, (T_ABILITA, COLPO_NEMICO, scelto, 0),
-                                    nemico.velocita + ABILITA[COLPO_NEMICO][7]))
+                prima, quante = SCRIPT[nemico.script]
+                for r in range(quante):
+                    cond, param, limite, ab, m, param_mira = REGOLE[prima + r]
+                    regge = (cond == SEMPRE or (cond == ROUND_UGUALE and nemico.ia_round == param) or
+                             (cond == ROUND_PARI and nemico.ia_round % 2 == 0) or
+                             (cond == ROUND_DISPARI and nemico.ia_round % 2 == 1))
+                    if not regge:
+                        continue
+                    bit = 1 << r
+                    if limite != RIPETIBILE:
+                        if limite == UNA_PER_BATTAGLIA:
+                            if nemico.ia_battaglia & bit:
+                                continue
+                            nemico.ia_battaglia |= bit
+                        else:
+                            if nemico.ia_round_bit & bit:
+                                continue
+                            nemico.ia_round_bit |= bit
+                    bersaglio = n if m == SE_STESSO else self.mira(m, param_mira)
+                    if bersaglio < 0:
+                        fine = True
+                        break
+                    self.azioni.append((True, n, (T_ABILITA, ab, bersaglio, 0), nemico.velocita + ABILITA[ab][7]))
+                    break
         # insertion sort stabile, decrescente
         for i in range(1, len(self.azioni)):
             chiave = self.azioni[i]
@@ -312,6 +372,8 @@ class Battaglia:
         if attore.fervore < costo:
             return
         attore.fervore -= costo
+        if costo > 0:
+            self.emetti(FERVOR_SPEND, an, slot, an, slot, costo, attore.fervore)
         if tipo == T_SUPREMA:
             attore.carica = False
         if ab[2] == MURO:
@@ -322,6 +384,11 @@ class Battaglia:
             self.eroi[bersaglio].barriera += punti
             attore.fervore = min(attore.fervore_max, attore.fervore + FERVORE_UBALDO_SOSTEGNO)
             self.emetti(BARRIER_UP, False, slot, False, bersaglio, punti, self.eroi[bersaglio].pv)
+            self.emetti(FERVOR_GAIN, False, slot, False, slot, FERVORE_UBALDO_SOSTEGNO, attore.fervore)
+            return
+        if ab[2] == DIFESA_SU:
+            attore.difesa_bonus = DIFESA_SU_PERCENTO
+            self.emetti(DEF_UP, an, slot, an, slot, DIFESA_SU_PERCENTO, attore.pv)
             return
         if ab[2] == BASTIONE:
             attore.guardia = DURATA_GUARDIA + boost
@@ -379,7 +446,7 @@ class Battaglia:
             self.emetti(DEFEAT, an, a_slot, lato_nemico, slot, 0, 0)
         if not lato_nemico and slot == GIORGIO and elemento == FISICO and b.vivo():
             b.fervore = min(b.fervore_max, b.fervore + FERVORE_GIORGIO_COLPITO)
-            self.emetti(FERVOR_GAIN, an, a_slot, False, slot, FERVORE_GIORGIO_COLPITO, b.pv)
+            self.emetti(FERVOR_GAIN, an, a_slot, False, slot, FERVORE_GIORGIO_COLPITO, b.fervore)
         if effetto == USTIONE and b.vivo():
             b.ustione_cariche = min(USTIONE_CARICHE_MAX, b.ustione_cariche + 1)
             b.ustione_danno = max(1, idiv(attore.mistico * USTIONE_PERCENTO_MISTICO, 100))
@@ -395,12 +462,14 @@ class Battaglia:
             if nemico and self.eroi[ANTONIO].vivo():
                 antonio = self.eroi[ANTONIO]
                 antonio.fervore = min(antonio.fervore_max, antonio.fervore + FERVORE_ANTONIO_USTIONE)
+                self.emetti(FERVOR_GAIN, nemico, slot, False, ANTONIO, FERVORE_ANTONIO_USTIONE, antonio.fervore)
             u.ustione_turni -= 1
             if u.ustione_turni <= 0:
                 u.ustione_cariche = 0
                 u.ustione_turni = 0
         if u.guardia > 0:
             u.guardia -= 1
+        u.ia_round_bit = 0
         if u.rotto > 0:
             u.rotto -= 1
             if u.rotto == 0:
@@ -433,8 +502,11 @@ def gioca(incontro, seme, **opzioni):
     return Battaglia(incontro, seme, **opzioni).gioca()
 
 
+PILOTI = (False, True)      # forte, debole
+
+
 def tutte_le_firme():
-    return {(i, s): gioca(i, s) for i in range(len(INCONTRO)) for s in SEMI}
+    return {(i, s, d): gioca(i, s, pilota_debole=d) for d in PILOTI for i in range(len(INCONTRO)) for s in SEMI}
 
 
 def header(firme):
@@ -453,6 +525,7 @@ def header(firme):
            "{",
            "    int incontro;",
            "    uint32_t seme;",
+           "    bool pilota_debole;",
            "    uint32_t hash;",
            "    int eventi;",
            "    int round;",
@@ -463,8 +536,9 @@ def header(firme):
            f"inline constexpr int ATTESE_CONTEGGIO = {len(firme)};",
            "inline constexpr Attesa ATTESE[ATTESE_CONTEGGIO] = {"]
     esiti = ["IN_CORSO", "VITTORIA", "SCONFITTA", "PARITA"]
-    for (i, s), f in sorted(firme.items()):
-        out.append(f"    {{ {i}, {s}, 0x{f.hash:08X}u, {f.eventi}, {f.round}, Esito::{esiti[f.esito]}, 0x{f.tipi:04X}u }},")
+    for (i, s, d), f in sorted(firme.items()):
+        out.append(f"    {{ {i}, {s}, {'true' if d else 'false'}, 0x{f.hash:08X}u, {f.eventi}, {f.round}, "
+                   f"Esito::{esiti[f.esito]}, 0x{f.tipi:04X}u }},")
     out += ["};", "", "}", "", "#endif", ""]
     return "\n".join(out)
 

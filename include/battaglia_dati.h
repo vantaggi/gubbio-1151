@@ -49,6 +49,7 @@ enum class Bersaglio : uint8_t
 {
     NEMICO,
     ALLEATO,
+    SE_STESSO,
 };
 
 enum class Effetto : uint8_t
@@ -57,7 +58,10 @@ enum class Effetto : uint8_t
     USTIONE,
     MURO_DELLA_FEDE,
     BASTIONE,
+    DIFESA_SU,
 };
+
+inline constexpr int DIFESA_SU_PERCENTO = 50;   // Scudo di Forgia: +50% di Difesa, per tutta la battaglia
 
 enum class AbilitaId : uint8_t
 {
@@ -68,6 +72,8 @@ enum class AbilitaId : uint8_t
     BASTIONE_AZZURRO,
     FUOCO_DI_SANTANTONIO,
     COLPO_NEMICO,
+    SCUDO_DI_FORGIA,
+    MARTELLO_DASSEDIO,
     CONTEGGIO,
 };
 
@@ -91,6 +97,9 @@ inline constexpr Abilita ABILITA[int(AbilitaId::CONTEGGIO)] = {
     { Elemento::NESSUNO, Bersaglio::ALLEATO, Effetto::BASTIONE,       15,   0,  0,  0, 8 },  // Bastione Azzurro
     { Elemento::FIAMMA,  Bersaglio::NEMICO,  Effetto::USTIONE,        15,   0, 40,  0, 0 },  // Fuoco di Sant'Antonio
     { Elemento::FISICO,  Bersaglio::NEMICO,  Effetto::NESSUNO,         0, 100,  0,  0, 0 },  // Colpo (nemici)
+    // Le due abilita' di Corrado, da docs/piano_ia_boss.md del prototipo (Sezione 26A del GDD).
+    { Elemento::NESSUNO, Bersaglio::SE_STESSO, Effetto::DIFESA_SU,     0,   0,  0,  0, 6 },  // Scudo di Forgia
+    { Elemento::FISICO,  Bersaglio::NEMICO,  Effetto::NESSUNO,         0, 220,  0, 25, -4 }, // Martello d'Assedio
 };
 
 // I tre Santi (Sezione 5 del GDD). Fervore d'ingresso in percentuale del pool.
@@ -127,20 +136,86 @@ enum class NemicoId : uint8_t
     FANTE_DI_PERUGIA,
     BALESTRIERE_PESANTE,
     CORRADO_DI_SPOLETO,
+    SPIA_UMBRA,
     CONTEGGIO,
 };
+
+// L'IA a regole (docs/piano_ia_boss.md del prototipo): le regole di uno script si valutano in
+// ordine, vince la prima che regge; UNA_PER_ROUND e UNA_PER_BATTAGLIA usano un bit per regola.
+enum class Condizione : uint8_t
+{
+    SEMPRE,
+    ROUND_UGUALE,       // il round dell'unita' e' uguale a param
+    ROUND_PARI,
+    ROUND_DISPARI,
+};
+
+enum class Limite : uint8_t
+{
+    RIPETIBILE,
+    UNA_PER_ROUND,
+    UNA_PER_BATTAGLIA,
+};
+
+enum class Mira : uint8_t
+{
+    MENO_DIFESA,
+    MENO_PV,
+    EROE,               // l'eroe param, se vivo; se no, chi ha meno Difesa
+    SE_STESSO,
+};
+
+struct Regola
+{
+    Condizione condizione;
+    int param;
+    Limite limite;
+    AbilitaId abilita;
+    Mira mira;
+    int param_mira;
+};
+
+inline constexpr int REGOLE_MAX_PER_SCRIPT = 8;
+
+struct Script
+{
+    int prima;
+    int quante;
+};
+
+inline constexpr Regola REGOLE[] = {
+    // 0. il mob comune: colpisce chi ha meno Difesa (Sezione 13D del GDD)
+    { Condizione::SEMPRE, 0, Limite::RIPETIBILE, AbilitaId::COLPO_NEMICO, Mira::MENO_DIFESA, 0 },
+    // 1. la spia umbra: colpisce chi ha meno PV
+    { Condizione::SEMPRE, 0, Limite::RIPETIBILE, AbilitaId::COLPO_NEMICO, Mira::MENO_PV, 0 },
+    // 2-4. Corrado di Spoleto: al primo round lo Scudo di Forgia su se stesso (una volta per
+    // battaglia), nei round pari il Martello d'Assedio su San Giorgio (una volta per round), sempre
+    // il Colpo su chi ha meno Difesa
+    { Condizione::ROUND_UGUALE, 1, Limite::UNA_PER_BATTAGLIA, AbilitaId::SCUDO_DI_FORGIA, Mira::SE_STESSO, 0 },
+    { Condizione::ROUND_PARI, 0, Limite::UNA_PER_ROUND, AbilitaId::MARTELLO_DASSEDIO, Mira::EROE, GIORGIO },
+    { Condizione::SEMPRE, 0, Limite::RIPETIBILE, AbilitaId::COLPO_NEMICO, Mira::MENO_DIFESA, 0 },
+};
+
+inline constexpr int SCRIPT_MOB = 0;
+inline constexpr int SCRIPT_SPIA = 1;
+inline constexpr int SCRIPT_CORRADO = 2;
+inline constexpr Script SCRIPT[] = { { 0, 1 }, { 1, 1 }, { 2, 3 } };
 
 struct Nemico
 {
     Statistiche statistiche;
     int azioni_per_turno;       // il boss due, i comuni una (decisione del piano F4)
     bool immune_al_taglio;      // Corrado: il fisico non lo scalfisce finche' non e' ustionato
+    int script;
 };
 
 inline constexpr Nemico NEMICI[int(NemicoId::CONTEGGIO)] = {
-    { { 228, 0, 45, 40,  8, 20, 26, 2, Elemento::FIAMMA, Elemento::NESSUNO }, 1, false },  // Fante di Perugia
-    { { 456, 0, 62, 55, 12, 26, 34, 3, Elemento::FEDE,   Elemento::FISICO },  1, false },  // Balestriere Pesante
-    { { 1520, 0, 95, 60, 20, 30, 22, 4, Elemento::FIAMMA, Elemento::FISICO }, 2, true },   // Corrado di Spoleto
+    { { 228, 0, 45, 40,  8, 20, 26, 2, Elemento::FIAMMA, Elemento::NESSUNO }, 1, false, SCRIPT_MOB },     // Fante di Perugia
+    { { 456, 0, 62, 55, 12, 26, 34, 3, Elemento::FEDE,   Elemento::FISICO },  1, false, SCRIPT_MOB },     // Balestriere Pesante
+    { { 1520, 0, 95, 60, 20, 30, 22, 4, Elemento::FIAMMA, Elemento::FISICO }, 2, true, SCRIPT_CORRADO },  // Corrado di Spoleto
+    // La spia umbra dell'imboscata agli Stradoni (copione v1, A1-07): nel GDD non ha numeri.
+    // Provvisoria, da tarare: rapida e fragile, debole alla Fede.
+    { { 180, 0, 50, 30, 10, 22, 44, 2, Elemento::FEDE,   Elemento::NESSUNO }, 1, false, SCRIPT_SPIA },    // Spia umbra
 };
 
 inline constexpr int NEMICI_MAX = 6;
@@ -151,9 +226,10 @@ struct Incontro
     NemicoId schieramento[NEMICI_MAX];
 };
 
-inline constexpr int INCONTRI = 2;
+inline constexpr int INCONTRI = 3;
 inline constexpr Incontro INCONTRO[INCONTRI] = {
     { 3, { NemicoId::FANTE_DI_PERUGIA, NemicoId::FANTE_DI_PERUGIA, NemicoId::BALESTRIERE_PESANTE } },  // Pattuglia Perugina
+    { 3, { NemicoId::SPIA_UMBRA, NemicoId::SPIA_UMBRA, NemicoId::SPIA_UMBRA } },                      // Imboscata agli Stradoni
     { 1, { NemicoId::CORRADO_DI_SPOLETO } },                                                          // Duello con Corrado
 };
 
