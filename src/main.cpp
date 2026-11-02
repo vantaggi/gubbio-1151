@@ -20,7 +20,7 @@
 // sceglie il modo come se il tasto fosse premuto: 1 camminata, 2 istantanee, 3 prova della battaglia,
 // 4 i tre scontri giocabili a mano, 5 le istantanee della battaglia, 6 la prova del salvataggio,
 // 7 le istantanee del titolo e della pausa, 8 la storia intera senza camminare, 9 il prologo giocabile
-// col pilota, 10 le cutscene con le istantanee
+// col pilota, 10 le cutscene con le istantanee, 11 le figure degli NPC
 // (make USERFLAGS=-DGUBBIO_AVVIO=1). Senza modo di prova: il titolo, poi la partita; Start apre la pausa.
 #ifndef GUBBIO_AVVIO
     #define GUBBIO_AVVIO 0
@@ -114,6 +114,11 @@ int main()
     if(GUBBIO_AVVIO == 9)
     {
         gubbio::prova_prologo(esplorazione, palette);
+    }
+
+    if(GUBBIO_AVVIO == 11)
+    {
+        gubbio::prova_figure_npc(esplorazione);
     }
 
     if(GUBBIO_AVVIO == 7)

@@ -54,6 +54,10 @@ private:
 // salva Antonio; le istantanee e il riepilogo nel log ("Prologo: ...").
 void prova_prologo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
 
+// GUBBIO_AVVIO=11: le cinque figure degli NPC (FIGURA_NPC) in fila in Piazza Grande accanto al
+// giocatore, per l'istantanea "figure_npc".
+[[noreturn]] void prova_figure_npc(Esplorazione& esplorazione);
+
 }
 
 #endif

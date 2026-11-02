@@ -16,6 +16,9 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import figure_npc as FN  # noqa: E402
+
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 COPIONE = os.path.join(RADICE, "copione")
 USCITA_H = os.path.join(RADICE, "include", "storia.h")
@@ -348,7 +351,7 @@ def header(scene, npc, posti):
     out += ["enum class Fase : uint8_t", "{"] + [f"    {f}," for f in FASI] + ["};", "",
             "struct Npc", "{", "    int8_t area;", "    uint8_t tx;", "    uint8_t ty;",
             "    uint16_t prima_frase[3];     // per fase (ULTIMATUM, DIGIUNO, NOTTE); 0xFFFF: non c'e'",
-            "    uint8_t frasi[3];", "};", ""]
+            "    uint8_t frasi[3];", "    uint8_t figura;               // FIGURA_NPC (tools/figure_npc.py)", "};", ""]
     frasi = []
     righe_npc = []
     for i, p in enumerate(npc):
@@ -364,9 +367,18 @@ def header(scene, npc, posti):
                 tipo = "PERSONAGGIO" if chi in PARLANTI else "SISTEMA"
                 frasi.append(f"    {{ testi::TestoId::{id_npc(i, k)}, {parlante}, TipoBattuta::{tipo}, Espressione::{espr.upper()} }},")
         tx, ty = posti[i]
-        righe_npc.append(f"    {{ int8_t(mondo::AreaId::{p['area']}), {tx}, {ty}, {{ {', '.join(prime)} }}, {{ {', '.join(conte)} }} }},  // {p['nome']}")
+        righe_npc.append(f"    {{ int8_t(mondo::AreaId::{p['area']}), {tx}, {ty}, {{ {', '.join(prime)} }}, {{ {', '.join(conte)} }}, {FN.ORDINE.index(FN.figura_di(p['nome']))} }},  // {p['nome']}")
     out += [f"inline constexpr int FRASI_NPC = {len(frasi)};", "inline constexpr Battuta FRASE_NPC[FRASI_NPC] = {"] + frasi + ["};", ""]
     out += [f"inline constexpr int NPC = {len(npc)};", "inline constexpr Npc NPC_AMBIENTE[NPC] = {"] + righe_npc + ["};", ""]
+    out += ["// Le figure degli NPC, 16x16 (4 tile in mappatura 1D) con la palette dei popolani: "
+            + ", ".join(FN.ORDINE) + ".", f"inline constexpr int FIGURE_NPC = {len(FN.ORDINE)};",
+            "inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][4 * 8] = {"]
+    for f in FN.ORDINE:
+        parole = FN.parole(f)
+        out.append("    {  // " + f)
+        out += ["        " + ", ".join(f"0x{v:08X}" for v in parole[k:k + 8]) + "," for k in range(0, 32, 8)]
+        out.append("    },")
+    out += ["};", ""]
     out += ["}", "", "#endif", ""]
     return "\n".join(out)
 
