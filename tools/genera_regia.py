@@ -111,6 +111,12 @@ PIANI = {"cielo_prova": lambda m: (cielo(), PALETTE_SFONDO, False), "monti": lam
 PIANI.update(PP.PITTORI)
 
 
+def colore_del_piano(palette_stile, rif, notte):
+    """Il colore di una voce della palette di un piano: di notte la rampa di notte, tranne le luci
+    (le voci segnate ACCESO in tools/pittore_panorami.py), che restano col tono del giorno."""
+    return S.colore(palette_stile, rif[:2], notte and PP.ACCESO not in rif[2:])
+
+
 def nome_e_momento(piano):
     nome, _, momento = piano.partition(":")
     return nome, momento or "giorno"
@@ -129,11 +135,14 @@ def leggi(nome, testo):
             c["codice"], c["titolo"] = codice.strip(), titolo.strip()
         elif riga.startswith("inquadratura "):
             parti = [p.strip() for p in riga[len("inquadratura "):].split("|")]
-            if len(parti) != 3:
-                raise ErroreRegia(f"{dove}: 'inquadratura SECONDI | piani | px/s'")
+            if len(parti) not in (3, 4) or parti[3:] not in ([], ["dissolvi"]):
+                raise ErroreRegia(f"{dove}: 'inquadratura SECONDI | piani | px/s [| dissolvi]'")
             secondi, piani, velocita = float(parti[0]), parti[1].split(), int(parti[2])
+            dissolvi = parti[3:] == ["dissolvi"]
             if not 1 <= len(piani) <= PIANI_MAX:
                 raise ErroreRegia(f"{dove}: da 1 a {PIANI_MAX} piani, non {len(piani)}")
+            if dissolvi and len(piani) < 2:
+                raise ErroreRegia(f"{dove}: 'dissolvi' sfuma il primo piano su quello dietro: servono 2 piani")
             for p in piani:
                 nome, momento = nome_e_momento(p)
                 if nome not in PIANI:
@@ -141,7 +150,7 @@ def leggi(nome, testo):
                 if momento not in PP.MOMENTI:
                     raise ErroreRegia(f"{dove}: momento '{momento}' sconosciuto ({', '.join(PP.MOMENTI)})")
             c["inquadrature"].append({"frame": int(round(secondi * FRAME_PER_SECONDO)), "piani": piani,
-                                      "velocita": velocita, "battute": [], "dove": dove})
+                                      "velocita": velocita, "dissolvi": dissolvi, "battute": [], "dove": dove})
         elif riga.startswith("narratore "):
             if not c["inquadrature"]:
                 raise ErroreRegia(f"{dove}: una battuta prima della prima inquadratura")
@@ -218,7 +227,7 @@ def genera(sorgenti, palette_stile):
             raise ErroreRegia(f"il piano {piano} ha {len(tile)} tile: il massimo e' {TILE_MAX_PER_PIANO}")
         c = id_c(piano)
         out += [f"inline constexpr uint16_t PALETTE_{c}[16] = {{",
-                blocchi([S.colore(palette_stile, r, notte) for r in palette], 8, lambda v: f"0x{v:04X}"), "};", "",
+                blocchi([colore_del_piano(palette_stile, r, notte) for r in palette], 8, lambda v: f"0x{v:04X}"), "};", "",
                 f"inline constexpr bn::tile TILE_{c}[{len(tile)}] = {{"]
         out += ["    { { " + ", ".join(f"0x{v:08X}" for v in parole(t)) + " } }," for t in tile]
         out += ["};", "", f"inline constexpr uint16_t MAPPA_{c}[2048] = {{", blocchi(mappa, 32, str), "};", ""]
@@ -230,14 +239,14 @@ def genera(sorgenti, palette_stile):
             f"{'true' if dipinti[n][3] else 'false'} }},  // {n}" for n in usati]
     out += ["};", "", "struct Inquadratura", "{", "    int8_t piani[PIANI_PER_INQUADRATURA];   // dal piu' lontano, -1 vuoto",
             "    uint16_t frame;", "    uint8_t velocita;                        // px/s del primo piano", "    uint16_t prima_battuta;",
-            "    uint8_t battute;", "};", "", "struct Cutscene", "{", "    const char* codice;", "    uint16_t prima_inquadratura;",
+            "    uint8_t battute;", "    bool dissolvi;                           // il primo piano sfuma su quello dietro", "};", "", "struct Cutscene", "{", "    const char* codice;", "    uint16_t prima_inquadratura;",
             "    uint8_t inquadrature;", "    uint16_t frame;", "};", ""]
     battute, inquadrature, righe_c = [], [], []
     for c in cutscene:
         prima = len(inquadrature)
         for i in c["inquadrature"]:
             piani = [str(usati.index(p)) for p in i["piani"]] + ["-1"] * (PIANI_MAX - len(i["piani"]))
-            inquadrature.append(f"    {{ {{ {', '.join(piani)} }}, {i['frame']}, {i['velocita']}, {len(battute)}, {len(i['battute'])} }},")
+            inquadrature.append(f"    {{ {{ {', '.join(piani)} }}, {i['frame']}, {i['velocita']}, {len(battute)}, {len(i['battute'])}, {'true' if i['dissolvi'] else 'false'} }},")
             battute += [f"    testi::TestoId::{b}," for b in i["battute"]]
         totale = sum(i["frame"] for i in c["inquadrature"])
         righe_c.append(f"    {{ \"{c['codice']}\", {prima}, {len(c['inquadrature'])}, {totale} }},  // {c['titolo']}")

@@ -3,6 +3,7 @@
 #include "bn_bg_palette_item.h"
 #include "bn_bg_palette_ptr.h"
 #include "bn_bg_palettes.h"
+#include "bn_blending.h"
 #include "bn_color.h"
 #include "bn_core.h"
 #include "bn_fixed.h"
@@ -53,6 +54,13 @@ namespace
         return bn::bg_palette_ptr::create(bn::bg_palette_item(bn::span<const bn::color>(c), bn::bpp_mode::BPP_4));
     }
 
+    bn::fixed trasparenza(int durata, int frame)
+    {
+        int inizio = durata / 3;
+        bn::fixed a = frame <= inizio ? bn::fixed(1) : 1 - bn::fixed(frame - inizio) / (durata - inizio);
+        return a < 0 ? bn::fixed(0) : a;
+    }
+
     void attendi(int frame)
     {
         for(int f = 0; f < frame; ++f)
@@ -91,6 +99,8 @@ namespace
                 _bg[k] = bn::regular_bg_ptr::create(MAPPA_X, MAPPA_Y, bn::regular_bg_map_ptr::create(
                     bn::regular_bg_map_item(*p.mappa, bn::size(64, 32)), *_tiles[k], *_palette[k]));
                 _bg[k]->set_priority(PIANI_PER_INQUADRATURA - 1 - k);
+                // la dissolvenza: il primo piano si fa trasparente su quello dietro
+                _bg[k]->set_blending_enabled(q.dissolvi && (k + 1 == PIANI_PER_INQUADRATURA || q.piani[k + 1] < 0));
                 bn::window::outside().set_show_bg(*_bg[k], false);
                 ++_quanti;
             }
@@ -102,11 +112,11 @@ namespace
             {
                 _bg[k]->set_x(MAPPA_X - l.scorrimento(k, _quanti));
 
-                // di notte i fuochi e le finestre tremano: il colore 15 alterna oro e cotto
+                // di notte i fuochi e le finestre tremano: il colore 15 alterna l'oro e l'alone
                 if(_notte[k])
                 {
                     int fase = (frame / 5) % 3;
-                    _palette[k]->set_color(15, bn::color(_colori[k][fase == 1 ? 9 : 15]));
+                    _palette[k]->set_color(15, bn::color(_colori[k][fase == 1 ? 14 : 15]));
                 }
             }
         }
@@ -161,6 +171,11 @@ bool recita_cutscene(int cutscene, const bn::sprite_palette_ptr& palette_testo, 
             }
 
             piani.scorri(l, l.frame_totale());
+            // nell'inquadratura che dissolve il primo piano resta pieno per un terzo, poi sfuma
+            if(l.inquadratura().dissolvi)
+            {
+                bn::blending::set_transparency_alpha(trasparenza(l.inquadratura().frame, frame));
+            }
             bn::fixed buio = bn::fixed(l.buio()) / FRAME_DISSOLVENZA;
             bn::bg_palettes::set_fade(bn::color(0, 0, 0), buio);
             bn::sprite_palettes::set_fade(bn::color(0, 0, 0), buio);
@@ -181,6 +196,7 @@ bool recita_cutscene(int cutscene, const bn::sprite_palette_ptr& palette_testo, 
 
         bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
         bn::sprite_palettes::set_fade(bn::color(0, 0, 0), 0);
+        bn::blending::set_transparency_alpha(1);
         quadro.set_boundaries(-80, -120, 80, 120);
         bn::window::outside().set_show_all();
     }
