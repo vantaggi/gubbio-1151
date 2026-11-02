@@ -137,6 +137,7 @@ enum class NemicoId : uint8_t
     BALESTRIERE_PESANTE,
     CORRADO_DI_SPOLETO,
     SPIA_UMBRA,
+    SPETTRO_DEL_DUBBIO,
     CONTEGGIO,
 };
 
@@ -216,6 +217,9 @@ inline constexpr Nemico NEMICI[int(NemicoId::CONTEGGIO)] = {
     // La spia umbra dell'imboscata agli Stradoni (copione v1, A1-07): nel GDD non ha numeri.
     // Provvisoria, da tarare: rapida e fragile, debole alla Fede.
     { { 180, 0, 50, 30, 10, 22, 44, 2, Elemento::FEDE,   Elemento::NESSUNO }, 1, false, SCRIPT_SPIA },    // Spia umbra
+    // Gli Spettri del Dubbio del rito nella Basilica (copione v1, A1-08): il boss tutorial, deboli
+    // alla Fede, il ferro li attraversa. Provvisori come la spia: nel GDD non hanno numeri.
+    { { 300, 0, 40, 30, 30, 40, 30, 2, Elemento::FEDE,   Elemento::FISICO },  1, false, SCRIPT_SPIA },    // Spettro del Dubbio
 };
 
 inline constexpr int NEMICI_MAX = 6;
@@ -226,11 +230,12 @@ struct Incontro
     NemicoId schieramento[NEMICI_MAX];
 };
 
-inline constexpr int INCONTRI = 3;
+inline constexpr int INCONTRI = 4;
 inline constexpr Incontro INCONTRO[INCONTRI] = {
     { 3, { NemicoId::FANTE_DI_PERUGIA, NemicoId::FANTE_DI_PERUGIA, NemicoId::BALESTRIERE_PESANTE } },  // Pattuglia Perugina
     { 3, { NemicoId::SPIA_UMBRA, NemicoId::SPIA_UMBRA, NemicoId::SPIA_UMBRA } },                      // Imboscata agli Stradoni
     { 1, { NemicoId::CORRADO_DI_SPOLETO } },                                                          // Duello con Corrado
+    { 2, { NemicoId::SPETTRO_DEL_DUBBIO, NemicoId::SPETTRO_DEL_DUBBIO } },                             // Il rito della Basilica
 };
 
 // I consumabili (dal prototipo, include/item_data.h, Sezione 8E del GDD), nell'ordine dei posti

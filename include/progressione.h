@@ -24,7 +24,7 @@ inline constexpr int ESPERIENZA_PER_LIVELLO[LIVELLO_MAX] = { 0, 40, 100, 190, 31
 inline constexpr int CRESCITA_PERCENTO[LIVELLO_MAX] = { 100, 108, 116, 125, 134, 144, 155, 166 };
 
 // L'esperienza che da' ogni nemico vinto, nell'ordine di NemicoId.
-inline constexpr int ESPERIENZA_NEMICO[int(battaglia::NemicoId::CONTEGGIO)] = { 15, 25, 200, 12 };
+inline constexpr int ESPERIENZA_NEMICO[int(battaglia::NemicoId::CONTEGGIO)] = { 15, 25, 200, 12, 30 };
 
 [[nodiscard]] constexpr int livello_da_esperienza(int esperienza)
 {

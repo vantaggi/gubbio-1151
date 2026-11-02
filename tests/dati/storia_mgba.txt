@@ -13,6 +13,7 @@ Scena A1-06
 Scena A1-07
 Battaglia 1 data per vinta
 Scena A1-08
+Battaglia 3 data per vinta
 Scena A1-09
 Scena B-01
 Scena B-02

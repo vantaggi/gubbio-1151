@@ -119,11 +119,12 @@ class FirmeEMirror(unittest.TestCase):
         with open(B.USCITA, encoding="utf-8") as f:
             self.assertEqual(f.read(), B.header(FIRME), "eseguire python tools/battaglia_mirror.py")
 
-    def test_trecento_battaglie_confrontate(self):
-        """3 incontri (Pattuglia Perugina, Imboscata agli Stradoni, Duello con Corrado) x 50 semi x 2 piloti."""
-        self.assertEqual(len(B.INCONTRO), 3)
-        self.assertEqual(len(FIRME), 3 * 50 * 2)
-        self.assertEqual(len({f.hash for f in FIRME.values()}), 300, "ogni seme da' una battaglia diversa")
+    def test_quattrocento_battaglie_confrontate(self):
+        """4 incontri (Pattuglia Perugina, Imboscata agli Stradoni, Duello con Corrado, il rito della
+        Basilica con gli Spettri del Dubbio) x 50 semi x 2 piloti."""
+        self.assertEqual(len(B.INCONTRO), 4)
+        self.assertEqual(len(FIRME), 4 * 50 * 2)
+        self.assertEqual(len({f.hash for f in FIRME.values()}), 400, "ogni seme da' una battaglia diversa")
 
     def test_con_il_pilota_debole_si_perde(self):
         perse = [k for k, f in FIRME.items() if k[2] and f.esito == B.SCONFITTA]
@@ -183,7 +184,7 @@ class LogDelGba(unittest.TestCase):
             self.righe = righe_log(f.read())
 
     def test_log_del_gba_uguale_al_mirror(self):
-        self.assertEqual(len(self.righe), 300)
+        self.assertEqual(len(self.righe), 400)
         self.assertEqual(errori_log(self.righe, FIRME), [])
 
     def test_negativa_riga_alterata_nel_log(self):
@@ -202,7 +203,7 @@ class LogDelGba(unittest.TestCase):
 class DecisioniDelPiano(unittest.TestCase):
 
     def test_boss_due_azioni_comuni_una(self):
-        self.assertEqual([n[1] for n in B.NEMICI], [1, 1, 2, 1])
+        self.assertEqual([n[1] for n in B.NEMICI], [1, 1, 2, 1, 1])
         self.assertIn("{ 1520, 0, 95, 60, 20, 30, 22, 4, Elemento::FIAMMA, Elemento::FISICO }, 2, true", DATI)
 
     def test_shield_break_annulla_entrambe(self):

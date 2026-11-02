@@ -90,8 +90,8 @@ namespace
     static_assert(crescita_buona(), "la crescita delle statistiche non e' quella attesa");
 
     // Il passo dell'atto: vinti i tre scontri della mappa, i Santi sono al livello 4.
-    static_assert(esperienza_incontro(0) == 55 && esperienza_incontro(1) == 36 && esperienza_incontro(2) == 200,
-                  "l'esperienza degli scontri");
+    static_assert(esperienza_incontro(0) == 55 && esperienza_incontro(1) == 36 && esperienza_incontro(2) == 200 &&
+                  esperienza_incontro(3) == 60, "l'esperienza degli scontri");
 
     consteval int livello_dopo_i_tre_scontri()
     {
@@ -107,7 +107,8 @@ namespace
         return p.livello[0];
     }
 
-    static_assert(livello_dopo_i_tre_scontri() == 4, "dopo i tre scontri i Santi devono essere al livello 4");
+    // con il rito della Basilica (gli Spettri) gli scontri dell'atto sono quattro: livello 5
+    static_assert(livello_dopo_i_tre_scontri() == 5, "dopo i quattro scontri i Santi devono essere al livello 5");
 
     // I livelli contano: col pilota debole (solo l'Attacco), la Pattuglia Perugina batte i Santi al
     // livello 1 ma non all'8, almeno per un seme. La negativa e' il livello 1 stesso. (Con Corrado

@@ -32,6 +32,7 @@ namespace
     constexpr int NOME_Y = 104;
     constexpr int TESTO_Y = 118;
     constexpr int FRAME_CARTELLO = 90;
+    constexpr int FRAME_TITOLI = 300;
     constexpr int FRAME_AUTOMATICA = 3;
     constexpr int DISTANZA_PAROLA = 14;     // pixel fra i piedi del giocatore e quelli dell'NPC per parlarci
 
@@ -204,10 +205,25 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
         }
 
         // lo scontro della scena e' quello sulla mappa: vinto, il nemico non torna
-        progressione::segna_vinto(g_game_state, progressione::Bandiera(s.battaglia));
+        if(s.battaglia < progressione::SCONTRI)
+        {
+            progressione::segna_vinto(g_game_state, progressione::Bandiera(s.battaglia));
+        }
     }
 
+    bool finita_prima = accesa(g_game_state, Bandiera::CRONACA_V1_FINITA);
     chiudi_scena(g_game_state, k);
+
+    // i titoli di coda: la cronaca della v1 e' finita (il resto arriva con gli aggiornamenti)
+    if(! finita_prima && accesa(g_game_state, Bandiera::CRONACA_V1_FINITA))
+    {
+        BN_LOG("Titoli di coda");
+        VistaTesto fine(Contesto::DIALOGO, 16, 72, INCHIOSTRO_CHIARO, palette_testo);
+        fine.mostra(testi::TestoId::STORIA_FINE);
+        fine.rivela_tutto();
+        attendi(automatica ? FRAME_AUTOMATICA : FRAME_TITOLI);
+    }
+
     return true;
 }
 
@@ -261,12 +277,15 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         return false;
     }
 
-    // le scene con una battaglia partono toccando il loro nemico sulla mappa (ScontriSullaMappa)
+    // le scene con una battaglia partono toccando il loro nemico sulla mappa (ScontriSullaMappa);
+    // quelle con una battaglia senza nemico sulla mappa (il rito) partono entrando, come le altre
     int k = -1;
 
     for(int j = 0; j < SCENE && k < 0; ++j)
     {
-        if(GUBBIO_VOCE(SCENA, j).battaglia < 0 && pronta(g_game_state, j, int(e.area)))
+        int b = GUBBIO_VOCE(SCENA, j).battaglia;
+
+        if((b < 0 || b >= progressione::SCONTRI) && pronta(g_game_state, j, int(e.area)))
         {
             k = j;
         }

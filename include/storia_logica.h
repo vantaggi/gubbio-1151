@@ -92,10 +92,18 @@ constexpr void chiudi_scena(GameState& p, int k, const Scena* tabella = SCENA)
 
 // Un nemico sulla mappa c'e' solo quando la sua scena e' pronta: niente Pattuglia al Teatro prima che
 // la storia ci porti, niente doppia battaglia dopo. Toccarlo fa partire la scena (con la battaglia).
+// La bandiera della storia che dice uno scontro vinto: con lei accesa il nemico non torna, anche se
+// la scena fosse ancora da chiudere (un salvataggio a meta').
+[[nodiscard]] constexpr Bandiera bandiera_dello_scontro(int incontro)
+{
+    return incontro == 0 ? Bandiera::ANTONIO_NEL_GRUPPO :
+           (incontro == 1 ? Bandiera::IMBOSCATA_STRADONI : Bandiera::CORRADO_SCONFITTO);
+}
+
 [[nodiscard]] constexpr bool scontro_attivo(const GameState& p, int incontro)
 {
     int k = scena_dello_scontro(incontro);
-    return k >= 0 && pronta(p, k, SCENA[k].area);
+    return k >= 0 && pronta(p, k, SCENA[k].area) && ! accesa(p, bandiera_dello_scontro(incontro));
 }
 
 inline constexpr int INCONTRO_DEL_TEATRO = 0;     // la Pattuglia Perugina che circonda Antonio (A1-04)

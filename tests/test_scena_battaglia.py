@@ -57,14 +57,14 @@ class Grafica(unittest.TestCase):
         with self.assertRaises(Exception):
             fuori_guida([("magenta", 0)])
 
-    def test_tre_sfondi_entro_i_tile(self):
+    def test_quattro_sfondi_entro_i_tile(self):
         tile, mappe = GB.tile_e_mappe()
         self.assertLessEqual(len(tile), 512)
-        self.assertEqual(len(mappe), 3)
-        self.assertEqual(len({tuple(m) for m in mappe}), 3, "uno sfondo diverso per incontro")
+        self.assertEqual(len(mappe), 4)
+        self.assertEqual(len({tuple(m) for m in mappe}), 4, "uno sfondo diverso per incontro")
 
     def test_pannello_dei_comandi(self):
-        for i in range(3):
+        for i in range(4):
             t = GB.sfondo(i)
             scuri = sum(1 for y in range(GB.PANNELLO_Y + 4, 156) for x in range(4, 236) if t.px[y][x] in (0, 15))
             self.assertGreater(scuri, 0.95 * (156 - GB.PANNELLO_Y - 4) * 232)
@@ -122,7 +122,7 @@ class ScontriSullaMappa(unittest.TestCase):
     def test_le_prove_a_tempo_di_compilazione(self):
         autotest = open(os.path.join(RADICE, "src", "autotest_progressione.cpp"), encoding="utf-8").read()
         for prova in ("curva_buona(ESPERIENZA_PER_LIVELLO)", "! curva_buona(CURVA_SBAGLIATA)", "crescita_buona()",
-                      "livello_dopo_i_tre_scontri() == 4", "i_livelli_contano()", "posti_dei_nemici()", "contatto()"):
+                      "livello_dopo_i_tre_scontri() == 5", "i_livelli_contano()", "posti_dei_nemici()", "contatto()"):
             self.assertIn("static_assert(" + prova, autotest)
 
 
