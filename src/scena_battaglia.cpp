@@ -6,6 +6,7 @@
 #include "bn_core.h"
 #include "bn_keypad.h"
 #include "bn_log.h"
+#include "bn_math.h"
 #include "bn_optional.h"
 #include "bn_regular_bg_map_item.h"
 #include "bn_regular_bg_map_ptr.h"
@@ -52,6 +53,7 @@ namespace
     constexpr int FRAME_EVENTO = 28;
     constexpr int FRAME_FERVORE = 6;
     constexpr int FRAME_ESITO = 150;
+    constexpr int FRECCIA_Y_MIN = -72;                  // la freccia del bersaglio resta tutta sullo schermo
     constexpr int PASSO_SCATTO = 2;                     // pixel per frame dello scatto verso il bersaglio
 
     // Indici della palette dei Santi usati dalle barre (tools/genera_battaglia.py).
@@ -220,8 +222,13 @@ namespace
             _voce(Contesto::DIALOGO, 16, PANNELLO_Y + 20, INCHIOSTRO_CHIARO, palette_testo),
             _aiuto(Contesto::DIALOGO, 8, PANNELLO_Y + 36, INCHIOSTRO_CHIARO, palette_testo),
             _immune(Contesto::HUD, 120 + X_CORRADO - 20, 80 - 30 - 40, INCHIOSTRO_CHIARO, palette_testo),
-            _numero(0, 0, INCHIOSTRO_CHIARO, palette_testo)
+            _numero(0, 0, INCHIOSTRO_CHIARO, palette_testo),
+            _freccia_tiles(bn::sprite_tiles_item(bn::span<const bn::tile>(G::SPRITE_FRECCIA, 2 * G::TILE_PER_POSA_FRECCIA),
+                                                 bn::bpp_mode::BPP_4, 2)),
+            _freccia(bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 16), _freccia_tiles.create_tiles(0),
+                                            _palette_santi))
         {
+            _freccia.set_visible(false);
             _numero.nascondi();
             int nemici = GUBBIO_VOCE(INCONTRO, incontro).nemici;
             _vista.inizia(g_scena, nemici);
@@ -236,6 +243,8 @@ namespace
                                                     _figure[e]->create_tiles(0), _palette_santi);
                 _pv.emplace_back(X_BARRA_EROE, _y[e] - 4, BARRA_PV, _palette_santi);
                 _fervore.emplace_back(X_BARRA_EROE, _y[e] + 6, BARRA_FERVORE, _palette_santi);
+                // i PV in cifre accanto al Santo, dalla vista come le barre
+                _numeri_pv.emplace_back(120 + X_EROE + 18, 80 + _y[e] - 4, INCHIOSTRO_CHIARO, palette_testo);
             }
 
             for(int n = 0; n < nemici; ++n)
@@ -270,9 +279,16 @@ namespace
                 else if(_istantanee && g_scena.firma().round == 1)
                 {
                     mostra_menu(UBALDO, TestoId::BATT_GIUDIZIO);
+                    // la freccia del bersaglio sul nemico predefinito, come la vedrebbe il giocatore
+                    int s = slot_vista(true, bersaglio_predefinito(g_scena, Puntamento::NEMICI));
+                    _aiuto.mostra(TestoId::BATT_BERSAGLIO);
+                    _aiuto.rivela_tutto();
+                    _freccia.set_position(_x[s], bn::max(_y[s] - _sprite[s]->shape_size().height() / 2 - 6, FRECCIA_Y_MIN));
+                    _freccia.set_visible(true);
                     attendi(20);
                     scatta(nome_istantanea("menu"), true);
                     attendi(40);
+                    _freccia.set_visible(false);
                     nascondi_menu();
                 }
 
@@ -342,6 +358,10 @@ namespace
         VistaTesto _aiuto;
         VistaTesto _immune;
         VistaNumero _numero;
+        bn::sprite_tiles_item _freccia_tiles;
+        bn::sprite_ptr _freccia;
+        bn::vector<VistaNumero, EROI> _numeri_pv;
+        int _pv_scritti[EROI] = { -1, -1, -1 };
         VistaBattaglia _vista;
         bn::optional<bn::sprite_tiles_item> _figure[SLOT_VISTA];
         bn::optional<bn::sprite_ptr> _sprite[SLOT_VISTA];
@@ -383,6 +403,12 @@ namespace
             for(int e = 0; e < EROI; ++e)
             {
                 _fervore[e].mostra(_vista.fervore(e), _vista.fervore_max(e));
+
+                if(_pv_scritti[e] != _vista.pv(e))
+                {
+                    _pv_scritti[e] = _vista.pv(e);
+                    _numeri_pv[e].mostra(_vista.pv(e));
+                }
             }
         }
 
@@ -457,34 +483,96 @@ namespace
                 }
 
                 int scelta = 0;
-                mostra_menu(e, opzioni[0].testo);
+                Comando comando;
 
-                for(int f = 0; ; ++f)
+                while(true)
                 {
-                    if(bn::keypad::down_pressed() || bn::keypad::up_pressed())
+                    mostra_menu(e, opzioni[scelta].testo);
+
+                    for(int f = 0; ; ++f)
                     {
-                        int passo = bn::keypad::down_pressed() ? 1 : opzioni.size() - 1;
-                        scelta = (scelta + passo) % opzioni.size();
-                        _voce.mostra(opzioni[scelta].testo);
-                        _voce.rivela_tutto();
+                        if(bn::keypad::down_pressed() || bn::keypad::up_pressed())
+                        {
+                            int passo = bn::keypad::down_pressed() ? 1 : opzioni.size() - 1;
+                            scelta = (scelta + passo) % opzioni.size();
+                            _voce.mostra(opzioni[scelta].testo);
+                            _voce.rivela_tutto();
+                        }
+
+                        if(bn::keypad::a_pressed())
+                        {
+                            break;
+                        }
+
+                        // chi sceglie dondola, per dire di chi e' il turno
+                        _sprite[e]->set_y(_y[e] - ((f / 16) % 2));
+                        attendi(1);
                     }
 
-                    if(bn::keypad::a_pressed())
+                    attendi(1);
+                    comando = opzioni[scelta].comando;
+
+                    if(scegli_bersaglio(e, comando))
                     {
                         break;
                     }
-
-                    // chi sceglie dondola, per dire di chi e' il turno
-                    _sprite[e]->set_y(_y[e] - ((f / 16) % 2));
-                    attendi(1);
                 }
 
                 _sprite[e]->set_y(_y[e]);
-                g_scena.imposta_comando(e, opzioni[scelta].comando);
+                g_scena.imposta_comando(e, comando);
                 attendi(1);
             }
 
             nascondi_menu();
+        }
+
+        // Il bersaglio del comando, se il comando ne sceglie uno: la freccia sopra, su e giu' la
+        // spostano fra i vivi (include/vista_battaglia.h), A conferma, B torna alla scelta del comando.
+        bool scegli_bersaglio(int eroe, Comando& comando)
+        {
+            Puntamento mira = mira_del_comando(comando);
+
+            if(mira == Puntamento::NESSUNA)
+            {
+                return true;
+            }
+
+            int scelto = bersaglio_predefinito(g_scena, mira);
+            _aiuto.mostra(TestoId::BATT_BERSAGLIO);
+            _aiuto.rivela_tutto();
+            bool confermato = false;
+
+            for(int f = 0; ; ++f)
+            {
+                if(bn::keypad::down_pressed() || bn::keypad::up_pressed())
+                {
+                    scelto = prossimo_bersaglio(g_scena, mira, scelto, bn::keypad::down_pressed() ? 1 : -1);
+                }
+
+                if(bn::keypad::a_pressed() || bn::keypad::b_pressed())
+                {
+                    confermato = bn::keypad::a_pressed();
+                    break;
+                }
+
+                int s = slot_vista(mira == Puntamento::NEMICI, scelto);
+                int alto = (_sprite[s]->shape_size().height()) / 2;
+                _freccia.set_position(_x[s], bn::max(_y[s] - alto - 6, FRECCIA_Y_MIN));
+                _freccia.set_tiles(_freccia_tiles, (f / 12) % 2);
+                _freccia.set_visible(true);
+                _sprite[eroe]->set_y(_y[eroe] - ((f / 16) % 2));
+                attendi(1);
+            }
+
+            _freccia.set_visible(false);
+            attendi(1);
+
+            if(confermato)
+            {
+                comando.bersaglio = scelto;
+            }
+
+            return confermato;
         }
 
         void anima(const Mossa& m, bool fotografa)

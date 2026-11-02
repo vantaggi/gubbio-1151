@@ -168,6 +168,84 @@ private:
     int _nemici = 0;
 };
 
+// La scelta del bersaglio nel menu: su chi punta un comando, chi si puo' scegliere, da chi si parte.
+enum class Puntamento : uint8_t
+{
+    NESSUNA,        // il comando non sceglie (Bastione su se stesso, Carica, la Suprema su tutti)
+    NEMICI,
+    ALLEATI,        // il Muro della Fede
+};
+
+[[nodiscard]] constexpr Puntamento mira_del_comando(const Comando& c)
+{
+    if(c.tipo != TipoComando::USA_ABILITA)
+    {
+        return Puntamento::NESSUNA;
+    }
+
+    const Abilita& a = ABILITA[int(c.abilita)];
+
+    if(a.bersaglio == Bersaglio::NEMICO)
+    {
+        return Puntamento::NEMICI;
+    }
+
+    return a.effetto == Effetto::MURO_DELLA_FEDE ? Puntamento::ALLEATI : Puntamento::NESSUNA;
+}
+
+[[nodiscard]] constexpr bool sceglibile(const Battaglia& b, Puntamento m, int i)
+{
+    return m == Puntamento::NEMICI ? i >= 0 && i < NEMICI_MAX && b.nemico(i).vivo() :
+                               i >= 0 && i < EROI && b.eroe(i).vivo();
+}
+
+// Il bersaglio da cui parte il cursore: lo stesso che il modello sceglierebbe da solo con -1 (il primo
+// nemico vivo; per il Muro l'alleato piu' ferito), cosi' chi preme subito A ha il comportamento di prima.
+[[nodiscard]] constexpr int bersaglio_predefinito(const Battaglia& b, Puntamento m)
+{
+    int scelto = -1;
+
+    if(m == Puntamento::NEMICI)
+    {
+        for(int i = 0; i < NEMICI_MAX && scelto < 0; ++i)
+        {
+            scelto = sceglibile(b, m, i) ? i : -1;
+        }
+    }
+    else if(m == Puntamento::ALLEATI)
+    {
+        for(int e = 0; e < EROI; ++e)
+        {
+            const Unita& u = b.eroe(e);
+
+            if(u.vivo() && (scelto < 0 || u.pv * 100 / u.pv_max < b.eroe(scelto).pv * 100 / b.eroe(scelto).pv_max))
+            {
+                scelto = e;
+            }
+        }
+    }
+
+    return scelto;
+}
+
+// Il bersaglio dopo 'da' nel verso 'passo' (+1 o -1), saltando chi e' caduto; da' 'da' se non c'e' altri.
+[[nodiscard]] constexpr int prossimo_bersaglio(const Battaglia& b, Puntamento m, int da, int passo)
+{
+    int quanti = m == Puntamento::NEMICI ? NEMICI_MAX : EROI;
+
+    for(int k = 1; k <= quanti; ++k)
+    {
+        int i = ((da + passo * k) % quanti + quanti) % quanti;
+
+        if(sceglibile(b, m, i))
+        {
+            return i;
+        }
+    }
+
+    return da;
+}
+
 // Quanti pixel di una barra larga 'larghezza' sono pieni: arrotondato in su, cosi' chi ha ancora
 // un PV ha almeno un pixel acceso.
 [[nodiscard]] constexpr int pieno(int valore, int massimo, int larghezza)

@@ -21,3 +21,4 @@ BATT_PATTUGLIA            | DIALOGO | Pattuglia Perugina
 BATT_IMBOSCATA            | DIALOGO | Imboscata agli Stradoni
 BATT_DUELLO               | DIALOGO | Duello con Corrado
 BATT_SCEGLI               | DIALOGO | Su e giù per scegliere, A per confermare.
+BATT_BERSAGLIO            | DIALOGO | Su e giù per il bersaglio, A conferma, B torna.

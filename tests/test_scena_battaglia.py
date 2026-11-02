@@ -106,6 +106,33 @@ class Scena(unittest.TestCase):
         finto = "    _pv[s].mostra(g_scena.eroe(s).pv, g_scena.eroe(s).pv_max);"
         self.assertTrue(letture_dal_modello(finto))
 
+    def test_pv_in_cifre_dalla_vista(self):
+        """I PV dei Santi in cifre accanto alle barre si scrivono dalla vista, come le barre."""
+        self.assertIn("_numeri_pv[e].mostra(_vista.pv(e));", SCENA)
+        self.assertEqual(re.findall(r"_numeri_pv\[[a-z]+\]\.mostra\(([^;]*)\);", SCENA), ["_vista.pv(e)"])
+
+    def test_negativa_pv_in_cifre_dal_modello(self):
+        finto = "_numeri_pv[e].mostra(g_scena.eroe(e).pv);"
+        self.assertNotEqual(re.findall(r"_numeri_pv\[[a-z]+\]\.mostra\(([^;]*)\);", finto), ["_vista.pv(e)"])
+        self.assertTrue(letture_dal_modello("    _numeri_pv[e].mostra(g_scena.eroe(e).pv);"))
+
+    def test_scelta_del_bersaglio(self):
+        """Il bersaglio parte dal predefinito del modello e si sposta fra i vivi (le regole sono provate
+        a tempo di compilazione in src/autotest_vista.cpp); B torna alla scelta del comando."""
+        corpo = SCENA[SCENA.index("bool scegli_bersaglio("):SCENA.index("void anima(")]
+        self.assertIn("bersaglio_predefinito(g_scena, mira)", corpo)
+        self.assertIn("prossimo_bersaglio(g_scena, mira, scelto,", corpo)
+        self.assertIn("comando.bersaglio = scelto;", corpo)
+        self.assertIn("b_pressed()", corpo)
+        vista = open(os.path.join(RADICE, "src", "autotest_vista.cpp"), encoding="utf-8").read()
+        self.assertIn("static_assert(prova_bersagli()", vista)
+        self.assertIn("static_assert(giro_cieco_finisce_su_un_caduto()", vista)
+
+    def test_negativa_bersaglio_scelto_a_mano(self):
+        finto = "bool scegli_bersaglio( scelto = (scelto + 1) % 3; void anima("
+        corpo = finto[finto.index("bool scegli_bersaglio("):finto.index("void anima(")]
+        self.assertNotIn("prossimo_bersaglio(g_scena, mira, scelto,", corpo)
+
     def test_un_attore_per_volta(self):
         """Nell'animazione di un evento si muove solo m.attore: nessun altro sprite cambia x se non il
         bersaglio che trema."""

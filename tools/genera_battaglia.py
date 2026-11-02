@@ -258,8 +258,20 @@ def corrado(azione):
     return t.contorno().specchia()
 
 
+def freccia(azione):
+    """Il cursore del bersaglio, 16x16: una freccia d'oro che punta in giu'; nella seconda posa e'
+    due pixel piu' in basso, cosi' alternando le pose dondola."""
+    t = Tela(16, 16)
+    y0 = 3 if azione else 1
+    t.trapezio(8, y0 + 5, y0 + 11, 10, 1, ORO)
+    t.rett(6, y0, 4, 6, ORO)
+    t.rett(7, y0 + 1, 1, 6, BIANCO)
+    return t.contorno()
+
+
 SANTI = (("UBALDO", ubaldo), ("GIORGIO", giorgio), ("ANTONIO", antonio))
 NEMICI = (("FANTE", fante), ("BALESTRIERE", balestriere), ("CORRADO", corrado), ("SPIA", spia))
+ALTRI = (("FRECCIA", freccia),)
 
 
 # --- gli sfondi ------------------------------------------------------------------------------------
@@ -387,7 +399,7 @@ def genera(palette_stile):
     for m in mappe:
         out += ["    {", blocchi(m, 32, str).replace("\n    ", "\n        ").replace("    ", "        ", 1), "    },"]
     out += ["};", ""]
-    for gruppo in (SANTI, NEMICI):
+    for gruppo in (SANTI, NEMICI, ALTRI):
         for nome, pittore in gruppo:
             pose = [pittore(False), pittore(True)]
             lato = pose[0].w
