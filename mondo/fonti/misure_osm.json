@@ -1,0 +1,327 @@
+{
+ "_leggimi": "Misure da OSM (c) OpenStreetMap contributors, ODbL. Larghezza = muro-muro sulla perpendicolare all'asse; tile = 1,5 m.",
+ "vie": {
+  "Via dei Consoli": {
+   "area": "VIA_DEI_CONSOLI",
+   "lunghezza_m": 286,
+   "campioni": 37,
+   "larghezza_mediana_m": 6.5,
+   "larghezza_min_m": 2.3,
+   "larghezza_max_m": 9.1,
+   "larghezza_tile": 4.3,
+   "tratti_aperti_su_un_lato_pct": 27,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via Venti Settembre": {
+   "area": "VIA_XX_SETTEMBRE",
+   "lunghezza_m": 441,
+   "campioni": 55,
+   "larghezza_mediana_m": 7.7,
+   "larghezza_min_m": 6.2,
+   "larghezza_max_m": 8.3,
+   "larghezza_tile": 5.1,
+   "tratti_aperti_su_un_lato_pct": 85,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via Camillo Benso Conte di Cavour": {
+   "area": "SAN_MARTINO",
+   "lunghezza_m": 264,
+   "campioni": 31,
+   "larghezza_mediana_m": 7.8,
+   "larghezza_min_m": 3.8,
+   "larghezza_max_m": 14.4,
+   "larghezza_tile": 5.2,
+   "tratti_aperti_su_un_lato_pct": 19,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via Gabrielli": {
+   "area": "SAN_MARTINO",
+   "lunghezza_m": 160,
+   "campioni": 20,
+   "larghezza_mediana_m": 5.2,
+   "larghezza_min_m": 2.5,
+   "larghezza_max_m": 12.9,
+   "larghezza_tile": 3.5,
+   "tratti_aperti_su_un_lato_pct": 10,
+   "tratti_sotto_edifici_pct": 5
+  },
+  "Via del Camignano": {
+   "area": "SAN_MARTINO",
+   "lunghezza_m": 356,
+   "campioni": 45,
+   "larghezza_mediana_m": 7.7,
+   "larghezza_min_m": 2.5,
+   "larghezza_max_m": 9.4,
+   "larghezza_tile": 5.1,
+   "tratti_aperti_su_un_lato_pct": 82,
+   "tratti_sotto_edifici_pct": 4
+  },
+  "Via Cleofe Borromei": {
+   "area": "SAN_MARTINO",
+   "lunghezza_m": 88,
+   "campioni": 10,
+   "larghezza_mediana_m": 2.1,
+   "larghezza_min_m": 1.9,
+   "larghezza_max_m": 4.2,
+   "larghezza_tile": 1.4,
+   "tratti_aperti_su_un_lato_pct": 0,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via Dante": {
+   "area": "SANT_ANDREA",
+   "lunghezza_m": 158,
+   "campioni": 19,
+   "larghezza_mediana_m": 14.5,
+   "larghezza_min_m": 9.3,
+   "larghezza_max_m": 22.7,
+   "larghezza_tile": 9.6,
+   "tratti_aperti_su_un_lato_pct": 58,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via Appennino": {
+   "area": "SANT_ANDREA",
+   "lunghezza_m": 340,
+   "campioni": 43,
+   "tratti_aperti_su_un_lato_pct": 100,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via Federico da Montefeltro": {
+   "area": "DUOMO_DUCALE",
+   "lunghezza_m": 139,
+   "campioni": 16,
+   "tratti_aperti_su_un_lato_pct": 100,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via della Cattedrale": {
+   "area": "DUOMO_DUCALE",
+   "lunghezza_m": 436,
+   "campioni": 52,
+   "tratti_aperti_su_un_lato_pct": 90,
+   "tratti_sotto_edifici_pct": 10
+  },
+  "Via Sant'Ubaldo": {
+   "area": "DUOMO_DUCALE",
+   "lunghezza_m": 239,
+   "campioni": 31,
+   "larghezza_mediana_m": 6.8,
+   "larghezza_min_m": 1.4,
+   "larghezza_max_m": 15.3,
+   "larghezza_tile": 4.5,
+   "tratti_aperti_su_un_lato_pct": 81,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via Ambrogio Piccardi": {
+   "area": "PIAZZA_QUARANTA_MARTIRI",
+   "lunghezza_m": 129,
+   "campioni": 16,
+   "larghezza_mediana_m": 7.0,
+   "larghezza_min_m": 6.4,
+   "larghezza_max_m": 7.5,
+   "larghezza_tile": 4.6,
+   "tratti_aperti_su_un_lato_pct": 88,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via della Repubblica": {
+   "area": "PIAZZA_QUARANTA_MARTIRI",
+   "lunghezza_m": 175,
+   "campioni": 22,
+   "larghezza_mediana_m": 10.3,
+   "larghezza_min_m": 4.8,
+   "larghezza_max_m": 18.1,
+   "larghezza_tile": 6.8,
+   "tratti_aperti_su_un_lato_pct": 82,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via Ubaldo Baldassini": {
+   "area": "PIAZZA_QUARANTA_MARTIRI",
+   "lunghezza_m": 229,
+   "campioni": 28,
+   "larghezza_mediana_m": 7.1,
+   "larghezza_min_m": 6.5,
+   "larghezza_max_m": 7.4,
+   "larghezza_tile": 4.7,
+   "tratti_aperti_su_un_lato_pct": 82,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via Galeotti": {
+   "area": "PIAZZA_QUARANTA_MARTIRI",
+   "lunghezza_m": 312,
+   "campioni": 40,
+   "tratti_aperti_su_un_lato_pct": 100,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Corso Giuseppe Garibaldi": {
+   "area": "SAN_PIETRO",
+   "lunghezza_m": 489,
+   "campioni": 60,
+   "tratti_aperti_su_un_lato_pct": 100,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via Reposati": {
+   "area": "SAN_PIETRO",
+   "lunghezza_m": 199,
+   "campioni": 24,
+   "tratti_aperti_su_un_lato_pct": 100,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via Mazzatinti": {
+   "area": "SAN_PIETRO",
+   "lunghezza_m": 135,
+   "campioni": 16,
+   "larghezza_mediana_m": 7.2,
+   "larghezza_min_m": 7.0,
+   "larghezza_max_m": 7.5,
+   "larghezza_tile": 4.8,
+   "tratti_aperti_su_un_lato_pct": 88,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Viale del Teatro Romano": {
+   "area": "TEATRO_ROMANO",
+   "lunghezza_m": 582,
+   "campioni": 68,
+   "tratti_aperti_su_un_lato_pct": 100,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via degli Ortacci": {
+   "area": "TEATRO_ROMANO",
+   "lunghezza_m": 68,
+   "campioni": 9,
+   "tratti_aperti_su_un_lato_pct": 89,
+   "tratti_sotto_edifici_pct": 11
+  },
+  "Via di Giove Pennino": {
+   "area": "BOTTACCIONE",
+   "lunghezza_m": 1421,
+   "campioni": 179,
+   "larghezza_mediana_m": 9.2,
+   "larghezza_min_m": 9.2,
+   "larghezza_max_m": 9.2,
+   "larghezza_tile": 6.1,
+   "tratti_aperti_su_un_lato_pct": 99,
+   "tratti_sotto_edifici_pct": 0
+  },
+  "Via di Porta Romana": {
+   "area": "SANT_AGOSTINO",
+   "lunghezza_m": 1219,
+   "campioni": 151,
+   "larghezza_mediana_m": 17.3,
+   "larghezza_min_m": 9.1,
+   "larghezza_max_m": 20.3,
+   "larghezza_tile": 11.6,
+   "tratti_aperti_su_un_lato_pct": 95,
+   "tratti_sotto_edifici_pct": 1
+  }
+ },
+ "piazze": {
+  "Piazza Grande": {
+   "lato_lungo_m": 76,
+   "lato_corto_m": 40,
+   "asse_lungo_bussola": 120,
+   "superficie_m2": 2602,
+   "tile": [
+    50,
+    27
+   ]
+  },
+  "Piazza Quaranta Martiri": {
+   "lato_lungo_m": 56,
+   "lato_corto_m": 17,
+   "asse_lungo_bussola": 26,
+   "superficie_m2": 874,
+   "tile": [
+    37,
+    12
+   ]
+  },
+  "Piazza 40 Martiri": {
+   "lato_lungo_m": 180,
+   "lato_corto_m": 73,
+   "asse_lungo_bussola": 157,
+   "superficie_m2": 5264,
+   "tile": [
+    120,
+    49
+   ]
+  },
+  "Largo del Bargello": {
+   "lato_lungo_m": 19,
+   "lato_corto_m": 13,
+   "asse_lungo_bussola": 11,
+   "superficie_m2": 180,
+   "tile": [
+    12,
+    9
+   ]
+  },
+  "Piazza Giordano Bruno": {
+   "lato_lungo_m": 32,
+   "lato_corto_m": 23,
+   "asse_lungo_bussola": 0,
+   "superficie_m2": 572,
+   "tile": [
+    21,
+    15
+   ]
+  },
+  "Piazza San Pietro": {
+   "lato_lungo_m": 39,
+   "lato_corto_m": 38,
+   "asse_lungo_bussola": 38,
+   "superficie_m2": 1093,
+   "tile": [
+    26,
+    25
+   ]
+  },
+  "Largo San Marziale": {
+   "lato_lungo_m": 23,
+   "lato_corto_m": 6,
+   "asse_lungo_bussola": 83,
+   "superficie_m2": 22,
+   "tile": [
+    15,
+    4
+   ]
+  },
+  "Largo San Francesco": {
+   "lato_lungo_m": 30,
+   "lato_corto_m": 21,
+   "asse_lungo_bussola": 23,
+   "superficie_m2": 451,
+   "tile": [
+    20,
+    14
+   ]
+  },
+  "Piazza Bosone": {
+   "lato_lungo_m": 41,
+   "lato_corto_m": 22,
+   "asse_lungo_bussola": 32,
+   "superficie_m2": 857,
+   "tile": [
+    27,
+    15
+   ]
+  },
+  "Largo Mastro Giorgio": {
+   "lato_lungo_m": 12,
+   "lato_corto_m": 11,
+   "asse_lungo_bussola": 134,
+   "superficie_m2": 116,
+   "tile": [
+    8,
+    8
+   ]
+  },
+  "Piazza San Giovanni": {
+   "lato_lungo_m": 46,
+   "lato_corto_m": 19,
+   "asse_lungo_bussola": 37,
+   "superficie_m2": 716,
+   "tile": [
+    31,
+    13
+   ]
+  }
+ }
+}
