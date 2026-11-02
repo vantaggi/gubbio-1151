@@ -20,17 +20,17 @@ class Storia
 {
 public:
     // La partita nuova: le scene a schermo intero (il prologo) prima di entrare in citta'.
-    void prologo(const bn::sprite_palette_ptr& palette_testo);
+    void prologo(const bn::sprite_palette_ptr& palette_testo, bool automatica = false);
 
     // Da chiamare a ogni frame dell'esplorazione: rifa' gli NPC se l'area e' cambiata, avvia la scena
     // pronta nell'area, fa parlare l'NPC davanti al giocatore se si preme A. True se ha recitato.
     bool aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
 
     // Recita una scena: battute, eventuale battaglia; ritorna true se la scena e' finita (e le sue
-    // bandiere accese). Con automatica=true non aspetta tasti e non gioca la battaglia (la prova
-    // GUBBIO_AVVIO=8 la da' per vinta).
+    // bandiere accese). Con automatica=true non aspetta tasti; la battaglia la gioca il pilota (con le
+    // istantanee) se battaglia_col_pilota, se no la da' per vinta (la prova GUBBIO_AVVIO=8).
     bool recita(int scena, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo,
-                bool automatica = false);
+                bool automatica = false, bool battaglia_col_pilota = false);
 
     void svuota();
 
@@ -45,6 +45,11 @@ private:
 // GUBBIO_AVVIO=8: la storia intera senza camminare, dalla prima battuta ai titoli di coda; una riga di
 // log per scena e il riepilogo ("Storia: N scene visitate su M"). Non ritorna.
 [[noreturn]] void prova_storia(const bn::sprite_palette_ptr& palette_testo);
+
+// GUBBIO_AVVIO=9: il prologo giocabile senza tasti: l'ultimatum a Piazza Grande (Giorgio nel gruppo),
+// la postierla di San Martino, la Pattuglia sulla mappa del Teatro e la battaglia col pilota che
+// salva Antonio; le istantanee e il riepilogo nel log ("Prologo: ...").
+void prova_prologo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
 
 }
 

@@ -7,6 +7,8 @@
 #include "esplorazione.h"
 #include "game_state.h"
 #include "scena_battaglia.h"
+#include "storia_logica.h"
+#include "storia_scena.h"
 
 namespace gubbio
 {
@@ -26,7 +28,7 @@ void ScontriSullaMappa::_prepara(const Esplorazione& esplorazione)
     {
         const progressione::ScontroSullaMappa& s = GUBBIO_VOCE(progressione::SCONTRI_SULLA_MAPPA, k);
 
-        if(int(s.area) == _area && ! progressione::vinto(g_game_state, s.bandiera))
+        if(int(s.area) == _area && _visibile(s))
         {
             bn::sprite_ptr sprite = sprite_sulla_mappa(s.incontro);
             esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(s.tx), mondo::piedi_y(s.ty),
@@ -34,6 +36,11 @@ void ScontriSullaMappa::_prepara(const Esplorazione& esplorazione)
             _sprite.push_back(bn::move(sprite));
         }
     }
+}
+
+bool ScontriSullaMappa::_visibile(const progressione::ScontroSullaMappa& s) const
+{
+    return ! progressione::vinto(g_game_state, s.bandiera) && (! _storia || storia::scontro_attivo(g_game_state, s.incontro));
 }
 
 bool ScontriSullaMappa::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo)
@@ -59,6 +66,19 @@ bool ScontriSullaMappa::aggiorna(Esplorazione& esplorazione, const bn::sprite_pa
 
     const progressione::ScontroSullaMappa& s = GUBBIO_VOCE(progressione::SCONTRI_SULLA_MAPPA, k);
     mondo::AreaId area = e.area;
+
+    if(! _visibile(s))
+    {
+        return false;
+    }
+
+    // con la storia, il nemico e' l'inizio della sua scena: battute, battaglia, bandiere
+    if(_storia)
+    {
+        svuota();
+        _storia->recita(storia::scena_dello_scontro(s.incontro), &esplorazione, palette_testo);
+        return true;
+    }
 
     // la mappa si libera (tile e sprite) prima che la battaglia carichi i suoi
     svuota();

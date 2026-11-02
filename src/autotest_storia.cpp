@@ -3,6 +3,7 @@
 // scena una volta sola e arriva a CRONACA_V1_FINITA. Se una scena resta fuori, la ROM non compila.
 // Negativa: una scena che chiede una bandiera che nessuno accende resta non visitata.
 
+#include "battaglia.h"
 #include "storia_logica.h"
 
 namespace gubbio
@@ -132,6 +133,84 @@ namespace
     }
 
     static_assert(fasi(), "le fasi degli NPC");
+
+    // I nemici sulla mappa seguono la storia: la Pattuglia c'e' solo con la postierla aperta e prima
+    // che Antonio sia salvato. Negativa: all'inizio della partita non c'e'.
+    consteval bool pattuglia_quando_serve()
+    {
+        GameState p = {};
+
+        if(scontro_attivo(p, INCONTRO_DEL_TEATRO))
+        {
+            return false;
+        }
+
+        accendi(p, uint64_t(1) << int(Bandiera::POSTIERLA_APERTA));
+
+        if(! scontro_attivo(p, INCONTRO_DEL_TEATRO))
+        {
+            return false;
+        }
+
+        chiudi_scena(p, scena_dello_scontro(INCONTRO_DEL_TEATRO));
+        return ! scontro_attivo(p, INCONTRO_DEL_TEATRO) && accesa(p, Bandiera::ANTONIO_NEL_GRUPPO);
+    }
+
+    static_assert(pattuglia_quando_serve(), "la Pattuglia sulla mappa non segue la storia");
+    static_assert(scena_dello_scontro(0) >= 0 && scena_dello_scontro(1) >= 0 && scena_dello_scontro(2) >= 0,
+                  "ogni scontro sulla mappa ha la sua scena");
+
+    // Il gruppo: Ubaldo sempre, Giorgio dall'ultimatum, Antonio ospite al Teatro e poi nel gruppo.
+    consteval bool gruppo_della_storia()
+    {
+        GameState p = {};
+
+        if(gruppo(p, 1) != 0b001 || gruppo(p, INCONTRO_DEL_TEATRO) != 0b101)
+        {
+            return false;
+        }
+
+        accendi(p, uint64_t(1) << int(Bandiera::GIORGIO_NEL_GRUPPO));
+
+        if(gruppo(p, 1) != 0b011)
+        {
+            return false;
+        }
+
+        accendi(p, uint64_t(1) << int(Bandiera::ANTONIO_NEL_GRUPPO));
+        return gruppo(p, 2) == 0b111;
+    }
+
+    static_assert(gruppo_della_storia(), "il gruppo in battaglia non segue la storia");
+
+    // Chi non e' nel gruppo non agisce mai in battaglia. Negativa: con tutti presenti Giorgio agisce.
+    consteval bool agisce(uint8_t presenti, int eroe)
+    {
+        battaglia::Battaglia b(1, 3);
+        b.ricomincia(1, 3, false, nullptr, presenti);
+
+        while(b.avanza())
+        {
+            if(b.fase() != battaglia::Fase::ESITO)
+            {
+                continue;
+            }
+
+            for(int i = 0; i < b.eventi_round(); ++i)
+            {
+                if(! b.evento(i).attore_nemico && b.evento(i).attore == eroe)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    static_assert(! agisce(0b001, battaglia::GIORGIO) && ! agisce(0b001, battaglia::ANTONIO) && agisce(0b001, battaglia::UBALDO),
+                  "un Santo fuori dal gruppo ha agito");
+    static_assert(agisce(0b111, battaglia::GIORGIO), "la negativa del gruppo non regge");
 }
 
 }

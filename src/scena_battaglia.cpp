@@ -24,6 +24,7 @@
 #include "battaglia_grafica.h"
 #include "game_state.h"
 #include "progressione.h"
+#include "storia_logica.h"
 #include "tabella.h"
 #include "vista_battaglia.h"
 #include "vista_testo.h"
@@ -131,6 +132,11 @@ namespace
             _sprite(bn::sprite_ptr::create(x, y, bn::sprite_shape_size(32, 8), _tiles, palette)),
             _colore(colore)
         {
+        }
+
+        void nascondi()
+        {
+            _sprite.set_visible(false);
         }
 
         void mostra(int valore, int massimo)
@@ -265,6 +271,18 @@ namespace
             }
 
             aggiorna_barre();
+
+            // chi non e' nel gruppo non si vede: ne' figura, ne' barre, ne' PV in cifre
+            for(int e = 0; e < EROI; ++e)
+            {
+                if(g_scena.eroe(e).pv_max > 0 && ! g_scena.eroe(e).vivo())
+                {
+                    _sprite[e]->set_visible(false);
+                    _pv[e].nascondi();
+                    _fervore[e].nascondi();
+                    _numeri_pv[e].nascondi();
+                }
+            }
         }
 
         Esito gioca(GameState* partita)
@@ -786,7 +804,9 @@ Esito scena_battaglia(int incontro, uint32_t seme, Guida guida, const bn::sprite
                                                                          progressione::LIVELLO_MAX : livello));
     }
 
-    g_scena.ricomincia(incontro, seme, false, eroi);
+    // il gruppo della storia (Giorgio dall'ultimatum, Antonio dal Teatro); senza partita, tutti e tre
+    uint8_t presenti = partita ? storia::gruppo(*partita, incontro) : TUTTI_PRESENTI;
+    g_scena.ricomincia(incontro, seme, false, eroi, presenti);
     Esito esito;
 
     {

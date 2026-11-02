@@ -15,6 +15,7 @@
 #include "game_state.h"
 #include "progressione.h"
 #include "scena_battaglia.h"
+#include "scontri_mappa.h"
 #include "storia_logica.h"
 #include "tabella.h"
 #include "vista_testo.h"
@@ -141,7 +142,8 @@ namespace
     }
 }
 
-bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo, bool automatica)
+bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo, bool automatica,
+                    bool battaglia_col_pilota)
 {
     const Scena& s = GUBBIO_VOCE(SCENA, k);
     BN_LOG("Scena ", s.codice);
@@ -179,7 +181,7 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
 
     if(s.battaglia >= 0)
     {
-        if(automatica)
+        if(automatica && ! battaglia_col_pilota)
         {
             BN_LOG("Battaglia ", int(s.battaglia), " data per vinta");
         }
@@ -188,8 +190,9 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
             svuota();
             esplorazione->sospendi();
             attendi(1);
-            battaglia::Esito esito = scena_battaglia(s.battaglia, uint32_t(g_game_state.frames) | 1u, Guida::GIOCATORE,
-                                                     palette_testo, false, &g_game_state);
+            battaglia::Esito esito = scena_battaglia(s.battaglia, automatica ? 1u : (uint32_t(g_game_state.frames) | 1u),
+                                                     automatica ? Guida::PILOTA : Guida::GIOCATORE, palette_testo,
+                                                     automatica, &g_game_state);
             mondo::colloca(esplorazione->esploratore(), esplorazione->esploratore().area,
                            esito == battaglia::Esito::VITTORIA ? 0 : 1);
             esplorazione->ricompari();
@@ -208,11 +211,11 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
     return true;
 }
 
-void Storia::prologo(const bn::sprite_palette_ptr& palette_testo)
+void Storia::prologo(const bn::sprite_palette_ptr& palette_testo, bool automatica)
 {
     for(int k = prossima_scena(g_game_state, NESSUNA_AREA); k >= 0; k = prossima_scena(g_game_state, NESSUNA_AREA))
     {
-        recita(k, nullptr, palette_testo);
+        recita(k, nullptr, palette_testo, automatica);
     }
 }
 
@@ -258,7 +261,16 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         return false;
     }
 
-    int k = prossima_scena(g_game_state, int(e.area));
+    // le scene con una battaglia partono toccando il loro nemico sulla mappa (ScontriSullaMappa)
+    int k = -1;
+
+    for(int j = 0; j < SCENE && k < 0; ++j)
+    {
+        if(GUBBIO_VOCE(SCENA, j).battaglia < 0 && pronta(g_game_state, j, int(e.area)))
+        {
+            k = j;
+        }
+    }
 
     if(k >= 0)
     {
@@ -337,6 +349,56 @@ void prova_storia(const bn::sprite_palette_ptr& palette_testo)
     {
         bn::core::update();
     }
+}
+
+}
+
+namespace gubbio
+{
+
+void prova_prologo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo)
+{
+    progressione::partita_nuova(g_game_state);
+    Storia storia;
+    storia.prologo(palette_testo, true);
+
+    // l'ultimatum a Piazza Grande
+    esplorazione.entra(mondo::AreaId::PIAZZA_GRANDE, 0);
+    attendi(30);
+    storia.recita(prossima_scena(g_game_state, int(mondo::AreaId::PIAZZA_GRANDE)), &esplorazione, palette_testo, true);
+
+    // la postierla di San Martino
+    esplorazione.entra(mondo::AreaId::SAN_MARTINO, 1);
+    attendi(30);
+    storia.recita(prossima_scena(g_game_state, int(mondo::AreaId::SAN_MARTINO)), &esplorazione, palette_testo, true);
+
+    // il Teatro: la Pattuglia sulla mappa, che adesso c'e'
+    esplorazione.entra(mondo::AreaId::TEATRO_ROMANO, 1);
+    ScontriSullaMappa scontri(&storia);
+
+    for(int f = 0; f < 90; ++f)
+    {
+        esplorazione.aggiorna();
+        scontri.aggiorna(esplorazione, palette_testo);
+
+        if(f == 70)
+        {
+            BN_LOG("Istantanea prologo_pattuglia");
+        }
+
+        attendi(1);
+    }
+
+    bool pattuglia_vista = scontri.visibili() > 0;
+    scontri.svuota();
+    bool salvato = storia.recita(scena_dello_scontro(INCONTRO_DEL_TEATRO), &esplorazione, palette_testo, true, true);
+
+    BN_LOG("Prologo: Giorgio nel gruppo ", accesa(g_game_state, Bandiera::GIORGIO_NEL_GRUPPO) ? "si" : "NO",
+           ", Pattuglia sulla mappa ", pattuglia_vista ? "si" : "NO",
+           ", Antonio salvato ", salvato && accesa(g_game_state, Bandiera::ANTONIO_NEL_GRUPPO) ? "si" : "NO",
+           ", gruppo ", int(gruppo(g_game_state, 1)), ", Pattuglia sulla mappa dopo ",
+           scontro_attivo(g_game_state, INCONTRO_DEL_TEATRO) ? "ANCORA" : "sparita");
+    BN_LOG("Istantanee finite");
 }
 
 }

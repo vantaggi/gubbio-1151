@@ -76,6 +76,40 @@ constexpr void chiudi_scena(GameState& p, int k, const Scena* tabella = SCENA)
     p.scene_fatte[k / 8] = uint8_t(p.scene_fatte[k / 8] | (1 << (k % 8)));
 }
 
+// La scena che contiene uno scontro sulla mappa (battaglia::INCONTRO), -1 se nessuna.
+[[nodiscard]] constexpr int scena_dello_scontro(int incontro, const Scena* tabella = SCENA, int quante = SCENE)
+{
+    for(int k = 0; k < quante; ++k)
+    {
+        if(tabella[k].battaglia == incontro)
+        {
+            return k;
+        }
+    }
+
+    return -1;
+}
+
+// Un nemico sulla mappa c'e' solo quando la sua scena e' pronta: niente Pattuglia al Teatro prima che
+// la storia ci porti, niente doppia battaglia dopo. Toccarlo fa partire la scena (con la battaglia).
+[[nodiscard]] constexpr bool scontro_attivo(const GameState& p, int incontro)
+{
+    int k = scena_dello_scontro(incontro);
+    return k >= 0 && pronta(p, k, SCENA[k].area);
+}
+
+inline constexpr int INCONTRO_DEL_TEATRO = 0;     // la Pattuglia Perugina che circonda Antonio (A1-04)
+
+// Chi c'e' nel gruppo in battaglia: Ubaldo sempre, Giorgio dall'ultimatum, Antonio da quando e' salvato
+// (al Teatro, nella sua battaglia, e' gia' li': c'e' da ospite).
+[[nodiscard]] constexpr uint8_t gruppo(const GameState& p, int incontro)
+{
+    uint8_t g = 1;
+    g = uint8_t(g | (accesa(p, Bandiera::GIORGIO_NEL_GRUPPO) ? 2 : 0));
+    bool antonio = accesa(p, Bandiera::ANTONIO_NEL_GRUPPO) || incontro == INCONTRO_DEL_TEATRO;
+    return uint8_t(g | (antonio ? 4 : 0));
+}
+
 // La fase degli NPC dalle bandiere (README del copione): NOTTE dal rientro da Porta Metauro, DIGIUNO
 // da quando la citta' si chiude, prima ULTIMATUM.
 [[nodiscard]] constexpr Fase fase_npc(const GameState& p)
