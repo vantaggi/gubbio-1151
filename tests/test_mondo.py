@@ -237,8 +237,8 @@ class Mondo(unittest.TestCase):
         a = self.aree["via_dei_consoli"]
         with open(G.USCITA, encoding="utf-8") as f:
             header = f.read()
-        self.assertIn("GRIGLIA_VIA_DEI_CONSOLI, MAPPA_VIA_DEI_CONSOLI, %d, %d, 27, 67," % (a["larghezza"], a["altezza"]),
-                      header)
+        self.assertRegex(header, r"GRIGLIA_VIA_DEI_CONSOLI, MAPPA_VIA_DEI_CONSOLI, %d, %d,\s+FONDALE_VIA_DEI_CONSOLI, "
+                                 r"\d+, \d+, false, 27, 67," % (a["larghezza"], a["altezza"]))
 
     def test_negativa_spawn_a_due_tile_da_un_altro_varco(self):
         """Uno spawn d'arrivo, lontano dalla sua uscita, spostato a 2 tile da un altro varco."""
@@ -578,17 +578,32 @@ class Proporzioni(unittest.TestCase):
             self.assertNotIn("fattore_piazza", a, nome)
             self.assertEqual(G.misure_piazza_tile(mondo["misure"]["piazze"][a["piazza"][0]]), wh, nome)
 
-    def test_piazza_grande_compressa_con_fattore(self):
-        """Piazza Grande vera (51x27) piu' Consoli e Pretorio fanno 94 tile: non entra in 64, il lato
-        lungo e' compresso con un fattore dichiarato."""
-        a = self.aree_lette()["piazza_grande"]
+    def test_piazze_grandi_a_misura_vera(self):
+        """Piazza Grande (51x27, in fila con Consoli e Pretorio), Piazza 40 Martiri (120x49) e Piazza
+        Giordano Bruno (21x15) a misura vera, senza fattore, in aree oltre i 64 tile."""
         mondo = G.mondo_del_repo()
-        self.assertEqual(G.misure_piazza_tile(mondo["misure"]["piazze"]["Piazza Grande"]), (27, 51))
-        self.assertLess(a["fattore_piazza"][0], 1)
+        attese = {"piazza_grande": (27, 51), "piazza_quaranta_martiri": (120, 49), "san_martino": (21, 15)}
+        for nome, wh in attese.items():
+            a = self.aree_lette()[nome]
+            self.assertNotIn("fattore_piazza", a, nome)
+            self.assertEqual(G.misure_piazza_tile(mondo["misure"]["piazze"][a["piazza"][0]]), wh, nome)
+            self.assertTrue(G.grande(a), nome)
+        _, posati, _ = area_finale("piazza_grande")
+        self.assertLess(posati["consoli"][1], self.aree_lette()["piazza_grande"]["riferimento"][1] - 25,
+                        "i Consoli stanno in cima alla piazza, in fila")
 
     def test_negativa_piazza_fuori_misura_senza_fattore(self):
-        sorgenti = sorgenti_con("piazza_grande.area", lambda t: re.sub(r"\nfattore_piazza [^\n]*", "", t))
-        with self.assertRaisesRegex(G.ErroreMondo, "Piazza Grande"):
+        """Una Piazza 40 Martiri di 300 m non sta nemmeno in 128 tile: senza fattore e' rifiutata."""
+        mondo = copy.deepcopy(G.mondo_del_repo())
+        mondo["misure"]["piazze"]["Piazza 40 Martiri"]["lato_lungo_m"] = 300
+        with self.assertRaisesRegex(G.ErroreMondo, "Piazza 40 Martiri in scala e' 200x49 tile e non sta nella "
+                                                   "griglia .*: serve un fattore_piazza"):
+            G.genera(G.sorgenti_del_repo(), PALETTE, mondo)
+
+    def test_negativa_area_oltre_128_tile(self):
+        sorgenti = sorgenti_con("piazza_quaranta_martiri.area",
+                                lambda t: re.sub(r"\ndimensioni \d+ \d+", "\ndimensioni 129 128", t))
+        with self.assertRaisesRegex(G.ErroreMondo, "area 129x128: il lato massimo e' 128 tile"):
             G.genera(sorgenti, PALETTE)
 
     def test_negativa_piazza_ingombra(self):
@@ -601,6 +616,64 @@ class Proporzioni(unittest.TestCase):
 
     def aree_lette(self):
         return {a["id"]: a for a in (G.leggi_area(n, t) for n, t in G.sorgenti_del_repo())}
+
+
+def fondali(header):
+    """Da include/mondo.h: {area: (celle del fondale, larghezza, altezza, grande)}."""
+    celle = {n: [int(v) for v in c.replace("\n", " ").split(",") if v.strip()]
+             for n, c in re.findall(r"inline constexpr uint16_t FONDALE_(\w+)\[\d+\] = \{([^}]*)\}", header)}
+    voci = re.findall(r"FONDALE_(\w+), (\d+), (\d+), (true|false),", header)
+    return {n: (celle[n], int(w), int(h), g == "true") for n, w, h, g in voci}
+
+
+def errori_disposizione(mappa, larghezza, altezza, fondale, fw, fh, grande):
+    """Il fondale in ROM e' la mappa dell'area: riga per riga (big map) o a blocchi 32x32 (VRAM)."""
+    err = []
+    for y in range(altezza):
+        for x in range(larghezza):
+            i = y * fw + x if grande else (((y // 32) * (fw // 32)) + (x // 32)) * 1024 + (y % 32) * 32 + (x % 32)
+            if fondale[i] != mappa[y * larghezza + x]:
+                err.append((x, y))
+    return err
+
+
+class FondaliInRom(unittest.TestCase):
+    """Le celle dei fondali che la ROM passa a Butano, contro la mappa dell'area."""
+
+    def setUp(self):
+        with open(G.USCITA, encoding="utf-8") as f:
+            header = f.read()
+        self.fondali = fondali(header)
+        self.mappe = griglie_e_mappe(header)
+        self.aree = {a["id"].upper(): a for a in (G.leggi_area(n, t) for n, t in G.sorgenti_del_repo())}
+
+    def test_ogni_fondale_e_la_sua_mappa(self):
+        self.assertEqual(len(self.fondali), 14)
+        for nome, (fondale, fw, fh, grande) in self.fondali.items():
+            a = self.aree[nome]
+            self.assertEqual(grande, a["larghezza"] > 64 or a["altezza"] > 64, nome)
+            self.assertEqual(fw % 32 + fh % 32, 0, nome)
+            if not grande:
+                self.assertIn(fw, (32, 64), nome)
+                self.assertIn(fh, (32, 64), nome)
+            self.assertEqual(errori_disposizione(self.mappe[nome][1], a["larghezza"], a["altezza"], fondale, fw, fh,
+                                                 grande), [], nome)
+
+    def test_negativa_big_map_letta_a_blocchi(self):
+        """Piazza Grande e' una big map: se le sue celle fossero a blocchi, non tornerebbero."""
+        fondale, fw, fh, grande = self.fondali["PIAZZA_GRANDE"]
+        a = self.aree["PIAZZA_GRANDE"]
+        self.assertTrue(grande)
+        self.assertNotEqual(errori_disposizione(self.mappe["PIAZZA_GRANDE"][1], a["larghezza"], a["altezza"],
+                                                fondale, fw, fh, False), [])
+
+    def test_negativa_cella_sbagliata(self):
+        fondale, fw, fh, grande = self.fondali["TEATRO_ROMANO"]
+        a = self.aree["TEATRO_ROMANO"]
+        fondale = list(fondale)
+        fondale[33] = (fondale[33] + 1) % len(G.TILE_FONDALI)
+        self.assertEqual(len(errori_disposizione(self.mappe["TEATRO_ROMANO"][1], a["larghezza"], a["altezza"],
+                                                 fondale, fw, fh, grande)), 1)
 
 
 class FondaleControGriglia(unittest.TestCase):

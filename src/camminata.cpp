@@ -25,6 +25,8 @@ namespace
         int tile_obj = 0;
         int blocchi_bg = 0;
         int stack_iwram = 0;
+        int cpu_centesimi = 0;     // il frame piu' pesante, in centesimi del budget di un frame
+        int frame_oltre = 0;       // frame che hanno sforato il budget
     };
 
     int massimo(int a, int b)
@@ -58,10 +60,23 @@ namespace
             picchi.blocchi_bg = massimo(picchi.blocchi_bg, bn::bg_tiles::used_blocks_count() + bn::bg_maps::used_blocks_count());
             picchi.stack_iwram = massimo(picchi.stack_iwram, bn::memory::used_stack_iwram());
             bn::core::update();
+
+            // last_cpu_usage(): la frazione del frame appena chiuso spesa a lavorare (1 = tutto il
+            // frame). Comprende i passi del navigatore, quindi e' una stima per eccesso.
+            int cpu = (bn::core::last_cpu_usage() * 100).right_shift_integer();
+            picchi.cpu_centesimi = massimo(picchi.cpu_centesimi, cpu);
+            picchi.frame_oltre += cpu >= 100 ? 1 : 0;
+        }
+
+        // La ricerca della strada (fino a 128x128 celle) e' dell'autotest: chiude un frame suo, che
+        // non si misura, e il frame dopo contiene solo cammino e scena.
+        void strada_pronta()
+        {
+            bn::core::update();
         }
     };
 
-    // ~25 KB: il navigatore tiene tre tabelle da 64x64 celle. Sta in EWRAM, inizializzato a
+    // ~96 KB: il navigatore tiene tre tabelle da LATO_MAX x LATO_MAX celle. Sta in EWRAM, inizializzato a
     // tempo di compilazione (constinit), non sullo stack.
     constinit BN_DATA_EWRAM mondo::AutotestMondo<OsservatoreGba> g_camminata;
 }
@@ -77,7 +92,8 @@ void camminata_automatica(Esplorazione& esplorazione, const bn::sprite_palette_p
     const Picchi& p = osservatore.picchi;
     BN_LOG("Camminata: ", esito.archi, " archi, ", esito.pixel, " pixel, errore ", int(esito.errore),
            ", picchi: sprite ", p.sprite, ", tile OBJ ", p.tile_obj, ", blocchi BG ", p.blocchi_bg,
-           ", stack IWRAM ", p.stack_iwram);
+           ", stack IWRAM ", p.stack_iwram, ", CPU massima ", p.cpu_centesimi, "%, frame oltre il budget ",
+           p.frame_oltre);
 
     struct Riga
     {

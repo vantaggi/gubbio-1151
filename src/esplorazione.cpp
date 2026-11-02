@@ -4,7 +4,7 @@
 #include "bn_bg_palettes.h"
 #include "bn_color.h"
 #include "bn_fixed.h"
-#include "bn_regular_bg_map_cell_info.h"
+#include "bn_regular_bg_map_item.h"
 #include "bn_regular_bg_map_ptr.h"
 #include "bn_size.h"
 #include "bn_sprite_palette_item.h"
@@ -82,19 +82,6 @@ namespace
                                       bn::move(tiles), bn::move(palette));
     }
 
-    // Lato in celle della mappa hardware che contiene 'celle' celle: 32 o 64.
-    constexpr int lato_mappa(int celle)
-    {
-        return celle <= 32 ? 32 : 64;
-    }
-
-    // Indice di una cella in una mappa hardware larga 'pitch': blocchi da 32x32 (come Butano).
-    constexpr int indice_mappa(int x, int y, int pitch)
-    {
-        int blocco = ((y / 32) * (pitch / 32)) + (x / 32);
-        return (blocco * 1024) + ((y % 32) * 32) + (x % 32);
-    }
-
     constexpr int limita(int v, int minimo, int massimo)
     {
         return v < minimo ? minimo : (v > massimo ? massimo : v);
@@ -121,39 +108,17 @@ void Esplorazione::entra(mondo::AreaId id, int spawn)
 
 void Esplorazione::_carica_fondale()
 {
+    // Le celle sono gia' in ROM (include/mondo.h): Butano le copia in VRAM, o per una big map ne
+    // carica solo la parte vicina allo schermo, e aggiunge da se' gli scostamenti di tile e palette.
     const mondo::Area& a = mondo::area(_e.area);
-    int w = lato_mappa(a.larghezza);
-    int h = lato_mappa(a.altezza);
     _area_caricata = _e.area;
-
     _fondale.reset();
-    bn::regular_bg_map_ptr mappa = bn::regular_bg_map_ptr::allocate(bn::size(w, h), _tiles, _palette);
-    bn::span<bn::regular_bg_map_cell> celle = *mappa.vram();
-    int palette_id = _palette.id();
 
-    for(int y = 0; y < h; ++y)
-    {
-        for(int x = 0; x < w; ++x)
-        {
-            int tile = int(mondo::TileFondale::VUOTO);
-
-            if(x < a.larghezza && y < a.altezza)
-            {
-                int i = x + y * a.larghezza;
-                BN_ASSERT(i < a.larghezza * a.altezza, "Mappa: indice ", i, " fuori area");
-                tile = a.mappa[i];
-            }
-
-            bn::regular_bg_map_cell_info info;
-            info.set_tile_index(tile);
-            info.set_palette_id(palette_id);
-            celle[indice_mappa(x, y, w)] = info.cell();
-        }
-    }
-
-    _mezza_larghezza_mappa = w * mondo::TILE_PX / 2;
-    _mezza_altezza_mappa = h * mondo::TILE_PX / 2;
-    _fondale = bn::regular_bg_ptr::create(0, 0, bn::move(mappa));
+    bn::size lati(a.larghezza_fondale, a.altezza_fondale);
+    bn::regular_bg_map_item voce(*a.fondale, lati, bn::compression_type::NONE, 1, a.fondale_grande);
+    _mezza_larghezza_mappa = lati.width() * mondo::TILE_PX / 2;
+    _mezza_altezza_mappa = lati.height() * mondo::TILE_PX / 2;
+    _fondale = bn::regular_bg_ptr::create(0, 0, bn::regular_bg_map_ptr::create(voce, _tiles, _palette));
     _fondale->set_camera(_camera);
     _mostra_etichetta(a.etichetta);
     aggiorna();

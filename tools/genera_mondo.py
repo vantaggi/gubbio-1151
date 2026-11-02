@@ -47,6 +47,12 @@ essere larga sulla griglia, in mediana, al massimo TOLLERANZA_VIA volte la misur
 "strettoia N" vuole almeno un tratto largo N. La piazza sta libera, in scala, intorno al
 riferimento; un lato lungo compresso solo con un "fattore_piazza" dichiarato.
 
+Fondali in ROM: per ogni area le celle della mappa BG gia' pronte, che Butano copia senza cicli a
+runtime. Fino a LATO_MAPPA_HW (64 tile, la mappa piu' grande dell'hardware) in una mappa di 32 o 64
+per lato, a blocchi 32x32 come la VRAM; oltre, e fino a LATO_MAX tile per lato, una big map di
+Butano: celle riga per riga in una mappa multipla di 32, e Butano carica solo la parte vicina allo
+schermo.
+
 Controlli sugli edifici: ognuno compare nella sua area con le misure in tile esatte (un edificio
 che esce dalla griglia o che risulta rimpicciolito e' rifiutato), nessuno si sovrappone a un altro o
 a un varco, e dopo averli posati ogni varco resta raggiungibile da ogni spawn.
@@ -107,6 +113,8 @@ SPAZI_APERTI = {
 # Celle che un edificio disegnato dal generatore puo' occupare.
 MURO_EDIFICIO, FACCIATA_EDIFICIO, PORTONE_EDIFICIO = "#", "C", "d"
 FATTORE_PREDEFINITO = 0.73   # compressione delle distanze del GDD
+LATO_MAX = 128               # tile per lato di un'area
+LATO_MAPPA_HW = 64           # oltre, il fondale e' una big map
 
 # Dislivello. La salita va verso nord-est: sullo schermo in basso (est) o a destra (nord).
 LATI_A_MONTE = ("basso", "destra")
@@ -424,6 +432,8 @@ def leggi_area(nome_file, testo):
     for campo in ("id", "etichetta", "larghezza", "riferimento", "monte"):
         if campo not in a:
             raise ErroreMondo(f"{nome_file}: manca '{campo}'")
+    if not (0 < a["larghezza"] <= LATO_MAX and 0 < a["altezza"] <= LATO_MAX):
+        raise ErroreMondo(f"{nome_file}: area {a['larghezza']}x{a['altezza']}: il lato massimo e' {LATO_MAX} tile")
     if len(a["griglia"]) != a["altezza"]:
         raise ErroreMondo(f"{nome_file}: {len(a['griglia'])} righe di griglia, ne dichiara {a['altezza']}")
     for n, riga in a["griglia"]:
@@ -827,6 +837,32 @@ def a_blocchi(valori, per_riga=16, formato=str):
                      for i in range(0, len(valori), per_riga))
 
 
+def grande(a):
+    return a["larghezza"] > LATO_MAPPA_HW or a["altezza"] > LATO_MAPPA_HW
+
+
+def lati_fondale(a):
+    """Lati della mappa BG: 32 o 64 per un'area che sta in 64x64, multipli di 32 per una big map."""
+    if grande(a):
+        return (-(-a["larghezza"] // 32) * 32, -(-a["altezza"] // 32) * 32)
+    return tuple(32 if lato <= 32 else 64 for lato in (a["larghezza"], a["altezza"]))
+
+
+def celle_fondale(a, mappa):
+    """Le celle della mappa BG (indice del tile, palette 0: Butano aggiunge gli scostamenti).
+    Big map: riga per riga. Mappa hardware: a blocchi 32x32, nell'ordine della VRAM."""
+    gw, gh = lati_fondale(a)
+    out = [INDICE_TILE["VUOTO"]] * (gw * gh)
+    for y in range(a["altezza"]):
+        for x in range(a["larghezza"]):
+            if grande(a):
+                i = y * gw + x
+            else:
+                i = (((y // 32) * (gw // 32)) + (x // 32)) * 1024 + (y % 32) * 32 + (x % 32)
+            out[i] = mappa[y * a["larghezza"] + x]
+    return out
+
+
 def ordina(aree, giro):
     altre = sorted(a["id"] for a in aree if a["id"] not in giro)
     per_id = {a["id"]: a for a in aree}
@@ -869,6 +905,7 @@ def scrivi_header(aree, grafo, palette_stile):
         f"inline constexpr int PRIMA_CELLA_SOLIDA = {list(CELLE.values()).index(('FONTANA', True))};",
         f"inline constexpr int DISTANZA_MIN_SPAWN = {DISTANZA_MIN_SPAWN};",
         f"inline constexpr int DISTANZA_MIN_SPAWN_USCITA = {DISTANZA_MIN_SPAWN_USCITA};",
+        f"inline constexpr int LATO_MAX = {LATO_MAX};          // tile per lato di un'area",
         f"inline constexpr int SPAWN_PER_AREA = 6;",
         f"inline constexpr int VARCHI_MAX = {len(VARCHI)};",
         "",
@@ -906,6 +943,10 @@ def scrivi_header(aree, grafo, palette_stile):
         "    const uint8_t* mappa;             // larghezza * altezza tile del fondale",
         "    uint8_t larghezza;",
         "    uint8_t altezza;",
+        "    const uint16_t* fondale;          // celle della mappa BG (vedi lati_fondale in genera_mondo.py)",
+        "    uint8_t larghezza_fondale;",
+        "    uint8_t altezza_fondale;",
+        "    bool fondale_grande;              // big map (oltre 64 tile): celle riga per riga",
         "    int16_t quota_da;                 // metri sopra Piazza Quaranta Martiri",
         "    int16_t quota_a;                  // diversa da quota_da solo per le strade in salita",
         "    testi::TestoId etichetta;",
@@ -931,6 +972,11 @@ def scrivi_header(aree, grafo, palette_stile):
         nome = a["id"].upper()
         out += [f"inline constexpr uint8_t GRIGLIA_{nome}[{n}] = {{", a_blocchi(celle, 32), "};", "",
                 f"inline constexpr uint8_t MAPPA_{nome}[{n}] = {{", a_blocchi(mappa, 32), "};", ""]
+        gw, gh = lati_fondale(a)
+        fondale = celle_fondale(a, mappa)
+        out += [f"// Fondale {gw}x{gh}" + (" (big map, riga per riga)" if grande(a) else " (a blocchi 32x32)")
+                + ": fuori dall'area tile vuoti.",
+                f"inline constexpr uint16_t FONDALE_{nome}[{gw * gh}] = {{", a_blocchi(fondale, 32), "};", ""]
 
     out += ["inline constexpr Area AREE[AREE_CONTEGGIO] = {"]
     for a in aree:
@@ -949,7 +995,9 @@ def scrivi_header(aree, grafo, palette_stile):
         spawn = [a["spawn"].get(i, a["spawn"][0]) for i in range(6)]
         out += [
             f"    {{   // {a['id']}",
-            f"        GRIGLIA_{nome}, MAPPA_{nome}, {a['larghezza']}, {a['altezza']}, {q[0]}, {q[1]},",
+            f"        GRIGLIA_{nome}, MAPPA_{nome}, {a['larghezza']}, {a['altezza']},",
+            f"        FONDALE_{nome}, {lati_fondale(a)[0]}, {lati_fondale(a)[1]}, {'true' if grande(a) else 'false'}, "
+            f"{q[0]}, {q[1]},",
             f"        testi::TestoId::{a['etichetta']}, {len(a['uscite'])},",
             "        { " + ", ".join(varchi) + " },",
             "        { " + ", ".join(f"{{ {x}, {y} }}" for x, y in spawn) + " },",
