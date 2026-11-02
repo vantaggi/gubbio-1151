@@ -3,6 +3,8 @@
 
     python tools/istantanee.py CARTELLA                      # solo le griglie
     python tools/istantanee.py CARTELLA --rom ROM_ISTANTANEE  # griglie e schermate
+    python tools/istantanee.py CARTELLA --fondale piazza_grande  # anche il fondale intero di un'area
+                                                    # (ISTANTANEE_SCALA=3 per ingrandirlo)
 
 Griglie (ovunque): per ogni area un PNG di 1 pixel per tile ingrandito x4, dalla griglia finale del
 generatore (edifici e dislivello compresi), con suolo, strade, muri, facciate, portoni, varchi e
@@ -30,6 +32,7 @@ import zlib
 RADICE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 sys.path.insert(0, os.path.join(RADICE, "tools"))
 import genera_mondo as G  # noqa: E402
+import pittore_monumenti as PM  # noqa: E402,F401
 
 MGBA = os.environ.get("MGBA", r"C:\Users\cioti\mGBA-0.10.5\mGBA.exe")
 ROM = os.path.join(RADICE, "gubbio1151.gba")
@@ -68,12 +71,13 @@ def png(percorso, larghezza, altezza, pixel):
 
 
 def aree_finali():
-    """Le aree nell'ordine di include/mondo.h, con gli edifici posati e il dislivello."""
+    """Le aree nell'ordine di include/mondo.h, con edifici, dislivello e tile disegnati."""
     mondo = G.mondo_del_repo()
     aree = [G.leggi_area(n, t) for n, t in G.sorgenti_del_repo()]
     for a in aree:
         G.posa_edifici(a, mondo["monumenti"])
         G.applica_dislivello(a, mondo["grafo"])
+        a["tile"], a["indici"], _ = G.disegna_area(a, mondo)
     return G.ordina(aree, G.anello(mondo["grafo"]))
 
 
@@ -97,6 +101,32 @@ def griglie(cartella):
             righe += [riga] * k
         png(os.path.join(cartella, f"griglia_{a['id']}.png"), a["larghezza"] * k, a["altezza"] * k, righe)
     print(f"[istantanee] {len(aree_finali())} griglie in {cartella}")
+
+
+def rgb_palette():
+    """I 16 colori dei fondali in RGB a 8 bit (dal BGR555 del GBA)."""
+    palette = G.S.carica("palette")
+    out = []
+    for rif in G.PALETTE_FONDALI:
+        c = G.S.colore(palette, rif)
+        out.append(((c & 31) * 255 // 31, ((c >> 5) & 31) * 255 // 31, ((c >> 10) & 31) * 255 // 31))
+    return out
+
+
+def fondale(cartella, nome, scala=1):
+    """Il fondale intero di un'area, con i tile e i colori della ROM: fondale_<area>[_xN].png."""
+    colori = rgb_palette()
+    a = [x for x in aree_finali() if x["id"] == nome][0]
+    w, h = a["larghezza"], a["altezza"]
+    righe = []
+    for y in range(h * 8):
+        riga = []
+        for x in range(w * 8):
+            tile = a["tile"][a["indici"][(y // 8) * w + x // 8]]
+            riga += [colori[tile[y % 8][x % 8]]] * scala
+        righe += [riga] * scala
+    suffisso = f"_x{scala}" if scala > 1 else ""
+    png(os.path.join(cartella, f"fondale_{nome}{suffisso}.png"), w * 8 * scala, h * 8 * scala, righe)
 
 
 def schermate(cartella, rom):
@@ -195,6 +225,8 @@ def main(argv):
     cartella = argv[0]
     os.makedirs(cartella, exist_ok=True)
     griglie(cartella)
+    for nome in [argv[i + 1] for i, v in enumerate(argv) if v == "--fondale"]:
+        fondale(cartella, nome, int(os.environ.get("ISTANTANEE_SCALA", "1")))
     if "--rom" in argv:
         schermate(cartella, argv[argv.index("--rom") + 1])
     return 0

@@ -53,6 +53,11 @@ per lato, a blocchi 32x32 come la VRAM; oltre, e fino a LATO_MAX tile per lato, 
 Butano: celle riga per riga in una mappa multipla di 32, e Butano carica solo la parte vicina allo
 schermo.
 
+Grafica dei monumenti (tools/pittore_monumenti.py): ogni edificio ha la sua tela in pixel, con la
+sola palette dei fondali; ogni area ha il suo set di tile 8x8, deduplicato fra suolo, dislivello e
+monumenti, al massimo TILE_MAX_PER_AREA (un BG). Un monumento canonico a cui manca un elemento
+richiesto (per esempio i 6 archi del Consoli) e' rifiutato.
+
 Controlli sugli edifici: ognuno compare nella sua area con le misure in tile esatte (un edificio
 che esce dalla griglia o che risulta rimpicciolito e' rifiutato), nessuno si sovrappone a un altro o
 a un varco, e dopo averli posati ogni varco resta raggiungibile da ogni spawn.
@@ -73,6 +78,7 @@ import stile as S  # noqa: E402
 
 sys.path.insert(0, os.path.join(RADICE, "tools"))
 import mondo_dati as M  # noqa: E402
+import pittore_monumenti as PM  # noqa: E402
 
 AREE_GLOB = os.path.join(RADICE, "mondo", "aree", "*.area")
 USCITA = os.path.join(RADICE, "include", "mondo.h")
@@ -94,8 +100,8 @@ CELLE = {
     ".": ("SUOLO", False),
     ",": ("STRADA", False),
     "S": ("SCALINATA", False),
-    "d": ("PORTONE", False),       # portone solo visivo
     "F": ("FONTANA", True),
+    "d": ("PORTONE", True),        # portone di un edificio: solo visivo, non si attraversa
     "#": ("MURO", True),
     "=": ("PARAPETTO", True),      # affaccio sul vuoto
     "C": ("FACCIATA", True),       # facciata monumentale (Consoli, San Francesco, ...)
@@ -115,6 +121,7 @@ MURO_EDIFICIO, FACCIATA_EDIFICIO, PORTONE_EDIFICIO = "#", "C", "d"
 FATTORE_PREDEFINITO = 0.73   # compressione delle distanze del GDD
 LATO_MAX = 128               # tile per lato di un'area
 LATO_MAPPA_HW = 64           # oltre, il fondale e' una big map
+TILE_MAX_PER_AREA = 512      # tile unici di un'area, suolo e monumenti insieme
 
 # Dislivello. La salita va verso nord-est: sullo schermo in basso (est) o a destra (nord).
 LATI_A_MONTE = ("basso", "destra")
@@ -476,7 +483,7 @@ def posa_edifici(a, monumenti):
         if x0 < 0 or y0 < 0 or x0 + w > a["larghezza"] or y0 + h > a["altezza"]:
             raise ErroreMondo(f"{a['file']}: l'edificio {mid} ({w}x{h} tile in {x0}, {y0}) esce dalla "
                               f"griglia {a['larghezza']}x{a['altezza']}")
-        faccia = m.get("facciata_lato_schermo")
+        faccia = m.get("facciata_lato_schermo") or PM.FACCIATA_DI_DEFAULT.get(mid)
         for y in range(y0, y0 + h):
             for x in range(x0, x0 + w):
                 if (x, y) in occupate:
@@ -584,6 +591,68 @@ def applica_dislivello(a, grafo):
                     g[cy][cx] = "S" if (cx, cy) in passaggio else "M"
                 tratto = []
     a["griglia"] = ["".join(r) for r in g]
+
+
+def disegna_area(a, mondo):
+    """Il fondale dell'area come tile 8x8: il suolo dai tile procedurali, gli edifici dalle loro
+    tele, la Fontana dei Matti dalla sua. Ritorna (tile unici, indice per cella, elementi per
+    monumento). Il primo tile e' il vuoto, per le celle fuori dall'area."""
+    monumenti = mondo["monumenti"]
+    censimento = mondo.get("censimento", {})
+    w, h = a["larghezza"], a["altezza"]
+    tile_di = {}
+    elementi = {}
+    for n, (mid, (x0, y0, ew, eh)) in enumerate(sorted(a.get("edifici", {}).items())):
+        m = monumenti[mid]
+        faccia = m.get("facciata_lato_schermo") or PM.FACCIATA_DI_DEFAULT.get(mid)
+        altezza = censimento.get(mid, {}).get("altezza_m", "").strip()
+        tela = PM.dipingi(mid, m["nome"], ew, eh, faccia, {"altezza_m": float(altezza) if altezza else None}, n)
+        elementi[mid] = tela.elementi
+        for ty, riga in enumerate(tela.tagli()):
+            for tx, pix in enumerate(riga):
+                tile_di[(x0 + tx, y0 + ty)] = pix
+    fontana = [(x, y) for y in range(h) for x in range(w) if a["griglia"][y][x] == "F"]
+    if fontana:
+        fx0, fy0 = min(x for x, _ in fontana), min(y for _, y in fontana)
+        fw, fh = max(x for x, _ in fontana) - fx0 + 1, max(y for _, y in fontana) - fy0 + 1
+        tela = PM.fontana_dei_matti(fw, fh)
+        elementi["fontana_matti"] = tela.elementi
+        for ty, riga in enumerate(tela.tagli()):
+            for tx, pix in enumerate(riga):
+                tile_di[(fx0 + tx, fy0 + ty)] = pix
+    tile_unici = {tuple(map(tuple, _tile(tile_vuoto))): 0}
+    indici = []
+    for y in range(h):
+        for x in range(w):
+            pix = tile_di.get((x, y))
+            if pix is None:
+                pix = _tile(TILE_FONDALI[tile_per_cella(a["griglia"], x, y, a["id"] in AREE_DEL_MONTE,
+                                                        a.get("monte"))][1])
+            chiave = tuple(map(tuple, pix))
+            indici.append(tile_unici.setdefault(chiave, len(tile_unici)))
+    return list(tile_unici), indici, elementi
+
+
+def controlla_grafica(a, tile_unici, elementi):
+    for mid in sorted(a.get("edifici", {})):
+        manca = PM.elementi_mancanti(mid, elementi.get(mid, {}))
+        if manca:
+            raise ErroreMondo(f"{a['file']}: il monumento {mid} non ha " +
+                              ", ".join(f"{k} ({elementi.get(mid, {}).get(k, 0)} di {v})" for k, v in sorted(manca.items())))
+    if len(tile_unici) > TILE_MAX_PER_AREA:
+        raise ErroreMondo(f"{a['file']}: {len(tile_unici)} tile unici, il massimo per un BG e' {TILE_MAX_PER_AREA}")
+    for tile in tile_unici:
+        for riga in tile:
+            for v in riga:
+                if not 0 <= v < len(PALETTE_FONDALI):
+                    raise ErroreMondo(f"{a['file']}: colore {v} fuori dalla palette dei fondali")
+
+
+def celle_edifici_calpestabili(a):
+    """Celle di un edificio su cui si potrebbe camminare: devono essere nessuna."""
+    return sorted((x, y) for (x0, y0, w, h) in a.get("edifici", {}).values()
+                  for y in range(y0, y0 + h) for x in range(x0, x0 + w)
+                  if not solida(a["griglia"][y][x]) or a["griglia"][y][x] in VARCHI)
 
 
 def controlla_edifici(a, posati, monumenti):
@@ -886,6 +955,8 @@ def scrivi_header(aree, grafo, palette_stile):
         "",
         "#include <cstdint>",
         "",
+        "#include \"bn_tile.h\"",
+        "",
         "#include \"testi.h\"",
         "",
         "namespace gubbio::mondo",
@@ -947,6 +1018,8 @@ def scrivi_header(aree, grafo, palette_stile):
         "    uint8_t larghezza_fondale;",
         "    uint8_t altezza_fondale;",
         "    bool fondale_grande;              // big map (oltre 64 tile): celle riga per riga",
+        "    const bn::tile* tile;             // i tile 8x8 dell'area (il primo e' il vuoto)",
+        "    uint16_t tile_conteggio;",
         "    int16_t quota_da;                 // metri sopra Piazza Quaranta Martiri",
         "    int16_t quota_a;                  // diversa da quota_da solo per le strade in salita",
         "    testi::TestoId etichetta;",
@@ -973,7 +1046,11 @@ def scrivi_header(aree, grafo, palette_stile):
         out += [f"inline constexpr uint8_t GRIGLIA_{nome}[{n}] = {{", a_blocchi(celle, 32), "};", "",
                 f"inline constexpr uint8_t MAPPA_{nome}[{n}] = {{", a_blocchi(mappa, 32), "};", ""]
         gw, gh = lati_fondale(a)
-        fondale = celle_fondale(a, mappa)
+        fondale = celle_fondale(a, a["indici"])
+        out += [f"// {len(a['tile'])} tile unici: suolo, dislivello e monumenti.",
+                f"inline constexpr bn::tile TILE_{nome}[{len(a['tile'])}] = {{"]
+        out += ["    { { " + ", ".join(f"0x{v:08X}" for v in parole_tile(t)) + " } }," for t in a["tile"]]
+        out += ["};", ""]
         out += [f"// Fondale {gw}x{gh}" + (" (big map, riga per riga)" if grande(a) else " (a blocchi 32x32)")
                 + ": fuori dall'area tile vuoti.",
                 f"inline constexpr uint16_t FONDALE_{nome}[{gw * gh}] = {{", a_blocchi(fondale, 32), "};", ""]
@@ -997,7 +1074,7 @@ def scrivi_header(aree, grafo, palette_stile):
             f"    {{   // {a['id']}",
             f"        GRIGLIA_{nome}, MAPPA_{nome}, {a['larghezza']}, {a['altezza']},",
             f"        FONDALE_{nome}, {lati_fondale(a)[0]}, {lati_fondale(a)[1]}, {'true' if grande(a) else 'false'}, "
-            f"{q[0]}, {q[1]},",
+            f"TILE_{nome}, {len(a['tile'])}, {q[0]}, {q[1]},",
             f"        testi::TestoId::{a['etichetta']}, {len(a['uscite'])},",
             "        { " + ", ".join(varchi) + " },",
             "        { " + ", ".join(f"{{ {x}, {y} }}" for x, y in spawn) + " },",
@@ -1005,16 +1082,12 @@ def scrivi_header(aree, grafo, palette_stile):
         ]
     out += ["};", ""]
 
-    out += ["// Fondali: tile 8x8 a 4bpp (un nibble per pixel, pixel di sinistra nei bit bassi).",
+    out += ["// I tipi di tile del suolo, come li usa MAPPA_<AREA> (i tile veri sono in TILE_<AREA>).",
             "enum class TileFondale : uint8_t", "{"]
     out += [f"    {nome}," for nome, _ in TILE_FONDALI]
     out += ["};", "",
             f"inline constexpr int TILE_FONDALI = {len(TILE_FONDALI)};",
-            "inline constexpr uint32_t TILE_FONDALE[TILE_FONDALI * 8] = {"]
-    for nome, funzione in TILE_FONDALI:
-        out.append(f"    // {nome.lower()}")
-        out.append(a_blocchi(parole_tile(_tile(funzione)), 8, lambda v: f"0x{v:08X}"))
-    out += ["};", "",
+            "",
             "inline constexpr uint16_t PALETTE_FONDALI[16] = {",
             a_blocchi([colore(r) for r in PALETTE_FONDALI], 8, lambda v: f"0x{v:04X}"),
             "};", ""]
@@ -1041,7 +1114,8 @@ def mondo_del_repo():
         monumenti = json.load(f)["monumenti"]
     with open(os.path.join(RADICE, "mondo", "fonti", "misure_osm.json"), encoding="utf-8") as f:
         misure = json.load(f)
-    return {"grafo": M.carica_grafo(), "varchi": varchi, "monumenti": monumenti, "misure": misure}
+    return {"grafo": M.carica_grafo(), "varchi": varchi, "monumenti": monumenti, "misure": misure,
+            "censimento": M.carica_censimento()}
 
 
 def genera(sorgenti, palette_stile, mondo=None):
@@ -1055,6 +1129,11 @@ def genera(sorgenti, palette_stile, mondo=None):
     for a in aree:
         controlla_vicinanze(a)
         controlla_proporzioni(a, mondo["misure"])
+        calpestabili = celle_edifici_calpestabili(a)
+        if calpestabili:
+            raise ErroreMondo(f"{a['file']}: celle di edificio calpestabili: {calpestabili[:4]}")
+        a["tile"], a["indici"], elementi = disegna_area(a, mondo)
+        controlla_grafica(a, a["tile"], elementi)
     return scrivi_header(aree, mondo["grafo"], palette_stile)
 
 
