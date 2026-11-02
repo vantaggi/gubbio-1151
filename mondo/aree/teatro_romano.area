@@ -11,6 +11,8 @@ mura destra
 mura basso
 # Il Teatro sta nel prato, fuori dalla citta'.
 prato
+# Gli alberi a macchie e radure, mai in fila.
+alberi 0.3
 riferimento 32 31
 fattore 0.73
 spawn 0 48 30

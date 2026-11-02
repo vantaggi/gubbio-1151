@@ -509,7 +509,8 @@ def griglie_e_mappe(header):
 
 
 TILE_CALPESTABILI = {"SUOLO", "STRADA", "SCALINATA", "PORTONE", "VARCO", "INGRESSO", "SUOLO_OMBRA",
-                     "STRADA_OMBRA", "LASTRICO", "CORSO", "VIALETTO", "ARCO", "PRATO", "BRECCIA"}
+                     "STRADA_OMBRA", "LASTRICO", "LASTRICO_2", "LASTRICO_3", "CORSO", "VIALETTO", "ARCO", "PRATO",
+                     "BRECCIA", "BRECCIA_2", "BRECCIA_SOLCO"}
 
 
 def errori_fondale(griglia, mappa):
@@ -1261,22 +1262,172 @@ class LaBasilica(unittest.TestCase):
         g = self.aree["basilica_interno"]["griglia"]
         self.assertEqual(len(G.blocchi(g, "a")), 1, "l'altare con l'urna")
         self.assertEqual(len(G.blocchi(g, "e")), 3, "i tre ceri")
-        colonne = {x for y, r in enumerate(g) for x, c in enumerate(r) if c == "n"}
-        self.assertEqual(len(colonne), 2, "due file di colonne: tre navate")
+        pilastri = G.blocchi(g, "n")
+        self.assertTrue(all(len(p) == 4 for p in pilastri), "pilastri 2x2")
+        self.assertEqual(len({min(x for x, _ in p) for p in pilastri}), 2, "due file di pilastri: tre navate")
+        self.assertGreaterEqual(len(G.blocchi(g, "q")), 12, "le panche in file")
+        self.assertGreaterEqual(sum(r.count("w") for r in g), 6, "le vetrate")
+        self.assertEqual(len(G.blocchi(g, "l")), 2, "i candelieri")
+        y_altare = min(y for y, r in enumerate(g) if "a" in r)
+        self.assertTrue(any("S" in g[y_altare + k] for k in (2, 3)), "l'altare e' rialzato sui gradini")
+        self.assertTrue(all(len(c) >= 8 for c in G.blocchi(g, "e")), "ceri alti, 2x4")
+        a = self.aree["basilica_interno"]
+        celle = G.finestra_dello_spawn(a)
+        y0 = min(y for _, y in celle)
+        self.assertGreaterEqual(y_altare, y0 + 3, "l'altare non finisce sotto il cartiglio")
 
     def test_negativa_due_ceri(self):
-        g = [r.replace("ee", "LL", 1) if i in (9, 10, 11) else r
+        g = [r.replace("ee", "LL", 1) if i in (10, 11, 12, 13) else r
              for i, r in enumerate(self.aree["basilica_interno"]["griglia"])]
         self.assertEqual(len(G.blocchi(g, "e")), 2)
 
     def test_la_basilica_ha_chiostro_campanile_scalinata(self):
         el = G.PM.basilica(15, 33, {}).elementi
-        for k in ("scalinata", "portale", "chiostro", "loggiato", "pozzo", "campanile"):
+        for k in ("scalinata", "portale", "facciata", "campanile"):
             self.assertGreaterEqual(el.get(k, 0), 1, k)
+        el = G.PM.chiostro(11, 18).elementi
+        for k in ("loggiato", "pozzo", "giardino"):
+            self.assertGreaterEqual(el.get(k, 0), 1, k)
+        b = self.aree["basilica"]
+        x0, y0, w, h = b["edifici"]["basilica"]
+        chiostro = G.blocchi(b["griglia"], "h")
+        self.assertEqual(len(chiostro), 1)
+        self.assertLess(max(x for x, _ in chiostro[0]), x0, "il chiostro sta accanto alla chiesa, non davanti")
+        self.assertTrue(any(b["griglia"][y0 + h][x] == "S" for x in range(x0, x0 + w)), "la scalinata al portale")
 
-    def test_negativa_basilica_senza_chiostro(self):
-        self.assertEqual(G.PM.elementi_mancanti("basilica", {"scalinata": 1, "portale": 1, "loggiato": 1,
-                                                             "pozzo": 1, "campanile": 1}), {"chiostro": 1})
+    def test_negativa_basilica_senza_facciata(self):
+        self.assertEqual(G.PM.elementi_mancanti("basilica", {"scalinata": 1, "portale": 1, "campanile": 1}),
+                         {"facciata": 1})
+
+
+def dispersione_vicini(punti):
+    """Coefficiente di variazione delle distanze dal vicino piu' vicino: 0 per un reticolo regolare."""
+    d = []
+    for x, y in punti:
+        d.append(min(((x - u) ** 2 + (y - v) ** 2) ** 0.5 for u, v in punti if (u, v) != (x, y)))
+    media = sum(d) / len(d)
+    return (sum((v - media) ** 2 for v in d) / len(d)) ** 0.5 / media
+
+
+class LaRifinitura(unittest.TestCase):
+    """Pezzo L: alberi mai in griglia, lastricato irregolare, torri delle porte, i tipi di cella."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mondo = G.mondo_del_repo()
+        cls.aree = {a["id"]: a for a in I.aree_finali()}
+
+    def alberi(self, a):
+        return [(x, y) for y, r in enumerate(a["griglia"]) for x, c in enumerate(r) if c in "Tr"]
+
+    def test_alberi_mai_in_griglia(self):
+        provate = 0
+        for nome, a in sorted(self.aree.items()):
+            punti = self.alberi(a)
+            if len(punti) < 10:
+                continue
+            provate += 1
+            self.assertGreater(dispersione_vicini(punti), 0.15, nome)
+        self.assertGreaterEqual(provate, 4)
+
+    def test_negativa_alberi_a_reticolo(self):
+        reticolo = [(x, y) for x in range(2, 40, 4) for y in range(3, 30, 3)]
+        self.assertLess(dispersione_vicini(reticolo), 0.15)
+
+    def test_tre_chiome_e_cespugli(self):
+        a = self.aree["teatro_romano"]
+        nomi = {n for n, _ in G.TILE_FONDALI}
+        usati = {G.TILE_FONDALI[G.tile_per_cella(a["griglia"], x, y)][0] for x, y in self.alberi(a)}
+        self.assertTrue({"ALBERO", "ROVERELLA", "CIPRESSO", "CESPUGLIO"} <= usati & nomi, usati)
+
+    def test_negativa_una_chioma_sola(self):
+        g = ["T" * 3]
+        usati = {G.TILE_FONDALI[G.tile_per_cella(g, 0, 0)][0]}
+        self.assertEqual(len(usati), 1)
+
+    def passi_dei_corsi(self, a):
+        x0, y0, pw, ph = G.rettangolo_piazza(a)
+        righe = [y for y in range(y0, y0 + ph) if sum(a["griglia"][y][x] == "K" for x in range(x0, x0 + pw)) > pw // 2]
+        return {b - a_ for a_, b in zip(righe, righe[1:])}
+
+    def test_lastricato_non_a_scacchiera(self):
+        a = self.aree["piazza_grande"]
+        self.assertGreater(len(self.passi_dei_corsi(a)), 1)
+        x0, y0, pw, ph = G.rettangolo_piazza(a)
+        toni = {G.TILE_FONDALI[G.tile_per_cella(a["griglia"], x, y)][0] for y in range(y0, y0 + ph)
+                for x in range(x0, x0 + pw) if a["griglia"][y][x] == "L"}
+        self.assertEqual(toni, {"LASTRICO", "LASTRICO_2", "LASTRICO_3"})
+
+    def test_negativa_corsi_a_passo_fisso(self):
+        a = copy.deepcopy(self.aree["piazza_grande"])
+        x0, y0, pw, ph = G.rettangolo_piazza(a)
+        a["griglia"] = ["".join(("K" if (y - y0) % 5 == 2 else "L") if x0 <= x < x0 + pw and y0 <= y < y0 + ph
+                                and c in "LK" else c for x, c in enumerate(r)) for y, r in enumerate(a["griglia"])]
+        self.assertEqual(self.passi_dei_corsi(a), {5})
+
+    def test_vasca_all_incrocio_dei_giardini(self):
+        g = self.aree["piazza_quaranta_martiri"]["griglia"]
+        vasche = G.blocchi(g, "v")
+        self.assertEqual(len(vasche), 1)
+        self.assertEqual(len(vasche[0]), 25)
+
+    def test_torri_grandi(self):
+        for nome, a in sorted(self.aree.items()):
+            for lettera, (porta, lato, piloni, arco) in a.get("porte", {}).items():
+                xs = {x for x, _ in piloni + arco}
+                ys = {y for _, y in piloni + arco}
+                largo, fondo = (len(xs), len(ys)) if lato in ("alto", "basso") else (len(ys), len(xs))
+                self.assertGreaterEqual(largo, 9, (nome, porta))
+                self.assertGreaterEqual(fondo, 5, (nome, porta))
+                self.assertGreaterEqual(len(arco), 3 * (largo - 2 * G.LATO_PILONE), (nome, porta))
+
+    def test_negativa_torre_mozza(self):
+        a = copy.deepcopy(self.aree["teatro_romano"])
+        _, piloni, _ = G.geometria_porta(a, "A")
+        x, y = piloni[-1]
+        a["griglia"][y] = a["griglia"][y][:x] + "#" + a["griglia"][y][x + 1:]
+        self.assertTrue(any("incompleta" in e for e in G.errori_porte(a, self.mondo["grafo"])))
+
+    def test_monte_organico(self):
+        """Tornanti con il gomito tondo e il muretto a secco fuori, paracarri, ghiaia a due toni coi
+        solchi, la cappelletta col gradino."""
+        a = self.aree["monte_ingino"]
+        g = a["griglia"]
+        tornanti = G.tornanti_degli_stradoni(a, G.tratti_degli_stradoni(a))
+        for n, celle in enumerate(tornanti, 1):
+            accanto = {(x + dx, y + dy) for x, y in celle for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))}
+            self.assertGreater(sum(1 for x, y in accanto if g[y][x] == "m"), 8, f"muretto al tornante {n}")
+            righe = {y for _, y in celle}
+            self.assertGreater(len(righe), G.LUNGHEZZA_MIN_TRATTO // 2 - 1, f"gomito tondo al tornante {n}")
+        self.assertGreater(sum(r.count("p") for r in g), 40, "paracarri")
+        nomi = {G.TILE_FONDALI[G.tile_per_cella(g, x, y, True, "destra")][0]
+                for y, r in enumerate(g) for x, c in enumerate(r) if c == "b"}
+        self.assertEqual(nomi, {"BRECCIA", "BRECCIA_2", "BRECCIA_SOLCO"})
+        self.assertGreaterEqual(G.PM.cappelletta(3, 3).elementi.get("gradino", 0), 1)
+
+    def test_negativa_tornante_a_squadra(self):
+        """Un tornante rifatto a squadra, senza gomito ne' muretto, non passa."""
+        a = copy.deepcopy(self.aree["monte_ingino"])
+        tornanti = G.tornanti_degli_stradoni(a, G.tratti_degli_stradoni(a))
+        g = [list(r) for r in a["griglia"]]
+        for y, r in enumerate(g):
+            for x, c in enumerate(r):
+                if c == "m":
+                    g[y][x] = "#"
+        a["griglia"] = ["".join(r) for r in g]
+        celle = tornanti[0]
+        accanto = {(x + dx, y + dy) for x, y in celle for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))}
+        self.assertEqual(sum(1 for x, y in accanto if a["griglia"][y][x] == "m"), 0)
+
+    def test_i_tipi_di_cella_stanno_sotto_i_varchi(self):
+        """Le celle sono indici fino a PRIMO_VARCO escluso: oltre, il gioco le legge come varchi."""
+        self.assertLess(len(G.CELLE), G.PRIMO_VARCO)
+        with open(G.USCITA, encoding="utf-8") as f:
+            self.assertIn(f"PRIMO_VARCO = {G.PRIMO_VARCO};", f.read())
+
+    def test_negativa_troppi_tipi_di_cella(self):
+        troppe = dict(G.CELLE, **{chr(0x100 + k): ("X", True) for k in range(G.PRIMO_VARCO)})
+        self.assertFalse(len(troppe) < G.PRIMO_VARCO)
 
 
 if __name__ == "__main__":

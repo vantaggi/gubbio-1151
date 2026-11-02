@@ -901,15 +901,23 @@ REQUISITI.update({
 def cappelletta(w, h):
     """Una cappelletta degli stradoni vista dall'alto: il tettuccio di coppi a capanna, la fronte di
     pietra con l'arco dell'edicola e la croce sul colmo."""
-    t = Tela(w, h)
-    t.falde(0, 0, w * 8, h * 8 - 10)
-    t.conci(0, h * 8 - 10, w * 8, 10, TINTE[0])
-    t.arco(w * 4 - 4, h * 8 - 10, 8, 10, CONTORNO)
-    t.rett(w * 4 - 1, 1, 2, 6, PIETRA_LUCE)
-    t.rett(w * 4 - 3, 3, 6, 2, PIETRA_LUCE)
+    t = Tela(w, h, VERDE)
+    largo, alto = w * 8, h * 8
+    # il tetto a capanna di coppi, col colmo in mezzo e la croce di pietra sopra
+    t.falde(2, 0, largo - 4, alto - 12)
+    t.rett(largo // 2 - 1, 1, 2, 7, PIETRA_LUCE)
+    t.rett(largo // 2 - 3, 3, 6, 2, PIETRA_LUCE)
+    t.punto(largo // 2, 8, CONTORNO)
+    # la fronte bianca con l'arco dell'edicola, l'immagine del santo dentro
+    t.conci(2, alto - 12, largo - 4, 8, TINTE[0])
+    t.arco(largo // 2 - 4, alto - 12, 8, 8, CONTORNO)
+    t.rett(largo // 2 - 1, alto - 9, 2, 3, COTTO_LUCE)
+    # il gradino davanti
+    t.rett(4, alto - 4, largo - 8, 3, PIETRA_LUCE)
+    t.rett(4, alto - 1, largo - 8, 1, PIETRA)
     t.elementi["edicola"] += 1
     t.elementi["croce"] += 1
-    t.contorno()
+    t.elementi["gradino"] += 1
     return t
 
 
@@ -928,60 +936,55 @@ def altare(w, h):
 
 
 def cero(w, h):
-    """Un cero esposto, visto dall'alto: i due prismi di legno sovrapposti e, in cima, il santo."""
+    """Un cero esposto, visto dall'alto in tre quarti: il supporto di legno (la barella), i due prismi
+    ottagonali sovrapposti e, in cima, la statuina del santo."""
     t = Tela(w, h, PIETRA_CHIARA)
-    largo = w * 8
-    for y in range(4, h * 8 - 2):
-        banda = (y // 6) % 2
-        t.rett(largo // 2 - 5, y, 10, 1, LEGNO if banda else LEGNO_SCURO)
-    t.rett(largo // 2 - 5, h * 4 - 1, 10, 2, CONTORNO)
-    t.rett(largo // 2 - 2, 0, 4, 5, COTTO_LUCE)
-    t.rett(largo // 2 - 1, 1, 2, 2, PIETRA_LUCE)
+    largo, alto = w * 8, h * 8
+    cx = largo // 2
+    t.rett(1, alto - 6, largo - 2, 4, LEGNO_SCURO)
+    t.rett(1, alto - 2, largo - 2, 1, CONTORNO)
+    for y in range(8, alto - 6):
+        banda = ((y - 8) // ((alto - 14) // 2)) % 2
+        meta = 5 if (y - 8) % ((alto - 14) // 2) in (0, 1) else 6
+        t.rett(cx - meta, y, 2 * meta, 1, LEGNO if banda else COTTO_LUCE)
+        t.punto(cx - meta, y, CONTORNO)
+        t.punto(cx + meta - 1, y, CONTORNO)
+    t.rett(cx - 3, 1, 6, 7, COTTO)
+    t.rett(cx - 2, 0, 4, 3, PIETRA_LUCE)
+    t.punto(cx - 1, 1, CONTORNO)
+    t.elementi["supporto"] += 1
     t.elementi["prismi"] += 1
     t.elementi["santo"] += 1
     return t
 
 
 def basilica(w, h, info):
-    """Basilica di Sant'Ubaldo: in alto la chiesa (tetto e campanile), al centro il chiostro col
-    loggiato su colonne e il pozzo, in basso la fronte con il portale e la scalinata d'ingresso."""
+    """Basilica di Sant'Ubaldo: il tetto a capanna della chiesa, il campanile alto in cima a destra
+    con la sua ombra lunga, la facciata con il portale a vista e, sotto, la scalinata. Il chiostro
+    sta accanto, a sinistra (cella h, pittore chiostro)."""
     t = Tela(w, h)
     largo, alto = w * 8, h * 8
-    fronte = 6 * 8                   # la fronte e la scalinata
-    chiostro = min(14 * 8, alto - fronte - 10 * 8)
-    y_chiostro = alto - fronte - chiostro
-    # la chiesa: tetto a capanna, il campanile in alto a destra
-    t.falde(0, 0, largo, y_chiostro)
-    t.gronda(0, y_chiostro - 3, largo)
-    t.conci(largo - 32, 0, 24, 40, TINTE[1])
-    t.merli(largo - 32, 0, 24, TINTE[1])
-    t.arco(largo - 25, 14, 10, 14)
+    facciata = 9 * 8
+    t.falde(0, 0, largo, alto - facciata)
+    t.gronda(0, alto - facciata - 3, largo)
+    # il campanile: alto, a conci, la cella delle campane, la cuspide e l'ombra sul tetto
+    cx0, cw, ch = largo - 34, 26, 64
+    t.rett(cx0 - 6, 8, 6, ch, COTTO_SCURO)
+    t.conci(cx0, 0, cw, ch, TINTE[1])
+    t.merli(cx0, 0, cw, TINTE[1])
+    for k in range(2):
+        t.arco(cx0 + 4 + k * 10, 14, 8, 14)
+    t.rett(cx0 + 4, 36, cw - 8, 2, PIETRA_LUCE)
+    t.arco(cx0 + 8, 42, 10, 12, CONTORNO)
     t.elementi["campanile"] += 1
-    # il chiostro: cortile lastricato, il loggiato di colonne tutto intorno, il pozzo al centro
-    t.rett(0, y_chiostro, largo, chiostro, PIETRA)
-    t.rett(10, y_chiostro + 10, largo - 20, chiostro - 20, PIETRA_LUCE)
-    for x in range(12, largo - 12, 8):
-        for y in (y_chiostro + 6, y_chiostro + chiostro - 8):
-            t.rett(x, y, 3, 3, PIETRA_CHIARA)
-            t.punto(x + 2, y + 2, CONTORNO)
-    for y in range(y_chiostro + 14, y_chiostro + chiostro - 12, 8):
-        for x in (6, largo - 9):
-            t.rett(x, y, 3, 3, PIETRA_CHIARA)
-            t.punto(x + 2, y + 2, CONTORNO)
-    t.elementi["loggiato"] += 1
-    cx, cy = largo // 2, y_chiostro + chiostro // 2
-    for y in range(cy - 6, cy + 7):
-        for x in range(cx - 6, cx + 7):
-            d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
-            if d <= 6:
-                t.punto(x, y, PIETRA_CHIARA if d > 3.5 else ACQUA_SCURA)
-    t.rett(cx - 6, cy, 13, 1, LEGNO)
-    t.elementi["chiostro"] += 1
-    t.elementi["pozzo"] += 1
-    # la fronte con il portale e, sotto, la scalinata
-    y0 = alto - fronte
-    t.conci(0, y0, largo, fronte - 16, TINTE[0])
-    t.arco(largo // 2 - 8, y0 + 4, 16, fronte - 20, LEGNO_SCURO)
+    # la facciata: conci chiari, il rosone, il portale grande in cima alla scalinata
+    y0 = alto - facciata
+    t.conci(0, y0, largo, facciata - 16, TINTE[0])
+    t.rett(0, y0, largo, 2, PIETRA_LUCE)
+    rosone(t, largo // 2, y0 + 12, 6)
+    t.arco(largo // 2 - 10, y0 + 24, 20, facciata - 40, LEGNO_SCURO)
+    t.rett(largo // 2 - 1, y0 + 30, 2, facciata - 46, LEGNO)
+    t.elementi["facciata"] += 1
     t.elementi["portale"] += 1
     for k in range(4):
         y = alto - 16 + k * 4
@@ -992,6 +995,53 @@ def basilica(w, h, info):
     return t
 
 
+def chiostro(w, h):
+    """Il chiostro della Basilica visto dall'alto: il tetto del loggiato tutto intorno, le colonne
+    sul giardino, il pozzo al centro del prato."""
+    t = Tela(w, h)
+    largo, alto = w * 8, h * 8
+    t.falde(0, 0, largo, alto)
+    gx0, gy0, gx1, gy1 = 16, 16, largo - 16, alto - 16
+    t.rett(gx0 - 6, gy0 - 6, gx1 - gx0 + 12, gy1 - gy0 + 12, PIETRA)
+    t.rett(gx0, gy0, gx1 - gx0, gy1 - gy0, VERDE)
+    for x in range(gx0 - 4, gx1 + 4, 7):
+        for y in (gy0 - 4, gy1 + 1):
+            t.rett(x, y, 3, 3, PIETRA_LUCE)
+            t.punto(x + 2, y + 2, CONTORNO)
+    for y in range(gy0 + 3, gy1, 7):
+        for x in (gx0 - 4, gx1 + 1):
+            t.rett(x, y, 3, 3, PIETRA_LUCE)
+            t.punto(x + 2, y + 2, CONTORNO)
+    t.elementi["loggiato"] += 1
+    cx, cy = largo // 2, alto // 2
+    for y in range(cy - 7, cy + 8):
+        for x in range(cx - 7, cx + 8):
+            d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            if d <= 7:
+                t.punto(x, y, PIETRA_LUCE if d > 4 else ACQUA_SCURA)
+    t.rett(cx - 7, cy, 15, 1, LEGNO)
+    t.rett(gx0 + 2, cy - 1, cx - 9 - gx0, 2, PIETRA_CHIARA)
+    t.rett(cx + 8, cy - 1, gx1 - cx - 10, 2, PIETRA_CHIARA)
+    t.elementi["pozzo"] += 1
+    t.elementi["giardino"] += 1
+    t.contorno()
+    return t
+
+
+def pilastro(w, h):
+    """Un pilastro della navata visto dall'alto: la base quadrata e il fusto a fascio con l'ombra."""
+    t = Tela(w, h, PIETRA_CHIARA)
+    largo, alto = w * 8, h * 8
+    t.rett(1, 1, largo - 2, alto - 2, PIETRA)
+    t.rett(3, 3, largo - 6, alto - 6, PIETRA_LUCE)
+    t.rett(largo - 4, 4, 2, alto - 6, PIETRA_SCURA)
+    t.rett(4, alto - 4, largo - 6, 2, PIETRA_SCURA)
+    t.elementi["base"] += 1
+    t.elementi["fusto"] += 1
+    return t
+
+
 PITTORI["basilica"] = basilica
-REQUISITI.update({"basilica": {"scalinata": 1, "portale": 1, "chiostro": 1, "loggiato": 1, "pozzo": 1,
-                               "campanile": 1}})
+REQUISITI.update({"basilica": {"scalinata": 1, "portale": 1, "facciata": 1, "campanile": 1}})
+
+
