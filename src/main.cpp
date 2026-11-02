@@ -11,7 +11,7 @@
 // All'avvio: con L premuto la schermata dei testi (F1), con SELECT la camminata automatica del
 // mondo (F2), con R le istantanee delle aree (F2), altrimenti l'esplorazione da Piazza Grande.
 // Croce per muoversi, B per correre. Per le prove senza tastiera, GUBBIO_AVVIO in compilazione
-// sceglie il modo come se il tasto fosse premuto: 1 camminata, 2 istantanee
+// sceglie il modo come se il tasto fosse premuto: 1 camminata, 2 istantanee, 3 prova della battaglia
 // (make USERFLAGS=-DGUBBIO_AVVIO=1).
 #ifndef GUBBIO_AVVIO
     #define GUBBIO_AVVIO 0
@@ -36,6 +36,11 @@ int main()
     if(GUBBIO_AVVIO == 1 || bn::keypad::select_held())
     {
         gubbio::camminata_automatica(esplorazione, palette);
+    }
+
+    if(GUBBIO_AVVIO == 3)
+    {
+        gubbio::prova_battaglia();
     }
 
     if(GUBBIO_AVVIO == 2 || bn::keypad::r_held())

@@ -19,6 +19,10 @@ void camminata_automatica(Esplorazione& esplorazione, const bn::sprite_palette_p
 // ("Istantanea N") che dice a tools/istantanee.py quando scattare.
 void istantanee(Esplorazione& esplorazione);
 
+// Prova della battaglia a eventi (fase F4): ogni incontro e ogni seme, la firma della sequenza di
+// eventi confrontata con quella del mirror Python; una riga di log per battaglia e il riepilogo.
+void prova_battaglia();
+
 }
 
 #endif

@@ -1108,7 +1108,8 @@ def anello(grafo):
 
 def pixel_cartiglio(pezzo):
     """Il pezzo 'sinistro', 'centrale' o 'destro' del cartiglio, 32x16 pixel: pergamena di pietra
-    chiara con il bordo scuro, le volute alle estremita'."""
+    scura (il nome e' chiaro con l'ombra scura: su una pergamena chiara si perdeva), bordo chiaro
+    con il filo scuro, le volute alle estremita'."""
     out = []
     for y in range(16):
         riga = []
@@ -1121,7 +1122,7 @@ def pixel_cartiglio(pezzo):
             elif dentro:
                 riga.append(4)
             else:
-                riga.append(5 if (x + y) % 9 else 4)
+                riga.append(2 if (x + y) % 9 else 3)
         out.append(riga)
     return out
 
