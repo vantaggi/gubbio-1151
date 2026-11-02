@@ -1,0 +1,9 @@
+# C2 Le undici bandiere (proposta approvata, scambio/cutscene/PROPOSTA.md): dentro A1-01, prima che
+# parli l'araldo (la cinematica 1 del GDD). Senza parole: i tamburi lontani, l'esercito della coalizione
+# che sale dalla conca in tre file (due pose), gli stendardi delle undici citta', l'araldo di Perugia a
+# cavallo davanti al Palazzo dei Consoli col drappo di Gubbio, la pergamena insanguinata ai piedi di
+# Ubaldo. Poi le bande si ritirano e il dialogo riprende nella vista di gioco.
+cutscene C2 | Le undici bandiere
+inquadratura 7 | colli fanti_lontani fanti_medi fanti_vicini | 12
+inquadratura 5 | loggiato araldo | 4
+inquadratura 4 | pergamena_a_terra | 0

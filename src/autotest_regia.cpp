@@ -109,15 +109,67 @@ namespace
 
     static_assert(parallasse(), "la parallasse non va a 1/4, 1/2, 3/4 e 1");
 
-    // Le cutscene viste: segnata una, solo quella; una vista non riparte da sola.
+    // Le cutscene viste: segnata una, solo quella; una vista non riparte da sola. Anche oltre l'ottava
+    // (il secondo byte).
     consteval bool viste()
     {
         GameState p = {};
         segna_vista(p, 0);
-        return vista(p, 0) && ! vista(p, 1);
+        segna_vista(p, 9);
+        return vista(p, 0) && ! vista(p, 1) && vista(p, 9) && ! vista(p, 8) && p.cutscene_viste[1] == 2;
     }
 
     static_assert(viste(), "le cutscene viste");
+
+    // Il colpo (C2P): a FRAME_COLPO il lampo pieno e la scossa, poi si spengono; prima niente. In
+    // un'inquadratura senza colpo (C0) mai.
+    consteval bool colpo(int cutscene)
+    {
+        Lettore l;
+        l.inizia(cutscene);
+        bool lampo = false;
+        bool scossa = false;
+
+        for(int f = 0; f < CUTSCENE_DATI[cutscene].frame - 1; ++f)
+        {
+            if(f < FRAME_COLPO && (l.lampo() || l.scossa()))
+            {
+                return false;
+            }
+
+            lampo = lampo || (f == FRAME_COLPO && l.lampo() == FRAME_LAMPO);
+            scossa = scossa || (f > FRAME_COLPO && l.scossa() != 0);
+
+            if(f >= FRAME_COLPO + FRAME_SCOSSA && (l.lampo() || l.scossa()))
+            {
+                return false;
+            }
+
+            l.passo(false, false);
+        }
+
+        return lampo && scossa;
+    }
+
+    static_assert(colpo(int(CutsceneId::C2P)), "il colpo del pastorale: niente lampo o scossa al momento giusto");
+    static_assert(! colpo(0), "la negativa del colpo: C0 non ha colpo");
+
+    // Il passo dei fanti: la posa cambia ogni FRAME_PASSO frame.
+    consteval bool passo()
+    {
+        Lettore l;
+        l.inizia(int(CutsceneId::C2));
+        int prima = l.posa();
+
+        for(int f = 0; f < FRAME_PASSO; ++f)
+        {
+            l.passo(false, false);
+        }
+
+        return prima == 0 && l.posa() == 1;
+    }
+
+    static_assert(passo(), "i fanti non cambiano posa");
 }
 
 }

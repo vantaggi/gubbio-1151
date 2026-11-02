@@ -1,7 +1,14 @@
 Scena P-00
 Scena P-01
+Cutscene C1
+Cutscene C1 finita
 Scena P-02
+Cutscene P-02 dentro la precedente
 Scena A1-01
+Cutscene C2
+Cutscene C2 finita
+Cutscene C2P
+Cutscene C2P finita
 Scena A1-03
 Scena A1-04
 Prologo: Giorgio nel gruppo si, Pattuglia sulla mappa si, Antonio salvato si, gruppo 7, Pattuglia sulla mappa dopo sparita

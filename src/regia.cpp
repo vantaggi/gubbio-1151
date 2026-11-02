@@ -95,6 +95,7 @@ namespace
                     bn::regular_bg_tiles_item(bn::span<const bn::tile>(p.tile, p.tile_conteggio), bn::bpp_mode::BPP_4));
                 _palette[k] = palette_del_piano(p);
                 _notte[k] = p.notte;
+                _passo[k] = p.passo;
                 _colori[k] = p.palette;
                 _bg[k] = bn::regular_bg_ptr::create(MAPPA_X, MAPPA_Y, bn::regular_bg_map_ptr::create(
                     bn::regular_bg_map_item(*p.mappa, bn::size(64, 32)), *_tiles[k], *_palette[k]));
@@ -110,7 +111,15 @@ namespace
         {
             for(int k = 0; k < _quanti; ++k)
             {
-                _bg[k]->set_x(MAPPA_X - l.scorrimento(k, _quanti));
+                _bg[k]->set_x(MAPPA_X - l.scorrimento(k, _quanti) + l.scossa());
+                _bg[k]->set_y(MAPPA_Y + l.scossa() / 2);
+
+                // i fanti: le gambe della posa che non c'e' prendono il colore della terra
+                if(_passo[k])
+                {
+                    _palette[k]->set_color(13, bn::color(_colori[k][l.posa() ? 14 : 13]));
+                    _palette[k]->set_color(14, bn::color(_colori[k][l.posa() ? 13 : 14]));
+                }
 
                 // di notte i fuochi e le finestre tremano: il colore 15 alterna l'oro e l'alone
                 if(_notte[k])
@@ -124,6 +133,7 @@ namespace
     private:
         bn::optional<bn::bg_palette_ptr> _palette[PIANI_PER_INQUADRATURA];
         bool _notte[PIANI_PER_INQUADRATURA] = {};
+        bool _passo[PIANI_PER_INQUADRATURA] = {};
         const uint16_t* _colori[PIANI_PER_INQUADRATURA] = {};
         bn::optional<bn::regular_bg_tiles_ptr> _tiles[PIANI_PER_INQUADRATURA];
         bn::optional<bn::regular_bg_ptr> _bg[PIANI_PER_INQUADRATURA];
@@ -177,7 +187,17 @@ bool recita_cutscene(int cutscene, const bn::sprite_palette_ptr& palette_testo, 
                 bn::blending::set_transparency_alpha(trasparenza(l.inquadratura().frame, frame));
             }
             bn::fixed buio = bn::fixed(l.buio()) / FRAME_DISSOLVENZA;
-            bn::bg_palettes::set_fade(bn::color(0, 0, 0), buio);
+
+            if(l.lampo())
+            {
+                // il lampo del colpo: il quadro bianco che si spegne
+                bn::bg_palettes::set_fade(bn::color(31, 31, 31), bn::fixed(l.lampo()) / FRAME_LAMPO);
+            }
+            else
+            {
+                bn::bg_palettes::set_fade(bn::color(0, 0, 0), buio);
+            }
+
             bn::sprite_palettes::set_fade(bn::color(0, 0, 0), buio);
 
             // le istantanee: a tre quarti di ogni inquadratura
