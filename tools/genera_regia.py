@@ -34,6 +34,7 @@ sys.path.insert(0, os.path.join(RADICE, "stile"))
 
 import stile as S  # noqa: E402
 from genera_battaglia import Tela, PALETTE_SFONDO, blocchi, parole  # noqa: E402
+import pittore_panorami as PP  # noqa: E402
 
 USCITA = os.path.join(RADICE, "include", "regia.h")
 COPIONI = os.path.join(RADICE, "regia", "*.regia")
@@ -42,6 +43,7 @@ SECONDI_MAX = 60
 FRAME_PER_SECONDO = 60
 PIANI_MAX = 4
 W, H = 512, 256                  # un piano: mappa 64x32 tile, piu' largo dello schermo per scorrere
+TILE_MAX_PER_PIANO = 600
 ORIZZONTE = 104                  # nel quadro (240x112 fra le bande) l'orizzonte sta qui, in pixel di mappa
 
 
@@ -102,7 +104,16 @@ def prato():
     return t
 
 
-PIANI = {"cielo": cielo, "monti": monti, "citta": citta, "prato": prato}
+# I piani: quelli generici della prova (pezzo U) e i panorami di Gubbio (pezzo V, tools/pittore_panorami.py).
+# Nel copione un piano si scrive "nome" o "nome:momento" (giorno, alba, notte).
+PIANI = {"cielo_prova": lambda m: (cielo(), PALETTE_SFONDO, False), "monti": lambda m: (monti(), PALETTE_SFONDO, False),
+         "citta": lambda m: (citta(), PALETTE_SFONDO, False), "prato": lambda m: (prato(), PALETTE_SFONDO, False)}
+PIANI.update(PP.PITTORI)
+
+
+def nome_e_momento(piano):
+    nome, _, momento = piano.partition(":")
+    return nome, momento or "giorno"
 
 
 # --- il copione di regia --------------------------------------------------------------------------
@@ -124,8 +135,11 @@ def leggi(nome, testo):
             if not 1 <= len(piani) <= PIANI_MAX:
                 raise ErroreRegia(f"{dove}: da 1 a {PIANI_MAX} piani, non {len(piani)}")
             for p in piani:
-                if p not in PIANI:
-                    raise ErroreRegia(f"{dove}: piano '{p}' sconosciuto ({', '.join(PIANI)})")
+                nome, momento = nome_e_momento(p)
+                if nome not in PIANI:
+                    raise ErroreRegia(f"{dove}: piano '{nome}' sconosciuto ({', '.join(PIANI)})")
+                if momento not in PP.MOMENTI:
+                    raise ErroreRegia(f"{dove}: momento '{momento}' sconosciuto ({', '.join(PP.MOMENTI)})")
             c["inquadrature"].append({"frame": int(round(secondi * FRAME_PER_SECONDO)), "piani": piani,
                                       "velocita": velocita, "battute": [], "dove": dove})
         elif riga.startswith("narratore "):
@@ -171,15 +185,20 @@ def celle(mappa):
 
 def dipingi_piani(usati):
     out = {}
-    for nome in usati:
-        t = PIANI[nome]()
+    for piano in usati:
+        nome, momento = nome_e_momento(piano)
+        t, palette, notte = PIANI[nome](momento)
         tile, mappa = {tuple(tuple([0] * 8) for _ in range(8)): 0}, []
         for ty in range(32):
             for tx in range(64):
                 chiave = tuple(tuple(t.px[ty * 8 + y][tx * 8:tx * 8 + 8]) for y in range(8))
                 mappa.append(tile.setdefault(chiave, len(tile)))
-        out[nome] = (list(tile), celle(mappa))
+        out[piano] = (list(tile), celle(mappa), palette, notte)
     return out
+
+
+def id_c(piano):
+    return piano.upper().replace(":", "_")
 
 
 def genera(sorgenti, palette_stile):
@@ -188,23 +207,25 @@ def genera(sorgenti, palette_stile):
     controlla(cutscene, contesti)
     usati = sorted({p for c in cutscene for i in c["inquadrature"] for p in i["piani"]})
     dipinti = dipingi_piani(usati)
-    colore = lambda rif: S.colore(palette_stile, rif)  # noqa: E731
     out = ["// GENERATO da tools/genera_regia.py dai copioni di regia (regia/*.regia): non modificare a mano.",
            "#ifndef GUBBIO_REGIA_H", "#define GUBBIO_REGIA_H", "", "#include <cstdint>", "", "#include \"bn_tile.h\"", "",
            "#include \"testi.h\"", "", "namespace gubbio::regia", "{", "",
            f"inline constexpr int SECONDI_MAX = {SECONDI_MAX};", f"inline constexpr int FRAME_PER_SECONDO = {FRAME_PER_SECONDO};",
-           f"inline constexpr int PIANI_PER_INQUADRATURA = {PIANI_MAX};", "",
-           "inline constexpr uint16_t PALETTE[16] = {", blocchi([colore(r) for r in PALETTE_SFONDO], 8, lambda v: f"0x{v:04X}"), "};", ""]
-    for nome in usati:
-        tile, mappa = dipinti[nome]
-        if len(tile) > 400:
-            raise ErroreRegia(f"il piano {nome} ha {len(tile)} tile: troppi")
-        out += [f"inline constexpr bn::tile TILE_{nome.upper()}[{len(tile)}] = {{"]
+           f"inline constexpr int PIANI_PER_INQUADRATURA = {PIANI_MAX};", ""]
+    for piano in usati:
+        tile, mappa, palette, notte = dipinti[piano]
+        if len(tile) > TILE_MAX_PER_PIANO:
+            raise ErroreRegia(f"il piano {piano} ha {len(tile)} tile: il massimo e' {TILE_MAX_PER_PIANO}")
+        c = id_c(piano)
+        out += [f"inline constexpr uint16_t PALETTE_{c}[16] = {{",
+                blocchi([S.colore(palette_stile, r, notte) for r in palette], 8, lambda v: f"0x{v:04X}"), "};", "",
+                f"inline constexpr bn::tile TILE_{c}[{len(tile)}] = {{"]
         out += ["    { { " + ", ".join(f"0x{v:08X}" for v in parole(t)) + " } }," for t in tile]
-        out += ["};", "", f"inline constexpr uint16_t MAPPA_{nome.upper()}[2048] = {{", blocchi(mappa, 32, str), "};", ""]
-    out += ["struct Piano", "{", "    const bn::tile* tile;", "    uint16_t tile_conteggio;", "    const uint16_t* mappa;", "};", "",
+        out += ["};", "", f"inline constexpr uint16_t MAPPA_{c}[2048] = {{", blocchi(mappa, 32, str), "};", ""]
+    out += ["struct Piano", "{", "    const bn::tile* tile;", "    uint16_t tile_conteggio;", "    const uint16_t* mappa;",
+            "    const uint16_t* palette;      // 16 colori della Guida (di notte, le rampe di notte)", "};", "",
             f"inline constexpr int PIANI = {len(usati)};", "inline constexpr Piano PIANO[PIANI] = {"]
-    out += [f"    {{ TILE_{n.upper()}, {len(dipinti[n][0])}, MAPPA_{n.upper()} }},  // {n}" for n in usati]
+    out += [f"    {{ TILE_{id_c(n)}, {len(dipinti[n][0])}, MAPPA_{id_c(n)}, PALETTE_{id_c(n)} }},  // {n}" for n in usati]
     out += ["};", "", "struct Inquadratura", "{", "    int8_t piani[PIANI_PER_INQUADRATURA];   // dal piu' lontano, -1 vuoto",
             "    uint16_t frame;", "    uint8_t velocita;                        // px/s del primo piano", "    uint16_t prima_battuta;",
             "    uint8_t battute;", "};", "", "struct Cutscene", "{", "    const char* codice;", "    uint16_t prima_inquadratura;",

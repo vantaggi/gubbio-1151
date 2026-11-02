@@ -1,0 +1,6 @@
+# Le prove dei panorami di Gubbio dalla valle (pezzo V): giorno, alba e notte coi fuochi del campo.
+# Le cutscene vere (C1, C4) li useranno con le loro inquadrature.
+cutscene C9 | I panorami di Gubbio
+inquadratura 6 | cielo:giorno monte:giorno gubbio:giorno campo:giorno | 12
+inquadratura 6 | cielo:alba monte:alba gubbio:alba campo:alba | 12
+inquadratura 6 | cielo:notte monte:notte gubbio:notte campo:notte | 12

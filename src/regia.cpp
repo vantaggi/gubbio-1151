@@ -40,24 +40,18 @@ namespace
     constexpr int MAPPA_X = 512 / 2 - 240 / 2;
     constexpr int MAPPA_Y = 256 / 2 - 160 / 2 + BANDA;
 
-    struct Colori
+    // La palette di un piano: i suoi 16 colori della Guida (di notte, le rampe di notte).
+    bn::bg_palette_ptr palette_del_piano(const Piano& p)
     {
-        bn::color colori[16];
-    };
-
-    constexpr Colori colori()
-    {
-        Colori c;
+        bn::color c[16];
 
         for(int i = 0; i < 16; ++i)
         {
-            c.colori[i] = bn::color(GUBBIO_VOCE(PALETTE, i));
+            c[i] = bn::color(p.palette[i]);
         }
 
-        return c;
+        return bn::bg_palette_ptr::create(bn::bg_palette_item(bn::span<const bn::color>(c), bn::bpp_mode::BPP_4));
     }
-
-    constexpr Colori COLORI = colori();
 
     void attendi(int frame)
     {
@@ -73,11 +67,6 @@ namespace
     class Piani
     {
     public:
-        explicit Piani(const bn::bg_palette_ptr& palette) :
-            _palette(palette)
-        {
-        }
-
         void carica(const Inquadratura& q)
         {
             // stacco netto: via i piani vecchi, prima di caricare i nuovi
@@ -85,6 +74,7 @@ namespace
             {
                 _bg[k].reset();
                 _tiles[k].reset();
+                _palette[k].reset();
             }
 
             bn::core::update();
@@ -95,8 +85,9 @@ namespace
                 const Piano& p = GUBBIO_VOCE(PIANO, q.piani[k]);
                 _tiles[k] = bn::regular_bg_tiles_ptr::create(
                     bn::regular_bg_tiles_item(bn::span<const bn::tile>(p.tile, p.tile_conteggio), bn::bpp_mode::BPP_4));
+                _palette[k] = palette_del_piano(p);
                 _bg[k] = bn::regular_bg_ptr::create(MAPPA_X, MAPPA_Y, bn::regular_bg_map_ptr::create(
-                    bn::regular_bg_map_item(*p.mappa, bn::size(64, 32)), *_tiles[k], _palette));
+                    bn::regular_bg_map_item(*p.mappa, bn::size(64, 32)), *_tiles[k], *_palette[k]));
                 _bg[k]->set_priority(PIANI_PER_INQUADRATURA - 1 - k);
                 bn::window::outside().set_show_bg(*_bg[k], false);
                 ++_quanti;
@@ -112,7 +103,7 @@ namespace
         }
 
     private:
-        bn::bg_palette_ptr _palette;
+        bn::optional<bn::bg_palette_ptr> _palette[PIANI_PER_INQUADRATURA];
         bn::optional<bn::regular_bg_tiles_ptr> _tiles[PIANI_PER_INQUADRATURA];
         bn::optional<bn::regular_bg_ptr> _bg[PIANI_PER_INQUADRATURA];
         int _quanti = 0;
@@ -128,8 +119,7 @@ bool recita_cutscene(int cutscene, const bn::sprite_palette_ptr& palette_testo, 
     {
         bn::rect_window quadro = bn::rect_window::internal();
         quadro.set_boundaries(-80 + BANDA, -120, 80 - BANDA, 120);
-        Piani piani(bn::bg_palette_ptr::create(
-            bn::bg_palette_item(bn::span<const bn::color>(COLORI.colori), bn::bpp_mode::BPP_4)));
+        Piani piani;
         VistaTesto narratore(testo::Contesto::NARRATORE, TESTO_X, TESTO_Y, INCHIOSTRO_CHIARO, palette_testo);
         Lettore l;
         l.inizia(cutscene);
