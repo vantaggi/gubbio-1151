@@ -1,8 +1,9 @@
 Scena P-00
 Scena P-01
-Cutscene P-01 (segnaposto)
+Cutscene C1
+Cutscene C1 finita
 Scena P-02
-Cutscene P-02 (segnaposto)
+Cutscene P-02 dentro la precedente
 Scena A1-01
 Scena A1-03
 Scena A1-02
@@ -23,4 +24,6 @@ Battaglia 2 data per vinta
 Scena B-05
 Scena E-01
 Scena E-02
+Cutscene C4
+Cutscene C4 finita
 Storia: 19 scene visitate su 19, 0 mancanti, titoli di coda raggiunti

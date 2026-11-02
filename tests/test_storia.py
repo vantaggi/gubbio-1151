@@ -168,7 +168,9 @@ class Tabelle(unittest.TestCase):
         log = open(os.path.join(RADICE, "tests", "dati", "storia_mgba.txt"), encoding="utf-8").read()
         self.assertEqual(scene_del_log(log), sorted(s["codice"] for s in SCENE))
         self.assertIn("Storia: 19 scene visitate su 19, 0 mancanti, titoli di coda raggiunti", log)
-        self.assertIn("Cutscene P-01 (segnaposto)", log)
+        self.assertIn("Cutscene C1 finita", log)
+        self.assertIn("Cutscene P-02 dentro la precedente", log)
+        self.assertIn("Cutscene C4 finita", log)
 
     def test_negativa_log_con_una_scena_in_meno(self):
         log = open(os.path.join(RADICE, "tests", "dati", "storia_mgba.txt"), encoding="utf-8").read()

@@ -1,0 +1,21 @@
+# C1 Prologo (proposta approvata, scambio/cutscene/PROPOSTA.md): al posto dei segnaposto P-01 e P-02.
+# La vetrata chiara, la pergamena con gli undici stendardi, Gubbio dalla valle dal giorno alla notte
+# coi fuochi del campo nella conca. Le battute sono quelle del narratore del copione, in ordine.
+cutscene C1 | Il prologo
+inquadratura 6 | vetrata | 0
+narratore R_P_01_00
+inquadratura 6 | vetrata | 4
+narratore R_P_01_01
+inquadratura 5 | vetrata | 8
+narratore R_P_01_02
+inquadratura 14 | pergamena | 6
+narratore R_P_02_00
+narratore R_P_02_01
+narratore R_P_02_02
+inquadratura 8 | cielo:giorno monte:giorno gubbio:giorno campo:giorno | 12
+narratore R_P_02_03
+inquadratura 9 | cielo:notte monte:notte gubbio:notte campo:notte | 12
+narratore R_P_02_04
+narratore R_P_02_05
+inquadratura 6 | cielo:notte monte:notte gubbio:notte | 6
+narratore R_P_02_06

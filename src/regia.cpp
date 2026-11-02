@@ -86,6 +86,8 @@ namespace
                 _tiles[k] = bn::regular_bg_tiles_ptr::create(
                     bn::regular_bg_tiles_item(bn::span<const bn::tile>(p.tile, p.tile_conteggio), bn::bpp_mode::BPP_4));
                 _palette[k] = palette_del_piano(p);
+                _notte[k] = p.notte;
+                _colori[k] = p.palette;
                 _bg[k] = bn::regular_bg_ptr::create(MAPPA_X, MAPPA_Y, bn::regular_bg_map_ptr::create(
                     bn::regular_bg_map_item(*p.mappa, bn::size(64, 32)), *_tiles[k], *_palette[k]));
                 _bg[k]->set_priority(PIANI_PER_INQUADRATURA - 1 - k);
@@ -94,16 +96,25 @@ namespace
             }
         }
 
-        void scorri(const Lettore& l)
+        void scorri(const Lettore& l, int frame)
         {
             for(int k = 0; k < _quanti; ++k)
             {
                 _bg[k]->set_x(MAPPA_X - l.scorrimento(k, _quanti));
+
+                // di notte i fuochi e le finestre tremano: il colore 15 alterna oro e cotto
+                if(_notte[k])
+                {
+                    int fase = (frame / 5) % 3;
+                    _palette[k]->set_color(15, bn::color(_colori[k][fase == 1 ? 9 : 15]));
+                }
             }
         }
 
     private:
         bn::optional<bn::bg_palette_ptr> _palette[PIANI_PER_INQUADRATURA];
+        bool _notte[PIANI_PER_INQUADRATURA] = {};
+        const uint16_t* _colori[PIANI_PER_INQUADRATURA] = {};
         bn::optional<bn::regular_bg_tiles_ptr> _tiles[PIANI_PER_INQUADRATURA];
         bn::optional<bn::regular_bg_ptr> _bg[PIANI_PER_INQUADRATURA];
         int _quanti = 0;
@@ -149,7 +160,7 @@ bool recita_cutscene(int cutscene, const bn::sprite_palette_ptr& palette_testo, 
                 }
             }
 
-            piani.scorri(l);
+            piani.scorri(l, l.frame_totale());
             bn::fixed buio = bn::fixed(l.buio()) / FRAME_DISSOLVENZA;
             bn::bg_palettes::set_fade(bn::color(0, 0, 0), buio);
             bn::sprite_palettes::set_fade(bn::color(0, 0, 0), buio);

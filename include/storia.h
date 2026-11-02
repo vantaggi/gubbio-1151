@@ -69,7 +69,8 @@ struct Scena
 {
     const char* codice;
     testi::TestoId titolo;
-    bool cutscene;               // segnaposto: per ora solo il cartello col titolo
+    bool cutscene;
+    int8_t regia;                // la cutscene (regia::CUTSCENE_DATI), -2 dentro la precedente
     int8_t area;                 // mondo::AreaId, o NESSUNA_AREA (a schermo intero)
     uint64_t richieste;          // tutte accese
     uint64_t vietate;            // nessuna accesa
@@ -266,25 +267,25 @@ inline constexpr Battuta BATTUTA[BATTUTE] = {
 };
 
 inline constexpr Scena SCENA[SCENE] = {
-    { "P-00", testi::TestoId::SCENA_P_00, false, NESSUNA_AREA, 0x0u, 0x0u, 0x0u, -1, -1, 0, 0 },
-    { "P-01", testi::TestoId::SCENA_P_01, true, NESSUNA_AREA, 0x0u, 0x0u, 0x0u, 0, -1, 0, 3 },
-    { "P-02", testi::TestoId::SCENA_P_02, true, NESSUNA_AREA, 0x0u, 0x0u, 0x1u, 1, -1, 3, 7 },
-    { "A1-01", testi::TestoId::SCENA_A1_01, false, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x1u, 0x0u, 0x6u, -1, -1, 10, 23 },
-    { "A1-02", testi::TestoId::SCENA_A1_02, false, int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 0x2u, 0x8u, 0x8u, -1, -1, 33, 2 },
-    { "A1-03", testi::TestoId::SCENA_A1_03, false, int8_t(mondo::AreaId::SAN_MARTINO), 0x2u, 0x10u, 0x10u, -1, -1, 35, 8 },
-    { "A1-04", testi::TestoId::SCENA_A1_04, false, int8_t(mondo::AreaId::TEATRO_ROMANO), 0x10u, 0x20u, 0x20u, -1, 0, 43, 19 },
-    { "A1-05", testi::TestoId::SCENA_A1_05, false, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x20u, 0x40u, 0x40u, -1, -1, 62, 10 },
-    { "A1-06", testi::TestoId::SCENA_A1_06, false, int8_t(mondo::AreaId::DUOMO_DUCALE), 0x40u, 0x80u, 0x80u, -1, -1, 72, 4 },
-    { "A1-07", testi::TestoId::SCENA_A1_07, false, int8_t(mondo::AreaId::MONTE_INGINO), 0x80u, 0x0u, 0x300u, -1, 1, 76, 16 },
-    { "A1-08", testi::TestoId::SCENA_A1_08, false, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x200u, 0x0u, 0xC00u, -1, 3, 92, 26 },
-    { "A1-09", testi::TestoId::SCENA_A1_09, false, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x800u, 0x0u, 0x1000u, -1, -1, 118, 9 },
-    { "B-01", testi::TestoId::SCENA_B_01, false, int8_t(mondo::AreaId::BOTTACCIONE), 0x1000u, 0x2000u, 0x2000u, -1, -1, 127, 4 },
-    { "B-02", testi::TestoId::SCENA_B_02, false, int8_t(mondo::AreaId::BOTTACCIONE), 0x0u, 0x0u, 0x4000u, 12, -1, 131, 3 },
-    { "B-03", testi::TestoId::SCENA_B_03, false, int8_t(mondo::AreaId::BOTTACCIONE), 0x0u, 0x0u, 0x8000u, 13, -1, 134, 6 },
-    { "B-04", testi::TestoId::SCENA_B_04, false, int8_t(mondo::AreaId::BOTTACCIONE), 0x0u, 0x0u, 0x230000u, 14, 2, 140, 16 },
-    { "B-05", testi::TestoId::SCENA_B_05, false, int8_t(mondo::AreaId::SAN_MARTINO), 0x20000u, 0x0u, 0x40000u, -1, -1, 156, 11 },
-    { "E-01", testi::TestoId::SCENA_E_01, false, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x40000u, 0x0u, 0x80000u, -1, -1, 167, 11 },
-    { "E-02", testi::TestoId::SCENA_E_02, false, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x80000u, 0x0u, 0x100000u, -1, -1, 178, 3 },
+    { "P-00", testi::TestoId::SCENA_P_00, false, -1, NESSUNA_AREA, 0x0u, 0x0u, 0x0u, -1, -1, 0, 0 },
+    { "P-01", testi::TestoId::SCENA_P_01, true, 1, NESSUNA_AREA, 0x0u, 0x0u, 0x0u, 0, -1, 0, 3 },
+    { "P-02", testi::TestoId::SCENA_P_02, true, -2, NESSUNA_AREA, 0x0u, 0x0u, 0x1u, 1, -1, 3, 7 },
+    { "A1-01", testi::TestoId::SCENA_A1_01, false, -1, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x1u, 0x0u, 0x6u, -1, -1, 10, 23 },
+    { "A1-02", testi::TestoId::SCENA_A1_02, false, -1, int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 0x2u, 0x8u, 0x8u, -1, -1, 33, 2 },
+    { "A1-03", testi::TestoId::SCENA_A1_03, false, -1, int8_t(mondo::AreaId::SAN_MARTINO), 0x2u, 0x10u, 0x10u, -1, -1, 35, 8 },
+    { "A1-04", testi::TestoId::SCENA_A1_04, false, -1, int8_t(mondo::AreaId::TEATRO_ROMANO), 0x10u, 0x20u, 0x20u, -1, 0, 43, 19 },
+    { "A1-05", testi::TestoId::SCENA_A1_05, false, -1, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x20u, 0x40u, 0x40u, -1, -1, 62, 10 },
+    { "A1-06", testi::TestoId::SCENA_A1_06, false, -1, int8_t(mondo::AreaId::DUOMO_DUCALE), 0x40u, 0x80u, 0x80u, -1, -1, 72, 4 },
+    { "A1-07", testi::TestoId::SCENA_A1_07, false, -1, int8_t(mondo::AreaId::MONTE_INGINO), 0x80u, 0x0u, 0x300u, -1, 1, 76, 16 },
+    { "A1-08", testi::TestoId::SCENA_A1_08, false, -1, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x200u, 0x0u, 0xC00u, -1, 3, 92, 26 },
+    { "A1-09", testi::TestoId::SCENA_A1_09, false, -1, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x800u, 0x0u, 0x1000u, -1, -1, 118, 9 },
+    { "B-01", testi::TestoId::SCENA_B_01, false, -1, int8_t(mondo::AreaId::BOTTACCIONE), 0x1000u, 0x2000u, 0x2000u, -1, -1, 127, 4 },
+    { "B-02", testi::TestoId::SCENA_B_02, false, -1, int8_t(mondo::AreaId::BOTTACCIONE), 0x0u, 0x0u, 0x4000u, 12, -1, 131, 3 },
+    { "B-03", testi::TestoId::SCENA_B_03, false, -1, int8_t(mondo::AreaId::BOTTACCIONE), 0x0u, 0x0u, 0x8000u, 13, -1, 134, 6 },
+    { "B-04", testi::TestoId::SCENA_B_04, false, -1, int8_t(mondo::AreaId::BOTTACCIONE), 0x0u, 0x0u, 0x230000u, 14, 2, 140, 16 },
+    { "B-05", testi::TestoId::SCENA_B_05, false, -1, int8_t(mondo::AreaId::SAN_MARTINO), 0x20000u, 0x0u, 0x40000u, -1, -1, 156, 11 },
+    { "E-01", testi::TestoId::SCENA_E_01, false, -1, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x40000u, 0x0u, 0x80000u, -1, -1, 167, 11 },
+    { "E-02", testi::TestoId::SCENA_E_02, true, 2, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x80000u, 0x0u, 0x100000u, -1, -1, 178, 3 },
 };
 
 enum class Fase : uint8_t

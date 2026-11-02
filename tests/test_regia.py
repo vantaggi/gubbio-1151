@@ -103,12 +103,64 @@ class Panorami(unittest.TestCase):
             self.assertFalse(giorno_notte)
             self.assertNotEqual([S.colore(PALETTE, r, True) for r in palette], [S.colore(PALETTE, r) for r in palette_g])
 
+    def fuochi_luminosi(self, momento, margine=0.25):
+        """I fuochi del campo (macchie del colore ORO) che si leggono: la loro luminanza supera di
+        'margine' la media dello sfondo del campo."""
+        tela, palette, notte = GR.PP.campo(momento)
+
+        def luminanza(rif):
+            v = S.colore(PALETTE, rif, notte)
+            return (0.299 * (v & 31) + 0.587 * ((v >> 5) & 31) + 0.114 * ((v >> 10) & 31)) / 31
+
+        sfondo = [luminanza(palette[c]) for riga in tela.px[:112] for c in riga if c and c != GR.PP.ORO]
+        if luminanza(palette[GR.PP.ORO]) < sum(sfondo) / len(sfondo) + margine:
+            return 0
+        visti, macchie = set(), 0
+        for y, riga in enumerate(tela.px):
+            for x, c in enumerate(riga):
+                if c == GR.PP.ORO and (x, y) not in visti:
+                    macchie += 1
+                    coda = [(x, y)]
+                    while coda:
+                        u, v = coda.pop()
+                        if (u, v) in visti or not (0 <= v < len(tela.px) and 0 <= u < len(riga)) or tela.px[v][u] != GR.PP.ORO:
+                            continue
+                        visti.add((u, v))
+                        coda += [(u + 1, v), (u - 1, v), (u, v + 1), (u, v - 1)]
+        return macchie
+
     def test_i_fuochi_del_campo_di_notte(self):
-        def fuochi(momento):
-            tela, _, _ = GR.PP.campo(momento)
-            return sum(r.count(GR.PP.ORO) for r in tela.px)
-        self.assertGreater(fuochi("notte"), 50)
-        self.assertEqual(fuochi("giorno"), 0)
+        """Di notte almeno 6 fuochi che sono il punto di luce della scena."""
+        self.assertGreaterEqual(self.fuochi_luminosi("notte"), 6)
+
+    def test_negativa_fuochi_di_giorno_o_spenti(self):
+        self.assertEqual(self.fuochi_luminosi("giorno"), 0)
+        self.assertEqual(self.fuochi_luminosi("notte", margine=1.0), 0)
+
+    def test_c1_e_c4_dal_copione(self):
+        """C1 recita in ordine le battute del narratore di P-01 e P-02; C4 quelle di E-02. Nessuna supera
+        i 60 s."""
+        cutscene = {GR.leggi(n, t)["codice"]: GR.leggi(n, t) for n, t in GR.sorgenti_del_repo()}
+        def battute(c):
+            return [b for i in cutscene[c]["inquadrature"] for b in i["battute"]]
+        self.assertEqual(battute("C1"), [f"R_P_01_{k:02d}" for k in range(3)] + [f"R_P_02_{k:02d}" for k in range(7)])
+        self.assertEqual(battute("C4"), [f"R_E_02_{k:02d}" for k in range(3)])
+        for c in ("C1", "C4"):
+            self.assertLessEqual(sum(i["frame"] for i in cutscene[c]["inquadrature"]), 3600, c)
+        piani = {p for i in cutscene["C1"]["inquadrature"] for p in i["piani"]}
+        self.assertTrue({"vetrata", "pergamena", "gubbio:notte", "campo:notte"} <= piani)
+
+    def test_negativa_c1_senza_una_battuta(self):
+        n, t = next((n, t) for n, t in GR.sorgenti_del_repo() if "c1_" in n)
+        corto = GR.leggi(n, t.replace("narratore R_P_02_04\n", ""))
+        self.assertNotIn("R_P_02_04", [b for i in corto["inquadrature"] for b in i["battute"]])
+
+    def test_vetrata_con_un_solo_vetro_colorato_all_epilogo(self):
+        chiara, _, _ = GR.PP.vetrata("giorno")
+        colorata, _, _ = GR.PP.vetrata("alba")
+        colori_vetro = {13, 14, 9, 11}
+        self.assertEqual(sum(1 for r in chiara.px for c in r if c in colori_vetro), 0)
+        self.assertGreater(sum(1 for r in colorata.px for c in r if c in colori_vetro), 100)
 
     def test_i_panorami_nel_budget(self):
         dipinti = GR.dipingi_piani(["cielo:notte", "monte:notte", "gubbio:notte", "campo:notte"])
