@@ -393,3 +393,156 @@ def dipingi(mid, nome, w, h, faccia, info, n):
 def elementi_mancanti(mid, elementi):
     """Gli elementi richiesti che la tela non ha (vuoto: tutto c'e')."""
     return {k: v for k, v in REQUISITI.get(mid, {}).items() if elementi.get(k, 0) < v}
+
+
+# --- secondo lotto -----------------------------------------------------------------------------
+
+def rosone(t, cx, cy, r):
+    """Il rosone: cerchio di pietra con i raggi."""
+    for y in range(cy - r, cy + r + 1):
+        for x in range(cx - r, cx + r + 1):
+            d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            if d <= r:
+                raggio = (x - cx) * (y - cy) == 0 or abs(x - cx) == abs(y - cy)
+                t.punto(x, y, PIETRA_LUCE if d > r - 1.5 or raggio else CONTORNO)
+
+
+def duomo(w, h, info):
+    """Duomo: facciata semplice con il portale a sesto acuto e il rosone sopra."""
+    t = Tela(w, h)
+    tinta = TINTE[1]
+    fh = altezza_facciata(h, None, 6)
+    tetto_e_facciata(t, w, h, fh, tinta)
+    largo, base = w * 8, h * 8
+    t.arco_acuto(largo // 2 - 10, base - 28, 20, 28)
+    t.elementi["portale_acuto"] += 1
+    rosone(t, largo // 2, (h - fh) * 8 + 14, 8)
+    t.elementi["rosone"] += 1
+    t.contorno()
+    return t
+
+
+def ducale(w, h, info):
+    """Palazzo Ducale: dall'alto il cortile rinascimentale, con il portico su quattro lati."""
+    t = Tela(w, h)
+    t.falde(0, 0, w * 8, (h - 2) * 8)
+    t.gronda(0, (h - 2) * 8 - 3, w * 8)
+    t.conci(0, (h - 2) * 8, w * 8, 16, TINTE[2])
+    cw, ch = (w * 8) * 2 // 5, (h * 8) * 2 // 5
+    cx0, cy0 = (w * 8 - cw) // 2, (h * 8 - ch) // 2
+    t.rett(cx0 - 3, cy0 - 3, cw + 6, ch + 6, CONTORNO)
+    t.conci(cx0, cy0, cw, ch, (PIETRA_LUCE, PIETRA_CHIARA, PIETRA_LUCE))
+    for x in range(cx0, cx0 + cw - 6, 8):
+        t.arco(x + 1, cy0, 6, 6, PIETRA_SCURA)
+        t.arco(x + 1, cy0 + ch - 6, 6, 6, PIETRA_SCURA)
+    for y in range(cy0 + 8, cy0 + ch - 8, 8):
+        t.arco(cx0, y, 6, 6, PIETRA_SCURA)
+        t.arco(cx0 + cw - 6, y, 6, 6, PIETRA_SCURA)
+    t.elementi["cortile"] += 1
+    t.contorno()
+    return t
+
+
+def san_francesco(w, h, info):
+    """San Francesco: la facciata guarda in alto, se ne vede il retro: il tetto a capanna e l'abside
+    semicircolare, verso est (in basso)."""
+    t = Tela(w, h)
+    t.falde(0, 0, w * 8, h * 8 - 16)
+    raggio = min(w * 8 // 3, 20)
+    cx, cy = w * 8 // 2, h * 8 - 16
+    t.rett(0, cy, w * 8, 16, COTTO)
+    t.conci(0, cy, w * 8, 16, TINTE[0])
+    for y in range(cy - raggio, cy + 1):
+        for x in range(cx - raggio, cx + raggio + 1):
+            d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            if d <= raggio:
+                spicchio = int((x - cx + raggio) / 4) % 2
+                t.punto(x, y, CONTORNO if d > raggio - 1 else (COTTO_CHIARO if spicchio else COTTO))
+    t.elementi["abside"] += 1
+    t.elementi["retro"] += 1
+    t.contorno()
+    return t
+
+
+def loggia_tiratori(w, h, info):
+    """Loggia dei Tiratori della Lana: sopra il colonnato, la loggia con le sue arcate; il fianco
+    destro e' il lato che si vede."""
+    t = Tela(w, h)
+    t.falde(0, 0, w * 8, (h - 4) * 8)
+    t.gronda(0, (h - 4) * 8 - 3, w * 8)
+    y0 = (h - 4) * 8
+    t.conci(0, y0, w * 8, 32, TINTE[0])
+    for x in range(2, w * 8 - 12, 12):
+        t.arco(x, y0 + 2, 10, 14, LEGNO_SCURO)
+        t.elementi["arcata"] += 1
+    t.rett(0, y0 + 17, w * 8, 2, PIETRA_LUCE)
+    x = w * 8 - 8
+    t.conci(x, 0, 8, h * 8, TINTE[0])
+    t.arco(x + 1, (h * 8) // 2 - 7, 6, 14, LEGNO_SCURO)
+    t.elementi["fianco"] += 1
+    t.contorno()
+    return t
+
+
+def sant_agostino(w, h, info):
+    """Sant'Agostino: facciata semplice a capanna, portale e occhio."""
+    t = Tela(w, h)
+    fh = altezza_facciata(h, None, 5)
+    tetto_e_facciata(t, w, h, fh, TINTE[2])
+    largo, base = w * 8, h * 8
+    t.arco(largo // 2 - 7, base - 22, 14, 22, LEGNO_SCURO)
+    t.elementi["portale"] += 1
+    t.arco(largo // 2 - 4, (h - fh) * 8 + 8, 8, 8, CONTORNO)
+    t.contorno()
+    return t
+
+
+def san_pietro(w, h, info):
+    """San Pietro: la facciata dell'abbazia con le arcate cieche e il portale."""
+    t = Tela(w, h)
+    fh = altezza_facciata(h, None, 6)
+    tetto_e_facciata(t, w, h, fh, TINTE[1])
+    largo, base = w * 8, h * 8
+    passo = largo // 5
+    for k in range(5):
+        if k == 2:
+            continue
+        t.arco(k * passo + 3, base - 26, passo - 6, 22, PIETRA_SCURA)
+        t.elementi["arcata_cieca"] += 1
+    t.arco(2 * passo + 1, base - 30, passo - 2, 30, LEGNO_SCURO)
+    t.elementi["portale"] += 1
+    t.contorno()
+    return t
+
+
+def porta(w, h, info):
+    """Una porta delle mura: torre di conci con i merli e il fornice ad arco."""
+    t = Tela(w, h, PIETRA)
+    tinta = TINTE[1]
+    t.conci(0, 0, w * 8, h * 8, tinta)
+    t.merli(0, 0, w * 8, tinta)
+    t.elementi["merlatura"] += 1
+    largo, alto = w * 8, h * 8
+    if largo >= alto:
+        t.arco(largo // 2 - 6, alto - 16, 12, 16, CONTORNO)
+    else:
+        t.arco(largo // 2 - min(6, largo // 2 - 1), alto // 2 - 8, min(12, largo - 2), 16, CONTORNO)
+    t.elementi["fornice"] += 1
+    t.contorno()
+    return t
+
+
+PITTORI.update({"duomo": duomo, "ducale": ducale, "san_francesco": san_francesco,
+                "loggia_tiratori": loggia_tiratori, "sant_agostino": sant_agostino, "san_pietro": san_pietro,
+                "porta_metauro": porta, "porta_romana": porta})
+REQUISITI.update({
+    "duomo": {"portale_acuto": 1, "rosone": 1},
+    "ducale": {"cortile": 1},
+    "san_francesco": {"abside": 1, "retro": 1},
+    "loggia_tiratori": {"arcata": 6, "fianco": 1},
+    "sant_agostino": {"portale": 1},
+    "san_pietro": {"portale": 1, "arcata_cieca": 4},
+    "porta_metauro": {"merlatura": 1, "fornice": 1},
+    "porta_romana": {"merlatura": 1, "fornice": 1},
+})
+FACCIATA_DI_DEFAULT.update({"duomo": "basso", "sant_agostino": "basso", "san_pietro": "basso"})

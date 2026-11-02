@@ -107,6 +107,7 @@ CELLE = {
     "C": ("FACCIATA", True),       # facciata monumentale (Consoli, San Francesco, ...)
     "P": ("FACCIATA_2", True),     # seconda facciata (Pretorio, Bargello, acquedotto, ...)
     "M": ("MURO_CONTENIMENTO", True),  # il gradone: il terreno a monte sta piu' in alto
+    "V": ("CITTA_BASSA", True),    # oltre il parapetto di un belvedere: la citta' vista dall'alto
 }
 VARCHI = "ABEGHI"                 # I e' l'ingresso di un dungeon
 
@@ -127,6 +128,7 @@ TILE_MAX_PER_AREA = 512      # tile unici di un'area, suolo e monumenti insieme
 LATI_A_MONTE = ("basso", "destra")
 LATI_A_VALLE = {"basso": "alto", "destra": "sinistra"}
 QUOTA_MIN_BELVEDERE = 60       # metri: sotto non c'e' niente da guardare dall'alto
+PROFONDITA_BELVEDERE = 3       # senza piazza: vuoto e parapetto nei primi tile dal bordo a valle
 METRI_PER_GRADONE = 15
 GRADONI_MAX = 3
 TOLLERANZA_VIA = 1.5         # una via larga piu' del 50% della misura e' rifiutata
@@ -282,6 +284,44 @@ def tile_strada_ombra(x, y):
     return {4: 3, 3: 2, 2: 1}[tile_strada(x, y)]
 
 
+def tile_citta_bassa(x, y):
+    # la citta' bassa vista dall'alto: tetti piccoli e scuri, vicoli in ombra
+    if x % 4 == 3 or y % 4 == 3:
+        return 1
+    return 7 if (x % 4) < 2 else 6
+
+
+def tile_vuoto_ombra(x, y):
+    # subito oltre il parapetto: il vuoto in ombra, qualche tetto lontano
+    return 6 if (x + y * 3) % 7 == 0 else 1
+
+
+def tile_tetto_orizzontale(x, y):
+    # coppi con i canali orizzontali: il colmo corre nell'altro senso
+    if x % 4 == 3:
+        return 6
+    return [9, 8, 7, 6][y % 4]
+
+
+def tile_tetto_scuro(x, y):
+    # coppi vecchi, piu' scuri
+    if y % 4 == 3:
+        return 1
+    return [8, 7, 6, 6][x % 4]
+
+
+def tile_comignolo(x, y):
+    # un comignolo sul tetto: dado di pietra con l'ombra a destra
+    if 2 <= x <= 5 and 1 <= y <= 5:
+        return 1 if (x == 5 or y == 5) else (5 if x == 2 else 4)
+    return tile_tetto_scuro(x, y)
+
+
+def tile_cortile(x, y):
+    # un piccolo cortile fra le case: terra e verde in ombra
+    return 10 if (x * 3 + y) % 5 else 1
+
+
 def tile_vuoto(x, y):
     return 1
 
@@ -304,6 +344,12 @@ TILE_FONDALI = [
     ("MURO_CONTENIMENTO", tile_muro_contenimento),
     ("SUOLO_OMBRA", tile_suolo_ombra),
     ("STRADA_OMBRA", tile_strada_ombra),
+    ("CITTA_BASSA", tile_citta_bassa),
+    ("VUOTO_OMBRA", tile_vuoto_ombra),
+    ("TETTO_ORIZZONTALE", tile_tetto_orizzontale),
+    ("TETTO_SCURO", tile_tetto_scuro),
+    ("COMIGNOLO", tile_comignolo),
+    ("CORTILE", tile_cortile),
 ]
 INDICE_TILE = {nome: i for i, (nome, _) in enumerate(TILE_FONDALI)}
 
@@ -319,14 +365,40 @@ def tile_per_cella(griglia, x, y, del_monte=False, monte=None):
     if c in VARCHI:
         return INDICE_TILE["INGRESSO" if c == "I" else "VARCO"]
     nome = CELLE[c][0]
+    if nome == "CITTA_BASSA":
+        vicine = [griglia[y + dy][x + dx] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+                  if 0 <= y + dy < len(griglia) and 0 <= x + dx < len(griglia[0])]
+        return INDICE_TILE["VUOTO_OMBRA" if "=" in vicine else "CITTA_BASSA"]
     if nome == "MURO":
         if del_monte:
             return INDICE_TILE["BOSCO"]
         sotto = griglia[y + 1][x] if y + 1 < len(griglia) else "#"
         # il muro che ha davanti (in basso sullo schermo) uno spazio calpestabile si vede di
         # fronte: e' il muro di sostegno o il fronte cieco; il resto e' tetto visto dall'alto
-        return INDICE_TILE["MURO_FRONTE" if not solida(sotto) else "TETTO"]
+        if not solida(sotto):
+            return INDICE_TILE["MURO_FRONTE"]
+        return INDICE_TILE[tetto_della_casa(x, y)]
     return INDICE_TILE[nome]
+
+
+def variante_tetto(x, y):
+    """La variante del tetto per il blocco 4x4 di case che contiene (x, y): deterministica."""
+    bx, by = x // 4, y // 4
+    return (bx * 7 + by * 13 + bx * by) % 4
+
+
+def tetto_della_casa(x, y):
+    """Le case non sono tutte uguali: colmo in un senso o nell'altro, coppi scuri con il comignolo,
+    un piccolo cortile in mezzo al blocco."""
+    v = variante_tetto(x, y)
+    dx, dy = x % 4, y % 4
+    if v == 1:
+        return "TETTO_ORIZZONTALE"
+    if v == 2:
+        return "COMIGNOLO" if (dx, dy) == (2, 1) else "TETTO_SCURO"
+    if v == 3 and dx in (1, 2) and dy in (1, 2):
+        return "CORTILE"
+    return "TETTO"
 
 
 # Lo sprite del giocatore, 16x16: segnaposto procedurale finche' non arrivano le pose.
@@ -512,6 +584,82 @@ def quote_dell_area(a, grafo):
     return min(q), max(q)
 
 
+def rettangolo_piazza(a):
+    """(x0, y0, larghezza, altezza) della piazza intorno al riferimento, o None."""
+    if "piazza" not in a:
+        return None
+    with open(os.path.join(RADICE, "mondo", "fonti", "misure_osm.json"), encoding="utf-8") as f:
+        misura = json.load(f)["piazze"][a["piazza"][0]]
+    w, h = misure_piazza_tile(misura, a.get("fattore_piazza"))
+    rx, ry = a["riferimento"]
+    return rx - w // 2, ry - h // 2, w, h
+
+
+def linee_del_belvedere(a, lato):
+    """Per ogni linea perpendicolare al lato a valle, dal bordo verso l'interno: le celle che diventano
+    citta' bassa e, ultima, quella del parapetto. Con la piazza: sulle linee della piazza, fino al
+    primo suolo (il parapetto sta sul bordo della piazza, edifici esclusi). Senza: i primi
+    PROFONDITA_BELVEDERE tile, lontano dai varchi."""
+    g, w, h = a["griglia"], a["larghezza"], a["altezza"]
+    edifici = {(x, y) for (x0, y0, ew, eh) in a.get("edifici", {}).values()
+               for x in range(x0, x0 + ew) for y in range(y0, y0 + eh)}
+    orizzontale = lato in ("sinistra", "destra")
+    lunghezza, profondita = (h, w) if orizzontale else (w, h)
+
+    def cella(k, d):
+        d = d if lato in ("sinistra", "alto") else profondita - 1 - d
+        return (d, k) if orizzontale else (k, d)
+
+    varchi = {(x, y) for y in range(h) for x in range(w) if g[y][x] in VARCHI}
+    piazza = rettangolo_piazza(a)
+    out = []
+    for k in range(lunghezza):
+        linea = []
+        if piazza:
+            x0, y0, pw, ph = piazza
+            if not (y0 <= k < y0 + ph if orizzontale else x0 <= k < x0 + pw):
+                continue
+            for d in range(profondita):
+                x, y = cella(k, d)
+                if not solida(g[y][x]) or g[y][x] in VARCHI:
+                    break
+                linea.append((x, y))
+            else:
+                continue
+            if len(linea) < 2 or linea[-1] in edifici or any(c in varchi for c in linea):
+                continue
+            # le celle di edificio prima del parapetto restano edificio
+            linea = [c for c in linea[:-1] if c not in edifici] + [linea[-1]]
+        else:
+            linea = [cella(k, d) for d in range(PROFONDITA_BELVEDERE)]
+            vicine = {(x + dx, y + dy) for x, y in linea for dx in range(-2, 3) for dy in range(-2, 3)}
+            if vicine & varchi or any(c in edifici for c in linea):
+                continue
+        out.append(linea)
+    return out
+
+
+def errori_belvedere(a):
+    """Celle oltre un parapetto (fra il parapetto e il bordo a valle) che sono ancora tetti a quota
+    piena: non devono essercene."""
+    g = a["griglia"]
+    err = []
+    for lato, _ in a["belvedere"]:
+        passo = {"sinistra": (-1, 0), "destra": (1, 0), "alto": (0, -1), "basso": (0, 1)}[lato]
+        for y, r in enumerate(g):
+            for x, c in enumerate(r):
+                if c != "=":
+                    continue
+                nx, ny = x + passo[0], y + passo[1]
+                while 0 <= nx < a["larghezza"] and 0 <= ny < a["altezza"]:
+                    if g[ny][nx] == "#" and (nx, ny) not in {(ex, ey) for (x0, y0, ew, eh) in a.get("edifici", {}).values()
+                                                             for ex in range(x0, x0 + ew) for ey in range(y0, y0 + eh)}:
+                        err.append((nx, ny))
+                        break
+                    nx, ny = nx + passo[0], ny + passo[1]
+    return err
+
+
 def numero_gradoni(a, grafo):
     q0, q1 = quote_dell_area(a, grafo)
     return min(GRADONI_MAX, int((q1 - q0) // METRI_PER_GRADONE))
@@ -535,10 +683,11 @@ def applica_dislivello(a, grafo):
         if (q0 + q1) / 2 < QUOTA_MIN_BELVEDERE:
             raise ErroreMondo(f"{a['file']}:{n}: belvedere a {(q0 + q1) / 2:g} m: un'area sotto "
                               f"{QUOTA_MIN_BELVEDERE} m non ha niente da guardare dall'alto")
-        celle = {"alto": [(x, 0) for x in range(w)], "basso": [(x, h - 1) for x in range(w)],
-                 "sinistra": [(0, y) for y in range(h)], "destra": [(w - 1, y) for y in range(h)]}[lato]
-        for x, y in celle:
-            if g[y][x] == "#" and (x, y) not in edifici:
+        for linea in linee_del_belvedere(a, lato):
+            if linea:
+                for x, y in linea[:-1]:
+                    g[y][x] = "V"
+                x, y = linea[-1]
                 g[y][x] = "="
 
     # scale davanti ai varchi verso aree a un'altra quota
@@ -1129,6 +1278,9 @@ def genera(sorgenti, palette_stile, mondo=None):
     for a in aree:
         controlla_vicinanze(a)
         controlla_proporzioni(a, mondo["misure"])
+        oltre = errori_belvedere(a)
+        if oltre:
+            raise ErroreMondo(f"{a['file']}: oltre il parapetto del belvedere ci sono tetti a quota piena: {oltre[:4]}")
         calpestabili = celle_edifici_calpestabili(a)
         if calpestabili:
             raise ErroreMondo(f"{a['file']}: celle di edificio calpestabili: {calpestabili[:4]}")

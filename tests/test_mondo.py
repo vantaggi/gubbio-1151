@@ -423,7 +423,7 @@ class Dislivello(unittest.TestCase):
 
     def test_negativa_belvedere_sul_lato_a_monte(self):
         with self.assertRaisesRegex(G.ErroreMondo, "belvedere sul lato a monte \\(basso\\)"):
-            area_con_dislivello("piazza_grande", modifica=lambda t: t.replace("belvedere alto", "belvedere basso"))
+            area_con_dislivello("piazza_grande", modifica=lambda t: t.replace("belvedere sinistra", "belvedere basso"))
 
     def test_negativa_belvedere_in_un_area_bassa(self):
         with self.assertRaisesRegex(G.ErroreMondo, "belvedere a 0 m: un'area sotto 60 m"):
@@ -771,6 +771,61 @@ class GraficaDeiMonumenti(unittest.TestCase):
         intorno = {(x + dx, y + dy) for x, y in fontana for dx in (-1, 0, 1) for dy in (-1, 0, 1)} - fontana
         self.assertTrue(all(not G.solida(g[y][x]) for x, y in intorno))
         self.assertTrue(all(G.solida(g[y][x]) for x, y in fontana))
+
+
+class BelvederiECase(unittest.TestCase):
+    """Il belvedere si vede (parapetto e citta' bassa oltre), le case non sono tutte uguali, il
+    secondo lotto di monumenti ha i suoi elementi."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mondo = G.mondo_del_repo()
+        cls.aree = {a["id"]: a for a in I.aree_finali()}
+
+    def test_belvederi_visibili(self):
+        for nome in ("piazza_grande", "duomo_ducale", "basilica", "monte_ingino"):
+            a = self.aree[nome]
+            self.assertGreater(celle(a, "="), 0, nome)
+            self.assertGreater(celle(a, "V"), 0, nome)
+            self.assertEqual(G.errori_belvedere(a), [], nome)
+
+    def test_piazza_grande_aperta_a_sinistra(self):
+        """Il parapetto corre sul lato sinistro della piazza (sud-ovest reale), fra Consoli e Pretorio."""
+        a = self.aree["piazza_grande"]
+        x0, y0, w, h = G.rettangolo_piazza(a)
+        self.assertEqual(a["belvedere"][0][0], "sinistra")
+        parapetti = [y for y in range(y0, y0 + h) if a["griglia"][y][x0 - 1] == "="]
+        self.assertGreater(len(parapetti), h // 3)
+
+    def test_negativa_tetto_oltre_il_parapetto(self):
+        a = copy.deepcopy(self.aree["piazza_grande"])
+        y, x = next((y, x) for y, r in enumerate(a["griglia"]) for x, c in enumerate(r) if c == "V")
+        a["griglia"][y] = a["griglia"][y][:x] + "#" + a["griglia"][y][x + 1:]
+        self.assertIn((x, y), G.errori_belvedere(a))
+
+    def test_citta_bassa_non_calpestabile(self):
+        self.assertTrue(G.CELLE["V"][1])
+
+    def test_case_variate(self):
+        a = self.aree["piazza_grande"]
+        tipi = {G.tetto_della_casa(x, y) for y, r in enumerate(a["griglia"]) for x, c in enumerate(r) if c == "#"}
+        self.assertGreaterEqual(len(tipi & {"TETTO", "TETTO_ORIZZONTALE", "TETTO_SCURO", "COMIGNOLO", "CORTILE"}), 4)
+
+    def test_negativa_varianti_per_blocco(self):
+        """La variante dipende dal blocco 4x4: dentro un blocco non cambia, fra blocchi si'."""
+        self.assertEqual(len({G.variante_tetto(x, y) for x in range(4) for y in range(4)}), 1)
+        self.assertGreater(len({G.variante_tetto(x * 4, y * 4) for x in range(4) for y in range(4)}), 2)
+
+    def test_secondo_lotto(self):
+        coppie = (("duomo_ducale", "duomo"), ("duomo_ducale", "ducale"), ("piazza_quaranta_martiri", "san_francesco"),
+                  ("piazza_quaranta_martiri", "loggia_tiratori"), ("sant_agostino", "sant_agostino"),
+                  ("san_pietro", "san_pietro"), ("san_martino", "porta_metauro"), ("sant_agostino", "porta_romana"))
+        for nome, mid in coppie:
+            _, _, elementi = G.disegna_area(self.aree[nome], self.mondo)
+            self.assertEqual(I.PM.elementi_mancanti(mid, elementi[mid]), {}, mid)
+
+    def test_negativa_loggia_con_meno_arcate(self):
+        self.assertEqual(I.PM.elementi_mancanti("loggia_tiratori", {"arcata": 5, "fianco": 1}), {"arcata": 6})
 
 
 class FondaleControGriglia(unittest.TestCase):
