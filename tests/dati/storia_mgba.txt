@@ -5,6 +5,10 @@ Cutscene C1 finita
 Scena P-02
 Cutscene P-02 dentro la precedente
 Scena A1-01
+Cutscene C3U
+Cutscene C3U finita
+Cutscene C3G
+Cutscene C3G finita
 Cutscene C2
 Cutscene C2 finita
 Cutscene C2P
@@ -12,6 +16,8 @@ Cutscene C2P finita
 Scena A1-03
 Scena A1-02
 Scena A1-04
+Cutscene C3A
+Cutscene C3A finita
 Battaglia 0 data per vinta
 Scena A1-05
 Scena A1-06
@@ -24,6 +30,8 @@ Scena B-01
 Scena B-02
 Scena B-03
 Scena B-04
+Cutscene C3C
+Cutscene C3C finita
 Battaglia 2 data per vinta
 Scena B-05
 Scena E-01

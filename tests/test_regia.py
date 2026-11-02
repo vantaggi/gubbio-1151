@@ -302,5 +302,65 @@ class C2(unittest.TestCase):
         self.assertLess(tile * 32 + 4 * 2048 * 2, 64 * 1024)
 
 
+class C3(unittest.TestCase):
+    """Pezzo X: le presentazioni a fermo immagine (tools/pittore_c3.py, regia/c3_*.regia)."""
+
+    PERSONAGGI = {"C3U": "ubaldo", "C3G": "giorgio", "C3A": "antonio", "C3C": "corrado"}
+
+    def controluce(self, tela, palette, margine=0.3):
+        """La sagoma scura (colore 1) col bordo acceso (colore 3) davanti a un bagliore piu' chiaro di
+        'margine' (luminanza media dello sfondo sopra il terreno)."""
+        C3 = GR.PP.C3
+
+        def luminanza(c):
+            v = GR.colore_del_piano(PALETTE, palette[c], False)
+            return (0.299 * (v & 31) + 0.587 * ((v >> 5) & 31) + 0.114 * ((v >> 10) & 31)) / 31
+
+        righe = tela.px[:C3.SUOLO]
+        sagoma = sum(r[:240].count(C3.R_SAGOMA) for r in righe)
+        bordo = sum(r[:240].count(C3.R_BORDO) for r in righe)
+        sfondo = [luminanza(c) for r in righe for c in r[:240] if c not in (C3.R_SAGOMA, C3.R_BORDO)]
+        return sagoma >= 1200 and bordo >= 40 and sum(sfondo) / len(sfondo) - luminanza(C3.R_SAGOMA) >= margine
+
+    def test_quattro_presentazioni_dal_copione(self):
+        c = {GR.leggi(n, t)["codice"]: GR.leggi(n, t) for n, t in GR.sorgenti_del_repo()}
+        for codice, chi in self.PERSONAGGI.items():
+            q = c[codice]["inquadrature"]
+            self.assertEqual(len(q), 1, codice)
+            self.assertTrue(180 <= q[0]["frame"] <= 240, codice)                     # 3-4 s
+            self.assertEqual(q[0]["piani"], [f"ritratto_{chi}"])
+            self.assertEqual(q[0]["battute"], [f"R_C3_{chi.upper()}"])
+
+    def test_in_controluce(self):
+        for chi in self.PERSONAGGI.values():
+            tela, palette, _ = GR.PP.PITTORI[f"ritratto_{chi}"]("giorno")
+            self.assertTrue(self.controluce(tela, palette), chi)
+
+    def test_negativa_senza_bordo_o_senza_bagliore(self):
+        C3 = GR.PP.C3
+        tela, palette, _ = GR.PP.PITTORI["ritratto_giorgio"]("giorno")
+        spento = [[C3.R_SAGOMA if c == C3.R_BORDO else c for c in r] for r in tela.px]
+        tela.px, vecchi = spento, tela.px
+        self.assertFalse(self.controluce(tela, palette))
+        tela.px = [[c if c in (C3.R_SAGOMA, C3.R_BORDO) else C3.R_SAGOMA_S for c in r] for r in vecchi]
+        self.assertFalse(self.controluce(tela, palette))
+
+    def test_il_cartiglio_col_nome_del_copione(self):
+        """Il nome nel cartiglio e' quello del cartiglio dei dialoghi (PARLANTI del copione), scritto in
+        bianco su vermiglio."""
+        import genera_storia as GS
+        for chi, nome in GR.PP.C3.NOMI.items():
+            self.assertEqual(GS.PARLANTI[chi.upper()], nome)
+            tela = GR.PP.PITTORI[f"ritratto_{chi}"]("giorno")[0]
+            x0, y0, largo, alto = GR.PP.C3.cartiglio(GR.PP.Tela(512, 256), nome)
+            dentro = [tela.px[y][x] for y in range(y0, y0 + alto) for x in range(x0, x0 + largo)]
+            self.assertGreater(dentro.count(GR.PP.C3.R_CARTIGLIO), dentro.count(GR.PP.C3.R_NOME))
+            self.assertGreater(dentro.count(GR.PP.C3.R_NOME), 10 * len(nome.replace(" ", "")) // 2)
+
+    def test_negativa_un_nome_diverso_dal_copione(self):
+        import genera_storia as GS
+        self.assertNotEqual(GS.PARLANTI["UBALDO"], "Ubaldo")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
