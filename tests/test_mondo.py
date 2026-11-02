@@ -828,6 +828,98 @@ class BelvederiECase(unittest.TestCase):
         self.assertEqual(I.PM.elementi_mancanti("loggia_tiratori", {"arcata": 5, "fianco": 1}), {"arcata": 6})
 
 
+class TerzoLotto(unittest.TestCase):
+    """Terzo lotto di monumenti, facciate scelte nelle .area, mura, varieta' dei tetti, cartiglio."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mondo = G.mondo_del_repo()
+        cls.aree = {a["id"]: a for a in I.aree_finali()}
+
+    def test_terzo_lotto(self):
+        coppie = (("sant_andrea", "san_marziale"), ("sant_andrea", "santa_maria_nuova"),
+                  ("san_martino", "capitano_popolo"), ("piazza_grande", "ranghiasci"),
+                  ("bottaccione", "sant_ambrogio"))
+        for nome, mid in coppie:
+            _, _, elementi = G.disegna_area(self.aree[nome], self.mondo)
+            self.assertEqual(I.PM.elementi_mancanti(mid, elementi[mid]), {}, mid)
+
+    def test_porta_san_pietro_senza_misure_non_disegnata(self):
+        self.assertEqual(self.mondo["monumenti"]["porta_san_pietro"]["tipo"], "senza_misura")
+        self.assertNotIn("porta_san_pietro", self.aree["san_pietro"]["edifici"])
+
+    def test_negativa_ranghiasci_con_meno_finestre(self):
+        self.assertEqual(I.PM.elementi_mancanti("ranghiasci", {"finestra_regolare": 9, "portone": 1}),
+                         {"finestra_regolare": 10})
+
+    def test_facciate_scelte(self):
+        """Duomo verso la via in salita (sinistra), Sant'Agostino a ovest (alto), San Pietro verso la
+        piazza (sinistra): scelte dichiarate nelle .area, il censimento non da' il lato."""
+        attese = {("duomo_ducale", "duomo"): "sinistra", ("sant_agostino", "sant_agostino"): "alto",
+                  ("san_pietro", "san_pietro"): "sinistra"}
+        for (nome, mid), lato in attese.items():
+            a = self.aree[nome]
+            self.assertIsNone(self.mondo["monumenti"][mid].get("facciata_lato_schermo"))
+            self.assertEqual(a["facciata"][mid][0], lato)
+            self.assertEqual(G.faccia_di(a, mid, self.mondo["monumenti"]), lato)
+
+    def test_negativa_facciata_contro_il_censimento(self):
+        """Il censimento vuole la facciata del Ranghiasci a sinistra: una .area che dice destra e' rifiutata."""
+        sorgenti = sorgenti_con("piazza_grande.area", lambda t: t.replace("\nfattore ", "\nfacciata ranghiasci destra\nfattore "))
+        with self.assertRaisesRegex(G.ErroreMondo, "facciata di ranghiasci a destra, ma il censimento la vuole a "
+                                                   "sinistra: vince il dato"):
+            G.genera(sorgenti, PALETTE)
+
+    def test_negativa_facciata_di_un_monumento_altrove(self):
+        sorgenti = sorgenti_con("san_pietro.area", lambda t: t.replace("\nfattore ", "\nfacciata duomo basso\nfattore "))
+        with self.assertRaisesRegex(G.ErroreMondo, "duomo non e' un edificio di quest'area"):
+            G.genera(sorgenti, PALETTE)
+
+    def test_mura_sul_perimetro(self):
+        for nome, lato in (("san_martino", "destra"), ("sant_agostino", "basso"), ("san_pietro", "sinistra"),
+                           ("teatro_romano", "destra")):
+            a = self.aree[nome]
+            self.assertEqual(a["mura"], [lato], nome)
+            bordo = {"alto": a["griglia"][0], "basso": a["griglia"][-1],
+                     "sinistra": "".join(r[0] for r in a["griglia"]),
+                     "destra": "".join(r[-1] for r in a["griglia"])}[lato]
+            self.assertGreater(bordo.count("W"), len(bordo) // 2, nome)
+
+    def test_negativa_mura_su_un_lato_sconosciuto(self):
+        sorgenti = sorgenti_con("san_pietro.area", lambda t: t.replace("mura sinistra", "mura sopra"))
+        with self.assertRaisesRegex(G.ErroreMondo, "lato delle mura 'sopra' sconosciuto"):
+            G.genera(sorgenti, PALETTE)
+
+    def test_tetti_piu_vari(self):
+        a = self.aree["san_martino"]
+        tipi = {G.tetto_della_casa(x, y) for y, r in enumerate(a["griglia"]) for x, c in enumerate(r) if c == "#"}
+        self.assertGreaterEqual(len(tipi), 7)
+        self.assertEqual(G.VARIANTI_TETTO, 6)
+
+    def test_negativa_tetto_di_una_variante_fissa(self):
+        """Dentro un blocco della variante a capanna le falde cambiano a meta': luce sopra, ombra sotto."""
+        x, y = next((x * 4, y * 4) for x in range(40) for y in range(40) if G.variante_tetto(x * 4, y * 4) == 4)
+        self.assertEqual(G.tetto_della_casa(x, y), "TETTO_FALDA_LUCE")
+        self.assertEqual(G.tetto_della_casa(x, y + 3), "TETTO_FALDA_OMBRA")
+        self.assertNotEqual(G.tetto_della_casa(x, y), G.tetto_della_casa(x, y + 3))
+
+    def test_cartiglio(self):
+        """Tre pezzi da 32x16 con i colori della palette, il bordo scuro in alto e in basso."""
+        for pezzo in ("sinistro", "centrale", "destro"):
+            px = G.pixel_cartiglio(pezzo)
+            self.assertEqual((len(px), len(px[0])), (16, 32))
+            self.assertTrue(all(0 <= v < 16 for r in px for v in r))
+            self.assertEqual(set(px[0]) | set(px[15]), {1})
+        self.assertEqual([len(p) for p in G.tile_cartiglio()], [64, 64, 64])
+        with open(G.USCITA, encoding="utf-8") as f:
+            self.assertIn("inline constexpr bn::tile TILE_CARTIGLIO[3 * TILE_PER_PEZZO_CARTIGLIO]", f.read())
+
+    def test_negativa_cartiglio_senza_bordo(self):
+        """Il pezzo centrale non ha le volute: e' diverso dai pezzi di estremita'."""
+        self.assertNotEqual(G.pixel_cartiglio("centrale"), G.pixel_cartiglio("sinistro"))
+        self.assertNotEqual(G.pixel_cartiglio("sinistro"), G.pixel_cartiglio("destro"))
+
+
 class FondaleControGriglia(unittest.TestCase):
     """La mappa BG generata e la griglia di collisione dicono la stessa cosa: dove si cammina non si
     vede mai un tetto o un muro. Si controllano gli array veri di include/mondo.h."""
