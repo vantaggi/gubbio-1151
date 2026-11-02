@@ -7299,7 +7299,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         FONDALE_PIAZZA_GRANDE, 64, 128, true, TILE_PIAZZA_GRANDE, 144, 67, 67,
         testi::TestoId::AREA_PIAZZA_GRANDE, 2,
         { { 8, 2, testi::TestoId::AREA_PIAZZA_GRANDE }, { 1, 1, testi::TestoId::AREA_PIAZZA_GRANDE }, { DUNGEON, 0, testi::TestoId::AREA_PIAZZA_GRANDE }, { DUNGEON, 0, testi::TestoId::AREA_PIAZZA_GRANDE }, { DUNGEON, 0, testi::TestoId::AREA_PIAZZA_GRANDE }, { DUNGEON, 0, testi::TestoId::AREA_PIAZZA_GRANDE } },
-        { { 19, 55 }, { 19, 55 }, { 10, 101 }, { 27, 5 }, { 19, 55 }, { 19, 55 } },
+        { { 22, 31 }, { 22, 31 }, { 10, 101 }, { 27, 5 }, { 22, 31 }, { 22, 31 } },
     },
     {   // via_xx_settembre
         GRIGLIA_VIA_XX_SETTEMBRE, MAPPA_VIA_XX_SETTEMBRE, 22, 64,
@@ -7369,7 +7369,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         FONDALE_SAN_PIETRO, 64, 64, false, TILE_SAN_PIETRO, 79, 18, 18,
         testi::TestoId::AREA_SAN_PIETRO, 2,
         { { 9, 3, testi::TestoId::AREA_SAN_PIETRO }, { 11, 2, testi::TestoId::AREA_SAN_PIETRO }, { DUNGEON, 0, testi::TestoId::AREA_SAN_PIETRO }, { DUNGEON, 0, testi::TestoId::AREA_SAN_PIETRO }, { DUNGEON, 0, testi::TestoId::AREA_SAN_PIETRO }, { DUNGEON, 0, testi::TestoId::AREA_SAN_PIETRO } },
-        { { 20, 22 }, { 20, 8 }, { 19, 35 }, { 20, 22 }, { 20, 22 }, { 20, 22 } },
+        { { 26, 22 }, { 20, 8 }, { 19, 35 }, { 26, 22 }, { 26, 22 }, { 26, 22 } },
     },
     {   // sant_agostino
         GRIGLIA_SANT_AGOSTINO, MAPPA_SANT_AGOSTINO, 59, 64,

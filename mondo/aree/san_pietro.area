@@ -17,7 +17,7 @@ piazza Piazza San Pietro
 # Strade dei varchi: via Mazzatinti verso Quaranta Martiri 5 tile (7,2 m).
 # san_pietro: spostato di (20, 0) tile, fuori dalla piazza o da un altro edificio.
 sposta san_pietro 20 0
-spawn 0 20 22
+spawn 0 26 22
 spawn 1 20 8
 spawn 2 19 35
 uscita A piazza_quaranta_martiri 1 largo 5
