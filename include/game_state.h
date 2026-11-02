@@ -22,7 +22,9 @@ struct GameState
     uint8_t livello[3];         // 1..8
     uint8_t oggetti[8];         // quanti consumabili per tipo
     uint8_t scontri_vinti[4];   // un bit per progressione::Bandiera
-    uint8_t riservato[30];
+    uint8_t storia[8];          // le bandiere della storia (storia::Bandiera, intervallo 0-63)
+    uint8_t scene_fatte[4];     // un bit per scena del copione gia' giocata (storia::SCENA)
+    uint8_t riservato[18];
 };
 
 static_assert(sizeof(GameState) == 64, "sizeof(GameState) cambiato: va aggiornato il salvataggio");
@@ -30,7 +32,8 @@ static_assert(offsetof(GameState, frames) == 0 && offsetof(GameState, tempo_fram
               offsetof(GameState, esperienza) == 8 && offsetof(GameState, x) == 14 && offsetof(GameState, y) == 16 &&
               offsetof(GameState, area) == 18 && offsetof(GameState, livello) == 19 &&
               offsetof(GameState, oggetti) == 22 && offsetof(GameState, scontri_vinti) == 30 &&
-              offsetof(GameState, riservato) == 34, "GameState: gli offset sono congelati");
+              offsetof(GameState, storia) == 34 && offsetof(GameState, scene_fatte) == 42 &&
+              offsetof(GameState, riservato) == 46, "GameState: gli offset sono congelati");
 
 // L'unica istanza, definita in src/game_state.cpp con BN_DATA_EWRAM_BSS: deve stare in EWRAM
 // (0x02......) e non in IWRAM, che e' poca e condivisa con lo stack.

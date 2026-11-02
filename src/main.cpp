@@ -8,6 +8,7 @@
 #include "game_state.h"
 #include "scena_battaglia.h"
 #include "scontri_mappa.h"
+#include "storia_scena.h"
 #include "titolo.h"
 #include "schermate.h"
 #include "vista_testo.h"
@@ -17,7 +18,7 @@
 // Croce per muoversi, B per correre. Per le prove senza tastiera, GUBBIO_AVVIO in compilazione
 // sceglie il modo come se il tasto fosse premuto: 1 camminata, 2 istantanee, 3 prova della battaglia,
 // 4 i tre scontri giocabili a mano, 5 le istantanee della battaglia, 6 la prova del salvataggio,
-// 7 le istantanee del titolo e della pausa
+// 7 le istantanee del titolo e della pausa, 8 la storia intera senza camminare
 // (make USERFLAGS=-DGUBBIO_AVVIO=1). Senza modo di prova: il titolo, poi la partita; Start apre la pausa.
 #ifndef GUBBIO_AVVIO
     #define GUBBIO_AVVIO 0
@@ -46,6 +47,11 @@ int main()
     if(GUBBIO_AVVIO == 5)
     {
         gubbio::istantanee_battaglie(palette);
+    }
+
+    if(GUBBIO_AVVIO == 8)
+    {
+        gubbio::prova_storia(palette);
     }
 
     if(GUBBIO_AVVIO == 6)
@@ -87,6 +93,14 @@ int main()
     else
     {
         gubbio::progressione::partita_nuova(gubbio::g_game_state);
+
+        // la partita nuova del gioco vero comincia dal prologo (le scene a schermo intero)
+        if(GUBBIO_AVVIO == 0)
+        {
+            gubbio::Storia prologo;
+            prologo.prologo(palette);
+        }
+
         esplorazione.entra(gubbio::mondo::AreaId::PIAZZA_GRANDE, 0);
     }
 
@@ -123,6 +137,7 @@ int main()
     }
 
     gubbio::ScontriSullaMappa scontri;
+    gubbio::Storia storia;
 
     while(true)
     {
@@ -138,6 +153,12 @@ int main()
         int dy = bn::keypad::up_held() ? -1 : (bn::keypad::down_held() ? 1 : 0);
         esplorazione.muovi(dx, dy, bn::keypad::b_held() ? 2 : 1);
         esplorazione.aggiorna();
+        // la storia prima degli scontri: una scena con la sua battaglia vale piu' del nemico sulla mappa
+        if(GUBBIO_AVVIO == 0 && storia.aggiorna(esplorazione, palette))
+        {
+            scontri.svuota();
+        }
+
         scontri.aggiorna(esplorazione, palette);
 
         bn::core::update();

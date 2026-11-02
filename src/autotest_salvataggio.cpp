@@ -12,8 +12,8 @@ namespace
 {
     using namespace salvataggio;
 
-    constexpr GameState STATO_A = { 1000, 3600, { 40, 40, 40 }, 120, 340, 2, { 2, 2, 2 }, { 2, 0, 0, 1 }, { 1 }, {} };
-    constexpr GameState STATO_B = { 2000, 7260, { 300, 290, 310 }, -5, 17, 9, { 4, 4, 5 }, { 0, 1 }, { 7 }, {} };
+    constexpr GameState STATO_A = { 1000, 3600, { 40, 40, 40 }, 120, 340, 2, { 2, 2, 2 }, { 2, 0, 0, 1 }, { 1 }, { 3 }, { 7 }, {} };
+    constexpr GameState STATO_B = { 2000, 7260, { 300, 290, 310 }, -5, 17, 9, { 4, 4, 5 }, { 0, 1 }, { 7 }, {}, {}, {} };
 
     // Andata e ritorno: lo stato estratto dal record e' lo stesso, byte per byte.
     static_assert(stessi_byte(estrai(componi(STATO_A, 1)), STATO_A), "il record non restituisce lo stato");
