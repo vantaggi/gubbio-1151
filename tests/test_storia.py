@@ -108,13 +108,25 @@ class Tabelle(unittest.TestCase):
         self.assertEqual(len(NPC), 13)
 
     def test_ogni_bandiera_scritta_e_letta(self):
-        self.assertEqual(scritte_non_lette(SCENE, GS.LETTE_DAL_GIOCO), [])
+        """Letta da una scena, dal gioco (LETTE_DAL_GIOCO, ognuna col suo punto nel codice) o in elenco
+        in docs/bandiere_da_fare.md con quel che dovra' fare."""
+        self.assertEqual(scritte_non_lette(SCENE, set(GS.LETTE_DAL_GIOCO) | set(GS.DA_FARE)), [])
+        doc = open(os.path.join(RADICE, "docs", "bandiere_da_fare.md"), encoding="utf-8").read()
+        for b in GS.DA_FARE:
+            self.assertIn(f"| `{b}` |", doc, b)
+        codice = "".join(open(os.path.join(RADICE, p), encoding="utf-8").read()
+                         for p in ("include/storia_logica.h", "src/storia_scena.cpp"))
+        for b in GS.LETTE_DAL_GIOCO:
+            self.assertIn(f"Bandiera::{b}", codice, b)
+
+    def test_negativa_bandiera_da_fare_senza_documento(self):
+        doc = open(os.path.join(RADICE, "docs", "bandiere_da_fare.md"), encoding="utf-8").read()
+        self.assertNotIn("| `MIASMI_VISTI` |", doc.replace("| `MIASMI_VISTI` |", "| MIASMI |"))
 
     def test_negativa_bandiera_scritta_e_mai_letta(self):
-        scene = copy.deepcopy(SCENE)
-        scene[-1]["imposta"] = scene[-1]["imposta"] + ["MIASMI_VISTI"]
-        self.assertEqual(scritte_non_lette(scene, {k: v for k, v in GS.LETTE_DAL_GIOCO.items() if k != "MIASMI_VISTI"}),
-                         ["MIASMI_VISTI"])
+        """Togliendo MIASMI_VISTI dall'elenco delle bandiere da fare, resta scritta e mai letta."""
+        da_fare = [b for b in GS.DA_FARE if b != "MIASMI_VISTI"]
+        self.assertEqual(scritte_non_lette(SCENE, set(GS.LETTE_DAL_GIOCO) | set(da_fare)), ["MIASMI_VISTI"])
 
     def test_nessuna_scena_irraggiungibile(self):
         ordine, accese = giro(SCENE)

@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.join(RADICE, "stile"))
 import stile as S  # noqa: E402
 
 USCITA = os.path.join(RADICE, "include", "battaglia_grafica.h")
-INCONTRI = ("pattuglia", "imboscata", "duello")
+INCONTRI = ("pattuglia", "imboscata", "duello", "rito")
 PANNELLO_Y = 104      # da qui in giu' il pannello dei comandi
 
 # --- palette: (rampa, tono) della Guida di stile -------------------------------------------------
@@ -233,6 +233,23 @@ def spia(azione):
     return t.contorno().specchia()
 
 
+def spettro(azione):
+    """Spettro del Dubbio: un velo grigio e sfrangiato che fluttua, due occhi vuoti, le mani che si
+    allungano (in azione)."""
+    t = Tela(32, 32)
+    alto = 3 if azione else 5
+    t.ellisse(15.5, alto + 8, 7, 8, N_MEDIO)
+    t.trapezio(15.5, alto + 8, 30, 14, 20, N_MEDIO)
+    for x in range(6, 26, 4):
+        t.rett(x, 28, 2, 3 if (x // 4) % 2 else 1, 0)
+    t.rett(9, alto + 12, 14, 10, N_GRIGIO)
+    t.ellisse(12.5, alto + 8, 1.6, 2.2, N_SCURO)
+    t.ellisse(18.5, alto + 8, 1.6, 2.2, N_SCURO)
+    if azione:
+        t.linea(23, alto + 14, 31, alto + 10, N_GRIGIO, 2)
+    return t.contorno().specchia()
+
+
 def corrado(azione):
     """Corrado di Spoleto, 64x64: armatura scura, l'elmo col cimiero, lo scudo, il martello d'assedio."""
     t = Tela(64, 64)
@@ -270,7 +287,8 @@ def freccia(azione):
 
 
 SANTI = (("UBALDO", ubaldo), ("GIORGIO", giorgio), ("ANTONIO", antonio))
-NEMICI = (("FANTE", fante), ("BALESTRIERE", balestriere), ("CORRADO", corrado), ("SPIA", spia))
+NEMICI = (("FANTE", fante), ("BALESTRIERE", balestriere), ("CORRADO", corrado), ("SPIA", spia),
+          ("SPETTRO", spettro))
 ALTRI = (("FRECCIA", freccia),)
 
 
@@ -309,6 +327,16 @@ def sfondo(incontro):
             t.ellisse(cx, cy, 6, 5, 10)
         for y in range(46, orizzonte, 12):
             t.rett(0, y, 256, 2, 9)
+    elif incontro == 3:
+        # dentro la Basilica: le colonne della navata nella penombra, la vetrata in fondo
+        t.rett(0, 0, 256, orizzonte, 1)
+        for x0 in range(10, 256, 46):
+            t.rett(x0, 8, 14, orizzonte - 8, 7)
+            t.rett(x0 + 10, 8, 4, orizzonte - 8, 6)
+        t.rett(104, 6, 48, 46, 0)
+        for y in range(8, 50, 6):
+            for x in range(106, 150, 6):
+                t.rett(x, y, 5, 5, 3 if (x + y) % 12 else 13)
     else:
         # Piazza Grande: il Palazzo dei Consoli con la torre, e la citta' bassa
         t.rett(0, 58, 256, orizzonte - 58, 13)

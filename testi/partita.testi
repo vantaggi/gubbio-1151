@@ -14,3 +14,4 @@ PAUSA_SALVA_2             | DIALOGO | Salva nello slot 2
 PAUSA_AIUTO               | DIALOGO | Su e giù per scegliere, A per confermare, Start per riprendere.
 PAUSA_SALVATO             | DIALOGO | Partita salvata.
 PAUSA_NON_SALVATO         | DIALOGO | Il salvataggio non è riuscito.
+STORIA_FINE               | DIALOGO | Fine della prima cronaca. La cronaca continua...

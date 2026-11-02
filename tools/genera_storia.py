@@ -30,23 +30,16 @@ BANDIERE = ["PROLOGO_VISTO", "ULTIMATUM_RICEVUTO", "GIORGIO_NEL_GRUPPO", "CHIACC
             "PIANO_DI_CORRADO", "CORRADO_INCONTRATO", "CONDOTTO_SALVO", "RIENTRO_PORTA_METAURO", "ATTO_I_COMPLETATO",
             "CRONACA_V1_FINITA", "CORRADO_SCONFITTO"]
 
-# Le bandiere che legge il gioco e non una scena: le fasi degli NPC (README: ULTIMATUM fino a
-# CITTA_IN_DIGIUNO, DIGIUNO fino a RIENTRO_PORTA_METAURO, poi NOTTE), le quest e i titoli di coda.
+# Le bandiere che nessuna scena legge (nelle condizioni) ma che legge il gioco, e dove.
 LETTE_DAL_GIOCO = {
-    "GIORGIO_NEL_GRUPPO": "il gruppo in battaglia: Giorgio c'e' da qui",
-    "CHIACCHIERA_CONSOLI": "la scena A1-02 una volta sola (la sua condizione 'e non')",
-    "CITTA_IN_DIGIUNO": "la fase degli NPC: DIGIUNO",
-    "RIENTRO_PORTA_METAURO": "la fase degli NPC: NOTTE",
-    "ULTIMATUM_RICEVUTO": "la fase degli NPC: ULTIMATUM, e la quest del ferro",
-    "IMBOSCATA_STRADONI": "la battaglia obbligata degli stradoni: lo scontro sulla mappa non si ripete",
-    "CERI_RISVEGLIATI": "le battute del rito (A1-08): i Ceri accesi nella Basilica",
-    "BOTTACCIONE_ENTRATI": "la palette cupa del Bottaccione",
-    "MIASMI_VISTI": "la scena B-02 una volta sola",
-    "PIANO_DI_CORRADO": "la scena B-03 una volta sola",
-    "CORRADO_INCONTRATO": "lo scontro con Corrado: dopo l'incontro non si fugge",
-    "CORRADO_SCONFITTO": "lo scontro sulla mappa di Corrado non torna",
-    "CRONACA_V1_FINITA": "i titoli di coda e il salvataggio di completamento",
+    "GIORGIO_NEL_GRUPPO": "storia::gruppo(): Giorgio combatte da qui",
+    "IMBOSCATA_STRADONI": "storia::scontro_attivo(): l'Imboscata sulla mappa non torna",
+    "CORRADO_SCONFITTO": "storia::scontro_attivo(): Corrado sulla mappa non torna",
+    "CRONACA_V1_FINITA": "Storia::recita(): il cartello dei titoli di coda",
 }
+
+# Quelle che il gioco non legge ancora: sono in docs/bandiere_da_fare.md, con cosa dovranno fare.
+DA_FARE = ["MIASMI_VISTI", "PIANO_DI_CORRADO", "CORRADO_INCONTRATO", "CERI_RISVEGLIATI"]
 
 # Dove avviene ogni scena (AreaId), dalla riga Luogo; None per le scene a schermo intero (prologo).
 AREE = {"P-00": None, "P-01": None, "P-02": None, "A1-01": "PIAZZA_GRANDE", "A1-02": "VIA_DEI_CONSOLI",
@@ -66,9 +59,9 @@ SEGUE = {"P-01": "P-00", "P-02": "P-01", "B-02": "B-01", "B-03": "B-02", "B-04":
 # le tratta come un nodo segnaposto che mostra il cartello col titolo e passa oltre.
 CUTSCENE = {"P-01", "P-02"}
 
-# Le battaglie delle scene (battaglia::INCONTRO): -1 dove il copione ne chiede una che non c'e'
-# ancora (gli Spettri del Dubbio di A1-08, da fare in F6 parte 2).
-BATTAGLIE = {"A1-04": 0, "A1-07": 1, "B-04": 2}
+# Le battaglie delle scene (battaglia::INCONTRO). Quelle con un nemico sulla mappa partono toccandolo;
+# gli Spettri del Dubbio di A1-08 compaiono durante il rito: la scena parte entrando nella Basilica.
+BATTAGLIE = {"A1-04": 0, "A1-07": 1, "B-04": 2, "A1-08": 3}
 
 PARLANTI = {"UBALDO": "Sant'Ubaldo", "GIORGIO": "Giorgio", "ANTONIO": "Antonio", "GUIDO": "Console Guido",
             "ARALDO": "Araldo di Perugia", "CORRADO": "Corrado di Spoleto", "CECCO": "Cecco il Balestriere",

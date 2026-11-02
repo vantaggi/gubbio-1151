@@ -276,7 +276,7 @@ inline constexpr Scena SCENA[SCENE] = {
     { "A1-05", testi::TestoId::SCENA_A1_05, false, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x20u, 0x40u, 0x40u, -1, -1, 62, 10 },
     { "A1-06", testi::TestoId::SCENA_A1_06, false, int8_t(mondo::AreaId::DUOMO_DUCALE), 0x40u, 0x80u, 0x80u, -1, -1, 72, 4 },
     { "A1-07", testi::TestoId::SCENA_A1_07, false, int8_t(mondo::AreaId::MONTE_INGINO), 0x80u, 0x0u, 0x300u, -1, 1, 76, 16 },
-    { "A1-08", testi::TestoId::SCENA_A1_08, false, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x200u, 0x0u, 0xC00u, -1, -1, 92, 26 },
+    { "A1-08", testi::TestoId::SCENA_A1_08, false, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x200u, 0x0u, 0xC00u, -1, 3, 92, 26 },
     { "A1-09", testi::TestoId::SCENA_A1_09, false, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x800u, 0x0u, 0x1000u, -1, -1, 118, 9 },
     { "B-01", testi::TestoId::SCENA_B_01, false, int8_t(mondo::AreaId::BOTTACCIONE), 0x1000u, 0x2000u, 0x2000u, -1, -1, 127, 4 },
     { "B-02", testi::TestoId::SCENA_B_02, false, int8_t(mondo::AreaId::BOTTACCIONE), 0x0u, 0x0u, 0x4000u, 12, -1, 131, 3 },
