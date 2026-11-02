@@ -100,6 +100,11 @@ CELLE = {
     ".": ("SUOLO", False),
     ",": ("STRADA", False),
     "S": ("SCALINATA", False),
+    "L": ("LASTRICO", False),      # il lastricato a lastre di una piazza
+    "K": ("CORSO", False),         # i corsi di pietra che disegnano il lastricato
+    "Z": ("VIALETTO", False),      # i vialetti dei giardini
+    "J": ("ARCO", False),          # sotto l'arco di una porta della citta': si passa
+    "N": ("PRATO", False),         # il prato fuori le mura ("prato" nella .area)
     "F": ("FONTANA", True),
     "d": ("PORTONE", True),        # portone di un edificio: solo visivo, non si attraversa
     "#": ("MURO", True),
@@ -109,6 +114,14 @@ CELLE = {
     "M": ("MURO_CONTENIMENTO", True),  # il gradone: il terreno a monte sta piu' in alto
     "V": ("CITTA_BASSA", True),    # oltre il parapetto di un belvedere: la citta' vista dall'alto
     "W": ("MURA", True),           # le mura della citta', dove l'area tocca il perimetro
+    "Q": ("LAMPIONE", True),
+    "O": ("POZZO", True),
+    "Y": ("SIEPE", True),          # le siepi intorno alle aiuole dei giardini
+    "D": ("AIUOLA", True),         # l'aiuola fiorita dentro la siepe
+    "T": ("ALBERO", True),
+    "X": ("TORRE", True),          # i piloni della torre di una porta, ai lati dell'arco
+    "R": ("GRADINATA", True),      # la cavea del Teatro Romano
+    "U": ("ARCATA", True),         # l'anello esterno di arcate del Teatro
 }
 VARCHI = "ABEGHI"                 # I e' l'ingresso di un dungeon
 
@@ -137,7 +150,7 @@ TOLLERANZA_VIA_MAX = 2.0     # dove OSM e' incompleto (quadrante sud-est), annot
 DISLIVELLO_PER_SCALE = 5       # metri fra le quote di due aree oltre cui il varco ha la scala
 PROFONDITA_SCALE = 3           # tile di scala davanti al varco
 LARGO_PASSAGGIO = 4            # la scala che attraversa un gradone
-PRIMO_VARCO = 16                   # cella = PRIMO_VARCO + indice del varco nell'area
+PRIMO_VARCO = 32                   # cella = PRIMO_VARCO + indice del varco nell'area
 
 # --- Fondali procedurali ----------------------------------------------------------------------
 # Palette dei fondali: (rampa, tono) della Guida di stile, dal piu' scuro al piu' chiaro dentro
@@ -350,6 +363,83 @@ def tile_terrazzino(x, y):
     return 8 if (x + y) % 2 else 7
 
 
+def tile_lastrico(x, y):
+    # lastre grandi di pietra chiara, giunti sottili sfalsati
+    sfalsa = 4 if (y // 8) % 2 else 0
+    if y % 8 == 7 or (x + sfalsa) % 8 == 7:
+        return 3
+    return 5 if (x + y) % 11 == 0 else 4
+
+
+def tile_corso(x, y):
+    # un corso di pietra piu' scura, a conci stretti, che taglia il lastricato
+    if y in (0, 7):
+        return 2
+    return 3 if x % 4 == 3 else 2 if (x + y) % 5 == 0 else 3
+
+
+def tile_vialetto(x, y):
+    # ghiaia dei vialetti, chiara e minuta
+    return 4 if (x * 3 + y * 7) % 5 else 5
+
+
+def tile_arco(x, y):
+    # sotto l'arco della porta: l'ombra della volta, il selciato che continua
+    if y < 3:
+        return 1
+    return 3 if (x + y) % 4 else 2
+
+
+def tile_lampione(x, y):
+    # un lampione visto dall'alto: piede di pietra, lanterna chiara al centro
+    if 2 <= x <= 5 and 2 <= y <= 5:
+        return 13 if 3 <= x <= 4 and 3 <= y <= 4 else 1
+    return tile_lastrico(x, y)
+
+
+def tile_pozzo(x, y):
+    return 2 if x in (0, 7) or y in (0, 7) else (12 if (x + y) % 3 else 13)
+
+
+def tile_siepe(x, y):
+    # siepe di bosso tagliata, fitta e scura, qualche foglia in luce
+    return 11 if (x * 5 + y * 3) % 7 == 0 else 10
+
+
+def tile_aiuola(x, y):
+    # l'aiuola: erba chiara con i fiori sparsi
+    if (x * 3 + y * 5) % 9 == 0:
+        return 4
+    return 11
+
+
+def tile_albero(x, y):
+    # chioma tonda vista dall'alto col contorno scuro, luce a sinistra in alto, l'erba intorno
+    d = (x - 3.5) ** 2 + (y - 3.5) ** 2
+    if d > 14:
+        return 11
+    if d > 9:
+        return 1
+    return 11 if x < 4 and y < 4 else 10
+
+
+def tile_prato(x, y):
+    # prato rasato, qualche ciuffo piu' scuro
+    return 10 if (x * 3 + y * 5 + (x * y) % 3) % 11 == 0 else 11
+
+
+def tile_torre(x, y):
+    return 3 if (x + (y // 3) * 2) % 4 == 3 or y % 3 == 0 else 4
+
+
+def tile_gradinata(x, y):
+    return 5 if y % 4 < 2 else 3
+
+
+def tile_arcata(x, y):
+    return 1 if 2 <= x <= 5 and y >= 3 else 4
+
+
 def tile_vuoto(x, y):
     return 1
 
@@ -382,6 +472,19 @@ TILE_FONDALI = [
     ("TETTO_FALDA_LUCE", tile_tetto_falda_luce),
     ("TETTO_FALDA_OMBRA", tile_tetto_falda_ombra),
     ("TERRAZZINO", tile_terrazzino),
+    ("LASTRICO", tile_lastrico),
+    ("CORSO", tile_corso),
+    ("VIALETTO", tile_vialetto),
+    ("ARCO", tile_arco),
+    ("LAMPIONE", tile_lampione),
+    ("POZZO", tile_pozzo),
+    ("SIEPE", tile_siepe),
+    ("AIUOLA", tile_aiuola),
+    ("PRATO", tile_prato),
+    ("ALBERO", tile_albero),
+    ("TORRE", tile_torre),
+    ("GRADINATA", tile_gradinata),
+    ("ARCATA", tile_arcata),
 ]
 INDICE_TILE = {nome: i for i, (nome, _) in enumerate(TILE_FONDALI)}
 
@@ -533,6 +636,10 @@ def leggi_area(nome_file, testo):
                 a["monte"] = t[1]
             elif t[0] == "belvedere":
                 a["belvedere"].append((t[1], n))
+            elif t[0] == "giardini":
+                a["giardini"] = True
+            elif t[0] == "prato":
+                a["prato"] = True
             elif t[0] == "mura":
                 if t[1] not in ("alto", "basso", "sinistra", "destra"):
                     raise ErroreMondo(f"{nome_file}:{n}: lato delle mura '{t[1]}' sconosciuto")
@@ -634,6 +741,9 @@ def posa_edifici(a, monumenti):
         posati[mid] = (x0, y0, w, h)
     a["griglia"] = ["".join(r) for r in g]
     a["edifici"] = posati
+    for mid in FORME:
+        if mid in posati:
+            stampa_teatro(a, posati[mid])
     return posati
 
 
@@ -697,6 +807,227 @@ def linee_del_belvedere(a, lato):
     return out
 
 
+# Monumenti che non sono un blocco rettangolare: il generatore ne stampa la forma nella griglia.
+FORME = {"teatro_romano": "cavea a semicerchio, anello di arcate, orchestra e scena"}
+
+
+def geometria_teatro(x0, y0, w, h):
+    """Centro e raggi del Teatro nel suo rettangolo: il diametro sul lato lungo (verticale), la cavea
+    che si apre a destra, la scena sul bordo sinistro."""
+    cx, cy = x0 + 2, y0 + h / 2 - 0.5
+    r = min(w - 3, h / 2 - 1)
+    return cx, cy, r, r / 3
+
+
+def stampa_teatro(a, rett):
+    """La forma del Teatro Romano nella griglia: scena (P), orchestra (lastrico), gradinate (R) e anello
+    di arcate (U) in un semicerchio; il resto del rettangolo resta prato calpestabile."""
+    x0, y0, w, h = rett
+    cx, cy, r, r_int = geometria_teatro(x0, y0, w, h)
+    g = [list(riga) for riga in a["griglia"]]
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            if x < cx:
+                g[y][x] = "P" if abs(y - cy) <= r else "."
+            elif d <= r_int:
+                g[y][x] = "L"
+            elif d <= r - 1.5:
+                g[y][x] = "R"
+            elif d <= r:
+                g[y][x] = "U"
+            else:
+                g[y][x] = "."
+    a["griglia"] = ["".join(riga) for riga in g]
+
+
+def errori_semicerchio(a, rett):
+    """La cavea e' un semicerchio: su ogni riga, la gradinata arriva fino al raggio (con un tile di
+    tolleranza), e la riga di mezzo e' la piu' larga."""
+    x0, y0, w, h = rett
+    cx, cy, r, _ = geometria_teatro(x0, y0, w, h)
+    err = []
+    for y in range(y0, y0 + h):
+        cavea = [x for x in range(x0, x0 + w) if a["griglia"][y][x] in "RU"]
+        if abs(y - cy) > r:
+            if cavea:
+                err.append((y, "cavea fuori dal semicerchio"))
+            continue
+        atteso = (r * r - (y - cy) ** 2) ** 0.5
+        trovato = (max(cavea) - cx) if cavea else 0
+        if abs(trovato - atteso) > 1.5:
+            err.append((y, round(trovato, 1), round(atteso, 1)))
+    return err
+
+
+def decora_piazza(a):
+    """Il lastricato di una piazza: lastre e corsi di pietra ogni 5 tile, i lampioni agli angoli, un
+    pozzo; nei giardini ("giardini" nella .area) aiuole, siepi, alberi e vialetti al centro."""
+    g = [list(riga) for riga in a["griglia"]]
+    if a.get("prato"):
+        # il prato e qualche albero sparso, lontano da varchi, spawn e costruzioni
+        g = [["N" if c == "." else c for c in riga] for riga in g]
+        fermi = set(a["spawn"].values())
+        for y in range(2, a["altezza"] - 2):
+            for x in range(2, a["larghezza"] - 2):
+                if (x * 7 + y * 3) % 4 or x % 3 != 1:
+                    continue
+                intorno = [g[y + j][x + i] for i in range(-2, 3) for j in range(-2, 3)]
+                if all(c == "N" for c in intorno) and all(max(abs(x - sx), abs(y - sy)) > 3 for sx, sy in fermi):
+                    g[y][x] = "T"
+        a["griglia"] = ["".join(riga) for riga in g]
+    piazza = rettangolo_piazza(a)
+    if not piazza:
+        return
+    x0, y0, pw, ph = piazza
+    g = [list(riga) for riga in a["griglia"]]
+    spawn = set(a["spawn"].values())
+
+    def libera(x, y):
+        return 0 <= x < a["larghezza"] and 0 <= y < a["altezza"] and g[y][x] == "."
+
+    for y in range(y0, y0 + ph):
+        for x in range(x0, x0 + pw):
+            if libera(x, y):
+                g[y][x] = "K" if (x - x0) % 5 == 2 or (y - y0) % 5 == 2 else "L"
+    if a.get("giardini"):
+        gx0, gy0, gx1, gy1 = x0 + 4, y0 + 4, x0 + pw - 4, y0 + ph - 4
+        mx, my = (gx0 + gx1) // 2, (gy0 + gy1) // 2
+        for y in range(gy0, gy1):
+            for x in range(gx0, gx1):
+                if g[y][x] not in "LK":
+                    continue
+                vialetto = abs(x - mx) <= 1 or abs(y - my) <= 1 or x in (gx0, gx1 - 1) or y in (gy0, gy1 - 1)
+                if vialetto or (x, y) in spawn:
+                    g[y][x] = "Z"
+                    continue
+                # l'aiuola fra i vialetti: siepe sul bordo, fiori dentro, un albero ogni 6 tile
+                bordo = any(abs(x + dx - mx) <= 1 or abs(y + dy - my) <= 1 or x + dx in (gx0, gx1 - 1)
+                            or y + dy in (gy0, gy1 - 1) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+                if bordo:
+                    g[y][x] = "Y"
+                elif (x - gx0) % 6 == 3 and (y - gy0) % 5 == 3:
+                    g[y][x] = "T"
+                else:
+                    g[y][x] = "D"
+    else:
+        for x, y in ((x0 + 1, y0 + 1), (x0 + pw - 2, y0 + 1), (x0 + 1, y0 + ph - 2), (x0 + pw - 2, y0 + ph - 2)):
+            if g[y][x] in "LK" and all(max(abs(x - sx), abs(y - sy)) > 1 for sx, sy in spawn):
+                g[y][x] = "Q"
+        for dx, dy in ((pw // 4, ph // 3), (pw // 4, 2 * ph // 3), (3 * pw // 4, ph // 3)):
+            px, py = x0 + dx, y0 + dy
+            celle = [(px + i, py + j) for i in range(2) for j in range(2)]
+            intorno = [(x + i, y + j) for x, y in celle for i in (-1, 0, 1) for j in (-1, 0, 1)]
+            if all(0 <= x < a["larghezza"] and 0 <= y < a["altezza"] and g[y][x] in "LK" for x, y in intorno) and \
+                    all(max(abs(x - sx), abs(y - sy)) > 2 for x, y in celle for sx, sy in spawn):
+                for x, y in celle:
+                    g[y][x] = "O"
+                break
+    a["griglia"] = ["".join(riga) for riga in g]
+
+
+def porte_dell_area(a, grafo):
+    """[(lettera del varco, nome della porta)] per i varchi dell'area che passano da una porta."""
+    out = []
+    for e in grafo["archi"]:
+        if not e.get("porta"):
+            continue
+        for qui, la in ((e["da"], e["a"]), (e["a"], e["da"])):
+            if qui.lower() == a["id"]:
+                for lettera, dest, _, _ in a["uscite"]:
+                    if dest == la.lower():
+                        out.append((lettera, e["porta"]))
+    return sorted(out)
+
+
+def errori_cinta(grafo):
+    """Ogni arco fra un'area dentro le mura e una fuori passa da una porta."""
+    fuori = {x["id"] for x in grafo["aree"] if x.get("fuori_le_mura")}
+    return [f"{e['da']}-{e['a']}: esce dalle mura senza porta" for e in grafo["archi"]
+            if (e["da"] in fuori) != (e["a"] in fuori) and not e.get("porta")]
+
+
+def geometria_porta(a, lettera):
+    """La torre della porta intorno al varco: (lato, celle dei piloni, celle sotto l'arco)."""
+    celle = celle_varco(a, lettera)
+    lato = sorted(lati_del_varco(a, lettera))[0]
+    lungo = [x for x, _ in celle] if lato in ("alto", "basso") else [y for _, y in celle]
+    p0, p1 = min(lungo), max(lungo)
+
+    def cella(u, prof):
+        return {"alto": (u, prof), "basso": (u, a["altezza"] - 1 - prof),
+                "sinistra": (prof, u), "destra": (a["larghezza"] - 1 - prof, u)}[lato]
+    piloni = [cella(u, prof) for prof in range(3) for u in list(range(p0 - 2, p0)) + list(range(p1 + 1, p1 + 3))]
+    arco = [cella(u, 2) for u in range(p0, p1 + 1)]
+    return lato, piloni, arco
+
+
+def costruisci_porte(a, grafo):
+    """Le porte della citta': la torre di pietra a cavallo del varco, i piloni ai lati e l'arco
+    calpestabile davanti al varco. Rifiuta una porta che non ha posto."""
+    g = [list(riga) for riga in a["griglia"]]
+    edifici = {(x, y) for (x0, y0, ew, eh) in a.get("edifici", {}).values()
+               for x in range(x0, x0 + ew) for y in range(y0, y0 + eh)}
+    a["porte"] = {}
+    for lettera, nome in porte_dell_area(a, grafo):
+        if not celle_varco(a, lettera):
+            continue  # il varco che manca lo segnala controlla()
+        lato, piloni, arco = geometria_porta(a, lettera)
+        for x, y in piloni + arco:
+            if not (0 <= x < a["larghezza"] and 0 <= y < a["altezza"]) or (x, y) in edifici or g[y][x] in VARCHI:
+                raise ErroreMondo(f"{a['file']}: non c'e' posto per {nome} intorno al varco '{lettera}' in ({x}, {y})")
+        for x, y in piloni:
+            g[y][x] = "X"
+        for x, y in arco:
+            # l'arco copre la strada (o fora la cinta): un passaggio murato resta murato (e il varco non si raggiunge)
+            if not solida(g[y][x]) or g[y][x] == "W":
+                g[y][x] = "J"
+        a["porte"][lettera] = (nome, lato, piloni, arco)
+    a["griglia"] = ["".join(riga) for riga in g]
+
+
+def errori_porte(a, grafo):
+    """Ogni varco con una porta passa sotto il suo arco: davanti al varco c'e' l'arco, ai lati i piloni."""
+    err = []
+    for lettera, nome in porte_dell_area(a, grafo):
+        if lettera not in a.get("porte", {}):
+            err.append(f"{nome}: manca la torre al varco '{lettera}'")
+            continue
+        _, piloni, arco = geometria_porta(a, lettera)
+        if any(a["griglia"][y][x] != "J" for x, y in arco):
+            err.append(f"{nome}: il varco '{lettera}' non passa sotto l'arco")
+        if any(a["griglia"][y][x] != "X" for x, y in piloni):
+            err.append(f"{nome}: la torre del varco '{lettera}' e' incompleta")
+    return err
+
+
+def finestra_dello_spawn(a):
+    """Le celle che lo schermo (30x20 tile) mostra dallo spawn 0: la camera segue e si ferma ai bordi."""
+    sx, sy = a["spawn"][0]
+    w, h = a["larghezza"], a["altezza"]
+    x0 = 0 if w <= 30 else min(max(sx - 15, 0), w - 30)
+    y0 = 0 if h <= 20 else min(max(sy - 10, 0), h - 20)
+    return [(x, y) for y in range(y0, min(h, y0 + 20)) for x in range(x0, min(w, x0 + 30))]
+
+
+def composizione(a):
+    """(elementi riconoscibili, quota di pavimento nudo) nella schermata dello spawn: monumenti,
+    parapetto, porte, mura, giardini, pozzi e fontane; nudo e' il suolo semplice o il prato, senza disegno."""
+    celle = finestra_dello_spawn(a)
+    visti = set()
+    for mid, (x0, y0, ew, eh) in a.get("edifici", {}).items():
+        if any(x0 <= x < x0 + ew and y0 <= y < y0 + eh for x, y in celle):
+            visti.add(mid)
+    segni = {"=": "parapetto", "X": "porta", "Y": "giardini", "T": "alberi", "D": "giardini", "O": "pozzo",
+             "F": "fontana", "Q": "lampioni", "R": "teatro_romano", "U": "teatro_romano", "W": "mura"}
+    for x, y in celle:
+        c = a["griglia"][y][x]
+        if c in segni:
+            visti.add(segni[c])
+    nudo = sum(1 for x, y in celle if a["griglia"][y][x] in ".N")
+    return visti, nudo / len(celle)
+
+
 def errori_belvedere(a):
     """Celle oltre un parapetto (fra il parapetto e il bordo a valle) che sono ancora tetti a quota
     piena: non devono essercene."""
@@ -731,12 +1062,16 @@ def applica_dislivello(a, grafo):
     edifici = {(x, y) for (x0, y0, ew, eh) in a.get("edifici", {}).values()
                for x in range(x0, x0 + ew) for y in range(y0, y0 + eh)}
 
-    # mura della citta': il bordo dell'area su quel lato, fuori da varchi ed edifici
+    # mura della citta': il bordo dell'area su quel lato, fuori da varchi ed edifici; nel prato fuori
+    # le mura si vede tutto lo spessore della cinta, profonda quanto la torre di una porta
+    spessore = 3 if a.get("prato") else 1
     for lato in a.get("mura", []):
-        celle = {"alto": [(x, 0) for x in range(w)], "basso": [(x, h - 1) for x in range(w)],
-                 "sinistra": [(0, y) for y in range(h)], "destra": [(w - 1, y) for y in range(h)]}[lato]
+        celle = {"alto": [(x, p) for x in range(w) for p in range(spessore)],
+                 "basso": [(x, h - 1 - p) for x in range(w) for p in range(spessore)],
+                 "sinistra": [(p, y) for y in range(h) for p in range(spessore)],
+                 "destra": [(w - 1 - p, y) for y in range(h) for p in range(spessore)]}[lato]
         for x, y in celle:
-            if g[y][x] == "#" and (x, y) not in edifici:
+            if g[y][x] in "#N" and (x, y) not in edifici:
                 g[y][x] = "W"
 
     # belvederi: parapetto sul bordo a valle, dove c'e' il muro di bordo
@@ -835,6 +1170,24 @@ def disegna_area(a, mondo):
         for ty, riga in enumerate(tela.tagli()):
             for tx, pix in enumerate(riga):
                 tile_di[(fx0 + tx, fy0 + ty)] = pix
+    for lettera, (nome, lato, piloni, arco) in a.get("porte", {}).items():
+        celle = piloni + arco
+        x0, y0 = min(x for x, _ in celle), min(y for _, y in celle)
+        pw, ph = max(x for x, _ in celle) - x0 + 1, max(y for _, y in celle) - y0 + 1
+        tela = PM.porta_della_citta(pw, ph, lato)
+        elementi["porta:" + nome] = tela.elementi
+        for ty, riga in enumerate(tela.tagli()):
+            for tx, pix in enumerate(riga):
+                if (x0 + tx, y0 + ty) in celle:
+                    tile_di[(x0 + tx, y0 + ty)] = pix
+    pozzo = [(x, y) for y in range(h) for x in range(w) if a["griglia"][y][x] == "O"]
+    if pozzo:
+        px0, py0 = min(x for x, _ in pozzo), min(y for _, y in pozzo)
+        tela = PM.pozzo(2, 2)
+        for ty, riga in enumerate(tela.tagli()):
+            for tx, pix in enumerate(riga):
+                if (px0 + tx, py0 + ty) in pozzo:
+                    tile_di[(px0 + tx, py0 + ty)] = pix
     tile_unici = {tuple(map(tuple, _tile(tile_vuoto))): 0}
     indici = []
     for y in range(h):
@@ -865,7 +1218,7 @@ def controlla_grafica(a, tile_unici, elementi):
 
 def celle_edifici_calpestabili(a):
     """Celle di un edificio su cui si potrebbe camminare: devono essere nessuna."""
-    return sorted((x, y) for (x0, y0, w, h) in a.get("edifici", {}).values()
+    return sorted((x, y) for mid, (x0, y0, w, h) in a.get("edifici", {}).items() if mid not in FORME
                   for y in range(y0, y0 + h) for x in range(x0, x0 + w)
                   if not solida(a["griglia"][y][x]) or a["griglia"][y][x] in VARCHI)
 
@@ -881,6 +1234,11 @@ def controlla_edifici(a, posati, monumenti):
         if (w, h) != attesi[mid]:
             raise ErroreMondo(f"{a['file']}: l'edificio {mid} e' {w}x{h} tile, il censimento lo vuole "
                               f"{attesi[mid][0]}x{attesi[mid][1]}")
+        if mid in FORME:
+            if errori_semicerchio(a, (x0, y0, w, h)):
+                raise ErroreMondo(f"{a['file']}: la cavea di {mid} non e' un semicerchio: "
+                                  f"{errori_semicerchio(a, (x0, y0, w, h))[:3]}")
+            continue
         for y in range(y0, y0 + h):
             for x in range(x0, x0 + w):
                 if a["griglia"][y][x] not in (MURO_EDIFICIO, FACCIATA_EDIFICIO, PORTONE_EDIFICIO):
@@ -1094,7 +1452,7 @@ def controlla_proporzioni(a, misure):
         for y in range(y0, y0 + h):
             for x in range(x0, x0 + w):
                 if not (0 <= x < a["larghezza"] and 0 <= y < a["altezza"]) or \
-                        (solida(a["griglia"][y][x]) and a["griglia"][y][x] not in "F"):
+                        (solida(a["griglia"][y][x]) and a["griglia"][y][x] not in "FQOYTD"):
                     raise ErroreMondo(f"{a['file']}:{n}: {nome} ({w}x{h} tile intorno al riferimento) non e' "
                                       f"libera in ({x}, {y})")
 
@@ -1376,13 +1734,24 @@ def mondo_del_repo():
             "censimento": M.carica_censimento()}
 
 
+def prepara_area(a, mondo):
+    """L'area come la vede il gioco: edifici posati e controllati, decoro della piazza, dislivello,
+    porte della citta'."""
+    controlla_edifici(a, posa_edifici(a, mondo["monumenti"]), mondo["monumenti"])
+    decora_piazza(a)
+    applica_dislivello(a, mondo["grafo"])
+    costruisci_porte(a, mondo["grafo"])
+
+
 def genera(sorgenti, palette_stile, mondo=None):
     """sorgenti: lista di (nome, testo). Ritorna il testo di include/mondo.h."""
     mondo = mondo or mondo_del_repo()
     aree = [leggi_area(nome, testo) for nome, testo in sorgenti]
+    cinta = errori_cinta(mondo["grafo"])
+    if cinta:
+        raise ErroreMondo("mondo/grafo.json: " + "; ".join(cinta))
     for a in aree:
-        controlla_edifici(a, posa_edifici(a, mondo["monumenti"]), mondo["monumenti"])
-        applica_dislivello(a, mondo["grafo"])
+        prepara_area(a, mondo)
     controlla(aree, mondo)
     for a in aree:
         controlla_vicinanze(a)
@@ -1390,6 +1759,9 @@ def genera(sorgenti, palette_stile, mondo=None):
         oltre = errori_belvedere(a)
         if oltre:
             raise ErroreMondo(f"{a['file']}: oltre il parapetto del belvedere ci sono tetti a quota piena: {oltre[:4]}")
+        porte = errori_porte(a, mondo["grafo"])
+        if porte:
+            raise ErroreMondo(f"{a['file']}: " + "; ".join(porte))
         calpestabili = celle_edifici_calpestabili(a)
         if calpestabili:
             raise ErroreMondo(f"{a['file']}: celle di edificio calpestabili: {calpestabili[:4]}")

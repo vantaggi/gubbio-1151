@@ -506,7 +506,7 @@ def griglie_e_mappe(header):
 
 
 TILE_CALPESTABILI = {"SUOLO", "STRADA", "SCALINATA", "PORTONE", "VARCO", "INGRESSO", "SUOLO_OMBRA",
-                     "STRADA_OMBRA"}
+                     "STRADA_OMBRA", "LASTRICO", "CORSO", "VIALETTO", "ARCO", "PRATO"}
 
 
 def errori_fondale(griglia, mappa):
@@ -825,7 +825,8 @@ class BelvederiECase(unittest.TestCase):
             self.assertEqual(I.PM.elementi_mancanti(mid, elementi[mid]), {}, mid)
 
     def test_negativa_loggia_con_meno_arcate(self):
-        self.assertEqual(I.PM.elementi_mancanti("loggia_tiratori", {"arcata": 5, "fianco": 1}), {"arcata": 6})
+        self.assertEqual(I.PM.elementi_mancanti("loggia_tiratori", {"arcata": 5, "ospedale": 1, "fianco": 1}),
+                         {"arcata": 6})
 
 
 class TerzoLotto(unittest.TestCase):
@@ -876,10 +877,11 @@ class TerzoLotto(unittest.TestCase):
             G.genera(sorgenti, PALETTE)
 
     def test_mura_sul_perimetro(self):
-        for nome, lato in (("san_martino", "destra"), ("sant_agostino", "basso"), ("san_pietro", "sinistra"),
-                           ("teatro_romano", "destra")):
+        for nome, lati in (("san_martino", ["destra"]), ("sant_agostino", ["basso"]), ("san_pietro", ["sinistra"]),
+                           ("teatro_romano", ["destra", "basso"])):
             a = self.aree[nome]
-            self.assertEqual(a["mura"], [lato], nome)
+            self.assertEqual(a["mura"], lati, nome)
+            lato = lati[0]
             bordo = {"alto": a["griglia"][0], "basso": a["griglia"][-1],
                      "sinistra": "".join(r[0] for r in a["griglia"]),
                      "destra": "".join(r[-1] for r in a["griglia"])}[lato]
@@ -976,7 +978,7 @@ class ColoriDelleIstantanee(unittest.TestCase):
         self.assertEqual(celle_senza_colore(G.CELLE, I.COLORI), [])
 
     def test_negativa_cella_nuova_senza_colore(self):
-        self.assertEqual(celle_senza_colore(list(G.CELLE) + ["Z"], I.COLORI), ["Z"])
+        self.assertEqual(celle_senza_colore(list(G.CELLE) + ["9"], I.COLORI), ["9"])
 
 
 class Fondali(unittest.TestCase):
@@ -997,6 +999,125 @@ class Fondali(unittest.TestCase):
         g = ["##", ".."]
         self.assertEqual(G.tile_per_cella(g, 0, 0), G.INDICE_TILE["MURO_FRONTE"])
         self.assertEqual(G.tile_per_cella(["##", "##"], 0, 0), G.INDICE_TILE["TETTO"])
+
+
+class LaCitta(unittest.TestCase):
+    """Pezzo J: le piazze composte (dallo spawn si vede qualcosa), le porte della citta' e la cavea."""
+
+    PIAZZE = ("piazza_grande", "piazza_quaranta_martiri", "teatro_romano", "san_pietro")
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mondo = G.mondo_del_repo()
+        cls.aree = {a["id"]: a for a in I.aree_finali()}
+
+    def composta(self, a):
+        visti, nudo = G.composizione(a)
+        return len(visti) >= 2 and nudo <= 0.60
+
+    def test_dallo_spawn_almeno_due_elementi_e_poco_suolo_nudo(self):
+        for nome in self.PIAZZE:
+            visti, nudo = G.composizione(self.aree[nome])
+            self.assertGreaterEqual(len(visti), 2, (nome, visti))
+            self.assertLessEqual(nudo, 0.60, nome)
+
+    def test_negativa_teatro_spogliato(self):
+        """Senza cavea, alberi, mura e porta il Teatro dallo spawn e' solo prato: la regola da' rosso."""
+        a = copy.deepcopy(self.aree["teatro_romano"])
+        a["griglia"] = [re.sub("[RUTWXLP]", "N", r) for r in a["griglia"]]
+        a["edifici"] = {}
+        self.assertFalse(self.composta(a))
+
+    def test_negativa_piazza_vuota(self):
+        a = copy.deepcopy(self.aree["san_pietro"])
+        a["griglia"] = [re.sub("[^A-Z#.]|[LKOQC]", ".", r) for r in a["griglia"]]
+        a["edifici"] = {}
+        self.assertFalse(self.composta(a))
+
+    def test_ogni_uscita_fuori_le_mura_passa_sotto_una_porta(self):
+        fuori = {x["id"] for x in self.mondo["grafo"]["aree"] if x.get("fuori_le_mura")}
+        archi = [e for e in self.mondo["grafo"]["archi"] if (e["da"] in fuori) != (e["a"] in fuori)]
+        self.assertGreaterEqual(len(archi), 6)
+        for e in archi:
+            for qui in (e["da"], e["a"]):
+                a = self.aree.get(qui.lower())
+                if a is None:
+                    continue  # un'area di un altro lotto (dungeon o atto successivo)
+                lettere = dict(G.porte_dell_area(a, self.mondo["grafo"]))
+                self.assertTrue(lettere, (qui, e))
+                for lettera in lettere:
+                    _, piloni, arco = G.geometria_porta(a, lettera)
+                    self.assertTrue(all(a["griglia"][y][x] == "J" for x, y in arco), (qui, lettera))
+                    self.assertTrue(all(a["griglia"][y][x] == "X" for x, y in piloni), (qui, lettera))
+                    self.assertFalse(G.solida("J"), "sotto l'arco si cammina")
+                    self.assertEqual(G.errori_porte(a, self.mondo["grafo"]), [], qui)
+
+    def test_negativa_arco_murato(self):
+        a = copy.deepcopy(self.aree["teatro_romano"])
+        a["griglia"] = [r.replace("J", "#") for r in a["griglia"]]
+        self.assertTrue(any("non passa sotto l'arco" in e for e in G.errori_porte(a, self.mondo["grafo"])))
+
+    def test_negativa_porta_senza_torre(self):
+        a = copy.deepcopy(self.aree["san_martino"])
+        a["griglia"] = [r.replace("X", "#") for r in a["griglia"]]
+        self.assertTrue(any("incompleta" in e for e in G.errori_porte(a, self.mondo["grafo"])))
+
+    def test_negativa_uscita_dalle_mura_senza_porta(self):
+        grafo = copy.deepcopy(self.mondo["grafo"])
+        for e in grafo["archi"]:
+            if e.get("porta") == "Porta Castello":
+                del e["porta"]
+        self.assertTrue(any("senza porta" in e for e in G.errori_cinta(grafo)))
+
+    def test_le_piazze_e_i_loro_monumenti(self):
+        pg, p40 = self.aree["piazza_grande"], self.aree["piazza_quaranta_martiri"]
+        self.assertTrue({"consoli", "pretorio", "ranghiasci"} <= set(pg["edifici"]))
+        self.assertGreater(sum(r.count("=") for r in pg["griglia"]), 40, "il parapetto sul quarto lato")
+        self.assertTrue({"loggia_tiratori", "santa_maria_laici", "san_francesco"} <= set(p40["edifici"]))
+        for c in "YTDZ":
+            self.assertGreater(sum(r.count(c) for r in p40["griglia"]), 10, c)
+        self.assertTrue(any("O" in r or "Q" in r for r in pg["griglia"]), "un pozzo o i lampioni")
+
+    def test_negativa_quaranta_martiri_senza_giardini(self):
+        testo = dict(G.sorgenti_del_repo())["mondo/aree/piazza_quaranta_martiri.area"]
+        a = G.leggi_area("piazza_quaranta_martiri", testo.replace(chr(10) + "giardini" + chr(10), chr(10)))
+        G.prepara_area(a, self.mondo)
+        self.assertEqual(sum(r.count("Y") + r.count("T") for r in a["griglia"]), 0)
+
+    def semicerchio(self, a):
+        """Sulla griglia: per ogni riga della cavea l'ultima gradinata sta a sqrt(r^2 - dy^2) dal centro."""
+        x0, y0, w, h = a["edifici"]["teatro_romano"]
+        cx, cy, r, _ = G.geometria_teatro(x0, y0, w, h)
+        scarti = []
+        for y in range(y0, y0 + h):
+            cavea = [x for x in range(x0, x0 + w) if a["griglia"][y][x] in "RU"]
+            atteso = (r * r - (y - cy) ** 2) ** 0.5 if abs(y - cy) <= r else None
+            if atteso is None:
+                scarti.append(len(cavea))
+            else:
+                scarti.append(abs((max(cavea) - cx if cavea else 0) - atteso))
+        return max(scarti), G.errori_semicerchio(a, (x0, y0, w, h))
+
+    def test_la_cavea_e_un_semicerchio(self):
+        scarto, err = self.semicerchio(self.aree["teatro_romano"])
+        self.assertLessEqual(scarto, 1.5)
+        self.assertEqual(err, [])
+        g = self.aree["teatro_romano"]["griglia"]
+        self.assertGreater(sum(r.count("R") for r in g), 300, "gradinate concentriche")
+        self.assertGreater(sum(r.count("U") for r in g), 40, "anello di arcate")
+
+    def test_negativa_cavea_quadrata(self):
+        """Una cavea a rettangolo pieno non e' un semicerchio."""
+        a = copy.deepcopy(self.aree["teatro_romano"])
+        x0, y0, w, h = a["edifici"]["teatro_romano"]
+        g = [list(r) for r in a["griglia"]]
+        for y in range(y0, y0 + h):
+            for x in range(x0 + 3, x0 + w):
+                g[y][x] = "R"
+        a["griglia"] = ["".join(r) for r in g]
+        scarto, err = self.semicerchio(a)
+        self.assertGreater(scarto, 1.5)
+        self.assertTrue(err)
 
 
 if __name__ == "__main__":
