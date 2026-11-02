@@ -8,13 +8,21 @@ dimensioni 64 64
 monte basso
 # Belvedere: parapetto sul bordo a valle, l'area e' alta sulla citta'.
 belvedere sinistra
+# La cima: il sagrato lastricato intorno alla Basilica, poi il prato con gli alberi.
+sagrato 5
+prato
 riferimento 31 31
 fattore 0.73
-spawn 0 39 31
+# Dallo spawn si vedono il chiostro e la fronte della Basilica, con gli alberi della cima.
+spawn 0 19 36
 spawn 1 8 30
 spawn 2 54 30
+spawn 3 31 54
 uscita A monte_ingino 1
 uscita B bottaccione 2
+# Il portale della Basilica porta dentro (navate, altare con l'urna, i tre ceri).
+ingresso E basilica
+uscita E basilica_interno 3
 griglia
 ################################################################
 #..............................................................#

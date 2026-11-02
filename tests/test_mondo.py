@@ -104,8 +104,9 @@ class Mondo(unittest.TestCase):
         with open(G.USCITA, encoding="utf-8") as f:
             self.assertEqual(f.read(), atteso, "eseguire python tools/genera_mondo.py")
 
-    def test_quattordici_aree(self):
-        self.assertEqual(len(self.aree), 14)
+    def test_quindici_aree(self):
+        """Le 14 dell'anello e dei dintorni, piu' l'interno della Basilica."""
+        self.assertEqual(len(self.aree), 15)
 
     def test_l_anello_si_chiude(self):
         giro = G.anello(self.mondo["grafo"])
@@ -222,13 +223,17 @@ class Mondo(unittest.TestCase):
                 if dest in G.DUNGEON:
                     continue
                 atteso = [v["lato"] for v in self.mondo["varchi"][a["id"].upper()] if v["verso"] == dest.upper()]
+                if atteso == ["dentro"]:
+                    # il portale: il varco sta sul portone dell'edificio, non sul bordo
+                    self.assertIn(lettera, a.get("ingressi", {}), f"{a['id']} -> {dest}")
+                    continue
                 self.assertEqual(G.lati_del_varco(a, lettera), set(atteso), f"{a['id']} -> {dest}")
 
     def test_spawn_lontani_dalla_propria_uscita(self):
         for a in self.aree.values():
             for lettera, dest, spawn, _ in a["uscite"]:
-                if dest in G.DUNGEON:
-                    continue
+                if dest in G.DUNGEON or lettera in a.get("ingressi", {}):
+                    continue  # il portale c'e' solo con gli edifici posati: lo prova LaBasilica
                 self.assertGreaterEqual(G.distanza_dal_varco(a, a["spawn"][spawn], lettera),
                                         G.DISTANZA_MIN_SPAWN_USCITA, f"{a['id']} spawn {spawn}")
 
@@ -245,7 +250,7 @@ class Mondo(unittest.TestCase):
         for nome, a0 in sorted(self.aree.items()):
             uscite = [u for u in a0["uscite"] if u[2] is not None]
             for propria, _, numero, _ in uscite:
-                altre = [u[0] for u in a0["uscite"] if u[0] != propria]
+                altre = [u[0] for u in a0["uscite"] if u[0] != propria and u[0] not in a0.get("ingressi", {})]
                 try:
                     xy = cella_che(nome, lambda a, x, y: G.distanza_dal_varco(a, (x, y), propria) >= 6
                                    and min(G.distanza_dal_varco(a, (x, y), l) for l in altre) == 2)
@@ -453,14 +458,12 @@ class Dislivello(unittest.TestCase):
         self.assertEqual((a["gradoni"], celle(a, "M")), ([], 0))
 
     def test_ombra_a_valle_del_gradone(self):
-        """Monte Ingino sale verso destra: l'ombra del gradone cade sul suolo a sinistra."""
-        a = area_con_dislivello("monte_ingino")
-        g = a["griglia"]
-        self.assertEqual(a["monte"], "destra")
-        x, y = next((x, y) for x in a["gradoni"] for y in range(len(g))
-                    if g[y][x] == "M" and g[y][x - 1] in ".," and g[y][x + 1] in ".,")
-        valle = G.tile_per_cella(g, x - 1, y, False, a["monte"])
-        monte = G.tile_per_cella(g, x + 1, y, False, a["monte"])
+        """Un'area che sale verso destra: l'ombra del gradone cade sul suolo a sinistra. (Monte Ingino,
+        l'unica area "monte destra", ora sale con i tornanti degli stradoni e non ha gradoni.)"""
+        self.assertEqual(area_con_dislivello("monte_ingino")["monte"], "destra")
+        g, x, y = ["...", ".M.", "..."], 1, 1
+        valle = G.tile_per_cella(g, x - 1, y, False, "destra")
+        monte = G.tile_per_cella(g, x + 1, y, False, "destra")
         self.assertIn(valle, (G.INDICE_TILE["SUOLO_OMBRA"], G.INDICE_TILE["STRADA_OMBRA"]))
         self.assertIn(monte, (G.INDICE_TILE["SUOLO"], G.INDICE_TILE["STRADA"]))
 
@@ -506,7 +509,7 @@ def griglie_e_mappe(header):
 
 
 TILE_CALPESTABILI = {"SUOLO", "STRADA", "SCALINATA", "PORTONE", "VARCO", "INGRESSO", "SUOLO_OMBRA",
-                     "STRADA_OMBRA", "LASTRICO", "CORSO", "VIALETTO", "ARCO", "PRATO"}
+                     "STRADA_OMBRA", "LASTRICO", "CORSO", "VIALETTO", "ARCO", "PRATO", "BRECCIA"}
 
 
 def errori_fondale(griglia, mappa):
@@ -649,7 +652,7 @@ class FondaliInRom(unittest.TestCase):
         self.mappe = {n: (None, a["indici"]) for n, a in self.aree.items()}
 
     def test_ogni_fondale_e_la_sua_mappa(self):
-        self.assertEqual(len(self.fondali), 14)
+        self.assertEqual(len(self.fondali), 15)
         for nome, (fondale, fw, fh, grande) in self.fondali.items():
             a = self.aree[nome]
             self.assertEqual(grande, a["larghezza"] > 64 or a["altezza"] > 64, nome)
@@ -930,8 +933,8 @@ class FondaleControGriglia(unittest.TestCase):
         with open(G.USCITA, encoding="utf-8") as f:
             self.aree = griglie_e_mappe(f.read())
 
-    def test_quattordici_coppie(self):
-        self.assertEqual(len(self.aree), 14)
+    def test_quindici_coppie(self):
+        self.assertEqual(len(self.aree), 15)
         for nome, (griglia, mappa) in self.aree.items():
             self.assertEqual(len(griglia), len(mappa), nome)
 
@@ -1118,6 +1121,162 @@ class LaCitta(unittest.TestCase):
         scarto, err = self.semicerchio(a)
         self.assertGreater(scarto, 1.5)
         self.assertTrue(err)
+
+
+_spec_s = importlib.util.spec_from_file_location("disegna_stradoni", os.path.join(RADICE, "tools", "disegna_stradoni.py"))
+DS = importlib.util.module_from_spec(_spec_s)
+_spec_s.loader.exec_module(DS)
+
+
+class GliStradoni(unittest.TestCase):
+    """Pezzo K: il Monte Ingino come percorso, 8 tratti a zig-zag e le cappellette ai tornanti."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mondo = G.mondo_del_repo()
+        cls.dati = cls.mondo["stradoni"]
+        cls.a = {a["id"]: a for a in I.aree_finali()}["monte_ingino"]
+
+    def area_da(self, dati):
+        a = G.leggi_area("monte_ingino", DS.testo(dati))
+        G.prepara_area(a, self.mondo)
+        return a
+
+    def test_otto_tratti_di_lunghezze_diverse(self):
+        tratti = G.tratti_degli_stradoni(self.a)
+        self.assertEqual(len(tratti), 8)
+        self.assertEqual([t[3] - t[2] + 1 for t in tratti], self.dati["tratti"])
+        self.assertEqual(len(set(self.dati["tratti"])), 8, "lunghezze diverse")
+        self.assertEqual(G.errori_stradoni(self.a, self.dati), [])
+
+    def test_cappellette_ai_tornanti_3_6_7(self):
+        attese = {3: "Cappelletta di Sant'Ubaldo", 6: "Cappelletta di San Giorgio", 7: "Cappelletta di Sant'Antonio"}
+        self.assertEqual({c["tornante"]: c["nome"] for c in self.dati["cappellette"]}, attese)
+        tornanti = G.tornanti_degli_stradoni(self.a, G.tratti_degli_stradoni(self.a))
+        self.assertEqual(len(tornanti), 7)
+        trovati = []
+        for blocco in G.blocchi(self.a["griglia"], "c"):
+            accanto = {(x + dx, y + dy) for x, y in blocco for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))}
+            trovati += [n for n, celle in enumerate(tornanti, 1) if accanto & celle]
+        self.assertEqual(sorted(trovati), [3, 6, 7])
+
+    def test_negativa_cappelletta_spostata_di_tornante(self):
+        """San Giorgio disegnata al 5o tornante invece che al 6o: contro i dati veri e' rosso."""
+        spostati = copy.deepcopy(self.dati)
+        spostati["cappellette"][1]["tornante"] = 5
+        err = G.errori_stradoni(self.area_da(spostati), self.dati)
+        self.assertTrue(any("San Giorgio" in e and "tornante 6" in e for e in err), err)
+
+    def test_negativa_un_tratto_in_meno(self):
+        sette = copy.deepcopy(self.dati)
+        sette["tratti"] = sette["tratti"][:7]
+        sette["cappellette"] = [c for c in sette["cappellette"] if c["tornante"] < 7]
+        err = G.errori_stradoni(self.area_da(sette), self.dati)
+        self.assertTrue(any(e.startswith("tratti") for e in err), err)
+
+    def test_ogni_tornante_si_raggiunge(self):
+        tornanti = G.tornanti_degli_stradoni(self.a, G.tratti_degli_stradoni(self.a))
+        for s, xy in self.a["spawn"].items():
+            visti = G.raggiungibili(self.a, xy)
+            for n, celle in enumerate(tornanti, 1):
+                self.assertTrue(celle & visti, f"tornante {n} dallo spawn {s}")
+
+    def test_negativa_tratto_franato(self):
+        """Il 4o tratto chiuso da una frana: i tornanti dal 4o in poi non si raggiungono dal basso."""
+        a = copy.deepcopy(self.a)
+        tratti = G.tratti_degli_stradoni(a)
+        x0, x1, y0, y1 = tratti[3]
+        g = [list(r) for r in a["griglia"]]
+        for x in range(x0, x1 + 1):
+            g[(y0 + y1) // 2][x] = "k"
+        a["griglia"] = ["".join(r) for r in g]
+        tornanti = G.tornanti_degli_stradoni(a, tratti)
+        visti = G.raggiungibili(a, a["spawn"][1])
+        self.assertTrue(tornanti[2] & visti)
+        self.assertFalse(tornanti[3] & visti)
+
+    def test_la_griglia_viene_dai_dati(self):
+        with open(DS.AREA, encoding="utf-8") as f:
+            self.assertEqual(f.read(), DS.testo(self.dati), "eseguire python tools/disegna_stradoni.py --scrivi")
+
+    def test_negativa_dati_cambiati(self):
+        altri = copy.deepcopy(self.dati)
+        altri["tratti"][0] -= 2
+        with open(DS.AREA, encoding="utf-8") as f:
+            self.assertNotEqual(f.read(), DS.testo(altri))
+
+    def test_porta_sant_ubaldo_in_fondo_e_basilica_in_cima(self):
+        a = self.a
+        self.assertEqual(sorted(a["porte"]), ["A", "E"])
+        self.assertTrue(all(n == "Porta Sant'Ubaldo" for n, _, _, _ in a["porte"].values()))
+        self.assertEqual(G.lati_del_varco(a, "B"), {"destra"})
+        tratti = G.tratti_degli_stradoni(a)
+        self.assertLess(tratti[0][0], tratti[-1][0], "si sale verso destra")
+
+
+class LaBasilica(unittest.TestCase):
+    """Pezzo K: la Basilica curata e il suo interno, raggiungibile dal portale."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mondo = G.mondo_del_repo()
+        cls.aree = {a["id"]: a for a in I.aree_finali()}
+
+    def test_dallo_spawn_almeno_due_elementi(self):
+        for nome in ("basilica", "basilica_interno", "monte_ingino"):
+            visti, nudo = G.composizione(self.aree[nome])
+            self.assertGreaterEqual(len(visti), 2, (nome, visti))
+            self.assertLessEqual(nudo, 0.60, nome)
+
+    def test_negativa_interno_spoglio(self):
+        a = copy.deepcopy(self.aree["basilica_interno"])
+        a["griglia"] = [re.sub("[nae]", "L", r) for r in a["griglia"]]
+        self.assertLess(len(G.composizione(a)[0]), 2)
+
+    def test_il_portale_porta_dentro(self):
+        b, dentro = self.aree["basilica"], self.aree["basilica_interno"]
+        self.assertEqual(b["ingressi"], {"E": "basilica"})
+        x0, y0, w, h = b["edifici"]["basilica"]
+        portale = G.celle_varco(b, "E")
+        self.assertTrue(portale and all(x0 <= x < x0 + w and y == y0 + h - 1 for x, y in portale))
+        self.assertGreaterEqual(G.distanza_dal_varco(b, b["spawn"][3], "E"), G.DISTANZA_MIN_SPAWN_USCITA)
+        self.assertEqual(G.lati_del_varco(dentro, "A"), {"basso"})
+        self.assertGreaterEqual(G.distanza_dal_varco(dentro, dentro["spawn"][1], "A"), G.DISTANZA_MIN_SPAWN_USCITA)
+
+    def test_negativa_portale_senza_riga_ingresso(self):
+        sorgenti = sorgenti_con("basilica.area", lambda t: t.replace("ingresso E basilica\n", ""))
+        with self.assertRaisesRegex(G.ErroreMondo, "uscita 'E' che non e' nella griglia"):
+            G.genera(sorgenti, PALETTE)
+
+    def test_negativa_portale_sul_bordo(self):
+        """Un varco "dentro" messo sul bordo dell'area non e' un portale."""
+        def sposta(testo):
+            testo = testo.replace("ingresso E basilica\n", "")
+            return griglia_mappata(testo, lambda g: [r if y < 20 or y > 23 else (["E", "E"] + r[2:])
+                                                     for y, r in enumerate(g)])
+        with self.assertRaisesRegex(G.ErroreMondo, "e' un portale"):
+            G.genera(sorgenti_con("basilica.area", sposta), PALETTE)
+
+    def test_l_interno_navate_altare_ceri(self):
+        g = self.aree["basilica_interno"]["griglia"]
+        self.assertEqual(len(G.blocchi(g, "a")), 1, "l'altare con l'urna")
+        self.assertEqual(len(G.blocchi(g, "e")), 3, "i tre ceri")
+        colonne = {x for y, r in enumerate(g) for x, c in enumerate(r) if c == "n"}
+        self.assertEqual(len(colonne), 2, "due file di colonne: tre navate")
+
+    def test_negativa_due_ceri(self):
+        g = [r.replace("ee", "LL", 1) if i in (9, 10, 11) else r
+             for i, r in enumerate(self.aree["basilica_interno"]["griglia"])]
+        self.assertEqual(len(G.blocchi(g, "e")), 2)
+
+    def test_la_basilica_ha_chiostro_campanile_scalinata(self):
+        el = G.PM.basilica(15, 33, {}).elementi
+        for k in ("scalinata", "portale", "chiostro", "loggiato", "pozzo", "campanile"):
+            self.assertGreaterEqual(el.get(k, 0), 1, k)
+
+    def test_negativa_basilica_senza_chiostro(self):
+        self.assertEqual(G.PM.elementi_mancanti("basilica", {"scalinata": 1, "portale": 1, "loggiato": 1,
+                                                             "pozzo": 1, "campanile": 1}), {"chiostro": 1})
 
 
 if __name__ == "__main__":
