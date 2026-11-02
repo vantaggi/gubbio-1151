@@ -220,6 +220,17 @@ void VistaNumero::mostra(int valore)
     }
 }
 
+void VistaNumero::colloca(int x, int y)
+{
+    _sprite.set_position(x + 16 - LARGHEZZA_SCHERMO / 2, y + 8 - ALTEZZA_SCHERMO / 2);
+    _sprite.set_visible(true);
+}
+
+void VistaNumero::nascondi()
+{
+    _sprite.set_visible(false);
+}
+
 bn::sprite_palette_ptr crea_palette_testo()
 {
     return bn::sprite_palette_ptr::create(

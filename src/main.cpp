@@ -5,14 +5,15 @@
 
 #include "esplorazione.h"
 #include "game_state.h"
+#include "scena_battaglia.h"
 #include "schermate.h"
 #include "vista_testo.h"
 
 // All'avvio: con L premuto la schermata dei testi (F1), con SELECT la camminata automatica del
 // mondo (F2), con R le istantanee delle aree (F2), altrimenti l'esplorazione da Piazza Grande.
 // Croce per muoversi, B per correre. Per le prove senza tastiera, GUBBIO_AVVIO in compilazione
-// sceglie il modo come se il tasto fosse premuto: 1 camminata, 2 istantanee, 3 prova della battaglia
-// (make USERFLAGS=-DGUBBIO_AVVIO=1).
+// sceglie il modo come se il tasto fosse premuto: 1 camminata, 2 istantanee, 3 prova della battaglia,
+// 4 i tre scontri giocabili a mano, 5 le istantanee della battaglia (make USERFLAGS=-DGUBBIO_AVVIO=1).
 #ifndef GUBBIO_AVVIO
     #define GUBBIO_AVVIO 0
 #endif
@@ -31,6 +32,17 @@ int main()
     }
 
     bn::bg_palettes::set_transparent_color(bn::color(0, 0, 0));
+
+    if(GUBBIO_AVVIO == 4)
+    {
+        gubbio::menu_battaglie(palette);
+    }
+
+    if(GUBBIO_AVVIO == 5)
+    {
+        gubbio::istantanee_battaglie(palette);
+    }
+
     gubbio::Esplorazione esplorazione(palette);
 
     if(GUBBIO_AVVIO == 1 || bn::keypad::select_held())

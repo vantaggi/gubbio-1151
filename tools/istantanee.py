@@ -5,6 +5,7 @@
     python tools/istantanee.py CARTELLA --rom ROM_ISTANTANEE  # griglie e schermate
     python tools/istantanee.py CARTELLA --fondale piazza_grande  # anche il fondale intero di un'area
                                                     # (ISTANTANEE_SCALA=3 per ingrandirlo)
+    python tools/istantanee.py CARTELLA --battaglia ROM_AVVIO_5  # le schermate della battaglia
 
 Griglie (ovunque): per ogni area un PNG di 1 pixel per tile ingrandito x4, dalla griglia finale del
 generatore (edifici e dislivello compresi), con suolo, strade, muri, facciate, portoni, varchi e
@@ -158,7 +159,7 @@ def fondale(cartella, nome, scala=1):
     png(os.path.join(cartella, f"fondale_{nome}{suffisso}.png"), w * 8 * scala, h * 8 * scala, righe)
 
 
-def schermate(cartella, rom):
+def schermate(cartella, rom, battaglia=False):
     """Schermate dalla ROM compilata con GUBBIO_AVVIO=2: niente tasti simulati (finirebbero nella
     finestra attiva, se mGBA non ha il fuoco). mGBA gira a scala 1; a ogni riga "Istantanea N" del
     log la finestra si cattura con PrintWindow, che non ha bisogno del fuoco, e si tengono le ultime
@@ -209,7 +210,8 @@ def schermate(cartella, rom):
                  for y in range(h - 160, h)]
         png(percorso, 240, 160, righe)
 
-    nomi = [a["id"] for a in aree_finali()]
+    nomi = [] if battaglia else [a["id"] for a in aree_finali()]
+    con_nome = []
     lavoro = tempfile.mkdtemp(prefix="gubbio-istantanee-")
     copia = os.path.join(lavoro, "rom.gba")
     shutil.copy(rom, copia)
@@ -235,16 +237,22 @@ def schermate(cartella, rom):
                 nuovo = f.read()
                 letto = f.tell()
             for riga in nuovo.splitlines():
-                if "Istantanea " in riga and "GBA Debug" in riga and scattate < len(nomi):
-                    cattura(hwnd, os.path.join(cartella, f"schermata_{nomi[scattate]}.png"))
-                    scattate += 1
+                if "Istantanea " in riga and "GBA Debug" in riga:
+                    # "Istantanea N" (le aree, in ordine) o "Istantanea nome" (la battaglia)
+                    parola = riga.split("Istantanea ", 1)[1].split()[0]
+                    if not parola.isdigit():
+                        cattura(hwnd, os.path.join(cartella, f"schermata_{parola}.png"))
+                        con_nome.append(parola)
+                    elif scattate < len(nomi):
+                        cattura(hwnd, os.path.join(cartella, f"schermata_{nomi[scattate]}.png"))
+                        scattate += 1
                 if "Istantanee finite" in riga:
                     finito = True
     finally:
         proc.terminate()
-    if scattate != len(nomi):
+    if scattate != len(nomi) or (battaglia and not con_nome):
         raise SystemExit(f"[istantanee] {scattate} schermate per {len(nomi)} aree (log in {log})")
-    print(f"[istantanee] {len(nomi)} schermate in {cartella}")
+    print(f"[istantanee] {len(nomi) + len(con_nome)} schermate in {cartella}")
 
 
 def main(argv):
@@ -258,6 +266,8 @@ def main(argv):
         fondale(cartella, nome, int(os.environ.get("ISTANTANEE_SCALA", "1")))
     if "--rom" in argv:
         schermate(cartella, argv[argv.index("--rom") + 1])
+    if "--battaglia" in argv:
+        schermate(cartella, argv[argv.index("--battaglia") + 1], battaglia=True)
     return 0
 
 

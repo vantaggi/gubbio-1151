@@ -1,0 +1,23 @@
+# I testi della scena di battaglia (F4, parte 2): nomi, comandi, scritte, esiti e il menu di prova
+# degli scontri (GUBBIO_AVVIO=4). Formato come testi/prova.testi.
+
+BATT_UBALDO               | DIALOGO | Sant'Ubaldo
+BATT_GIORGIO              | DIALOGO | San Giorgio
+BATT_ANTONIO              | DIALOGO | Sant'Antonio
+BATT_ATTACCO              | DIALOGO | Attacco
+BATT_MURO                 | DIALOGO | Muro della Fede
+BATT_GIUDIZIO             | DIALOGO | Giudizio della Verga
+BATT_FENDENTE             | DIALOGO | Fendente del Drago
+BATT_BASTIONE             | DIALOGO | Bastione Azzurro
+BATT_FUOCO                | DIALOGO | Fuoco di Sant'Antonio
+BATT_CARICA               | DIALOGO | Carica la Suprema
+BATT_SUPREMA              | DIALOGO | Scatena la Suprema
+BATT_IMMUNE               | HUD     | IMMUNE
+BATT_INDIZIO              | DIALOGO | Il ferro scivola sull'armatura di Corrado: forse il fuoco...
+BATT_VITTORIA             | DIALOGO | Vittoria!
+BATT_SCONFITTA            | DIALOGO | Sconfitta...
+BATT_PARITA               | DIALOGO | Lo scontro resta in sospeso.
+BATT_PATTUGLIA            | DIALOGO | Pattuglia Perugina
+BATT_IMBOSCATA            | DIALOGO | Imboscata agli Stradoni
+BATT_DUELLO               | DIALOGO | Duello con Corrado
+BATT_SCEGLI               | DIALOGO | Su e giu' per scegliere, A per confermare.
