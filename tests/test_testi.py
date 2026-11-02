@@ -91,6 +91,14 @@ class Generatore(unittest.TestCase):
         with self.assertRaisesRegex(G.ErroreTesti, "gia' usato"):
             genera("X | HUD | Ciao", "X | HUD | Addio")
 
+    def test_accenti_veri(self):
+        """Le lettere accentate vere passano, l'elisione e "po'" pure."""
+        genera("A | HUD | Su e giù, perché", "B | DIALOGO | Sant'Ubaldo e un po' di città")
+
+    def test_negativa_apostrofo_al_posto_dell_accento(self):
+        with self.assertRaisesRegex(G.ErroreTesti, "'giu'' ha l'apostrofo al posto dell'accento"):
+            genera("A | HUD | Su e giu' per scegliere")
+
     def test_negativa_id_non_valido(self):
         with self.assertRaisesRegex(G.ErroreTesti, "ID 'saluto' non valido"):
             genera("saluto | HUD | Ciao")

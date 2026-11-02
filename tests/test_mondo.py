@@ -858,9 +858,9 @@ class TerzoLotto(unittest.TestCase):
                          {"finestra_regolare": 10})
 
     def test_facciate_scelte(self):
-        """Duomo verso la via in salita (sinistra), Sant'Agostino a ovest (alto), San Pietro verso la
-        piazza (sinistra): scelte dichiarate nelle .area, il censimento non da' il lato."""
-        attese = {("duomo_ducale", "duomo"): "sinistra", ("sant_agostino", "sant_agostino"): "alto",
+        """Duomo verso la stradina del Ducale (destra, pezzo O), Sant'Agostino a ovest (alto), San Pietro
+        verso la piazza (sinistra): scelte dichiarate nelle .area, il censimento non da' il lato."""
+        attese = {("duomo_ducale", "duomo"): "destra", ("sant_agostino", "sant_agostino"): "alto",
                   ("san_pietro", "san_pietro"): "sinistra"}
         for (nome, mid), lato in attese.items():
             a = self.aree[nome]
@@ -1073,6 +1073,39 @@ class LaCitta(unittest.TestCase):
                 del e["porta"]
         self.assertTrue(any("senza porta" in e for e in G.errori_cinta(grafo)))
 
+    def facciate_duomo_ducale(self, a):
+        """(distanza in tile fra le due facciate, righe in cui si guardano) per Duomo e Ducale."""
+        dx, dy, dw, dh = a["edifici"]["duomo"]
+        cx, cy, cw, ch = a["edifici"]["ducale"]
+        righe = set(range(dy, dy + dh)) & set(range(cy, cy + ch))
+        if dx < cx:
+            return cx - (dx + dw), righe
+        return dx - (cx + cw), righe
+
+    def test_duomo_e_ducale_sulla_stradina(self):
+        """Davanti al Duomo non c'e' una piazza: le facciate di Duomo e Ducale si guardano attraverso
+        una stradina di al massimo 3 tile, e fra loro c'e' solo la strada."""
+        a = self.aree["duomo_ducale"]
+        distanza, righe = self.facciate_duomo_ducale(a)
+        self.assertLessEqual(distanza, 3)
+        self.assertGreaterEqual(len(righe), 10)
+        self.assertEqual(G.faccia_di(a, "duomo", self.mondo["monumenti"]), "destra")
+        self.assertEqual(G.faccia_di(a, "ducale", self.mondo["monumenti"]), "sinistra")
+        dx, _, dw, _ = a["edifici"]["duomo"]
+        for y in righe:
+            fra = a["griglia"][y][dx + dw:dx + dw + distanza]
+            self.assertTrue(all(c in ",.S" for c in fra), (y, fra))
+        visti, nudo = G.composizione(a)
+        self.assertTrue({"duomo", "ducale"} <= visti)
+        self.assertLessEqual(nudo, 0.60)
+
+    def test_negativa_piazzetta_davanti_al_duomo(self):
+        """Il Ducale spostato di 3 tile (una piazzetta davanti al Duomo): la stradina e' troppo larga."""
+        a = copy.deepcopy(self.aree["duomo_ducale"])
+        x, y, w, h = a["edifici"]["ducale"]
+        a["edifici"]["ducale"] = (x + 3, y, w, h)
+        self.assertGreater(self.facciate_duomo_ducale(a)[0], 3)
+
     def test_le_piazze_e_i_loro_monumenti(self):
         pg, p40 = self.aree["piazza_grande"], self.aree["piazza_quaranta_martiri"]
         self.assertTrue({"consoli", "pretorio", "ranghiasci"} <= set(pg["edifici"]))
@@ -1130,7 +1163,8 @@ _spec_s.loader.exec_module(DS)
 
 
 class GliStradoni(unittest.TestCase):
-    """Pezzo K: il Monte Ingino come percorso, 8 tratti a zig-zag e le cappellette ai tornanti."""
+    """Pezzo K: il Monte Ingino come percorso, 9 tratti a zig-zag (Cioti, 2 nov 2026) e le cappellette
+    ai tornanti."""
 
     @classmethod
     def setUpClass(cls):
@@ -1143,18 +1177,18 @@ class GliStradoni(unittest.TestCase):
         G.prepara_area(a, self.mondo)
         return a
 
-    def test_otto_tratti_di_lunghezze_diverse(self):
+    def test_nove_tratti_di_lunghezze_diverse(self):
         tratti = G.tratti_degli_stradoni(self.a)
-        self.assertEqual(len(tratti), 8)
+        self.assertEqual(len(tratti), 9)
         self.assertEqual([t[3] - t[2] + 1 for t in tratti], self.dati["tratti"])
-        self.assertEqual(len(set(self.dati["tratti"])), 8, "lunghezze diverse")
+        self.assertEqual(len(set(self.dati["tratti"])), 9, "lunghezze diverse")
         self.assertEqual(G.errori_stradoni(self.a, self.dati), [])
 
     def test_cappellette_ai_tornanti_3_6_7(self):
         attese = {3: "Cappelletta di Sant'Ubaldo", 6: "Cappelletta di San Giorgio", 7: "Cappelletta di Sant'Antonio"}
         self.assertEqual({c["tornante"]: c["nome"] for c in self.dati["cappellette"]}, attese)
         tornanti = G.tornanti_degli_stradoni(self.a, G.tratti_degli_stradoni(self.a))
-        self.assertEqual(len(tornanti), 7)
+        self.assertEqual(len(tornanti), 8)
         trovati = []
         for blocco in G.blocchi(self.a["griglia"], "c"):
             accanto = {(x + dx, y + dy) for x, y in blocco for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))}
@@ -1168,11 +1202,11 @@ class GliStradoni(unittest.TestCase):
         err = G.errori_stradoni(self.area_da(spostati), self.dati)
         self.assertTrue(any("San Giorgio" in e and "tornante 6" in e for e in err), err)
 
-    def test_negativa_un_tratto_in_meno(self):
-        sette = copy.deepcopy(self.dati)
-        sette["tratti"] = sette["tratti"][:7]
-        sette["cappellette"] = [c for c in sette["cappellette"] if c["tornante"] < 7]
-        err = G.errori_stradoni(self.area_da(sette), self.dati)
+    def test_negativa_otto_tratti(self):
+        """Con 8 tratti (il conto di prima) contro i dati di 9: rosso."""
+        otto = copy.deepcopy(self.dati)
+        otto["tratti"] = otto["tratti"][:8]
+        err = G.errori_stradoni(self.area_da(otto), self.dati)
         self.assertTrue(any(e.startswith("tratti") for e in err), err)
 
     def test_ogni_tornante_si_raggiunge(self):

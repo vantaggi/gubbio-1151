@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Gli stradoni del Monte Ingino: da mondo/stradoni.json scrive mondo/aree/monte_ingino.area.
 
-Il percorso sale a zig-zag verso destra, come la salita del resto del mondo: 8 tratti verticali di
+Il percorso sale a zig-zag verso destra, come la salita del resto del mondo: 9 tratti verticali di
 ghiaia (b), alternati in giu' e in su, cuciti da tornanti orizzontali. In alto a sinistra Porta
-Sant'Ubaldo con i due varchi verso la citta' (A da via Sant'Ubaldo, E da via Appennino); in alto a
-destra l'arrivo alla Basilica (B). Ai lati bosco (#), con lecci e roverelle (T) e rocce (k) sulle
+Sant'Ubaldo con i due varchi verso la citta' (A da via Sant'Ubaldo, E da via Appennino); a destra
+l'arrivo alla Basilica (B). Ai lati bosco (#), con lecci e roverelle (T) e rocce (k) sulle
 scarpate; le cappellette (c) stanno nel gomito dei loro tornanti. Il lato a valle (in alto) e' un
 belvedere sulla citta'.
 
@@ -21,7 +21,7 @@ AREA = os.path.join(RADICE, "mondo", "aree", "monte_ingino.area")
 
 W, H = 128, 64
 LARGO = 4              # tile di ghiaia per tratto
-X0, PASSO = 6, 16      # colonna del primo tratto e distanza fra un tratto e il successivo
+X0, PASSO = 6, 14      # colonna del primo tratto e distanza fra un tratto e il successivo
 Y_INIZIO = 2           # il primo tratto parte dall'arco di Porta Sant'Ubaldo
 LATO_CAPPELLETTA = 3
 GOMITO = 2             # tile di ghiaia in piu' nel gomito interno di un tornante: la curva tonda
@@ -88,9 +88,10 @@ def disegna(dati):
             for xx in (x, x_dopo + LARGO - 1):
                 g[fascia[1] if giu else fascia[0]][xx] = "m"
     # l'arrivo: dall'ultimo tratto al bordo destro, verso la Basilica
-    x, _, y_a = righe[-1]
-    ghiaia(x, y_a, W - 3, y_a + LARGO - 1)
-    for y in range(y_a, y_a + LARGO):
+    x, y_da, y_a = righe[-1]
+    y0 = y_a - LARGO + 1 if y_a > y_da else y_a     # la fascia d'arrivo sta dentro la fine del tratto
+    ghiaia(x, y0, W - 3, y0 + LARGO - 1)
+    for y in range(y0, y0 + LARGO):
         g[y][W - 2] = g[y][W - 1] = "B"
     # Porta Sant'Ubaldo: A in alto sul primo tratto, E a sinistra con il suo raccordo
     for x in range(X0, X0 + LARGO):
@@ -144,7 +145,8 @@ def disegna(dati):
     spawn = {
         1: (X0 + 1, 8),                        # da via Sant'Ubaldo, sotto la porta
         3: (X0 + 1, y_e + LARGO + 4),          # da via Appennino
-        2: (righe[-1][0] + 1, y_a + LARGO + 2),  # dalla Basilica, all'arrivo
+        # dalla Basilica, all'arrivo, sull'ultimo tratto
+        2: (righe[-1][0] + 1, y_a - 6 if y_a > righe[-1][1] else y_a + LARGO + 2),
     }
     # lo spawn iniziale guarda la cappelletta di Sant'Ubaldo dal suo tornante
     x, x_dopo, (f0, f1), giu = tornanti[dati["cappellette"][0]["tornante"] - 1]
@@ -156,7 +158,7 @@ def testo(dati):
     g, spawn = disegna(dati)
     righe = [
         "# Generato da tools/disegna_stradoni.py da mondo/stradoni.json: non modificare a mano.",
-        "# Gli stradoni: 8 tratti di ghiaia a zig-zag da Porta Sant'Ubaldo alla Basilica, le",
+        "# Gli stradoni: 9 tratti di ghiaia a zig-zag da Porta Sant'Ubaldo alla Basilica, le",
         "# cappellette ai tornanti 3, 6 e 7, il bosco ai lati, il belvedere sulla citta' a valle.",
         "id monte_ingino",
         "etichetta AREA_MONTE_INGINO",

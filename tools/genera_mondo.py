@@ -858,6 +858,8 @@ def leggi_area(nome_file, testo):
                     a["alberi_margine"] = int(t[2])
             elif t[0] == "sagrato":
                 a["sagrato"] = int(t[1])
+            elif t[0] == "a_mano":
+                a["a_mano"] = True
             elif t[0] == "stradoni":
                 a["stradoni"] = True
             elif t[0] == "interno":
