@@ -1,0 +1,5 @@
+# C3 Presentazione di Sant'Ubaldo (proposta approvata): fermo immagine in controluce col cartiglio
+# vermiglio del nome; le due righe le dice il narratore (testi/regia.testi).
+cutscene C3U | Presentazione di Sant'Ubaldo
+inquadratura 3.5 | ritratto_ubaldo | 0
+narratore R_C3_UBALDO

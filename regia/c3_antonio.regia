@@ -1,0 +1,5 @@
+# C3 Presentazione di Antonio (proposta approvata): fermo immagine in controluce col cartiglio
+# vermiglio del nome; le due righe le dice il narratore (testi/regia.testi).
+cutscene C3A | Presentazione di Antonio
+inquadratura 3.5 | ritratto_antonio | 0
+narratore R_C3_ANTONIO

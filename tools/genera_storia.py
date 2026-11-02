@@ -63,7 +63,9 @@ CUTSCENE = set(REGIA) | DENTRO_LA_PRECEDENTE
 REGIA_DENTRO = -2           # la scena e' gia' recitata dalla cutscene della scena prima
 # Le cutscene dentro una scena: prima della battuta k (nell'ordine della scena), la cutscene. In A1-01
 # C2 (le undici bandiere) entra prima che parli l'araldo, C2P (il pastorale) prima che risponda Ubaldo.
-INSERTI = {"A1-01": {4: "C2", 7: "C2P"}}
+# Le presentazioni a fermo immagine (C3) entrano prima che il personaggio parli la prima volta: Ubaldo
+# dopo il cartello della piazza, Giorgio, Antonio, Corrado.
+INSERTI = {"A1-01": {1: "C3U", 2: "C3G", 4: "C2", 7: "C2P"}, "A1-04": {1: "C3A"}, "B-04": {0: "C3C"}}
 
 # Le battaglie delle scene (battaglia::INCONTRO). Quelle con un nemico sulla mappa partono toccandolo;
 # gli Spettri del Dubbio di A1-08 compaiono durante il rito: la scena parte entrando nella Basilica.

@@ -728,3 +728,8 @@ import pittore_c2 as C2  # noqa: E402
 
 PITTORI.update(C2.PITTORI)
 CON_PASSO = C2.CON_PASSO
+
+# i piani di C3, le presentazioni a fermo immagine (tools/pittore_c3.py)
+import pittore_c3 as C3  # noqa: E402
+
+PITTORI.update(C3.PITTORI)

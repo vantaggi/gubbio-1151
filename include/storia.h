@@ -285,7 +285,7 @@ inline constexpr Scena SCENA[SCENE] = {
     { "B-04", testi::TestoId::SCENA_B_04, false, -1, int8_t(mondo::AreaId::BOTTACCIONE), 0x0u, 0x0u, 0x230000u, 14, 2, 140, 16 },
     { "B-05", testi::TestoId::SCENA_B_05, false, -1, int8_t(mondo::AreaId::SAN_MARTINO), 0x20000u, 0x0u, 0x40000u, -1, -1, 156, 11 },
     { "E-01", testi::TestoId::SCENA_E_01, false, -1, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x40000u, 0x0u, 0x80000u, -1, -1, 167, 11 },
-    { "E-02", testi::TestoId::SCENA_E_02, true, 4, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x80000u, 0x0u, 0x100000u, -1, -1, 178, 3 },
+    { "E-02", testi::TestoId::SCENA_E_02, true, 8, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x80000u, 0x0u, 0x100000u, -1, -1, 178, 3 },
 };
 
 // Le cutscene dentro le scene: prima della battuta (indice in BATTUTA), la cutscene.
@@ -295,10 +295,14 @@ struct Inserto
     int8_t regia;
 };
 
-inline constexpr int INSERTI = 2;
+inline constexpr int INSERTI = 6;
 inline constexpr Inserto INSERTO[INSERTI > 0 ? INSERTI : 1] = {
+    { 11, 7 },  // A1-01 prima della battuta 1: C3U
+    { 12, 6 },  // A1-01 prima della battuta 2: C3G
     { 14, 2 },  // A1-01 prima della battuta 4: C2
     { 17, 3 },  // A1-01 prima della battuta 7: C2P
+    { 44, 4 },  // A1-04 prima della battuta 1: C3A
+    { 140, 5 },  // B-04 prima della battuta 0: C3C
 };
 
 enum class Fase : uint8_t

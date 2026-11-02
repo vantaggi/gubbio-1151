@@ -204,7 +204,7 @@ class Inserti(unittest.TestCase):
         return next(s for s in SCENE if s["codice"] == codice)["battute"][k][0]
 
     def test_c2_prima_dell_araldo_e_c2p_prima_di_ubaldo(self):
-        self.assertEqual(GS.INSERTI["A1-01"], {4: "C2", 7: "C2P"})
+        self.assertEqual({k: c for k, c in GS.INSERTI["A1-01"].items() if c.startswith("C2")}, {4: "C2", 7: "C2P"})
         self.assertEqual(self.parlante("A1-01", 4), "ARALDO")
         self.assertNotEqual(self.parlante("A1-01", 3), "ARALDO")
         self.assertEqual(self.parlante("A1-01", 7), "UBALDO")
@@ -219,14 +219,33 @@ class Inserti(unittest.TestCase):
         for nome in ("storia_mgba.txt", "prologo_mgba.txt"):
             righe = open(os.path.join(RADICE, "tests", "dati", nome), encoding="utf-8").read().splitlines()
             a = righe.index("Scena A1-01")
-            self.assertEqual(righe[a + 1:a + 5], ["Cutscene C2", "Cutscene C2 finita", "Cutscene C2P", "Cutscene C2P finita"], nome)
-            self.assertTrue(righe[a + 5].startswith("Scena "), nome)
+            dopo = [r for r in righe[a + 1:] if not r.startswith("Cutscene C3")]
+            self.assertEqual(dopo[:4], ["Cutscene C2", "Cutscene C2 finita", "Cutscene C2P", "Cutscene C2P finita"], nome)
+            self.assertTrue(dopo[4].startswith("Scena "), nome)
+            self.assertEqual(righe[a + 1:a + 5], ["Cutscene C3U", "Cutscene C3U finita", "Cutscene C3G", "Cutscene C3G finita"], nome)
 
     def test_negativa_log_senza_c2(self):
         righe = open(os.path.join(RADICE, "tests", "dati", "storia_mgba.txt"), encoding="utf-8").read().splitlines()
-        senza = [r for r in righe if not r.startswith("Cutscene C2")]
+        senza = [r for r in righe if not r.startswith("Cutscene C2") and not r.startswith("Cutscene C3")]
         a = senza.index("Scena A1-01")
         self.assertNotEqual(senza[a + 1:a + 5], ["Cutscene C2", "Cutscene C2 finita", "Cutscene C2P", "Cutscene C2P finita"])
+
+    def prima_volta(self, codice, chi):
+        return next(k for k, b in enumerate(next(s for s in SCENE if s["codice"] == codice)["battute"]) if b[0] == chi)
+
+    def test_presentazioni_prima_che_il_personaggio_parli(self):
+        """C3 entra prima della prima battuta del personaggio nella sua scena; Ubaldo, che c'e' gia' dalla
+        prima scena, dopo il cartello della piazza e prima di ogni altra voce."""
+        self.assertEqual(GS.INSERTI["A1-01"][self.prima_volta("A1-01", "GIORGIO")], "C3G")
+        self.assertEqual(GS.INSERTI["A1-04"][self.prima_volta("A1-04", "ANTONIO")], "C3A")
+        self.assertEqual(GS.INSERTI["B-04"][self.prima_volta("B-04", "CORRADO")], "C3C")
+        a101 = next(s for s in SCENE if s["codice"] == "A1-01")["battute"]
+        self.assertEqual(GS.INSERTI["A1-01"][1], "C3U")
+        self.assertNotIn(a101[0][0], GS.PARLANTI)
+        self.assertIn(a101[1][0], GS.PARLANTI)
+
+    def test_negativa_presentazione_dopo_la_prima_battuta(self):
+        self.assertNotEqual(self.prima_volta("A1-04", "ANTONIO") + 1, [k for k, c in GS.INSERTI["A1-04"].items() if c == "C3A"][0])
 
     def test_negativa_inserto_su_una_battuta_che_non_c_e(self):
         vecchi = GS.INSERTI

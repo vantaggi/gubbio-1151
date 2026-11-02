@@ -1,0 +1,5 @@
+# C3 Presentazione di Giorgio (proposta approvata): fermo immagine in controluce col cartiglio
+# vermiglio del nome; le due righe le dice il narratore (testi/regia.testi).
+cutscene C3G | Presentazione di Giorgio
+inquadratura 3.5 | ritratto_giorgio | 0
+narratore R_C3_GIORGIO

@@ -1,0 +1,8 @@
+# I testi delle cutscene che non vengono dal copione (regia/*.regia): le due righe del narratore sotto le
+# presentazioni a fermo immagine (C3). Dicono chi e' il personaggio con le parole del copione
+# (copione/README.md, i personaggi; le battute di A1-01, A1-04, B-04). Formato come testi/prova.testi.
+
+R_C3_UBALDO               | NARRATORE | Il vescovo di Gubbio, anziano. Parla poco, con calma, e non minaccia mai.
+R_C3_GIORGIO              | NARRATORE | Giovane cavaliere, impulsivo. Vuole agire subito, anche da solo.
+R_C3_ANTONIO              | NARRATORE | Eremita, padrone del fuoco. La città gli ha chiuso le porte per vent'anni.
+R_C3_CORRADO              | NARRATORE | Il Colosso delle Forge. Monaldo lo manda a spezzare l'acqua di Gubbio.
