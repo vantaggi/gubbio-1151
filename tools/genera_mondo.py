@@ -81,7 +81,7 @@ CELLE = {
     "C": ("FACCIATA", True),       # facciata monumentale (Consoli, San Francesco, ...)
     "P": ("FACCIATA_2", True),     # seconda facciata (Pretorio, Bargello, acquedotto, ...)
 }
-VARCHI = "ABEGI"
+VARCHI = "ABEGHI"                 # I e' l'ingresso di un dungeon
 
 # Monumenti che il censimento misura come "edificio" ma su cui si cammina: non diventano blocchi.
 SPAZI_APERTI = {

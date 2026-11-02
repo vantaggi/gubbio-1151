@@ -69,10 +69,10 @@ class Grafo(unittest.TestCase):
         g["archi"].append({"da": "PIAZZA_GRANDE", "a": "ATLANTIDE", "verso": "N", "come": "x"})
         self.assertTrue(any("ATLANTIDE" in e for e in M.errori_archi(g)))
         g = guasto()
-        g["archi"].append(dict(arco(g, "PIAZZA_GRANDE", "DUOMO_DUCALE")))
+        g["archi"].append(dict(arco(g, "DUOMO_DUCALE", "MONTE_INGINO")))
         self.assertTrue(any("doppio" in e for e in M.errori_archi(g)))
         g = guasto()
-        arco(g, "PIAZZA_GRANDE", "DUOMO_DUCALE")["verso"] = "NNE"
+        arco(g, "DUOMO_DUCALE", "MONTE_INGINO")["verso"] = "NNE"
         self.assertTrue(any("sconosciuta" in e for e in M.errori_archi(g)))
 
     def test_connesso(self):
@@ -155,22 +155,53 @@ class Direzioni(unittest.TestCase):
 
     def test_varco_storto_preso(self):
         var = M.calcola_varchi(GRAFO, CENS)
-        ritorno = next(v for v in var["DUOMO_DUCALE"] if v["verso"] == "PIAZZA_GRANDE")
+        ritorno = next(v for v in var["DUOMO_DUCALE"] if v["verso"] == "MONTE_INGINO")
         ritorno["lato"] = "destra"
         self.assertTrue(any("rientra" in e for e in M.errori_lati_varchi(var)))
 
+    def test_accessi_esclusivi_di_piazza_grande(self):
+        """Regola di Cioti: a Piazza Grande solo da via dei Consoli e via XX Settembre, che salgono
+        tutte e due da Piazza Quaranta Martiri. Il vincolo sta in grafo.json, non nel codice."""
+        self.assertEqual(GRAFO["vincoli"]["accessi_esclusivi"]["PIAZZA_GRANDE"]["vicini"],
+                         ["VIA_DEI_CONSOLI", "VIA_XX_SETTEMBRE"])
+        self.assertEqual(M.errori_accessi_esclusivi(GRAFO), [])
+
+    def test_accesso_in_piu_preso(self):
+        """Prova negativa: il vecchio arco Piazza Grande > Duomo rientra di nascosto."""
+        g = guasto()
+        g["archi"].append({"da": "PIAZZA_GRANDE", "a": "DUOMO_DUCALE", "verso": "NE", "come": "x"})
+        err = M.errori_accessi_esclusivi(g)
+        self.assertEqual(len(err), 1)
+        self.assertTrue(err[0].startswith("a PIAZZA_GRANDE si entra da"))
+
+    def test_via_scollegata_presa(self):
+        """Prova negativa: via XX Settembre non sale piu' da Piazza Quaranta Martiri."""
+        g = guasto()
+        g["archi"] = [e for e in g["archi"]
+                      if {e["da"], e["a"]} != {"PIAZZA_QUARANTA_MARTIRI", "VIA_XX_SETTEMBRE"}]
+        self.assertEqual(M.errori_accessi_esclusivi(g),
+                         ["VIA_XX_SETTEMBRE non e' collegata a PIAZZA_QUARANTA_MARTIRI, "
+                          "come vuole il vincolo su PIAZZA_GRANDE"])
+
     def test_lati_attesi(self):
-        """Piazza Grande: via dei Consoli in alto (ovest); via XX Settembre (SE) e il Duomo (NE, ma il
-        Duomo sta piu' a est che a nord) in basso (est); Quaranta Martiri a sinistra (sud)."""
+        """Piazza Grande: via dei Consoli in alto (ovest), via XX Settembre in basso (est), e basta."""
         lati = {v["verso"]: v["lato"] for v in M.calcola_varchi(GRAFO, CENS)["PIAZZA_GRANDE"]}
-        self.assertEqual(lati, {"VIA_DEI_CONSOLI": "alto", "VIA_XX_SETTEMBRE": "basso",
-                                "DUOMO_DUCALE": "basso", "PIAZZA_QUARANTA_MARTIRI": "sinistra"})
+        self.assertEqual(lati, {"VIA_DEI_CONSOLI": "alto", "VIA_XX_SETTEMBRE": "basso"})
+
+    def test_lati_attesi_quaranta_martiri(self):
+        """Quaranta Martiri: San Martino e via dei Consoli a destra (nord), San Pietro e via XX
+        Settembre in basso (est)."""
+        lati = {v["verso"]: v["lato"] for v in M.calcola_varchi(GRAFO, CENS)["PIAZZA_QUARANTA_MARTIRI"]}
+        self.assertEqual(lati, {"SAN_MARTINO": "destra", "VIA_DEI_CONSOLI": "destra",
+                                "SAN_PIETRO": "basso", "VIA_XX_SETTEMBRE": "basso"})
 
     def test_lati_attesi_ordine_nuovo(self):
-        """Via XX Settembre > Sant'Andrea > Sant'Agostino, tutti verso sud-est."""
+        """Via XX Settembre > Sant'Andrea > Sant'Agostino, tutti verso sud-est; da via XX Settembre si
+        sale anche al Monte (a destra, nord) e si scende a Quaranta Martiri (in alto, ovest)."""
         var = M.calcola_varchi(GRAFO, CENS)
         lati = lambda aid: {v["verso"]: v["lato"] for v in var[aid]}  # noqa: E731
-        self.assertEqual(lati("VIA_XX_SETTEMBRE"), {"PIAZZA_GRANDE": "alto", "SANT_ANDREA": "basso"})
+        self.assertEqual(lati("VIA_XX_SETTEMBRE"), {"PIAZZA_GRANDE": "alto", "SANT_ANDREA": "basso",
+                                                    "PIAZZA_QUARANTA_MARTIRI": "alto", "MONTE_INGINO": "destra"})
         self.assertEqual(lati("SANT_ANDREA"), {"VIA_XX_SETTEMBRE": "alto", "SANT_AGOSTINO": "sinistra"})
         self.assertEqual(lati("SANT_AGOSTINO"), {"SANT_ANDREA": "destra"})
 

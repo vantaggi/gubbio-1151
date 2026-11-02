@@ -6,14 +6,10 @@ spawn 0 14 38
 spawn 1 13 20
 spawn 2 28 49
 spawn 3 28 14
-spawn 4 4 54
-spawn 5 7 41
-# F2, grafo reale (1 nov 2026): il Duomo (E) e via XX Settembre (B) stanno tutti e due in basso
-# (est). Il varco del Duomo passa dal bordo destro all'angolo in basso a sinistra, accanto al Pretorio.
+# F2, regola di Cioti (1 nov 2026): a Piazza Grande si entra solo da via dei Consoli (A, in alto)
+# e da via XX Settembre (B, in basso). Murati i varchi verso il Duomo e verso Quaranta Martiri.
 uscita A via_dei_consoli 3
 uscita B via_xx_settembre 2
-uscita E duomo_ducale 4
-uscita G piazza_quaranta_martiri 5
 # F2: il portone dei Consoli (D) rimandava alla piazza stessa, segnaposto del prototipo
 # per collaudare il rientro. Gli interni non ci sono ancora: diventa un portone visivo (d).
 griglia
@@ -57,10 +53,10 @@ griglia
 ==.........................,,,,#
 ==.........................,,,,#
 ==.........................,,,,#
-GG.........................,,,,#
-GG.........................,,,,#
-GG.........................,,,,#
-GG.........................,,,,#
+==.........................,,,,#
+==.........................,,,,#
+==.........................,,,,#
+==.........................,,,,#
 ==.........................,,,,#
 ==.........................,,,,#
 ==.........................,,,,#
@@ -75,9 +71,9 @@ GG.........................,,,,#
 ==.........................BBBB#
 ==.........................BBBB#
 ==.........................BBBB#
-==,,,,PPPPPPPPPddPPPPP#####BBBB#
-==,,,,PPPPPPPPPPPPPPPP#####BBBB#
-==,,,,PPPPPPPPPPPPPPPP#####BBBB#
-==,,,,PPPPPPPPPPPPPPPP#####BBBB#
-==EEEEPPPPPPPPPPPPPPPP#####BBBB#
-==EEEEPPPPPPPPPPPPPPPP#####BBBB#
+==####PPPPPPPPPddPPPPP#####BBBB#
+==####PPPPPPPPPPPPPPPP#####BBBB#
+==####PPPPPPPPPPPPPPPP#####BBBB#
+==####PPPPPPPPPPPPPPPP#####BBBB#
+==####PPPPPPPPPPPPPPPP#####BBBB#
+==####PPPPPPPPPPPPPPPP#####BBBB#

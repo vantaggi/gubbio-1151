@@ -4,18 +4,6 @@
   "varchi": {
     "PIAZZA_GRANDE": [
       {
-        "verso": "DUOMO_DUCALE",
-        "bussola": "NE",
-        "lato": "basso",
-        "come": "a nord, in salita"
-      },
-      {
-        "verso": "PIAZZA_QUARANTA_MARTIRI",
-        "bussola": "SO",
-        "lato": "sinistra",
-        "come": "la salita ripida: via della Repubblica, poi le scale (al contrario)"
-      },
-      {
         "verso": "VIA_DEI_CONSOLI",
         "bussola": "NO",
         "lato": "alto",
@@ -40,6 +28,12 @@
         "bussola": "SE",
         "lato": "basso",
         "come": "via dei Consoli, in discesa (al contrario)"
+      },
+      {
+        "verso": "PIAZZA_QUARANTA_MARTIRI",
+        "bussola": "S",
+        "lato": "sinistra",
+        "come": "in salita per via Baldassini e le scale (al contrario)"
       }
     ],
     "LARGO_BARGELLO": [
@@ -47,7 +41,7 @@
         "verso": "SAN_MARTINO",
         "bussola": "O",
         "lato": "alto",
-        "come": "si scende, oltre il ponte sul Camignano"
+        "come": "in piano, sul ponte del Camignano"
       },
       {
         "verso": "VIA_DEI_CONSOLI",
@@ -64,10 +58,16 @@
         "come": "rientro in citta' da Porta Metauro (al contrario)"
       },
       {
+        "verso": "DUOMO_DUCALE",
+        "bussola": "E",
+        "lato": "basso",
+        "come": "si scende dal Voltone per via della Cattedrale (al contrario)"
+      },
+      {
         "verso": "LARGO_BARGELLO",
         "bussola": "E",
         "lato": "basso",
-        "come": "si scende, oltre il ponte sul Camignano (al contrario)"
+        "come": "in piano, sul ponte del Camignano (al contrario)"
       },
       {
         "verso": "PIAZZA_QUARANTA_MARTIRI",
@@ -92,12 +92,6 @@
     ],
     "PIAZZA_QUARANTA_MARTIRI": [
       {
-        "verso": "PIAZZA_GRANDE",
-        "bussola": "NE",
-        "lato": "destra",
-        "come": "la salita ripida: via della Repubblica, poi le scale"
-      },
-      {
         "verso": "SAN_MARTINO",
         "bussola": "N",
         "lato": "destra",
@@ -108,6 +102,18 @@
         "bussola": "SE",
         "lato": "basso",
         "come": "via Mazzini"
+      },
+      {
+        "verso": "VIA_DEI_CONSOLI",
+        "bussola": "N",
+        "lato": "destra",
+        "come": "in salita per via Baldassini e le scale"
+      },
+      {
+        "verso": "VIA_XX_SETTEMBRE",
+        "bussola": "E",
+        "lato": "basso",
+        "come": "in salita per via della Repubblica e le scale"
       }
     ],
     "SAN_PIETRO": [
@@ -120,10 +126,22 @@
     ],
     "VIA_XX_SETTEMBRE": [
       {
+        "verso": "MONTE_INGINO",
+        "bussola": "NE",
+        "lato": "destra",
+        "come": "in salita per via Colomboni a scale, poi via del Monte fino a Porta Sant'Ubaldo"
+      },
+      {
         "verso": "PIAZZA_GRANDE",
         "bussola": "NO",
         "lato": "alto",
         "come": "dall'angolo sud-est oltre il Pretorio, in piano (al contrario)"
+      },
+      {
+        "verso": "PIAZZA_QUARANTA_MARTIRI",
+        "bussola": "O",
+        "lato": "alto",
+        "come": "in salita per via della Repubblica e le scale (al contrario)"
       },
       {
         "verso": "SANT_ANDREA",
@@ -162,10 +180,10 @@
         "come": "in salita, verso la vetta"
       },
       {
-        "verso": "PIAZZA_GRANDE",
-        "bussola": "SO",
+        "verso": "SAN_MARTINO",
+        "bussola": "O",
         "lato": "alto",
-        "come": "a nord, in salita (al contrario)"
+        "come": "si scende dal Voltone per via della Cattedrale"
       }
     ],
     "MONTE_INGINO": [
@@ -180,6 +198,12 @@
         "bussola": "O",
         "lato": "alto",
         "come": "in salita, verso la vetta (al contrario)"
+      },
+      {
+        "verso": "VIA_XX_SETTEMBRE",
+        "bussola": "SO",
+        "lato": "sinistra",
+        "come": "in salita per via Colomboni a scale, poi via del Monte fino a Porta Sant'Ubaldo (al contrario)"
       }
     ],
     "BASILICA": [
@@ -187,7 +211,7 @@
         "verso": "BOTTACCIONE",
         "bussola": "NO",
         "lato": "destra",
-        "come": "si scende dietro il monte"
+        "come": "si scende sul versante nord"
       },
       {
         "verso": "MONTE_INGINO",
@@ -201,7 +225,7 @@
         "verso": "BASILICA",
         "bussola": "SE",
         "lato": "sinistra",
-        "come": "si scende dietro il monte (al contrario)"
+        "come": "si scende sul versante nord (al contrario)"
       },
       {
         "verso": "SAN_MARTINO",
