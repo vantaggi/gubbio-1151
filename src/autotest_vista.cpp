@@ -129,6 +129,70 @@ namespace
     static_assert(barra_dal_modello_sbaglia(0, 1) && barra_dal_modello_sbaglia(2, 1),
                   "la negativa non regge: il modello non e' gia' risolto quando la vista mostra il colpo");
 
+    // La scelta del bersaglio: parte dal predefinito del modello, gira solo fra i vivi.
+    consteval bool prova_bersagli()
+    {
+        Battaglia b(0, 1);
+
+        if(bersaglio_predefinito(b, Puntamento::NEMICI) != 0 || prossimo_bersaglio(b, Puntamento::NEMICI, 0, 1) != 1 ||
+           prossimo_bersaglio(b, Puntamento::NEMICI, 2, 1) != 0 || prossimo_bersaglio(b, Puntamento::NEMICI, 0, -1) != 2 ||
+           prossimo_bersaglio(b, Puntamento::ALLEATI, 2, 1) != 0)
+        {
+            return false;
+        }
+
+        if(mira_del_comando({ TipoComando::USA_ABILITA, AbilitaId::MURO_DELLA_FEDE, -1, 0 }) != Puntamento::ALLEATI ||
+           mira_del_comando({ TipoComando::USA_ABILITA, AbilitaId::BASTIONE_AZZURRO, -1, 0 }) != Puntamento::NESSUNA ||
+           mira_del_comando({ TipoComando::SUPREMA, AbilitaId::FENDENTE_DEL_DRAGO, -1, 3 }) != Puntamento::NESSUNA ||
+           mira_del_comando({ TipoComando::USA_ABILITA, AbilitaId::ATTACCO, -1, 0 }) != Puntamento::NEMICI)
+        {
+            return false;
+        }
+
+        // si gioca finche' un nemico cade: il cursore non ci si ferma piu'
+        while(b.avanza() && b.nemico(0).vivo() && b.nemico(1).vivo() && b.nemico(2).vivo())
+        {
+        }
+
+        for(int i = 0; i < 3; ++i)
+        {
+            for(int passo = -1; passo <= 1; passo += 2)
+            {
+                int j = prossimo_bersaglio(b, Puntamento::NEMICI, i, passo);
+
+                if(! b.nemico(j).vivo() && (b.nemico(0).vivo() || b.nemico(1).vivo() || b.nemico(2).vivo()))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    // La negativa: girare "al prossimo slot" senza guardare chi e' caduto finirebbe su un morto.
+    consteval bool giro_cieco_finisce_su_un_caduto()
+    {
+        Battaglia b(0, 1);
+
+        while(b.avanza() && b.nemico(0).vivo() && b.nemico(1).vivo() && b.nemico(2).vivo())
+        {
+        }
+
+        for(int i = 0; i < 3; ++i)
+        {
+            if(b.nemico(i).vivo() && ! b.nemico((i + 1) % 3).vivo())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    static_assert(prova_bersagli(), "la scelta del bersaglio parte male o si ferma su chi e' caduto");
+    static_assert(giro_cieco_finisce_su_un_caduto(), "la negativa del bersaglio non regge");
+
     static_assert(pieno(0, 100, 30) == 0 && pieno(1, 100, 30) == 1 && pieno(100, 100, 30) == 30 &&
                   pieno(50, 100, 30) == 15, "barre: pixel pieni");
 }
