@@ -61,6 +61,9 @@ REGIA = {"P-01": "C1", "E-02": "C4"}
 DENTRO_LA_PRECEDENTE = {"P-02"}
 CUTSCENE = set(REGIA) | DENTRO_LA_PRECEDENTE
 REGIA_DENTRO = -2           # la scena e' gia' recitata dalla cutscene della scena prima
+# Le cutscene dentro una scena: prima della battuta k (nell'ordine della scena), la cutscene. In A1-01
+# C2 (le undici bandiere) entra prima che parli l'araldo, C2P (il pastorale) prima che risponda Ubaldo.
+INSERTI = {"A1-01": {4: "C2", 7: "C2P"}}
 
 # Le battaglie delle scene (battaglia::INCONTRO). Quelle con un nemico sulla mappa partono toccandolo;
 # gli Spettri del Dubbio di A1-08 compaiono durante il rito: la scena parte entrando nella Basilica.
@@ -327,6 +330,18 @@ def header(scene, npc, posti):
                            f"0x{maschera(s['imposta']):X}u, {segue}, {BATTAGLIE.get(s['codice'], -1)}, {prima}, {len(s['battute'])} }},")
     out += [f"inline constexpr int BATTUTE = {len(battute)};", "inline constexpr Battuta BATTUTA[BATTUTE] = {"] + battute + ["};", ""]
     out += ["inline constexpr Scena SCENA[SCENE] = {"] + righe_scene + ["};", ""]
+    inserti = []
+    regie = codici_regia()
+    for s in scene:
+        for k, codice in sorted(INSERTI.get(s["codice"], {}).items()):
+            if not 0 <= k < len(s["battute"]) or codice not in regie:
+                raise ValueError(f"inserto {s['codice']}:{k} {codice}: battuta o cutscene che non c'e'")
+            prima = sum(len(t["battute"]) for t in scene[:scene.index(s)])
+            inserti.append(f"    {{ {prima + k}, {regie.index(codice)} }},  // {s['codice']} prima della battuta {k}: {codice}")
+    out += ["// Le cutscene dentro le scene: prima della battuta (indice in BATTUTA), la cutscene.",
+            "struct Inserto", "{", "    uint16_t battuta;", "    int8_t regia;", "};", "",
+            f"inline constexpr int INSERTI = {len(inserti)};",
+            "inline constexpr Inserto INSERTO[INSERTI > 0 ? INSERTI : 1] = {"] + (inserti or ["    { 0xFFFF, -1 },"]) + ["};", ""]
     # NPC
     out += ["enum class Fase : uint8_t", "{"] + [f"    {f}," for f in FASI] + ["};", "",
             "struct Npc", "{", "    int8_t area;", "    uint8_t tx;", "    uint8_t ty;",

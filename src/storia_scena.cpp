@@ -145,6 +145,33 @@ namespace
     }
 }
 
+// Una cutscene del copione di regia: usa tutti e quattro i BG, lo sfondo dell'area si libera e torna
+// dopo. Una gia' vista non riparte da sola.
+void Storia::recita_regia(int regia, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo,
+                          bool automatica)
+{
+    if(regia::vista(g_game_state, regia))
+    {
+        BN_LOG("Cutscene ", GUBBIO_VOCE(regia::CUTSCENE_DATI, regia).codice, " gia' vista");
+        return;
+    }
+
+    if(esplorazione)
+    {
+        svuota();
+        bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
+        esplorazione->sospendi();
+        attendi(1);
+    }
+
+    recita_cutscene(regia, palette_testo, false, automatica);
+
+    if(esplorazione)
+    {
+        esplorazione->ricompari();
+    }
+}
+
 bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo, bool automatica,
                     bool battaglia_col_pilota)
 {
@@ -166,21 +193,7 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
         }
         else
         {
-            // la cutscene usa tutti e quattro i BG: lo sfondo dell'area si libera e torna dopo
-            if(esplorazione)
-            {
-                svuota();
-                bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
-                esplorazione->sospendi();
-                attendi(1);
-            }
-
-            recita_cutscene(s.regia, palette_testo, false, automatica);
-
-            if(esplorazione)
-            {
-                esplorazione->ricompari();
-            }
+            recita_regia(s.regia, esplorazione, palette_testo, automatica);
         }
     }
     else if(s.cutscene && s.regia == -2)
@@ -202,7 +215,27 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
     }
     else
     {
-        recita_battute(BATTUTA, s.prima_battuta, s.battute, palette_testo, automatica);
+        // le battute, spezzate dove entra una cutscene (INSERTO)
+        int da = s.prima_battuta;
+
+        for(int i = 0; i < INSERTI; ++i)
+        {
+            const Inserto& n = GUBBIO_VOCE(INSERTO, i);
+
+            if(n.battuta >= s.prima_battuta && n.battuta < s.prima_battuta + s.battute)
+            {
+                recita_battute(BATTUTA, da, n.battuta - da, palette_testo, automatica);
+                da = n.battuta;
+                recita_regia(n.regia, esplorazione, palette_testo, automatica);
+
+                if(esplorazione)
+                {
+                    bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));
+                }
+            }
+        }
+
+        recita_battute(BATTUTA, da, s.prima_battuta + s.battute - da, palette_testo, automatica);
     }
 
     if(esplorazione)

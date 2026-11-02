@@ -20,6 +20,8 @@ ST = PP.ST
 
 
 def disegna(gioco, w=10, h=10):
+    if gioco.get("figura") == "monte":
+        w, h = 17, 11
     t = PP.Tela(w + 2, h + 2)
     indici = {c: i + 1 for i, c in enumerate(ST.COLORI)}
     ST.drappo(t, 1, 1, gioco, indici, w, h)
@@ -40,6 +42,21 @@ def ordine_rispettato(posizioni, coordinate, soglia=0.02):
             if lo - lob > soglia and not xa > xb:
                 return False
     return True
+
+
+def e_un_monte(profilo, w):
+    """Il profilo (altezza di ogni colonna) e' un monte a cinque cime: tocca il fondo del drappo in ogni
+    colonna, ha cinque cime arrotondate (le colonne accanto alla cima un pixel piu' basse, non una punta
+    su una fascia), fra due cime una valle, e la centrale e' piu' alta delle altre di almeno 2."""
+    if len(profilo) != w or min(profilo) < 1:
+        return False
+    cime = [x for x in range(1, w - 1) if profilo[x] > profilo[x - 1] and profilo[x] > profilo[x + 1]]
+    if len(cime) != 5 or any(profilo[x - 1] != profilo[x] - 1 or profilo[x + 1] != profilo[x] - 1 for x in cime):
+        return False
+    if any(min(profilo[a:b + 1]) >= min(profilo[a], profilo[b]) for a, b in zip(cime, cime[1:])):
+        return False
+    alte = sorted(profilo[x] for x in cime)
+    return profilo[cime[2]] == alte[-1] and alte[-1] - alte[-2] >= 2
 
 
 class Stendardi(unittest.TestCase):
@@ -67,19 +84,18 @@ class Stendardi(unittest.TestCase):
         self.assertEqual(g["campo"][0], "vermiglio comunale")
         self.assertEqual(g["figura_colore"], ["neutri", 4])
         self.assertEqual(ST.colori(g), {("vermiglio comunale", 2), ("neutri", 4)})   # niente azzurro, niente oro
-        monte = ST.FIGURE["monte"]
-        altezze = [sum(1 for riga in monte if riga[x] == "#") for x in range(len(monte[0]))]
-        cime = [x for x in range(len(altezze)) if altezze[x] > max(altezze[x - 1] if x else 0,
-                                                                  altezze[x + 1] if x + 1 < len(altezze) else 0)]
-        self.assertEqual(len(cime), 5)
-        self.assertEqual(max(altezze), altezze[len(altezze) // 2])                # la centrale e' la piu' alta
         self.assertIn("lambello", ST.SIMBOLI["stemma_comune"]["nel_gioco"])
+        for w, profilo in ST.MONTE.items():
+            self.assertTrue(e_un_monte(profilo, w), w)
 
-    def test_negativa_un_monte_a_tre_cime_non_passa(self):
-        tre = ["...#...", ".#.#.#.", "#######"]
-        altezze = [sum(1 for riga in tre if riga[x] == "#") for x in range(7)]
-        cime = [x for x in range(7) if altezze[x] > max(altezze[x - 1] if x else 0, altezze[x + 1] if x < 6 else 0)]
-        self.assertNotEqual(len(cime), 5)
+    def test_negativa_la_sagoma_a_corona_non_e_un_monte(self):
+        """La corona: punte sottili su una fascia piena, oppure gobbe staccate dal fondo."""
+        corona = [3, 3, 6, 3, 3, 5, 3, 3, 7, 3, 3, 5, 3, 3, 6, 3, 3]
+        self.assertFalse(e_un_monte(corona, 17))
+        sospeso = [0] + ST.MONTE[15][1:-1] + [0]
+        self.assertFalse(e_un_monte(sospeso, 15))
+        uguali = [2, 3, 2, 4, 5, 4, 6, 7, 6, 4, 5, 4, 2, 3, 2]
+        self.assertFalse(e_un_monte([5 if v == 7 else v for v in uguali], 15))
 
     def test_il_drappo_di_gubbio_sui_consoli_almeno_8x8(self):
         tela = PP.gubbio("giorno")[0]

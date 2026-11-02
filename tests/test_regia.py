@@ -251,8 +251,55 @@ class Panorami(unittest.TestCase):
     def test_prove_del_lettore_in_cpp(self):
         autotest = open(os.path.join(RADICE, "src", "autotest_regia.cpp"), encoding="utf-8").read()
         for prova in ("durate_entro_il_minuto()", "dura(0, 0, 0) == 1", "dura(0, 30, -1) < CUTSCENE_DATI[0].frame",
-                      "luce_e_stacchi()", "parallasse()", "viste()"):
+                      "luce_e_stacchi()", "parallasse()", "viste()", "colpo(int(CutsceneId::C2P))", "! colpo(0)",
+                      "passo()"):
             self.assertIn("static_assert(" + prova, autotest)
+
+
+class C2(unittest.TestCase):
+    """Pezzo X: C2 Le undici bandiere e C2P il pastorale (tools/pittore_c2.py)."""
+
+    def test_c2_senza_parole_coi_fanti_in_tre_file_e_il_colpo_in_c2p(self):
+        c = {GR.leggi(n, t)["codice"]: GR.leggi(n, t) for n, t in GR.sorgenti_del_repo()}
+        prima = c["C2"]["inquadrature"][0]
+        self.assertEqual(prima["piani"], ["colli", "fanti_lontani", "fanti_medi", "fanti_vicini"])
+        self.assertEqual([b for i in c["C2"]["inquadrature"] for b in i["battute"]], [])
+        self.assertTrue(c["C2P"]["inquadrature"][0]["colpo"])
+        self.assertTrue(all(p in GR.PP.CON_PASSO for p in prima["piani"][1:]))
+
+    def test_negativa_colpo_troppo_corto(self):
+        with self.assertRaisesRegex(GR.ErroreRegia, "almeno 1 s"):
+            GR.leggi("corto.regia", "cutscene C9 | x\ninquadratura 0.5 | pastorale | 0 | colpo\n")
+
+    def test_le_due_pose_dei_fanti(self):
+        """Le gambe di una posa sono nel colore 13, quelle dell'altra nel 14, che ha il colore del prato
+        (12); ogni gamba della posa B ha il prato dietro, cosi' scambiando 13 e 14 sparisce."""
+        for nome in GR.PP.CON_PASSO:
+            tela, palette, _ = GR.PP.PITTORI[nome]("giorno")
+            self.assertEqual(palette[14], palette[12])
+            self.assertNotEqual(palette[13], palette[12])
+            a = sum(r.count(13) for r in tela.px)
+            b = sum(r.count(14) for r in tela.px)
+            self.assertGreater(a, 50, nome)
+            self.assertGreater(b, 50, nome)
+
+    def test_negativa_un_piano_senza_passo_non_scambia(self):
+        self.assertNotIn("araldo", GR.PP.CON_PASSO)
+        self.assertNotIn("colli", GR.PP.CON_PASSO)
+
+    def test_gli_alfieri_portano_tutte_le_undici_bandiere(self):
+        """Nella fila vicina (18 px) passano tutti gli undici stendardi dei dati: c'e' il campo di ognuno."""
+        tela = GR.PP.PITTORI["fanti_vicini"]("giorno")[0]
+        colori = {c for r in tela.px[:GR.PP.QUADRO] for c in r}
+        indici = GR.PP.C2.INDICI_FANTI
+        for citta in GR.PP.ST.COALIZIONE:
+            self.assertIn(indici[tuple(citta["gioco"]["campo"])], colori, citta["id"])
+
+    def test_c2_nel_budget(self):
+        dipinti = GR.dipingi_piani(["colli", "fanti_lontani", "fanti_medi", "fanti_vicini"])
+        tile = sum(len(v[0]) for v in dipinti.values())
+        self.assertLessEqual(max(len(v[0]) for v in dipinti.values()), GR.TILE_MAX_PER_PIANO)
+        self.assertLess(tile * 32 + 4 * 2048 * 2, 64 * 1024)
 
 
 if __name__ == "__main__":

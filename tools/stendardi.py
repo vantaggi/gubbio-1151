@@ -25,9 +25,13 @@ FIGURE = {
     "aquila": ["...##...", "#..##..#", "##.##.##", "########", ".######.", "...##...", "..####..", "..#..#.."],
     "torre": ["#.#.#.#.", "#######.", "#######.", "##.#.##.", "#######.", "###.###.", "##...##.", "##...##."],
     "leone": ["..##....", ".###....", "..##.##.", ".#####..", "..####..", ".#####..", ".#...#..", "##...##."],
-    # Gubbio: il monte a cinque cime di profilo, la centrale piu' alta (si legge anche a 8 px)
-    "monte": ["....#....", "....#....", "..#.#.#..", "#.#####.#", "#########", "#########"],
 }
+
+# Gubbio: il monte d'argento a cinque cime, un monte e non una corona: cinque gobbe arrotondate (la
+# cima e' una colonna sola con le due accanto un pixel piu' basse) che salgono dal fondo del drappo, la
+# centrale nettamente piu' alta; l'altezza di ogni colonna, da sinistra, per la larghezza del drappo
+MONTE = {17: [2, 3, 2, 4, 5, 4, 6, 7, 8, 7, 6, 4, 5, 4, 2, 3, 2],
+         15: [1, 2, 1, 3, 4, 3, 5, 6, 5, 3, 4, 3, 1, 2, 1]}
 
 GUBBIO = {"id": "gubbio", "nome": "Gubbio",
           "gioco": {"campo": ["vermiglio comunale", 2], "figura": "monte", "figura_colore": ["neutri", 4]}}
@@ -73,7 +77,10 @@ def drappo(t, x0, y0, gioco, indici, w=10, h=10, scala=1):
     for y in range(h):
         for x in range(w):
             t.punto(x0 + x, y0 + y, campo(x, y))
-    if gioco.get("figura"):
+    if gioco.get("figura") == "monte":
+        for x, alto in enumerate(MONTE[w]):
+            t.rett(x0 + x, y0 + h - alto, 1, alto, indici[tuple(gioco["figura_colore"])])
+    elif gioco.get("figura"):
         figura = FIGURE[gioco["figura"]]
         fw, fh = len(figura[0]) * scala, len(figura) * scala
         fx, fy = x0 + (w - fw) // 2, y0 + (h - fh + 1) // 2

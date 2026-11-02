@@ -135,12 +135,14 @@ def leggi(nome, testo):
             c["codice"], c["titolo"] = codice.strip(), titolo.strip()
         elif riga.startswith("inquadratura "):
             parti = [p.strip() for p in riga[len("inquadratura "):].split("|")]
-            if len(parti) not in (3, 4) or parti[3:] not in ([], ["dissolvi"]):
-                raise ErroreRegia(f"{dove}: 'inquadratura SECONDI | piani | px/s [| dissolvi]'")
+            if len(parti) not in (3, 4) or parti[3:] not in ([], ["dissolvi"], ["colpo"]):
+                raise ErroreRegia(f"{dove}: 'inquadratura SECONDI | piani | px/s [| dissolvi | colpo]'")
             secondi, piani, velocita = float(parti[0]), parti[1].split(), int(parti[2])
-            dissolvi = parti[3:] == ["dissolvi"]
+            dissolvi, colpo = parti[3:] == ["dissolvi"], parti[3:] == ["colpo"]
             if not 1 <= len(piani) <= PIANI_MAX:
                 raise ErroreRegia(f"{dove}: da 1 a {PIANI_MAX} piani, non {len(piani)}")
+            if colpo and secondi * FRAME_PER_SECONDO < 60:
+                raise ErroreRegia(f"{dove}: un'inquadratura col colpo dura almeno 1 s (il colpo cade a 0,5 s)")
             if dissolvi and len(piani) < 2:
                 raise ErroreRegia(f"{dove}: 'dissolvi' sfuma il primo piano su quello dietro: servono 2 piani")
             for p in piani:
@@ -150,7 +152,7 @@ def leggi(nome, testo):
                 if momento not in PP.MOMENTI:
                     raise ErroreRegia(f"{dove}: momento '{momento}' sconosciuto ({', '.join(PP.MOMENTI)})")
             c["inquadrature"].append({"frame": int(round(secondi * FRAME_PER_SECONDO)), "piani": piani,
-                                      "velocita": velocita, "dissolvi": dissolvi, "battute": [], "dove": dove})
+                                      "velocita": velocita, "dissolvi": dissolvi, "colpo": colpo, "battute": [], "dove": dove})
         elif riga.startswith("narratore "):
             if not c["inquadrature"]:
                 raise ErroreRegia(f"{dove}: una battuta prima della prima inquadratura")
@@ -163,12 +165,13 @@ def leggi(nome, testo):
 
 
 def contesti_dei_testi():
-    """{id: contesto} da testi/copione.testi (le battute del NARRATORE per le bande)."""
+    """{id: contesto} da testi/*.testi (le battute del NARRATORE per le bande)."""
     out = {}
-    for riga in open(TESTI_COPIONE, encoding="utf-8"):
-        if riga.strip() and not riga.startswith("#"):
-            parti = [p.strip() for p in riga.split("|", 2)]
-            out[parti[0]] = parti[1]
+    for p in sorted(glob.glob(os.path.join(os.path.dirname(TESTI_COPIONE), "*.testi"))):
+        for riga in open(p, encoding="utf-8"):
+            if riga.strip() and not riga.startswith("#"):
+                parti = [p.strip() for p in riga.split("|", 2)]
+                out[parti[0]] = parti[1]
     return out
 
 
@@ -233,20 +236,23 @@ def genera(sorgenti, palette_stile):
         out += ["};", "", f"inline constexpr uint16_t MAPPA_{c}[2048] = {{", blocchi(mappa, 32, str), "};", ""]
     out += ["struct Piano", "{", "    const bn::tile* tile;", "    uint16_t tile_conteggio;", "    const uint16_t* mappa;",
             "    const uint16_t* palette;      // 16 colori della Guida (di notte, le rampe di notte)",
-            "    bool notte;                   // di notte il colore 15 (i fuochi, le finestre) trema", "};", "",
+            "    bool notte;                   // di notte il colore 15 (i fuochi, le finestre) trema",
+            "    bool passo;                   // i fanti: i colori 13 e 14 si scambiano (due pose)", "};", "",
             f"inline constexpr int PIANI = {len(usati)};", "inline constexpr Piano PIANO[PIANI] = {"]
     out += [f"    {{ TILE_{id_c(n)}, {len(dipinti[n][0])}, MAPPA_{id_c(n)}, PALETTE_{id_c(n)}, "
-            f"{'true' if dipinti[n][3] else 'false'} }},  // {n}" for n in usati]
+            f"{'true' if dipinti[n][3] else 'false'}, {'true' if nome_e_momento(n)[0] in PP.CON_PASSO else 'false'} }},  // {n}"
+            for n in usati]
     out += ["};", "", "struct Inquadratura", "{", "    int8_t piani[PIANI_PER_INQUADRATURA];   // dal piu' lontano, -1 vuoto",
             "    uint16_t frame;", "    uint8_t velocita;                        // px/s del primo piano", "    uint16_t prima_battuta;",
-            "    uint8_t battute;", "    bool dissolvi;                           // il primo piano sfuma su quello dietro", "};", "", "struct Cutscene", "{", "    const char* codice;", "    uint16_t prima_inquadratura;",
+            "    uint8_t battute;", "    bool dissolvi;                           // il primo piano sfuma su quello dietro",
+            "    bool colpo;                              // a 0,5 s scossa e lampo", "};", "", "struct Cutscene", "{", "    const char* codice;", "    uint16_t prima_inquadratura;",
             "    uint8_t inquadrature;", "    uint16_t frame;", "};", ""]
     battute, inquadrature, righe_c = [], [], []
     for c in cutscene:
         prima = len(inquadrature)
         for i in c["inquadrature"]:
             piani = [str(usati.index(p)) for p in i["piani"]] + ["-1"] * (PIANI_MAX - len(i["piani"]))
-            inquadrature.append(f"    {{ {{ {', '.join(piani)} }}, {i['frame']}, {i['velocita']}, {len(battute)}, {len(i['battute'])}, {'true' if i['dissolvi'] else 'false'} }},")
+            inquadrature.append(f"    {{ {{ {', '.join(piani)} }}, {i['frame']}, {i['velocita']}, {len(battute)}, {len(i['battute'])}, {'true' if i['dissolvi'] else 'false'}, {'true' if i['colpo'] else 'false'} }},")
             battute += [f"    testi::TestoId::{b}," for b in i["battute"]]
         totale = sum(i["frame"] for i in c["inquadrature"])
         righe_c.append(f"    {{ \"{c['codice']}\", {prima}, {len(c['inquadrature'])}, {totale} }},  // {c['titolo']}")

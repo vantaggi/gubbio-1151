@@ -197,5 +197,49 @@ class Tabelle(unittest.TestCase):
             self.assertIn("static_assert(" + prova, autotest)
 
 
+class Inserti(unittest.TestCase):
+    """Le cutscene dentro le scene (pezzo X): C2 prima che parli l'araldo, C2P prima che risponda Ubaldo."""
+
+    def parlante(self, codice, k):
+        return next(s for s in SCENE if s["codice"] == codice)["battute"][k][0]
+
+    def test_c2_prima_dell_araldo_e_c2p_prima_di_ubaldo(self):
+        self.assertEqual(GS.INSERTI["A1-01"], {4: "C2", 7: "C2P"})
+        self.assertEqual(self.parlante("A1-01", 4), "ARALDO")
+        self.assertNotEqual(self.parlante("A1-01", 3), "ARALDO")
+        self.assertEqual(self.parlante("A1-01", 7), "UBALDO")
+        self.assertEqual(self.parlante("A1-01", 6), "ARALDO")
+        h = open(os.path.join(RADICE, "include", "storia.h"), encoding="utf-8").read()
+        prima = sum(len(s["battute"]) for s in SCENE[:[s["codice"] for s in SCENE].index("A1-01")])
+        self.assertIn(f"{{ {prima + 4}, {GS.codici_regia().index('C2')} }},", h)
+
+    def test_sul_gba_c2_e_c2p_dentro_a1_01(self):
+        """Nei log di mGBA (storia intera e prologo giocabile) C2 e poi C2P si recitano dentro A1-01,
+        prima della scena dopo."""
+        for nome in ("storia_mgba.txt", "prologo_mgba.txt"):
+            righe = open(os.path.join(RADICE, "tests", "dati", nome), encoding="utf-8").read().splitlines()
+            a = righe.index("Scena A1-01")
+            self.assertEqual(righe[a + 1:a + 5], ["Cutscene C2", "Cutscene C2 finita", "Cutscene C2P", "Cutscene C2P finita"], nome)
+            self.assertTrue(righe[a + 5].startswith("Scena "), nome)
+
+    def test_negativa_log_senza_c2(self):
+        righe = open(os.path.join(RADICE, "tests", "dati", "storia_mgba.txt"), encoding="utf-8").read().splitlines()
+        senza = [r for r in righe if not r.startswith("Cutscene C2")]
+        a = senza.index("Scena A1-01")
+        self.assertNotEqual(senza[a + 1:a + 5], ["Cutscene C2", "Cutscene C2 finita", "Cutscene C2P", "Cutscene C2P finita"])
+
+    def test_negativa_inserto_su_una_battuta_che_non_c_e(self):
+        vecchi = GS.INSERTI
+        try:
+            GS.INSERTI = {"A1-01": {99: "C2"}}
+            with self.assertRaisesRegex(ValueError, "battuta o cutscene che non c'e'"):
+                GS.genera()
+            GS.INSERTI = {"A1-01": {4: "C7"}}
+            with self.assertRaisesRegex(ValueError, "battuta o cutscene che non c'e'"):
+                GS.genera()
+        finally:
+            GS.INSERTI = vecchi
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -35,6 +35,9 @@ public:
     void svuota();
 
 private:
+    void recita_regia(int regia, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo,
+                      bool automatica);
+
     bn::vector<bn::sprite_ptr, storia::NPC> _npc;
     bn::vector<int, storia::NPC> _indici;
     int _area = -1;

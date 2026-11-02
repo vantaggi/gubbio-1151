@@ -1,18 +1,18 @@
 {
- "_nota": "La pergamena del prologo (tools/pittore_panorami.py). Coordinate in gradi decimali (WGS84) dei centri storici, arrotondate al centesimo: sono quelle delle pagine Wikipedia dei comuni (it.wikipedia.org/wiki/<nome>), scritte da Claude a memoria il 2 nov 2026 e da ricontrollare. Fiumi, crinale e strade sono tracciati approssimati (punti noti lungo il corso), non rilievi: servono a mettere ogni cosa dalla parte giusta. Della coalizione 10 citta' su 11 vengono da sud e sud-est (la pianura), solo Cagli da nord-nord-est oltre la Scheggia.",
+ "_nota": "La pergamena del prologo (tools/pittore_panorami.py). Coordinate delle citta' in gradi decimali (WGS84): quelle delle pagine Wikipedia dei comuni (it.wikipedia.org/wiki/<nome>), al millesimo, confrontate il 2 nov 2026 (nessuna differenza oltre 0,02 gradi con la prima stesura). Fiumi, crinale e strade sono tracciati approssimati (punti noti lungo il corso), non rilievi: servono a mettere ogni cosa dalla parte giusta. Della coalizione 10 citta' su 11 vengono da sud e sud-est (la pianura), solo Cagli da nord-nord-est oltre la Scheggia.",
  "citta": {
-  "gubbio": [43.35, 12.57],
-  "perugia": [43.11, 12.39],
-  "spoleto": [42.73, 12.74],
-  "cagli": [43.55, 12.65],
-  "foligno": [42.96, 12.70],
-  "todi": [42.78, 12.41],
-  "nocera": [43.11, 12.79],
-  "gualdo": [43.23, 12.78],
-  "fossato": [43.30, 12.76],
-  "assisi": [43.08, 12.62],
-  "bettona": [43.01, 12.48],
-  "spello": [42.99, 12.67]
+  "gubbio": [43.351, 12.577],
+  "perugia": [43.112, 12.389],
+  "spoleto": [42.735, 12.738],
+  "cagli": [43.546, 12.652],
+  "foligno": [42.956, 12.703],
+  "todi": [42.782, 12.407],
+  "nocera": [43.114, 12.786],
+  "gualdo": [43.231, 12.782],
+  "fossato": [43.297, 12.761],
+  "assisi": [43.071, 12.615],
+  "bettona": [43.013, 12.486],
+  "spello": [42.990, 12.670]
  },
  "luoghi": {
   "scheggia": [43.40, 12.67],

@@ -5,6 +5,10 @@ Cutscene C1 finita
 Scena P-02
 Cutscene P-02 dentro la precedente
 Scena A1-01
+Cutscene C2
+Cutscene C2 finita
+Cutscene C2P
+Cutscene C2P finita
 Scena A1-03
 Scena A1-02
 Scena A1-04

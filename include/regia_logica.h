@@ -12,6 +12,10 @@ namespace gubbio::regia
 {
 
 inline constexpr int FRAME_DISSOLVENZA = 30;
+inline constexpr int FRAME_COLPO = 30;          // quando cade il colpo in un'inquadratura "colpo"
+inline constexpr int FRAME_LAMPO = 12;          // quanto dura il lampo bianco
+inline constexpr int FRAME_SCOSSA = 20;         // quanto trema il quadro
+inline constexpr int FRAME_PASSO = 15;          // ogni quanto i fanti cambiano posa
 
 class Lettore
 {
@@ -141,6 +145,33 @@ public:
         return b;
     }
 
+    // Il lampo del colpo (0 niente, FRAME_LAMPO tutto bianco): parte pieno e si spegne.
+    [[nodiscard]] constexpr int lampo() const
+    {
+        int f = _frame - FRAME_COLPO;
+        return inquadratura().colpo && f >= 0 && f < FRAME_LAMPO ? FRAME_LAMPO - f : 0;
+    }
+
+    // La scossa del colpo: di quanti pixel si spostano i piani, a destra e a sinistra, sempre meno.
+    [[nodiscard]] constexpr int scossa() const
+    {
+        int f = _frame - FRAME_COLPO;
+
+        if(! inquadratura().colpo || f < 0 || f >= FRAME_SCOSSA)
+        {
+            return 0;
+        }
+
+        int ampiezza = 3 - f * 3 / FRAME_SCOSSA;
+        return (f / 2) % 2 ? -ampiezza : ampiezza;
+    }
+
+    // La posa dei fanti (0 o 1) nei piani che hanno il passo.
+    [[nodiscard]] constexpr int posa() const
+    {
+        return (_frame_totale / FRAME_PASSO) % 2;
+    }
+
     [[nodiscard]] constexpr bool finita() const
     {
         return _finita;
@@ -169,15 +200,15 @@ private:
 // Le cutscene viste: un bit per cutscene in GameState. Una cutscene gia' vista non riparte da sola.
 [[nodiscard]] constexpr bool vista(const GameState& p, int cutscene)
 {
-    return (p.cutscene_viste >> cutscene) & 1;
+    return (p.cutscene_viste[cutscene / 8] >> (cutscene % 8)) & 1;
 }
 
 constexpr void segna_vista(GameState& p, int cutscene)
 {
-    p.cutscene_viste = uint8_t(p.cutscene_viste | (1 << cutscene));
+    p.cutscene_viste[cutscene / 8] = uint8_t(p.cutscene_viste[cutscene / 8] | (1 << (cutscene % 8)));
 }
 
-static_assert(CUTSCENE <= 8, "le cutscene viste stanno in un byte di GameState");
+static_assert(CUTSCENE <= 16, "le cutscene viste stanno in due byte di GameState");
 
 }
 

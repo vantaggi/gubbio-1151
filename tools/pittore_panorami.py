@@ -222,7 +222,7 @@ def palazzo_dei_consoli(t, x, base, alto, notte, fuoco):
     else:
         t.rett(x + 3, cima - 13, 1, 11, CONTORNO)
         ST.drappo(t, x + 4, cima - 13, ST.GUBBIO["gioco"], {("vermiglio comunale", 2): VERMIGLIO,
-                                                           ("neutri", 4): PIETRA_L, ST.CONTORNO: CONTORNO}, 11, 8)
+                                                           ("neutri", 4): PIETRA_L, ST.CONTORNO: CONTORNO}, 15, 9)
 
 
 def chiesa(t, x, base, alto, notte, r):
@@ -700,7 +700,7 @@ def pergamena_con(battute):
     t.ellisse(gx + 0.5, gy + 0.5, 3, 3, P_ORO)
     t.rett(gx - 1, gy - 1, 3, 3, 1)
     t.rett(gx - 5, gy - 22, 1, 20, P_ASTA)
-    ST.drappo(t, gx - 19, gy - 22, ST.GUBBIO["gioco"], INDICI_PERGAMENA, 13, 10)
+    ST.drappo(t, gx - 23, gy - 22, ST.GUBBIO["gioco"], INDICI_PERGAMENA, 17, 11)
     scrivi(t, gx - 6 - larghezza("Gubbio"), gy - 3, "Gubbio", 1)
     return t
 
@@ -722,3 +722,9 @@ def pergamena_nomi2(momento):
 
 PITTORI.update({"vetrata": vetrata, "vetrata_storia": vetrata_storia, "pergamena": pergamena,
                 "pergamena_nomi1": pergamena_nomi1, "pergamena_nomi2": pergamena_nomi2})
+
+# i piani di C2, Le undici bandiere (tools/pittore_c2.py); i fanti hanno il passo (due pose)
+import pittore_c2 as C2  # noqa: E402
+
+PITTORI.update(C2.PITTORI)
+CON_PASSO = C2.CON_PASSO
