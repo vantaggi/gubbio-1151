@@ -162,16 +162,16 @@ class Panorami(unittest.TestCase):
         return next(i for i in c1["inquadrature"] if "R_P_02_06" in i["battute"])
 
     def test_il_fuoco_della_fede_si_vede(self):
-        """Nell'inquadratura di 'Sorse il fuoco della Fede' c'e' un punto caldo grande (almeno 12 px
+        """Nell'inquadratura di 'Sorse il fuoco della Fede' c'e' un punto caldo grande (almeno 16 px
         d'oro sopra la media dello sfondo) dentro il quadro ai tre quarti della carrellata."""
         q = self.inquadratura_della_fede()
         self.assertIn("gubbio_fede", q["piani"])
         corsa = q["velocita"] * q["frame"] * 3 // (4 * 60)
-        self.assertGreaterEqual(self.fuochi_luminosi("notte", pittore=GR.PP.gubbio_fede, minimo=12,
+        self.assertGreaterEqual(self.fuochi_luminosi("notte", pittore=GR.PP.gubbio_fede, minimo=16,
                                                      x0=corsa, x1=corsa + 240), 1)
 
     def test_negativa_nessun_punto_caldo_nella_citta_di_notte(self):
-        self.assertEqual(self.fuochi_luminosi("notte", pittore=GR.PP.gubbio, minimo=12), 0)
+        self.assertEqual(self.fuochi_luminosi("notte", pittore=GR.PP.gubbio, minimo=16), 0)
 
     def test_c1_e_c4_dal_copione(self):
         """C1 recita in ordine le battute del narratore di P-01 e P-02; C4 quelle di E-02. Nessuna supera
