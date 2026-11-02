@@ -47,13 +47,14 @@ DA_FARE = ["MIASMI_VISTI", "PIANO_DI_CORRADO", "CORRADO_INCONTRATO", "CERI_RISVE
 # Dove avviene ogni scena (AreaId), dalla riga Luogo; None per le scene a schermo intero (prologo).
 AREE = {"P-00": None, "P-01": None, "P-02": None, "A1-01": "PIAZZA_GRANDE", "A1-02": "VIA_DEI_CONSOLI",
         "A1-03": "SAN_MARTINO", "A1-04": "TEATRO_ROMANO", "A1-05": "PIAZZA_GRANDE", "A1-06": "DUOMO_DUCALE",
-        "A1-07": "MONTE_INGINO", "A1-08": "BASILICA_INTERNO", "A1-09": "BASILICA_INTERNO", "B-01": "BOTTACCIONE",
-        "B-02": "BOTTACCIONE", "B-03": "BOTTACCIONE", "B-04": "BOTTACCIONE", "B-05": "SAN_MARTINO",
+        "A1-07": "MONTE_INGINO", "A1-08": "BASILICA_INTERNO", "A1-09": "BASILICA_INTERNO", "B-01": "GOLA_STRISCIA",
+        "B-02": "GOLA_MIASMI", "B-03": "GOLA_ARCO", "B-04": "CONDOTTO", "B-05": "SAN_MARTINO",
         "E-01": "PIAZZA_GRANDE", "E-02": "BASILICA_INTERNO"}
 # Le parole della riga Luogo che confermano l'area scelta (il test controlla che ci siano).
 PAROLE_LUOGO = {"PIAZZA_GRANDE": "Piazza Grande", "VIA_DEI_CONSOLI": "via dei Consoli", "SAN_MARTINO": "San Martino",
                 "TEATRO_ROMANO": "Teatro Romano", "DUOMO_DUCALE": "Duomo", "MONTE_INGINO": "Stradoni",
-                "BASILICA_INTERNO": "Basilica", "BOTTACCIONE": "Bottaccione"}
+                "BASILICA_INTERNO": "Basilica", "BOTTACCIONE": "Bottaccione", "GOLA_STRISCIA": "Bottaccione",
+                "GOLA_MIASMI": "Bottaccione", "GOLA_ARCO": "Bottaccione", "CONDOTTO": "Condotto"}
 
 # Le condizioni che non sono bandiere: la scena segue quella indicata (o, per P-00, l'accensione).
 SEGUE = {"P-01": "P-00", "P-02": "P-01", "B-02": "B-01", "B-03": "B-02", "B-04": "B-03"}
@@ -269,7 +270,7 @@ def controlla(scene):
         raise ErroreStoria(f"scene del copione {codici} diverse da quelle note {sorted(AREE)}")
     for s in scene:
         area = AREE[s["codice"]]
-        parola = {"B-04": "Condotto"}.get(s["codice"], PAROLE_LUOGO.get(area))  # il Condotto e' in fondo al Bottaccione
+        parola = PAROLE_LUOGO.get(area)
         if area and parola not in s["luogo"]:
             raise ErroreStoria(f"{s['dove']}: {s['codice']} in {area}, ma il Luogo dice '{s['luogo']}'")
         if not s["battute"] and s["codice"] != "P-00":     # P-00 e' il titolo, senza battute

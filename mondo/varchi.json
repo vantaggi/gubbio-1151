@@ -278,10 +278,66 @@
         "come": "si scende sul versante nord (al contrario)"
       },
       {
+        "verso": "GOLA_STRISCIA",
+        "bussola": "N",
+        "lato": "destra",
+        "come": "si risale la gola lungo il Camignano"
+      },
+      {
         "verso": "SAN_MARTINO",
         "bussola": "SO",
         "lato": "sinistra",
         "come": "rientro in citta' da Porta Metauro, via di Giove Pennino e via Gabrielli"
+      }
+    ],
+    "GOLA_STRISCIA": [
+      {
+        "verso": "BOTTACCIONE",
+        "bussola": "S",
+        "lato": "sinistra",
+        "come": "si risale la gola lungo il Camignano (al contrario)"
+      },
+      {
+        "verso": "GOLA_MIASMI",
+        "bussola": "N",
+        "lato": "destra",
+        "come": "si risale la gola lungo il Camignano"
+      }
+    ],
+    "GOLA_MIASMI": [
+      {
+        "verso": "GOLA_ARCO",
+        "bussola": "N",
+        "lato": "destra",
+        "come": "si risale la gola lungo il Camignano"
+      },
+      {
+        "verso": "GOLA_STRISCIA",
+        "bussola": "S",
+        "lato": "sinistra",
+        "come": "si risale la gola lungo il Camignano (al contrario)"
+      }
+    ],
+    "GOLA_ARCO": [
+      {
+        "verso": "CONDOTTO",
+        "bussola": "N",
+        "lato": "destra",
+        "come": "si risale la gola lungo il Camignano"
+      },
+      {
+        "verso": "GOLA_MIASMI",
+        "bussola": "S",
+        "lato": "sinistra",
+        "come": "si risale la gola lungo il Camignano (al contrario)"
+      }
+    ],
+    "CONDOTTO": [
+      {
+        "verso": "GOLA_ARCO",
+        "bussola": "S",
+        "lato": "sinistra",
+        "come": "si risale la gola lungo il Camignano (al contrario)"
       }
     ]
   }

@@ -143,7 +143,7 @@ inline constexpr int SCONTRI = int(Bandiera::CONTEGGIO);
 inline constexpr ScontroSullaMappa SCONTRI_SULLA_MAPPA[SCONTRI] = {
     { mondo::AreaId::TEATRO_ROMANO, 46, 40, 0, Bandiera::PATTUGLIA_SCONFITTA },
     { mondo::AreaId::MONTE_INGINO, 49, 44, 1, Bandiera::IMBOSCATA_SCONFITTA },
-    { mondo::AreaId::BOTTACCIONE, 31, 31, 2, Bandiera::CORRADO_SCONFITTO },
+    { mondo::AreaId::CONDOTTO, 50, 14, 2, Bandiera::CORRADO_SCONFITTO },
 };
 
 // Il contatto: i piedi del giocatore a meno di tanti pixel dal nemico, in orizzontale e in verticale.
