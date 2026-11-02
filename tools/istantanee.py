@@ -52,6 +52,34 @@ COLORI = {
     "M": (150, 120, 90),    # muro di contenimento di un gradone
     "V": (40, 30, 40),      # la citta' bassa oltre il parapetto di un belvedere
     "W": (110, 100, 90),    # le mura della citta
+    "L": (206, 198, 176),   # lastrico a corsi
+    "K": (180, 170, 150),   # corso di pietra del lastrico
+    "Z": (214, 196, 150),   # vialetto dei giardini
+    "J": (150, 140, 120),   # l'arco di una porta, ci si passa sotto
+    "Q": (240, 220, 120),   # lampione
+    "O": (60, 110, 160),    # pozzo
+    "Y": (60, 120, 60),     # siepe
+    "D": (150, 190, 110),   # aiuola
+    "N": (120, 170, 90),    # prato
+    "b": (226, 216, 190),   # ghiaia degli stradoni
+    "r": (80, 140, 70),     # cespuglio
+    "u": (30, 80, 40),      # cipresso
+    "m": (160, 150, 130),   # muretto a secco
+    "h": (170, 150, 120),   # chiostro
+    "q": (120, 80, 40),     # panca
+    "l": (240, 200, 90),    # candeliere
+    "w": (90, 120, 200),    # vetrata
+    "p": (200, 200, 190),   # paracarro
+    "v": (70, 130, 190),    # vasca
+    "c": (200, 120, 90),    # cappelletta
+    "k": (140, 140, 130),   # roccia
+    "n": (230, 230, 220),   # colonna
+    "a": (250, 240, 200),   # altare
+    "e": (150, 90, 40),     # cero
+    "T": (40, 100, 50),     # albero
+    "X": (100, 90, 80),     # torre di una porta
+    "R": (170, 160, 140),   # gradinata del Teatro
+    "U": (130, 115, 95),    # arcate del Teatro
 }
 COLORE_VARCO = (230, 60, 60)
 COLORE_SPAWN = (40, 90, 230)
@@ -77,8 +105,7 @@ def aree_finali():
     mondo = G.mondo_del_repo()
     aree = [G.leggi_area(n, t) for n, t in G.sorgenti_del_repo()]
     for a in aree:
-        G.posa_edifici(a, mondo["monumenti"])
-        G.applica_dislivello(a, mondo["grafo"])
+        G.prepara_area(a, mondo)
         a["tile"], a["indici"], _ = G.disegna_area(a, mondo)
     return G.ordina(aree, G.anello(mondo["grafo"]))
 

@@ -1,0 +1,61 @@
+# L'interno della Basilica di Sant'Ubaldo, generico e riusabile per gli atti successivi: tre
+# navate scandite da pilastri (n, 2x2), le panche di legno in file (q), il pavimento a lastre con
+# le fasce (K), le vetrate nei muri (w). In fondo l'abside tonda con l'altare (a) e l'urna del
+# santo, rialzato sui gradini (S), i candelieri (l) e i tre ceri sui loro supporti (e). Si esce in
+# basso, dal portale, verso la scalinata.
+id basilica_interno
+etichetta AREA_BASILICA_INTERNO
+dimensioni 32 44
+monte basso
+interno
+riferimento 16 22
+fattore 0.73
+# Lo spawn sta davanti ai gradini: la camera resta in cima e l'altare non finisce sotto il cartiglio.
+spawn 0 16 9
+spawn 1 16 34
+uscita A basilica 1
+griglia
+################################
+########LLLLLLLLLLLLLLLL########
+#######LLLLLLLLLLLLLLLLLL#######
+#####LLLLLLLLLLLLLLLLLLLLLL#####
+####LLLLLLLlLaaaaaaLlLLLLLLL####
+###LLLLLLLLLLaaaaaaLLLLLLLLLL###
+###LLLLLLLLLSSSSSSSSLLLLLLLLL###
+###LLLLLLLLLSSSSSSSSLLLLLLLLL###
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLeeLLLLeeLLLLeeLLLLLLLL#
+#LLLLLLLLeeLLLLeeLLLLeeLLLLLLLL#
+wLLLLLLLLeeLLLLeeLLLLeeLLLLLLLLw
+#LLLLLLLLeeLLLLeeLLLLeeLLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#KKKKKKKKKKKKKKKKKKKKKKKKKKKKKK#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+wLLLLLLnnLLLLLLLLLLLLLLnnLLLLLLw
+#LLLLLLnnLLLLLLLLLLLLLLnnLLLLLL#
+#LqqqqLLLLqqqqqLLqqqqqLLLLqqqqL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LqqqqLLLLqqqqqLLqqqqqLLLLqqqqL#
+#LLLLLLnnLLLLLLLLLLLLLLnnLLLLLL#
+wLLLLLLnnLLLLLLLLLLLLLLnnLLLLLLw
+#LqqqqLLLLqqqqqLLqqqqqLLLLqqqqL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LqqqqLLLLqqqqqLLqqqqqLLLLqqqqL#
+#KKKKKKnnKKKKKKKKKKKKKKnnKKKKKK#
+#LLLLLLnnLLLLLLLLLLLLLLnnLLLLLL#
+wLqqqqLLLLqqqqqLLqqqqqLLLLqqqqLw
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LqqqqLLLLqqqqqLLqqqqqLLLLqqqqL#
+#LLLLLLnnLLLLLLLLLLLLLLnnLLLLLL#
+#LLLLLLnnLLLLLLLLLLLLLLnnLLLLLL#
+#LqqqqLLLLqqqqqLLqqqqqLLLLqqqqL#
+wLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLw
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#KKKKKKKKKKKKKKKKKKKKKKKKKKKKKK#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLAAAALLLLLLLLLLLLL#
+##############AAAA##############

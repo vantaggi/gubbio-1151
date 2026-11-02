@@ -22,6 +22,7 @@ AREA_QUARANTA_MARTIRI     | AREA | Piazza Quaranta Martiri
 AREA_SAN_PIETRO           | AREA | San Pietro
 AREA_DUOMO_DUCALE         | AREA | Duomo e Palazzo Ducale
 AREA_BASILICA             | AREA | Basilica di Sant'Ubaldo
+AREA_BASILICA_INTERNO     | AREA | Dentro la Basilica
 AREA_TEATRO_ROMANO        | AREA | Teatro Romano
 
 HUD_PV                    | HUD  | PV

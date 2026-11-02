@@ -72,6 +72,9 @@ def lato_schermo(bussola_gradi):
 
 
 LATO_OPPOSTO = {"alto": "basso", "basso": "alto", "destra": "sinistra", "sinistra": "destra"}
+# Un arco "dentro" (grafo.json) porta all'interno di un edificio: il varco sta sul portale, in mezzo
+# all'area di fuori, e dentro si esce dal bordo in basso, verso chi guarda.
+LATO_DENTRO, LATO_USCITA_DENTRO = "dentro", "basso"
 
 
 def vista_facciata(bussola_gradi):
@@ -226,12 +229,16 @@ def calcola_varchi(grafo, censimento):
     out = {aid: [] for aid in aree}
     for arco in grafo["archi"]:
         da, a = arco["da"], arco["a"]
-        rilev = rilevamento(ancora_area(aree[da], censimento), ancora_area(aree[a], censimento))
-        lato = lato_varco(arco["verso"], rilev)
         inverso = (BUSSOLA[arco["verso"]] + 180) % 360
         verso_inv = [k for k, v in BUSSOLA.items() if v == inverso][0]
+        if arco.get("dentro"):
+            lato, ritorno = LATO_DENTRO, LATO_USCITA_DENTRO
+        else:
+            rilev = rilevamento(ancora_area(aree[da], censimento), ancora_area(aree[a], censimento))
+            lato = lato_varco(arco["verso"], rilev)
+            ritorno = LATO_OPPOSTO[lato]
         out[da].append({"verso": a, "bussola": arco["verso"], "lato": lato, "come": arco["come"]})
-        out[a].append({"verso": da, "bussola": verso_inv, "lato": LATO_OPPOSTO[lato],
+        out[a].append({"verso": da, "bussola": verso_inv, "lato": ritorno,
                        "come": arco["come"] + " (al contrario)"})
     for aid in out:
         out[aid].sort(key=lambda v: v["verso"])
@@ -315,7 +322,7 @@ def errori_direzioni(grafo, censimento, tolleranza=90.0):
     eccezioni = grafo.get("direzioni_da_confermare", {})
     err = []
     for e in grafo["archi"]:
-        if "%s>%s" % (e["da"], e["a"]) in eccezioni:
+        if "%s>%s" % (e["da"], e["a"]) in eccezioni or e.get("dentro"):
             continue
         vero = rilevamento(ancora_area(aree[e["da"]], censimento), ancora_area(aree[e["a"]], censimento))
         scarto = differenza_angolare(vero, BUSSOLA[e["verso"]])
@@ -388,8 +395,12 @@ def errori_lati_varchi(varchi):
             err.append("area senza varchi: %s" % aid)
         for v in lista:
             ritorno = [w for w in varchi[v["verso"]] if w["verso"] == aid]
+            coppia = {v["lato"], ritorno[0]["lato"]} if len(ritorno) == 1 else set()
             if len(ritorno) != 1:
                 err.append("%s>%s senza ritorno" % (aid, v["verso"]))
+            elif LATO_DENTRO in coppia:
+                if coppia != {LATO_DENTRO, LATO_USCITA_DENTRO}:
+                    err.append("%s>%s entra dal portale ma esce a %s" % (aid, v["verso"], ritorno[0]["lato"]))
             elif ritorno[0]["lato"] != LATO_OPPOSTO[v["lato"]]:
                 err.append("%s>%s esce a %s ma rientra a %s"
                            % (aid, v["verso"], v["lato"], ritorno[0]["lato"]))
