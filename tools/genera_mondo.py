@@ -11,9 +11,19 @@ tools/mondo_dati.py) e i dati di stile (palette), e scrive in un solo header:
 
 Una sola fonte per il grafo: mondo/grafo.json dice quali aree ci sono, la loro quota, quali archi
 le collegano e l'anello; mondo/varchi.json (calcolato da quel grafo) dice su quale lato dello
-schermo si apre ogni varco. Un file .area tiene solo la griglia, gli spawn e dove stanno le
-uscite: "uscita A largo_bargello 2" vuol dire che il varco A della griglia e' l'arco verso il
-Largo del Bargello, e che chi arriva da li' compare sullo spawn 2 di quest'area.
+schermo si apre ogni varco. Un file .area tiene il riferimento, il fattore di compressione, gli
+spawn, le uscite e la griglia di fondo (suolo, muri, varchi, elementi decorativi): "uscita A
+largo_bargello 2" vuol dire che il varco A della griglia e' l'arco verso il Largo del Bargello, e
+che chi arriva da li' compare sullo spawn 2 di quest'area.
+
+Gli edifici non stanno nella griglia: li disegna il generatore da mondo/monumenti.json, cosi' una
+misura cambiata nel censimento si propaga da sola. Ogni monumento di tipo "edificio" diventa un
+blocco non calpestabile di misure_tile (1 tile = 1,5 m, mai compresso), con l'asse lungo come
+asse_lungo_schermo, centrato in riferimento + dall_ancora_tile * fattore (le distanze fra edifici
+si comprimono, gli edifici no), piu' l'eventuale "sposta" dichiarato e motivato nella .area. La
+facciata va sul lato facciata_lato_schermo (in basso o di fianco: conci di facciata con il
+portone; in alto non si vede, e' il retro); gli altri lati sono muro. I tracciati (strade, la gola,
+l'acquedotto) e gli SPAZI_APERTI restano calpestabili.
 
 Prima di scrivere controlla il mondo e si rifiuta se trova: un carattere sconosciuto, una riga
 di lunghezza sbagliata, un varco senza riga "uscita" o viceversa, uno spawn che non esiste, una
@@ -23,8 +33,9 @@ meno di DISTANZA_MIN_SPAWN da un altro varco, uno spawn su una cella non calpest
 che da uno spawn d'arrivo non si raggiunge camminando. Spawn e camminata li rifa' l'autotest C++
 (include/mondo_autotest.h) a tempo di compilazione.
 
-Debito aperto (F2): le griglie sono quelle del prototipo, con le sole uscite spostate sul lato
-giusto; la scala di 1 tile = 1,5 m dei monumenti (mondo/monumenti.json) non vi e' ancora applicata.
+Controlli sugli edifici: ognuno compare nella sua area con le misure in tile esatte (un edificio
+che esce dalla griglia o che risulta rimpicciolito e' rifiutato), nessuno si sovrappone a un altro o
+a un varco, e dopo averli posati ogni varco resta raggiungibile da ogni spawn.
 
     python tools/genera_mondo.py              # rigenera include/mondo.h
     python tools/genera_mondo.py --controlla  # esce con 1 se include/mondo.h non e' aggiornato
@@ -71,6 +82,16 @@ CELLE = {
     "P": ("FACCIATA_2", True),     # seconda facciata (Pretorio, Bargello, acquedotto, ...)
 }
 VARCHI = "ABEGHI"                 # I e' l'ingresso di un dungeon
+
+# Monumenti che il censimento misura come "edificio" ma su cui si cammina: non diventano blocchi.
+SPAZI_APERTI = {
+    "piazza_grande": "e' la piazza stessa: il suo rettangolo e' il lastricato su cui si cammina",
+    "ponte_san_martino": "il ponte sul Camignano si attraversa: e' un pezzo di strada",
+}
+
+# Celle che un edificio disegnato dal generatore puo' occupare.
+MURO_EDIFICIO, FACCIATA_EDIFICIO, PORTONE_EDIFICIO = "#", "C", "d"
+FATTORE_PREDEFINITO = 0.73   # compressione delle distanze del GDD
 PRIMO_VARCO = 16                   # cella = PRIMO_VARCO + indice del varco nell'area
 
 # --- Fondali procedurali ----------------------------------------------------------------------
@@ -272,7 +293,8 @@ def solida(c):
 
 
 def leggi_area(nome_file, testo):
-    a = {"file": nome_file, "spawn": {}, "uscite": [], "griglia": []}
+    a = {"file": nome_file, "spawn": {}, "uscite": [], "griglia": [], "sposta": {},
+         "fattore": FATTORE_PREDEFINITO, "riferimento": None}
     in_griglia = False
     for n, riga in enumerate(testo.split("\n"), 1):
         if in_griglia:
@@ -300,13 +322,21 @@ def leggi_area(nome_file, testo):
                     if len(t) != 4:
                         raise ValueError
                     a["uscite"].append((t[1], t[2], int(t[3]), n))
+            elif t[0] == "riferimento":
+                a["riferimento"] = (int(t[1]), int(t[2]))
+            elif t[0] == "fattore":
+                a["fattore"] = float(t[1])
+                if not 0 < a["fattore"] <= 1:
+                    raise ErroreMondo(f"{nome_file}:{n}: fattore {t[1]} fuori da (0, 1]")
+            elif t[0] == "sposta":
+                a["sposta"][t[1]] = (int(t[2]), int(t[3]))
             elif t[0] == "griglia":
                 in_griglia = True
             else:
                 raise ErroreMondo(f"{nome_file}:{n}: riga '{t[0]}' sconosciuta")
         except (IndexError, ValueError):
             raise ErroreMondo(f"{nome_file}:{n}: riga malformata: {riga}") from None
-    for campo in ("id", "etichetta", "larghezza"):
+    for campo in ("id", "etichetta", "larghezza", "riferimento"):
         if campo not in a:
             raise ErroreMondo(f"{nome_file}: manca '{campo}'")
     if len(a["griglia"]) != a["altezza"]:
@@ -319,6 +349,77 @@ def leggi_area(nome_file, testo):
                 raise ErroreMondo(f"{nome_file}:{n}: carattere '{c}' sconosciuto")
     a["griglia"] = [r for _, r in a["griglia"]]
     return a
+
+
+def edifici_attesi(aid, monumenti):
+    """{id: (larghezza, altezza)} in tile degli edifici che l'area deve contenere."""
+    out = {}
+    for mid, m in sorted(monumenti.items()):
+        if m["area"].lower() != aid or m["tipo"] != "edificio" or mid in SPAZI_APERTI:
+            continue
+        lungo, corto = m["misure_tile"]
+        out[mid] = (lungo, corto) if m.get("asse_lungo_schermo") == "orizzontale" else (corto, lungo)
+    return out
+
+
+def posa_edifici(a, monumenti):
+    """Disegna nella griglia di a gli edifici di monumenti.json. Ritorna i rettangoli posati
+    {id: (x, y, larghezza, altezza)}; rifiuta un edificio fuori griglia o sopra un altro, un varco o
+    una cella che non sia suolo."""
+    g = [list(r) for r in a["griglia"]]
+    rx, ry = a["riferimento"]
+    for mid in a["sposta"]:
+        if mid not in edifici_attesi(a["id"], monumenti):
+            raise ErroreMondo(f"{a['file']}: 'sposta {mid}', ma {mid} non e' un edificio di quest'area")
+    posati, occupate = {}, {}
+    for mid, (w, h) in edifici_attesi(a["id"], monumenti).items():
+        m = monumenti[mid]
+        nord, est = m.get("dall_ancora_tile", [0, 0])
+        dx, dy = a["sposta"].get(mid, (0, 0))
+        x0 = rx + int(round(nord * a["fattore"])) + dx - w // 2
+        y0 = ry + int(round(est * a["fattore"])) + dy - h // 2
+        if x0 < 0 or y0 < 0 or x0 + w > a["larghezza"] or y0 + h > a["altezza"]:
+            raise ErroreMondo(f"{a['file']}: l'edificio {mid} ({w}x{h} tile in {x0}, {y0}) esce dalla "
+                              f"griglia {a['larghezza']}x{a['altezza']}")
+        faccia = m.get("facciata_lato_schermo")
+        for y in range(y0, y0 + h):
+            for x in range(x0, x0 + w):
+                if (x, y) in occupate:
+                    raise ErroreMondo(f"{a['file']}: l'edificio {mid} si sovrappone a {occupate[(x, y)]} "
+                                      f"in ({x}, {y})")
+                if g[y][x] in VARCHI:
+                    raise ErroreMondo(f"{a['file']}: l'edificio {mid} copre il varco '{g[y][x]}' in ({x}, {y})")
+                occupate[(x, y)] = mid
+                bordo = {"basso": y == y0 + h - 1, "alto": y == y0,
+                         "sinistra": x == x0, "destra": x == x0 + w - 1}
+                if faccia in ("basso", "sinistra", "destra") and bordo[faccia]:
+                    meta = (x0 + w // 2, y0 + h // 2)
+                    porta = (abs(x - meta[0]) <= 1 and x != meta[0] + 1) if faccia == "basso" else \
+                        (abs(y - meta[1]) <= 1 and y != meta[1] + 1)
+                    g[y][x] = PORTONE_EDIFICIO if porta else FACCIATA_EDIFICIO
+                else:
+                    g[y][x] = MURO_EDIFICIO
+        posati[mid] = (x0, y0, w, h)
+    a["griglia"] = ["".join(r) for r in g]
+    a["edifici"] = posati
+    return posati
+
+
+def controlla_edifici(a, posati, monumenti):
+    """Ogni edificio dell'area c'e', con le misure in tile esatte, e la griglia lo contiene tutto."""
+    attesi = edifici_attesi(a["id"], monumenti)
+    for mid in sorted(set(attesi) - set(posati)):
+        raise ErroreMondo(f"{a['file']}: manca l'edificio {mid}")
+    for mid, (x0, y0, w, h) in sorted(posati.items()):
+        if mid not in attesi:
+            raise ErroreMondo(f"{a['file']}: {mid} non e' un edificio di quest'area")
+        if (w, h) != attesi[mid]:
+            raise ErroreMondo(f"{a['file']}: l'edificio {mid} e' {w}x{h} tile, il censimento lo vuole "
+                              f"{attesi[mid][0]}x{attesi[mid][1]}")
+        for y in range(y0, y0 + h):
+            for x in range(x0, x0 + w):
+                if a["griglia"][y][x] not in (MURO_EDIFICIO, FACCIATA_EDIFICIO, PORTONE_EDIFICIO):
+                    raise ErroreMondo(f"{a['file']}: l'edificio {mid} non occupa ({x}, {y})")
 
 
 def celle_varco(a, lettera):
@@ -432,6 +533,10 @@ def controlla(aree, mondo):
             if distanza < DISTANZA_MIN_SPAWN:
                 raise ErroreMondo(f"{a['file']}: lo spawn {s} ({sx}, {sy}) e' a {distanza} tile da un varco, "
                                   f"ne servono almeno {DISTANZA_MIN_SPAWN}")
+        for s, (sx, sy) in sorted(a["spawn"].items()):
+            if not (0 <= sx < a["larghezza"] and 0 <= sy < a["altezza"]) or solida(a["griglia"][sy][sx]) \
+                    or a["griglia"][sy][sx] in VARCHI:
+                raise ErroreMondo(f"{a['file']}: lo spawn {s} ({sx}, {sy}) non e' su una cella calpestabile")
             visti = raggiungibili(a, (sx, sy))
             for lettera, _, _, n in a["uscite"]:
                 vicini = {(x + dx, y + dy) for x, y in celle_varco(a, lettera)
@@ -479,7 +584,7 @@ def scrivi_header(aree, grafo, palette_stile):
 
     out = [
         "// GENERATO da tools/genera_mondo.py a partire da mondo/aree/*.area, mondo/grafo.json,",
-        "// mondo/varchi.json e stile/dati/palette.json.",
+        "// mondo/varchi.json, mondo/monumenti.json e stile/dati/palette.json.",
         "// Non modificare a mano: si accede ai dati solo da include/mondo_logica.h.",
         "#ifndef GUBBIO_MONDO_H",
         "#define GUBBIO_MONDO_H",
@@ -504,6 +609,7 @@ def scrivi_header(aree, grafo, palette_stile):
         f"inline constexpr int PRIMO_VARCO = {PRIMO_VARCO};   // cella = PRIMO_VARCO + indice del varco",
         f"inline constexpr int PRIMA_CELLA_SOLIDA = {list(CELLE.values()).index(('FONTANA', True))};",
         f"inline constexpr int DISTANZA_MIN_SPAWN = {DISTANZA_MIN_SPAWN};",
+        f"inline constexpr int DISTANZA_MIN_SPAWN_USCITA = {DISTANZA_MIN_SPAWN_USCITA};",
         f"inline constexpr int SPAWN_PER_AREA = 6;",
         f"inline constexpr int VARCHI_MAX = {len(VARCHI)};",
         "",
@@ -624,13 +730,17 @@ def mondo_del_repo():
     """Il grafo (mondo/grafo.json) e i lati dei varchi (mondo/varchi.json) del repo."""
     with open(M.OUT_VARCHI, encoding="utf-8") as f:
         varchi = json.load(f)["varchi"]
-    return {"grafo": M.carica_grafo(), "varchi": varchi}
+    with open(M.OUT_MONUMENTI, encoding="utf-8") as f:
+        monumenti = json.load(f)["monumenti"]
+    return {"grafo": M.carica_grafo(), "varchi": varchi, "monumenti": monumenti}
 
 
 def genera(sorgenti, palette_stile, mondo=None):
     """sorgenti: lista di (nome, testo). Ritorna il testo di include/mondo.h."""
     mondo = mondo or mondo_del_repo()
     aree = [leggi_area(nome, testo) for nome, testo in sorgenti]
+    for a in aree:
+        controlla_edifici(a, posa_edifici(a, mondo["monumenti"]), mondo["monumenti"])
     controlla(aree, mondo)
     return scrivi_header(aree, mondo["grafo"], palette_stile)
 
