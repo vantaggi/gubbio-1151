@@ -52,6 +52,19 @@ COLORI = {
     "M": (150, 120, 90),    # muro di contenimento di un gradone
     "V": (40, 30, 40),      # la citta' bassa oltre il parapetto di un belvedere
     "W": (110, 100, 90),    # le mura della citta
+    "L": (206, 198, 176),   # lastrico a corsi
+    "K": (180, 170, 150),   # corso di pietra del lastrico
+    "Z": (214, 196, 150),   # vialetto dei giardini
+    "J": (150, 140, 120),   # l'arco di una porta, ci si passa sotto
+    "Q": (240, 220, 120),   # lampione
+    "O": (60, 110, 160),    # pozzo
+    "Y": (60, 120, 60),     # siepe
+    "D": (150, 190, 110),   # aiuola
+    "N": (120, 170, 90),    # prato
+    "T": (40, 100, 50),     # albero
+    "X": (100, 90, 80),     # torre di una porta
+    "R": (170, 160, 140),   # gradinata del Teatro
+    "U": (130, 115, 95),    # arcate del Teatro
 }
 COLORE_VARCO = (230, 60, 60)
 COLORE_SPAWN = (40, 90, 230)
@@ -77,8 +90,7 @@ def aree_finali():
     mondo = G.mondo_del_repo()
     aree = [G.leggi_area(n, t) for n, t in G.sorgenti_del_repo()]
     for a in aree:
-        G.posa_edifici(a, mondo["monumenti"])
-        G.applica_dislivello(a, mondo["grafo"])
+        G.prepara_area(a, mondo)
         a["tile"], a["indici"], _ = G.disegna_area(a, mondo)
     return G.ordina(aree, G.anello(mondo["grafo"]))
 
