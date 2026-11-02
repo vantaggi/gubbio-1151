@@ -242,7 +242,10 @@ public:
 
     // Una battaglia nuova sul posto: la ROM tiene una sola Battaglia in EWRAM e la riusa.
     // Il pilota debole sceglie male apposta (solo l'Attacco): serve a mostrare che si puo' perdere.
-    constexpr void ricomincia(int incontro, uint32_t seme, bool pilota_debole = false)
+    // 'eroi': le statistiche dei tre Santi al loro livello (include/progressione.h); senza, quelle
+    // di base del livello 1, le stesse del mirror Python.
+    constexpr void ricomincia(int incontro, uint32_t seme, bool pilota_debole = false,
+                              const Statistiche* eroi = nullptr)
     {
         _caso = Caso(seme);
         _pilota_debole = pilota_debole;
@@ -253,7 +256,7 @@ public:
 
         for(int e = 0; e < EROI; ++e)
         {
-            _eroi[e] = da_statistiche(STATISTICHE_EROI[e], false);
+            _eroi[e] = da_statistiche(eroi ? eroi[e] : STATISTICHE_EROI[e], false);
             _eroi[e].fervore = (_eroi[e].fervore_max * FERVORE_INIZIALE[e]) / 100;
         }
 

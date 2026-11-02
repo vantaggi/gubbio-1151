@@ -22,3 +22,6 @@ BATT_IMBOSCATA            | DIALOGO | Imboscata agli Stradoni
 BATT_DUELLO               | DIALOGO | Duello con Corrado
 BATT_SCEGLI               | DIALOGO | Su e giù per scegliere, A per confermare.
 BATT_BERSAGLIO            | DIALOGO | Su e giù per il bersaglio, A conferma, B torna.
+BATT_SALE_UBALDO          | DIALOGO | Sant'Ubaldo sale di livello!
+BATT_SALE_GIORGIO         | DIALOGO | San Giorgio sale di livello!
+BATT_SALE_ANTONIO         | DIALOGO | Sant'Antonio sale di livello!

@@ -7,6 +7,7 @@
 #include "esplorazione.h"
 #include "game_state.h"
 #include "scena_battaglia.h"
+#include "scontri_mappa.h"
 #include "titolo.h"
 #include "schermate.h"
 #include "vista_testo.h"
@@ -85,7 +86,7 @@ int main()
     }
     else
     {
-        gubbio::g_game_state.tempo_frames = 0;
+        gubbio::progressione::partita_nuova(gubbio::g_game_state);
         esplorazione.entra(gubbio::mondo::AreaId::PIAZZA_GRANDE, 0);
     }
 
@@ -98,8 +99,30 @@ int main()
         }
 
         gubbio::pausa(esplorazione, palette, true);
+
+        // un nemico sulla mappa: la Pattuglia al Teatro Romano, vista dall'ingresso dalla citta'
+        gubbio::progressione::partita_nuova(gubbio::g_game_state);
+        esplorazione.entra(gubbio::mondo::AreaId::TEATRO_ROMANO, 2);
+        gubbio::ScontriSullaMappa nemici;
+
+        for(int f = 0; f < 220; ++f)
+        {
+            if(f == 200)
+            {
+                BN_LOG("Istantanea nemico_sulla_mappa");
+            }
+
+            bool passo = f < 160 && f % 2 == 0;
+            esplorazione.muovi(passo ? 1 : 0, passo ? -1 : 0, 1);
+            esplorazione.aggiorna();
+            nemici.aggiorna(esplorazione, palette);
+            bn::core::update();
+        }
+
         BN_LOG("Istantanee finite");
     }
+
+    gubbio::ScontriSullaMappa scontri;
 
     while(true)
     {
@@ -115,6 +138,7 @@ int main()
         int dy = bn::keypad::up_held() ? -1 : (bn::keypad::down_held() ? 1 : 0);
         esplorazione.muovi(dx, dy, bn::keypad::b_held() ? 2 : 1);
         esplorazione.aggiorna();
+        scontri.aggiorna(esplorazione, palette);
 
         bn::core::update();
     }
