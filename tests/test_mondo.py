@@ -104,9 +104,9 @@ class Mondo(unittest.TestCase):
         with open(G.USCITA, encoding="utf-8") as f:
             self.assertEqual(f.read(), atteso, "eseguire python tools/genera_mondo.py")
 
-    def test_quindici_aree(self):
-        """Le 14 dell'anello e dei dintorni, piu' l'interno della Basilica."""
-        self.assertEqual(len(self.aree), 15)
+    def test_diciannove_aree(self):
+        """Le 14 dell'anello e dei dintorni, l'interno della Basilica e le 4 stanze della gola."""
+        self.assertEqual(len(self.aree), 19)
 
     def test_l_anello_si_chiude(self):
         giro = G.anello(self.mondo["grafo"])
@@ -124,8 +124,9 @@ class Mondo(unittest.TestCase):
         for a in self.aree.values():
             self.assertTrue(a["uscite"], a["id"])
 
-    def test_bottaccione_ha_l_ingresso_della_gola(self):
-        self.assertIn(("I", "gola_bottaccione"), [(u[0], u[1]) for u in self.aree["bottaccione"]["uscite"]])
+    def test_bottaccione_porta_nella_gola(self):
+        """Dal Bottaccione si risale la gola: il varco G porta alla prima stanza del dungeon."""
+        self.assertIn(("G", "gola_striscia"), [(u[0], u[1]) for u in self.aree["bottaccione"]["uscite"]])
 
     def test_orientamento_della_piazza(self):
         """Alto = ovest: i Consoli stanno piu' in alto del Pretorio, che sta piu' a est."""
@@ -308,11 +309,11 @@ class Mondo(unittest.TestCase):
         with self.assertRaisesRegex(G.ErroreMondo, "sta su nessun bordo"):
             G.genera(sorgenti_con("sant_andrea.area", sposta), PALETTE)
 
-    def test_negativa_ingresso_senza_dungeon_in_grafo_json(self):
+    def test_negativa_stanza_della_gola_senza_arco(self):
+        """Una stanza della gola che porta al Condotto senza l'arco in grafo.json e' rifiutata."""
         mondo = copy.deepcopy(self.mondo)
-        for a in mondo["grafo"]["aree"]:
-            a.pop("dungeon", None)
-        with self.assertRaisesRegex(G.ErroreMondo, "ingresso a gola_bottaccione"):
+        mondo["grafo"]["archi"] = [e for e in mondo["grafo"]["archi"] if (e["da"], e["a"]) != ("GOLA_ARCO", "CONDOTTO")]
+        with self.assertRaisesRegex(G.ErroreMondo, "non ha l'arco GOLA_ARCO-CONDOTTO|non ha l'arco"):
             G.genera(G.sorgenti_del_repo(), PALETTE, mondo)
 
     def test_negativa_quota_nel_file_area(self):
@@ -653,7 +654,7 @@ class FondaliInRom(unittest.TestCase):
         self.mappe = {n: (None, a["indici"]) for n, a in self.aree.items()}
 
     def test_ogni_fondale_e_la_sua_mappa(self):
-        self.assertEqual(len(self.fondali), 15)
+        self.assertEqual(len(self.fondali), 19)
         for nome, (fondale, fw, fh, grande) in self.fondali.items():
             a = self.aree[nome]
             self.assertEqual(grande, a["larghezza"] > 64 or a["altezza"] > 64, nome)
@@ -934,8 +935,8 @@ class FondaleControGriglia(unittest.TestCase):
         with open(G.USCITA, encoding="utf-8") as f:
             self.aree = griglie_e_mappe(f.read())
 
-    def test_quindici_coppie(self):
-        self.assertEqual(len(self.aree), 15)
+    def test_diciannove_coppie(self):
+        self.assertEqual(len(self.aree), 19)
         for nome, (griglia, mappa) in self.aree.items():
             self.assertEqual(len(griglia), len(mappa), nome)
 

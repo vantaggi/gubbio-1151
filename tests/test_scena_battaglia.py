@@ -112,12 +112,12 @@ class ScontriSullaMappa(unittest.TestCase):
         self.assertEqual(scontri_sulla_mappa(PROGRESSIONE), [
             ("TEATRO_ROMANO", "0", "PATTUGLIA_SCONFITTA"),
             ("MONTE_INGINO", "1", "IMBOSCATA_SCONFITTA"),
-            ("BOTTACCIONE", "2", "CORRADO_SCONFITTO"),
+            ("CONDOTTO", "2", "CORRADO_SCONFITTO"),
         ])
 
     def test_negativa_corrado_fuori_posto(self):
-        finto = PROGRESSIONE.replace("{ mondo::AreaId::BOTTACCIONE, 31, 31, 2", "{ mondo::AreaId::SANT_AGOSTINO, 29, 20, 2")
-        self.assertNotEqual(scontri_sulla_mappa(finto)[2][0], "BOTTACCIONE")
+        finto = PROGRESSIONE.replace("{ mondo::AreaId::CONDOTTO, 50, 14, 2", "{ mondo::AreaId::SANT_AGOSTINO, 29, 20, 2")
+        self.assertNotEqual(scontri_sulla_mappa(finto)[2][0], "CONDOTTO")
 
     def test_le_prove_a_tempo_di_compilazione(self):
         autotest = open(os.path.join(RADICE, "src", "autotest_progressione.cpp"), encoding="utf-8").read()

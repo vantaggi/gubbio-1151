@@ -15,7 +15,11 @@
     {"id": "MONTE_INGINO",            "nome": "Monte Ingino (gli stradoni)",             "quota_m": [100, 350], "ancora": null, "ancora_stimata": [43.3549, 12.5838], "monumenti": ["porta_sant_ubaldo", "mura_rocca"], "fuori_le_mura": true},
     {"id": "BASILICA",                "nome": "Basilica di Sant'Ubaldo",  "quota_m": [380, 380], "ancora": "basilica",       "monumenti": ["basilica"], "fuori_le_mura": true},
     {"id": "BASILICA_INTERNO",        "nome": "Basilica di Sant'Ubaldo, l'interno", "quota_m": [380, 380], "ancora": null, "ancora_stimata": [43.356367, 12.584993], "monumenti": [], "fuori_le_mura": true},
-    {"id": "BOTTACCIONE",             "nome": "Strada del Bottaccione",   "quota_m": [30, 300],  "ancora": "gola_bottaccione", "monumenti": ["gola_bottaccione", "acquedotto", "sant_ambrogio"], "dungeon": "Gola del Bottaccione: dungeon separato, si entra da quest'area (decisione del 1 nov 2026)", "fuori_le_mura": true}
+    {"id": "BOTTACCIONE",             "nome": "Strada del Bottaccione",   "quota_m": [30, 300],  "ancora": "gola_bottaccione", "monumenti": ["gola_bottaccione", "acquedotto", "sant_ambrogio"], "dungeon": "Gola del Bottaccione: dungeon separato, si entra da quest'area (decisione del 1 nov 2026)", "fuori_le_mura": true},
+    {"id": "GOLA_STRISCIA", "nome": "Gola del Bottaccione, la striscia nera", "quota_m": [310, 310], "ancora": null, "ancora_stimata": [43.3637, 12.5817], "monumenti": [], "stanza_del_dungeon": "Gola del Bottaccione, risalendo il Camignano verso nord-nord-est (asse della gola 26 gradi, censimento)", "fuori_le_mura": true},
+    {"id": "GOLA_MIASMI", "nome": "Gola del Bottaccione, i miasmi", "quota_m": [325, 325], "ancora": null, "ancora_stimata": [43.3657, 12.583], "monumenti": [], "stanza_del_dungeon": "Gola del Bottaccione, risalendo il Camignano verso nord-nord-est (asse della gola 26 gradi, censimento)", "fuori_le_mura": true},
+    {"id": "GOLA_ARCO", "nome": "Gola del Bottaccione, l'arco di contrafforte", "quota_m": [340, 340], "ancora": null, "ancora_stimata": [43.3677, 12.5844], "monumenti": [], "stanza_del_dungeon": "Gola del Bottaccione, risalendo il Camignano verso nord-nord-est (asse della gola 26 gradi, censimento)", "fuori_le_mura": true},
+    {"id": "CONDOTTO", "nome": "Il Condotto dell'acquedotto", "quota_m": [355, 355], "ancora": null, "ancora_stimata": [43.3697, 12.5857], "monumenti": [], "stanza_del_dungeon": "Gola del Bottaccione, risalendo il Camignano verso nord-nord-est (asse della gola 26 gradi, censimento)", "fuori_le_mura": true}
   ],
   "archi": [
     {"da": "PIAZZA_GRANDE",           "a": "VIA_DEI_CONSOLI",         "verso": "NO", "come": "via dei Consoli, in discesa"},
@@ -38,6 +42,10 @@
     {"da": "SAN_PIETRO",              "a": "SANT_AGOSTINO",           "verso": "E",  "come": "via Armanni, corso Garibaldi, via Dante", "porta": "Porta San Pietro"},
     {"da": "MONTE_INGINO",            "a": "BASILICA",                "verso": "NE", "come": "gli stradoni: la salita lunga fino alla cima"},
     {"da": "BASILICA",                "a": "BOTTACCIONE",             "verso": "NO", "come": "si scende sul versante nord"},
+    {"da": "BOTTACCIONE", "a": "GOLA_STRISCIA", "verso": "N", "come": "si risale la gola lungo il Camignano"},
+    {"da": "GOLA_STRISCIA", "a": "GOLA_MIASMI", "verso": "N", "come": "si risale la gola lungo il Camignano"},
+    {"da": "GOLA_MIASMI", "a": "GOLA_ARCO", "verso": "N", "come": "si risale la gola lungo il Camignano"},
+    {"da": "GOLA_ARCO", "a": "CONDOTTO", "verso": "N", "come": "si risale la gola lungo il Camignano"},
     {"da": "BASILICA",                "a": "BASILICA_INTERNO",        "verso": "N",  "come": "dal portale si entra in chiesa: le navate, l'altare con l'urna e i tre ceri", "dentro": true}
   ],
   "anello": ["PIAZZA_GRANDE", "VIA_XX_SETTEMBRE", "DUOMO_DUCALE", "MONTE_INGINO", "BASILICA", "BOTTACCIONE", "SAN_MARTINO", "LARGO_BARGELLO", "VIA_DEI_CONSOLI", "PIAZZA_GRANDE"],

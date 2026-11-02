@@ -47,6 +47,7 @@ namespace
     }
 
     constexpr Colori COLORI_FONDALI = colori(mondo::PALETTE_FONDALI);
+    constexpr Colori COLORI_FONDALI_CUPI = colori(mondo::PALETTE_FONDALI_CUPA);
     constexpr Colori COLORI_GIOCATORE = colori(mondo::PALETTE_GIOCATORE);
 
     // Il cartiglio: sei pezzi da 32x16 (sinistro, quattro centrali, destro) in cima allo schermo,
@@ -159,6 +160,15 @@ void Esplorazione::_carica_fondale()
 
     // Ogni area ha i suoi tile (suolo e monumenti): prima si lascia la mappa vecchia, poi i suoi tile.
     _tiles.reset();
+
+    // le stanze della gola hanno la palette cupa
+    const Colori& c = a.cupa ? COLORI_FONDALI_CUPI : COLORI_FONDALI;
+
+    for(int i = 0; i < 16; ++i)
+    {
+        _palette.set_color(i, c.colori[i]);
+    }
+
     _tiles = bn::regular_bg_tiles_ptr::create(
         bn::regular_bg_tiles_item(bn::span<const bn::tile>(a.tile, a.tile_conteggio), bn::bpp_mode::BPP_4));
 

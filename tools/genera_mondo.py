@@ -88,6 +88,9 @@ DUNGEON = {"gola_bottaccione": "AREA_GOLA_BOTTACCIONE"}
 
 # Aree fuori citta': il muro e' il pendio del monte, non un tetto.
 AREE_DEL_MONTE = {"monte_ingino", "bottaccione"}
+# Le stanze del dungeon della gola del Bottaccione: il muro e' la rupe di calcare a strati, e la
+# palette e' quella cupa (le rampe di notte: la scelta di stile 1 vale per la notte e per il Bottaccione).
+AREE_GOLA = {"gola_striscia", "gola_miasmi", "gola_arco", "condotto"}
 
 # Gli stradoni del Monte Ingino: i dati del percorso (tools/disegna_stradoni.py ne fa la griglia).
 STRADONI = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mondo", "stradoni.json")
@@ -141,6 +144,9 @@ CELLE = {
     "n": ("COLONNA", True),        # le colonne fra le navate di un interno
     "a": ("ALTARE", True),         # l'altare, con l'urna del santo
     "e": ("CERO", True),           # un cero esposto
+    "~": ("ACQUA", True),          # il torrente (il Camignano nella gola): non si attraversa
+    "x": ("STRISCIA_NERA", True),  # la rupe con la striscia nera del limite K-Pg (Bottaccione)
+    "g": ("MIASMA", False),        # la nebbia verde dei miasmi sulla via: ci si cammina
 }
 VARCHI = "ABEGHI"                 # I e' l'ingresso di un dungeon
 
@@ -592,6 +598,35 @@ def tile_roccia(x, y):
     return 5 if x + y < 6 else (3 if x + y < 10 else 2)
 
 
+def tile_rupe(x, y):
+    # la rupe di calcare della gola: strati che ondeggiano, crepe sparse, luce da sinistra
+    strato = (y + (1 if 2 <= x <= 4 else 0)) % 4
+    if strato == 3 or (x * 5 + y * 3) % 13 == 0:
+        return 2
+    return 4 if (x + y // 4) % 5 else 3
+
+
+def tile_striscia_nera(x, y):
+    # la stessa rupe con la striscia nera: lo strato d'argilla scura del limite K-Pg
+    if y in (3, 4):
+        return 1 if (x + y) % 5 else 14
+    return tile_rupe(x, y)
+
+
+def tile_acqua(x, y):
+    # l'acqua del torrente: increspature chiare sfalsate
+    return 13 if y % 4 == 1 and (x + (y // 4) * 3) % 6 < 2 else 12
+
+
+def tile_miasma(x, y):
+    # la nebbia verde bassa sul selciato: fitta, a fiocchi di due verdi, le pietre si vedono appena
+    if (x * 3 + y * 5) % 4 == 0 or (x + 2 * y) % 5 == 0:
+        return 11
+    if (x + y) % 2 == 0:
+        return 10
+    return tile_strada(x, y)
+
+
 def tile_colonna(x, y):
     # il fusto di una colonna visto dall'alto: tondo chiaro, ombra a destra
     d = (x - 3.5) ** 2 + (y - 3.5) ** 2
@@ -682,8 +717,17 @@ TILE_FONDALI = [
     ("ALTARE", tile_altare),
     ("CERO", tile_cero),
     ("MURO_INTERNO", tile_muro_interno),
+    ("RUPE", tile_rupe),
+    ("STRISCIA_NERA", tile_striscia_nera),
+    ("ACQUA", tile_acqua),
+    ("MIASMA", tile_miasma),
 ]
 INDICE_TILE = {nome: i for i, (nome, _) in enumerate(TILE_FONDALI)}
+
+
+def del_monte(a):
+    """Come si vede il muro dell'area: "gola" la rupe del dungeon, True il bosco del monte, False i tetti."""
+    return "gola" if a["id"] in AREE_GOLA else a["id"] in AREE_DEL_MONTE
 
 
 def tile_per_cella(griglia, x, y, del_monte=False, monte=None):
@@ -702,6 +746,8 @@ def tile_per_cella(griglia, x, y, del_monte=False, monte=None):
                   if 0 <= y + dy < len(griglia) and 0 <= x + dx < len(griglia[0])]
         return INDICE_TILE["VUOTO_OMBRA" if "=" in vicine else "CITTA_BASSA"]
     if nome == "MURO":
+        if del_monte == "gola":
+            return INDICE_TILE["RUPE"]
         if del_monte:
             return INDICE_TILE["BOSCO"]
         sotto = griglia[y + 1][x] if y + 1 < len(griglia) else "#"
@@ -1631,7 +1677,7 @@ def disegna_area(a, mondo):
         for x in range(w):
             pix = tile_di.get((x, y))
             if pix is None:
-                indice = tile_per_cella(a["griglia"], x, y, a["id"] in AREE_DEL_MONTE, a.get("monte"))
+                indice = tile_per_cella(a["griglia"], x, y, del_monte(a), a.get("monte"))
                 if a.get("interno") and TILE_FONDALI[indice][0] not in ("MURO_FRONTE",) and a["griglia"][y][x] == "#":
                     indice = INDICE_TILE["MURO_INTERNO"]
                 pix = _tile(TILE_FONDALI[indice][1])
@@ -2077,6 +2123,7 @@ def scrivi_header(aree, grafo, palette_stile):
         "    uint8_t varchi;",
         "    Varco varco[VARCHI_MAX];",
         "    Punto spawn[SPAWN_PER_AREA];",
+        "    bool cupa;                        // le stanze della gola: la palette cupa (PALETTE_FONDALI_CUPA)",
         "};",
         "",
     ]
@@ -2091,7 +2138,7 @@ def scrivi_header(aree, grafo, palette_stile):
                     celle.append(PRIMO_VARCO + lettere.index(c))
                 else:
                     celle.append(list(CELLE).index(c))
-                mappa.append(tile_per_cella(a["griglia"], x, y, a["id"] in AREE_DEL_MONTE, a.get("monte")))
+                mappa.append(tile_per_cella(a["griglia"], x, y, del_monte(a), a.get("monte")))
         n = a["larghezza"] * a["altezza"]
         nome = a["id"].upper()
         out += [f"inline constexpr uint8_t GRIGLIA_{nome}[{n}] = {{", a_blocchi(celle, 32), "};", "",
@@ -2129,6 +2176,7 @@ def scrivi_header(aree, grafo, palette_stile):
             f"        testi::TestoId::{a['etichetta']}, {len(a['uscite'])},",
             "        { " + ", ".join(varchi) + " },",
             "        { " + ", ".join(f"{{ {x}, {y} }}" for x, y in spawn) + " },",
+            f"        {'true' if a['id'] in AREE_GOLA else 'false'},",
             "    },",
         ]
     out += ["};", ""]
@@ -2141,6 +2189,10 @@ def scrivi_header(aree, grafo, palette_stile):
             "",
             "inline constexpr uint16_t PALETTE_FONDALI[16] = {",
             a_blocchi([colore(r) for r in PALETTE_FONDALI], 8, lambda v: f"0x{v:04X}"),
+            "};", "",
+            "// La palette cupa delle stanze della gola (Area::cupa): le stesse voci con le rampe di notte.",
+            "inline constexpr uint16_t PALETTE_FONDALI_CUPA[16] = {",
+            a_blocchi([S.colore(palette_stile, r, True) for r in PALETTE_FONDALI], 8, lambda v: f"0x{v:04X}"),
             "};", ""]
 
     out += ["// Il cartiglio dietro il nome dell'area: tre pezzi da 32x16 (sinistro, centrale, destro),",
