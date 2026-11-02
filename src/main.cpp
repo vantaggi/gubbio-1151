@@ -9,7 +9,8 @@
 #include "vista_testo.h"
 
 // All'avvio: con L premuto la schermata dei testi (F1), con SELECT la camminata automatica del
-// mondo (F2), altrimenti l'esplorazione da Piazza Grande. Croce per muoversi, B per correre.
+// mondo (F2), con R le istantanee delle aree (F2), altrimenti l'esplorazione da Piazza Grande.
+// Croce per muoversi, B per correre.
 int main()
 {
     bn::core::init();
@@ -29,6 +30,11 @@ int main()
     if(bn::keypad::select_held())
     {
         gubbio::camminata_automatica(esplorazione, palette);
+    }
+
+    if(bn::keypad::r_held())
+    {
+        gubbio::istantanee(esplorazione);
     }
 
     esplorazione.entra(gubbio::mondo::AreaId::PIAZZA_GRANDE, 0);
