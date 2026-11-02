@@ -11,7 +11,7 @@ spawn 2 54 15
 spawn 3 8 15
 uscita A duomo_ducale 1
 uscita B basilica 2
-uscita E via_xx_settembre 3
+uscita E sant_andrea 3
 griglia
 ##############################AAAA##############################
 #,,,,,,,,,,,,,,,,,,,,,,,,,,,,,AAAA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#

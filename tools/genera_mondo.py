@@ -130,10 +130,13 @@ def tile_suolo(x, y):
 
 
 def tile_strada(x, y):
-    # selciato in cotto a spina di pesce
-    blocco = ((x // 4) + (y // 4)) % 2
-    posizione = (x % 4 if blocco else y % 4)
-    return [9, 8, 8, 7][posizione] if (x + y) % 4 != 3 else 6
+    # selciato di pietra: ciottoli 4x4 sfalsati, giunto scuro, luce da sinistra. Non in cotto: a
+    # schermo il cotto si confondeva con i coppi dei tetti.
+    sfalsa = 2 if (y // 4) % 2 else 0
+    gx, gy = (x + sfalsa) % 4, y % 4
+    if gx == 3 or gy == 3:
+        return 2
+    return 4 if gx == 0 else 3
 
 
 def tile_scalinata(x, y):
@@ -293,7 +296,7 @@ def solida(c):
 
 
 def leggi_area(nome_file, testo):
-    a = {"file": nome_file, "spawn": {}, "uscite": [], "griglia": [], "sposta": {},
+    a = {"file": nome_file, "spawn": {}, "uscite": [], "griglia": [], "sposta": {}, "vicino": {},
          "fattore": FATTORE_PREDEFINITO, "riferimento": None}
     in_griglia = False
     for n, riga in enumerate(testo.split("\n"), 1):
@@ -319,7 +322,10 @@ def leggi_area(nome_file, testo):
                         raise ValueError
                     a["uscite"].append((t[1], t[2], None, n))
                 else:
-                    if len(t) != 4:
+                    # "uscita G dest 3 vicino_a B 16": varco e spawn entro 16 tile dal varco B
+                    if len(t) == 7 and t[4] == "vicino_a":
+                        a["vicino"][t[1]] = (t[5], int(t[6]), n)
+                    elif len(t) != 4:
                         raise ValueError
                     a["uscite"].append((t[1], t[2], int(t[3]), n))
             elif t[0] == "riferimento":
@@ -546,6 +552,25 @@ def controlla(aree, mondo):
                                       f"camminando dallo spawn {s}")
 
 
+def controlla_vicinanze(a):
+    """Il vincolo "vicino_a" di una riga uscita: il varco e il suo spawn d'arrivo stanno entro N tile
+    (distanza a scacchiera) dal varco di riferimento. Per le scale laterali che sbucano in una via
+    poco prima di Piazza Grande."""
+    spawn_di = {u[0]: u[2] for u in a["uscite"]}
+    for lettera, (rif, massimo, n) in sorted(a["vicino"].items()):
+        if rif not in spawn_di:
+            raise ErroreMondo(f"{a['file']}:{n}: '{lettera}' vicino_a '{rif}', ma '{rif}' non e' un'uscita")
+        celle_rif = celle_varco(a, rif)
+        varco = min(max(abs(x - rx), abs(y - ry)) for x, y in celle_varco(a, lettera) for rx, ry in celle_rif)
+        if varco > massimo:
+            raise ErroreMondo(f"{a['file']}:{n}: il varco '{lettera}' e' a {varco} tile dal varco '{rif}', "
+                              f"ne vuole al massimo {massimo}")
+        spawn = distanza_dal_varco(a, a["spawn"][spawn_di[lettera]], rif)
+        if spawn > massimo:
+            raise ErroreMondo(f"{a['file']}:{n}: lo spawn d'arrivo da '{lettera}' e' a {spawn} tile dal varco "
+                              f"'{rif}', ne vuole al massimo {massimo}")
+
+
 def anello(grafo):
     """L'anello di grafo.json, senza la ripetizione finale della prima area."""
     return [aid.lower() for aid in grafo["anello"][:-1]]
@@ -742,6 +767,8 @@ def genera(sorgenti, palette_stile, mondo=None):
     for a in aree:
         controlla_edifici(a, posa_edifici(a, mondo["monumenti"]), mondo["monumenti"])
     controlla(aree, mondo)
+    for a in aree:
+        controlla_vicinanze(a)
     return scrivi_header(aree, mondo["grafo"], palette_stile)
 
 
