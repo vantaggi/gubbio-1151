@@ -9,7 +9,8 @@
 //   - il boss agisce due volte per turno, i comuni una; lo Shield Break le annulla tutte e due;
 //   - Corrado e' IMMUNE al taglio finche' non e' ustionato;
 //   - il Muro della Fede va, per difetto, sull'alleato piu' ferito;
-//   - la Suprema (Boost massimo) richiede sempre la carica: un turno prima, poi il colpo.
+//   - la Suprema (Boost massimo) richiede sempre la carica: un turno prima, poi il colpo;
+//   - l'IA dei nemici e' a regole (docs/piano_ia_boss.md del prototipo): tabelle REGOLE e SCRIPT.
 // Niente heap: array fissi. Deterministica: l'unico caso e' un xorshift32 con il suo seme, lo
 // stesso del mirror Python (tools/battaglia_mirror.py). Tutto constexpr: l'autotest confronta a
 // tempo di compilazione ogni battaglia con le firme che il mirror ha scritto in
@@ -23,7 +24,7 @@ enum class EventKind : uint8_t
     SHIELD_BREAK,     // scudo azzerato colpendo la debolezza
     BARRIER_ABSORB,   // il Muro della Fede ha assorbito: quantita = punti assorbiti
     GUARD_REDIRECT,   // il Bastione ha preso il colpo: bersaglio = chi era puntato, quantita = chi lo prende
-    FERVOR_GAIN,      // San Giorgio converte in Fervore un colpo fisico incassato
+    FERVOR_GAIN,      // Fervore guadagnato: quantita = guadagno, pv_dopo = Fervore dopo (non PV)
     BURN_TICK,        // ustione di fine round
     DEFEAT,           // l'unita' e' caduta
     BARRIER_UP,       // Muro della Fede alzato: quantita = punti di barriera
@@ -31,6 +32,8 @@ enum class EventKind : uint8_t
     CHARGE,           // carica della Suprema
     BREAK_SKIP,       // azione annullata dallo Shield Break
     IMMUNE,           // colpo fisico su Corrado non ustionato: nessun danno
+    FERVOR_SPEND,     // un eroe spende Fervore per agire: quantita = spesa, pv_dopo = Fervore rimasto
+    DEF_UP,           // Scudo di Forgia: quantita = percento di Difesa in piu'
     COUNT,
 };
 
@@ -51,7 +54,7 @@ struct Evento
 inline constexpr int EVENTI_PER_COLPO = 7;
 inline constexpr int AZIONI_MAX = EROI + NEMICI_MAX * 2;
 inline constexpr int EVENTI_ROUND_MAX =
-        EROI * NEMICI_MAX * EVENTI_PER_COLPO + NEMICI_MAX * 2 * EVENTI_PER_COLPO + AZIONI_MAX + (EROI + NEMICI_MAX) * 2;
+        EROI * NEMICI_MAX * EVENTI_PER_COLPO + NEMICI_MAX * 2 * EVENTI_PER_COLPO + AZIONI_MAX * 3 + (EROI + NEMICI_MAX) * 3;
 
 enum class Esito : uint8_t
 {
@@ -112,6 +115,11 @@ struct Unita
     bool nemico = false;
     int azioni = 1;
     bool immune_al_taglio = false;
+    int difesa_bonus = 0;       // percento in piu' (Scudo di Forgia)
+    int script = 0;
+    int ia_round = 0;           // i round in cui l'unita' ha agito, per le condizioni dell'IA
+    uint32_t ia_battaglia = 0;  // un bit per regola: gia' usata in questa battaglia
+    uint32_t ia_round_bit = 0;  // un bit per regola: gia' usata in questo round
 
     [[nodiscard]] constexpr bool vivo() const
     {
@@ -120,7 +128,8 @@ struct Unita
 
     [[nodiscard]] constexpr int difesa_effettiva() const
     {
-        return rotto > 0 ? difesa / 2 : difesa;
+        int d = (difesa * (100 + difesa_bonus)) / 100;
+        return rotto > 0 ? d / 2 : d;
     }
 
     [[nodiscard]] constexpr int resistenza_effettiva() const
@@ -225,16 +234,18 @@ class Battaglia
 {
 
 public:
-    constexpr Battaglia(int incontro, uint32_t seme) :
+    constexpr Battaglia(int incontro, uint32_t seme, bool pilota_debole = false) :
         _caso(seme)
     {
-        ricomincia(incontro, seme);
+        ricomincia(incontro, seme, pilota_debole);
     }
 
     // Una battaglia nuova sul posto: la ROM tiene una sola Battaglia in EWRAM e la riusa.
-    constexpr void ricomincia(int incontro, uint32_t seme)
+    // Il pilota debole sceglie male apposta (solo l'Attacco): serve a mostrare che si puo' perdere.
+    constexpr void ricomincia(int incontro, uint32_t seme, bool pilota_debole = false)
     {
         _caso = Caso(seme);
+        _pilota_debole = pilota_debole;
         _n_azioni = 0;
         _n_eventi_round = 0;
         _fase = Fase::SCELTA_COMANDI;
@@ -260,7 +271,15 @@ public:
             _nemici[n] = da_statistiche(dati.statistiche, true);
             _nemici[n].azioni = dati.azioni_per_turno;
             _nemici[n].immune_al_taglio = dati.immune_al_taglio;
+            _nemici[n].script = dati.script;
         }
+    }
+
+    // I comandi degli eroi per il round che sta per cominciare, scelti da fuori (la scena, il
+    // giocatore): sostituiscono quelli del pilota. Va chiamata dopo la fase SCELTA_COMANDI.
+    constexpr void imposta_comando(int eroe, const Comando& comando)
+    {
+        _comandi[eroe] = comando;
     }
 
     // Una fase della macchina a stati. Ritorna false a battaglia finita.
@@ -383,6 +402,7 @@ private:
     int _n_eventi_round = 0;
     Fase _fase = Fase::SCELTA_COMANDI;
     Firma _firma;
+    bool _pilota_debole = false;
 
     static constexpr Unita da_statistiche(const Statistiche& s, bool nemico)
     {
@@ -496,6 +516,12 @@ private:
                 continue;
             }
 
+            if(_pilota_debole)
+            {
+                _comandi[e] = { TipoComando::USA_ABILITA, AbilitaId::ATTACCO, primo_vivo(true), 0 };
+                continue;
+            }
+
             AbilitaId firma = ABILITA_FIRMA[e];
             int costo_suprema = ABILITA[int(firma)].costo + BOOST_COSTO[BOOST_SUPREMA];
 
@@ -601,6 +627,33 @@ private:
         }
     }
 
+    // Il bersaglio di una regola dell'IA fra gli eroi vivi; -1 se non ce n'e'.
+    [[nodiscard]] constexpr int mira(Mira m, int param) const
+    {
+        if(m == Mira::EROE && param >= 0 && param < EROI && _eroi[param].vivo())
+        {
+            return param;
+        }
+
+        int scelto = -1;
+
+        for(int e = 0; e < EROI; ++e)
+        {
+            if(! _eroi[e].vivo())
+            {
+                continue;
+            }
+
+            if(scelto < 0 || (m == Mira::MENO_PV ? _eroi[e].pv < _eroi[scelto].pv
+                                                 : _eroi[e].difesa_effettiva() < _eroi[scelto].difesa_effettiva()))
+            {
+                scelto = e;
+            }
+        }
+
+        return scelto;
+    }
+
     // La coda del round: eroi e nemici, ordinata per velocita' (piu' priorita') decrescente, stabile.
     constexpr void prepara_coda()
     {
@@ -620,40 +673,69 @@ private:
 
         for(int n = 0; n < _n_nemici && ! senza_bersagli; ++n)
         {
-            const Unita& nemico = _nemici[n];
+            Unita& nemico = _nemici[n];
 
             if(! nemico.vivo())
             {
                 continue;
             }
 
-            for(int k = 0; k < nemico.azioni; ++k)
+            // In BREAK le sue azioni si annullano tutte: restano in coda per lasciare l'evento.
+            if(nemico.rotto > 0)
             {
-                // La prima azione punta chi ha meno Difesa, la seconda (il boss) chi ha meno PV.
-                int scelto = -1;
-
-                for(int e = 0; e < EROI; ++e)
+                for(int k = 0; k < nemico.azioni; ++k)
                 {
-                    if(! _eroi[e].vivo())
+                    Comando c{ TipoComando::USA_ABILITA, AbilitaId::COLPO_NEMICO, -1, 0 };
+                    _azioni[_n_azioni++] = { true, n, c, nemico.velocita };
+                }
+
+                continue;
+            }
+
+            ++nemico.ia_round;
+
+            for(int k = 0; k < nemico.azioni && ! senza_bersagli; ++k)
+            {
+                const Script& script = SCRIPT[nemico.script];
+
+                for(int r = 0; r < script.quante; ++r)
+                {
+                    const Regola& regola = REGOLE[script.prima + r];
+                    bool regge = regola.condizione == Condizione::SEMPRE ||
+                            (regola.condizione == Condizione::ROUND_UGUALE && nemico.ia_round == regola.param) ||
+                            (regola.condizione == Condizione::ROUND_PARI && nemico.ia_round % 2 == 0) ||
+                            (regola.condizione == Condizione::ROUND_DISPARI && nemico.ia_round % 2 == 1);
+
+                    if(! regge)
                     {
                         continue;
                     }
 
-                    if(scelto < 0 || (k == 0 ? _eroi[e].difesa_effettiva() < _eroi[scelto].difesa_effettiva()
-                                             : _eroi[e].pv < _eroi[scelto].pv))
-                    {
-                        scelto = e;
-                    }
-                }
+                    uint32_t bit = 1u << r;
+                    uint32_t& maschera = regola.limite == Limite::UNA_PER_BATTAGLIA ? nemico.ia_battaglia : nemico.ia_round_bit;
 
-                if(scelto < 0)
-                {
-                    senza_bersagli = true;
+                    if(regola.limite != Limite::RIPETIBILE)
+                    {
+                        if(maschera & bit)
+                        {
+                            continue;
+                        }
+
+                        maschera |= bit;
+                    }
+
+                    int bersaglio = regola.mira == Mira::SE_STESSO ? n : mira(regola.mira, regola.param_mira);
+
+                    if(bersaglio < 0)
+                    {
+                        senza_bersagli = true;
+                        break;
+                    }
+
+                    Comando c{ TipoComando::USA_ABILITA, regola.abilita, bersaglio, 0 };
+                    _azioni[_n_azioni++] = { true, n, c, nemico.velocita + ABILITA[int(regola.abilita)].priorita };
                     break;
                 }
-
-                Comando c{ TipoComando::USA_ABILITA, AbilitaId::COLPO_NEMICO, scelto, 0 };
-                _azioni[_n_azioni++] = { true, n, c, nemico.velocita + ABILITA[int(AbilitaId::COLPO_NEMICO)].priorita };
             }
         }
 
@@ -704,7 +786,13 @@ private:
             return;
         }
 
-        attore.fervore -= abilita.costo + BOOST_COSTO[c.boost];
+        int spesa = abilita.costo + BOOST_COSTO[c.boost];
+        attore.fervore -= spesa;
+
+        if(spesa > 0)
+        {
+            emetti(EventKind::FERVOR_SPEND, azione.nemico, azione.slot, azione.nemico, azione.slot, spesa, attore.fervore);
+        }
 
         if(c.tipo == TipoComando::SUPREMA)
         {
@@ -725,6 +813,14 @@ private:
             attore.fervore = attore.fervore + FERVORE_UBALDO_SOSTEGNO > attore.fervore_max ?
                     attore.fervore_max : attore.fervore + FERVORE_UBALDO_SOSTEGNO;
             emetti(EventKind::BARRIER_UP, false, azione.slot, false, bersaglio, punti, _eroi[bersaglio].pv);
+            emetti(EventKind::FERVOR_GAIN, false, azione.slot, false, azione.slot, FERVORE_UBALDO_SOSTEGNO, attore.fervore);
+            return;
+        }
+
+        if(abilita.effetto == Effetto::DIFESA_SU)
+        {
+            attore.difesa_bonus = DIFESA_SU_PERCENTO;
+            emetti(EventKind::DEF_UP, azione.nemico, azione.slot, azione.nemico, azione.slot, DIFESA_SU_PERCENTO, attore.pv);
             return;
         }
 
@@ -837,7 +933,7 @@ private:
         {
             bersaglio.fervore = bersaglio.fervore + FERVORE_GIORGIO_COLPITO > bersaglio.fervore_max ?
                     bersaglio.fervore_max : bersaglio.fervore + FERVORE_GIORGIO_COLPITO;
-            emetti(EventKind::FERVOR_GAIN, azione.nemico, azione.slot, false, slot, FERVORE_GIORGIO_COLPITO, bersaglio.pv);
+            emetti(EventKind::FERVOR_GAIN, azione.nemico, azione.slot, false, slot, FERVORE_GIORGIO_COLPITO, bersaglio.fervore);
         }
 
         if(abilita.effetto == Effetto::USTIONE && bersaglio.vivo())
@@ -871,6 +967,7 @@ private:
                 Unita& antonio = _eroi[ANTONIO];
                 antonio.fervore = antonio.fervore + FERVORE_ANTONIO_USTIONE > antonio.fervore_max ?
                         antonio.fervore_max : antonio.fervore + FERVORE_ANTONIO_USTIONE;
+                emetti(EventKind::FERVOR_GAIN, nemico, slot, false, ANTONIO, FERVORE_ANTONIO_USTIONE, antonio.fervore);
             }
 
             if(--u.ustione_turni <= 0)
@@ -885,6 +982,8 @@ private:
             --u.guardia;
         }
 
+        u.ia_round_bit = 0;
+
         if(u.rotto > 0 && --u.rotto == 0)
         {
             u.scudo = u.scudo_max;
@@ -892,9 +991,9 @@ private:
     }
 };
 
-[[nodiscard]] constexpr Firma gioca(int incontro, uint32_t seme)
+[[nodiscard]] constexpr Firma gioca(int incontro, uint32_t seme, bool pilota_debole = false)
 {
-    Battaglia b(incontro, seme);
+    Battaglia b(incontro, seme, pilota_debole);
     return b.gioca();
 }
 

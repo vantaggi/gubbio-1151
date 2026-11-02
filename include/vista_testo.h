@@ -53,6 +53,8 @@ public:
     VistaNumero(int x, int y, int inchiostro, const bn::sprite_palette_ptr& palette);
 
     void mostra(int valore);
+    void colloca(int x, int y);     // angolo in alto a sinistra, in pixel dello schermo
+    void nascondi();
 
 private:
     int _inchiostro;

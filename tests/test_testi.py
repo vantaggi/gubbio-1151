@@ -101,9 +101,9 @@ class Generatore(unittest.TestCase):
 TABELLE = ["GLIFI", "BYTE_GLIFO", "X_GLIFO", "RIGHE", "TAGLI", "TESTI", "CONTESTO_LARGHEZZA",
            "CONTESTO_RIGHE", "FONT", "CORNICE_PALETTE", "CORNICE_TILE", "LATO_ORIZZONTALE",
            "LATO_VERTICALE", "AREE", "ANELLO", "TILE_FONDALE", "PALETTE_FONDALI", "TILE_GIOCATORE",
-           "PALETTE_GIOCATORE"]
+           "PALETTE_GIOCATORE", "PALETTE_SFONDO", "PALETTE_SANTI", "PALETTE_NEMICI", "SFONDO", "TILE_SFONDO"]
 # I file che le definiscono o le avvolgono: header generati e la funzione d'accesso.
-DEFINIZIONI = {"include/testi.h", "include/tabella.h", "include/mondo.h"}
+DEFINIZIONI = {"include/testi.h", "include/tabella.h", "include/mondo.h", "include/battaglia_grafica.h"}
 ACCESSO_DIRETTO = re.compile(r"\b(" + "|".join(TABELLE) + r")\s*\[")
 
 

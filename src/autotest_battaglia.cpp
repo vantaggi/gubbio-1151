@@ -17,7 +17,7 @@ namespace
         for(int i = 0; i < battaglia::ATTESE_CONTEGGIO; ++i)
         {
             const battaglia::Attesa& a = battaglia::ATTESE[i];
-            battaglia::Firma f = battaglia::gioca(a.incontro, a.seme);
+            battaglia::Firma f = battaglia::gioca(a.incontro, a.seme, a.pilota_debole);
 
             if(f.hash != a.hash || f.eventi != a.eventi || f.round != a.round || f.esito != a.esito ||
                f.tipi != a.tipi || f.traboccato)
