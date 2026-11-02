@@ -40,6 +40,13 @@ METRI_PER_GRADONE, al massimo GRADONI_MAX, con una scala di passaggio in ogni tr
 (parapetto) sul bordo a valle delle aree alte. La salita va sempre verso nord-est, cioe' in basso a
 destra: ogni .area dichiara "monte basso" o "monte destra", e un belvedere sta su un lato a valle.
 
+Vie e piazze in proporzione, dalle misure muro a muro di mondo/fonti/misure_osm.json: la .area
+nomina la sua via ("via Via dei Consoli") e la sua piazza ("piazza Piazza Grande"). La via deve
+essere larga sulla griglia, in mediana, al massimo TOLLERANZA_VIA volte la misura (larghezza mediana
+/ 1,5 m, minimo 2 tile; "tolleranza_via" piu' larga solo dove OSM e' incompleto, annotata); una
+"strettoia N" vuole almeno un tratto largo N. La piazza sta libera, in scala, intorno al
+riferimento; un lato lungo compresso solo con un "fattore_piazza" dichiarato.
+
 Controlli sugli edifici: ognuno compare nella sua area con le misure in tile esatte (un edificio
 che esce dalla griglia o che risulta rimpicciolito e' rifiutato), nessuno si sovrappone a un altro o
 a un varco, e dopo averli posati ogni varco resta raggiungibile da ogni spawn.
@@ -107,6 +114,8 @@ LATI_A_VALLE = {"basso": "alto", "destra": "sinistra"}
 QUOTA_MIN_BELVEDERE = 60       # metri: sotto non c'e' niente da guardare dall'alto
 METRI_PER_GRADONE = 15
 GRADONI_MAX = 3
+TOLLERANZA_VIA = 1.5         # una via larga piu' del 50% della misura e' rifiutata
+TOLLERANZA_VIA_MAX = 2.0     # dove OSM e' incompleto (quadrante sud-est), annotata nella .area
 DISLIVELLO_PER_SCALE = 5       # metri fra le quote di due aree oltre cui il varco ha la scala
 PROFONDITA_SCALE = 3           # tile di scala davanti al varco
 LARGO_PASSAGGIO = 4            # la scala che attraversa un gradone
@@ -340,7 +349,7 @@ def solida(c):
 
 
 def leggi_area(nome_file, testo):
-    a = {"file": nome_file, "spawn": {}, "uscite": [], "griglia": [], "sposta": {}, "vicino": {}, "belvedere": [],
+    a = {"file": nome_file, "spawn": {}, "uscite": [], "griglia": [], "sposta": {}, "vicino": {}, "belvedere": [], "largo": {},
          "fattore": FATTORE_PREDEFINITO, "riferimento": None}
     in_griglia = False
     for n, riga in enumerate(testo.split("\n"), 1):
@@ -366,12 +375,31 @@ def leggi_area(nome_file, testo):
                         raise ValueError
                     a["uscite"].append((t[1], t[2], None, n))
                 else:
-                    # "uscita G dest 3 vicino_a B 16": varco e spawn entro 16 tile dal varco B
-                    if len(t) == 7 and t[4] == "vicino_a":
-                        a["vicino"][t[1]] = (t[5], int(t[6]), n)
-                    elif len(t) != 4:
-                        raise ValueError
+                    # "uscita G dest 3 vicino_a B 16": varco e spawn entro 16 tile dal varco B;
+                    # "largo 5": la strada che porta al varco e' larga 5 tile (per l'impaginazione)
+                    resto = t[4:]
+                    while resto:
+                        if resto[0] == "vicino_a":
+                            a["vicino"][t[1]] = (resto[1], int(resto[2]), n)
+                            resto = resto[3:]
+                        elif resto[0] == "largo":
+                            a["largo"][t[1]] = int(resto[1])
+                            resto = resto[2:]
+                        else:
+                            raise ValueError
                     a["uscite"].append((t[1], t[2], int(t[3]), n))
+            elif t[0] in ("via", "piazza"):
+                a[t[0]] = (riga.split(None, 1)[1].strip(), n)
+            elif t[0] == "fattore_piazza":
+                # "fattore_piazza 0.40": lato lungo compresso; "fattore_piazza 0.40 0.85": anche il corto
+                a["fattore_piazza"] = (float(t[1]), float(t[2]) if len(t) > 2 else None)
+            elif t[0] == "tolleranza_via":
+                a["tolleranza_via"] = float(t[1])
+                if not TOLLERANZA_VIA <= a["tolleranza_via"] <= TOLLERANZA_VIA_MAX:
+                    raise ErroreMondo(f"{nome_file}:{n}: tolleranza_via {t[1]} fuori da "
+                                      f"{TOLLERANZA_VIA}..{TOLLERANZA_VIA_MAX}")
+            elif t[0] == "strettoia":
+                a["strettoia"] = int(t[1])
             elif t[0] == "monte":
                 if t[1] not in LATI_A_MONTE:
                     raise ErroreMondo(f"{nome_file}:{n}: lato a monte '{t[1]}': la salita va verso nord-est, "
@@ -708,6 +736,75 @@ def controlla_vicinanze(a):
                               f"'{rif}', ne vuole al massimo {massimo}")
 
 
+def larghezza_via_tile(misura):
+    return max(2, int(round(misura["larghezza_mediana_m"] / 1.5)))
+
+
+def misure_piazza_tile(misura, fattore=None):
+    """(larghezza, altezza) sullo schermo: il lato lungo e' orizzontale se il suo asse punta a
+    nord o a sud (destra o sinistra), verticale se a est o a ovest. fattore = (lungo, corto) comprime
+    i due lati (None: in scala)."""
+    f_lungo, f_corto = fattore or (None, None)
+    lungo = int(round(misura["lato_lungo_m"] / 1.5 * (f_lungo or 1)))
+    corto = int(round(misura["lato_corto_m"] / 1.5 * (f_corto or 1)))
+    if M.lato_schermo(misura["asse_lungo_bussola"]) in ("destra", "sinistra"):
+        return lungo, corto
+    return corto, lungo
+
+
+def asse_lungo_area(a):
+    return "verticale" if a["altezza"] >= a["larghezza"] else "orizzontale"
+
+
+def larghezze_lungo_l_asse(a):
+    """Per ogni linea perpendicolare all'asse lungo dell'area, il tratto calpestabile piu' lungo."""
+    g = a["griglia"]
+    linee = g if asse_lungo_area(a) == "verticale" else ["".join(r[x] for r in g) for x in range(a["larghezza"])]
+    out = []
+    for linea in linee[1:-1]:
+        tratti = "".join("x" if not solida(c) and c not in VARCHI else " " for c in linea).split()
+        if tratti:
+            out.append(max(len(t) for t in tratti))
+    return out
+
+
+def controlla_proporzioni(a, misure):
+    if "via" in a:
+        nome, n = a["via"]
+        misura = misure["vie"].get(nome)
+        if not misura or misura["area"].lower() != a["id"] or "larghezza_mediana_m" not in misura:
+            raise ErroreMondo(f"{a['file']}:{n}: la via '{nome}' non ha una larghezza misurata per quest'area")
+        larga = larghezza_via_tile(misura)
+        tolleranza = a.get("tolleranza_via", TOLLERANZA_VIA)
+        righe = sorted(larghezze_lungo_l_asse(a))
+        mediana = righe[len(righe) // 2]
+        if mediana > larga * tolleranza:
+            raise ErroreMondo(f"{a['file']}:{n}: {nome} e' larga {mediana} tile sulla griglia, la misura dice "
+                              f"{larga} (al massimo {larga * tolleranza:g})")
+        if mediana < 2:
+            raise ErroreMondo(f"{a['file']}:{n}: {nome} e' larga {mediana} tile: per passare ne servono 2")
+        if "strettoia" in a and min(righe) > a["strettoia"]:
+            raise ErroreMondo(f"{a['file']}: la strettoia di {a['strettoia']} tile non c'e': il tratto piu' "
+                              f"stretto e' {min(righe)}")
+    if "piazza" in a:
+        nome, n = a["piazza"]
+        misura = misure["piazze"].get(nome)
+        if not misura:
+            raise ErroreMondo(f"{a['file']}:{n}: la piazza '{nome}' non e' fra le misure")
+        w, h = misure_piazza_tile(misura, a.get("fattore_piazza"))
+        if w > a["larghezza"] - 2 or h > a["altezza"] - 2:
+            raise ErroreMondo(f"{a['file']}:{n}: {nome} in scala e' {w}x{h} tile e non sta nella griglia "
+                              f"{a['larghezza']}x{a['altezza']}: serve un fattore_piazza")
+        rx, ry = a["riferimento"]
+        x0, y0 = rx - w // 2, ry - h // 2
+        for y in range(y0, y0 + h):
+            for x in range(x0, x0 + w):
+                if not (0 <= x < a["larghezza"] and 0 <= y < a["altezza"]) or \
+                        (solida(a["griglia"][y][x]) and a["griglia"][y][x] not in "F"):
+                    raise ErroreMondo(f"{a['file']}:{n}: {nome} ({w}x{h} tile intorno al riferimento) non e' "
+                                      f"libera in ({x}, {y})")
+
+
 def anello(grafo):
     """L'anello di grafo.json, senza la ripetizione finale della prima area."""
     return [aid.lower() for aid in grafo["anello"][:-1]]
@@ -894,7 +991,9 @@ def mondo_del_repo():
         varchi = json.load(f)["varchi"]
     with open(M.OUT_MONUMENTI, encoding="utf-8") as f:
         monumenti = json.load(f)["monumenti"]
-    return {"grafo": M.carica_grafo(), "varchi": varchi, "monumenti": monumenti}
+    with open(os.path.join(RADICE, "mondo", "fonti", "misure_osm.json"), encoding="utf-8") as f:
+        misure = json.load(f)
+    return {"grafo": M.carica_grafo(), "varchi": varchi, "monumenti": monumenti, "misure": misure}
 
 
 def genera(sorgenti, palette_stile, mondo=None):
@@ -907,6 +1006,7 @@ def genera(sorgenti, palette_stile, mondo=None):
     controlla(aree, mondo)
     for a in aree:
         controlla_vicinanze(a)
+        controlla_proporzioni(a, mondo["misure"])
     return scrivi_header(aree, mondo["grafo"], palette_stile)
 
 
