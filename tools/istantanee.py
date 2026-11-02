@@ -62,6 +62,14 @@ COLORI = {
     "D": (150, 190, 110),   # aiuola
     "N": (120, 170, 90),    # prato
     "b": (226, 216, 190),   # ghiaia degli stradoni
+    "r": (80, 140, 70),     # cespuglio
+    "m": (160, 150, 130),   # muretto a secco
+    "h": (170, 150, 120),   # chiostro
+    "q": (120, 80, 40),     # panca
+    "l": (240, 200, 90),    # candeliere
+    "w": (90, 120, 200),    # vetrata
+    "p": (200, 200, 190),   # paracarro
+    "v": (70, 130, 190),    # vasca
     "c": (200, 120, 90),    # cappelletta
     "k": (140, 140, 130),   # roccia
     "n": (230, 230, 220),   # colonna

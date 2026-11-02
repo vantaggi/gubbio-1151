@@ -24,6 +24,14 @@ LARGO = 4              # tile di ghiaia per tratto
 X0, PASSO = 6, 16      # colonna del primo tratto e distanza fra un tratto e il successivo
 Y_INIZIO = 2           # il primo tratto parte dall'arco di Porta Sant'Ubaldo
 LATO_CAPPELLETTA = 3
+GOMITO = 2             # tile di ghiaia in piu' nel gomito interno di un tornante: la curva tonda
+
+
+def caso(x, y, seme=0):
+    """Un numero fisso in [0, 1) per la cella: lo stesso caso di genera_mondo.pseudo."""
+    h = (x * 374761393 + y * 668265263 + seme * 2246822519) & 0xFFFFFFFF
+    h = ((h ^ (h >> 13)) * 1274126177) & 0xFFFFFFFF
+    return ((h ^ (h >> 16)) & 0xFFFF) / 65536.0
 
 
 def colonne(n):
@@ -65,6 +73,20 @@ def disegna(dati):
             x_dopo = righe[k + 1][0]
             ghiaia(x, fascia[0], x_dopo + LARGO - 1, fascia[1])
             tornanti.append((x, x_dopo, fascia, giu))
+            # la curva: il gomito interno si allarga in tondo verso i due tratti
+            dentro = fascia[0] - 1 if giu else fascia[1] + 1
+            passo = -1 if giu else 1
+            for k in range(GOMITO):
+                for xx in (x + LARGO + k, x_dopo - 1 - k):
+                    for j in range(GOMITO - k):
+                        g[dentro + passo * j][xx] = "b"
+            # il muretto a secco sul lato esterno del tornante, e gli spigoli di fuori smussati
+            fuori = fascia[1] + 1 if giu else fascia[0] - 1
+            for xx in range(x + 1, x_dopo + LARGO - 1):
+                if 0 < fuori < H - 1:
+                    g[fuori][xx] = "m"
+            for xx in (x, x_dopo + LARGO - 1):
+                g[fascia[1] if giu else fascia[0]][xx] = "m"
     # l'arrivo: dall'ultimo tratto al bordo destro, verso la Basilica
     x, _, y_a = righe[-1]
     ghiaia(x, y_a, W - 3, y_a + LARGO - 1)
@@ -85,20 +107,30 @@ def disegna(dati):
         for y in range(cy, cy + LATO_CAPPELLETTA):
             for xx in range(cx, cx + LATO_CAPPELLETTA):
                 g[y][xx] = "c"
-    # scarpate: lecci, roverelle e rocce accanto alla ghiaia, mai addosso ai varchi
-    for y in range(1, H - 1):
-        for x in range(1, W - 1):
-            if g[y][x] != "#":
-                continue
-            accanto = [g[y + dy][x + dx] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))]
-            vicino = [g[y + dy][x + dx] for dx in (-2, -1, 0, 1, 2) for dy in (-2, -1, 0, 1, 2)
-                      if 0 <= y + dy < H and 0 <= x + dx < W]
-            if "b" not in accanto or any(c in "ABEc" for c in vicino):
-                continue
-            if (x * 7 + y * 13) % 5 == 0:
-                g[y][x] = "T"
-            elif (x * 5 + y * 3) % 11 == 0:
-                g[y][x] = "k"
+    # i paracarri sul lato a valle (sinistra) dei tratti, uno ogni 4 tile
+    for x, y_da, y_a in righe:
+        for y in range(min(y_da, y_a) + 2, max(y_da, y_a) - 1, 4):
+            if g[y][x - 1] == "#":
+                g[y][x - 1] = "p"
+    # il bosco: alberi e cespugli a macchie, rocce affioranti, mai in fila e mai addosso ai varchi
+    piantati = set()
+    # (non nelle prime righe: li' c'e' il belvedere sulla citta')
+    for y, x in sorted(((y, x) for y in range(4, H - 1) for x in range(1, W - 1)), key=lambda c: caso(c[1], c[0], 4)):
+        if g[y][x] != "#":
+            continue
+        vicino = [g[y + dy][x + dx] for dx in (-2, -1, 0, 1, 2) for dy in (-2, -1, 0, 1, 2)
+                  if 0 <= y + dy < H and 0 <= x + dx < W]
+        if any(c in "ABEc" for c in vicino) or any((x + i, y + j) in piantati for i in (-1, 0, 1) for j in (-1, 0, 1)):
+            continue
+        macchia = caso(x // 7, y // 7, 5)
+        sul_bordo = "b" in vicino
+        r = caso(x, y, 6)
+        if r < (0.30 if sul_bordo else 0.10) * (0.5 + macchia):
+            g[y][x] = "T" if caso(x, y, 7) > 0.25 else "r"
+            piantati.add((x, y))
+        elif r > 0.985 or (sul_bordo and r > 0.94):
+            g[y][x] = "k"
+            piantati.add((x, y))
     spawn = {
         1: (X0 + 1, 8),                        # da via Sant'Ubaldo, sotto la porta
         3: (X0 + 1, y_e + LARGO + 4),          # da via Appennino
