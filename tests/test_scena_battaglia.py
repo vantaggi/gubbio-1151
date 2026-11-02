@@ -126,6 +126,43 @@ class ScontriSullaMappa(unittest.TestCase):
             self.assertIn("static_assert(" + prova, autotest)
 
 
+DATI = open(os.path.join(RADICE, "include", "battaglia_dati.h"), encoding="utf-8").read()
+
+
+def consumo_all_evento(sorgente):
+    """Il corpo che toglie un oggetto dall'inventario: deve stare nel consumo dell'evento."""
+    m = re.search(r"void consuma_oggetto\(const Evento& e\)(.*?)\n        \}\n", sorgente, re.S)
+    return m.group(1) if m else ""
+
+
+class Consumabili(unittest.TestCase):
+    """Gli oggetti in battaglia: i dati dal prototipo (item_data.h) e il consumo quando l'effetto
+    arriva a schermo. Le regole (cura entro i PV massimi, purifica, non usabili inerti) sono provate a
+    tempo di compilazione in src/autotest_oggetti.cpp."""
+
+    def test_dati_dal_prototipo(self):
+        righe = re.findall(r"\{ (true|false), (\d+), (true|false), (\d+), (\d+) \},\s+// (\w+)", DATI)
+        self.assertEqual([r[5] for r in righe], ["Crescia", "Cenere", "Baccala", "Biscotti", "Vino"])
+        crescia, _, baccala, biscotti, _ = righe
+        self.assertEqual((crescia[0], crescia[1]), ("true", "100"))
+        self.assertEqual((biscotti[0], biscotti[2], biscotti[3]), ("true", "true", "10"))
+        self.assertEqual(baccala[4], "1")
+
+    def test_si_consuma_all_evento(self):
+        corpo = consumo_all_evento(SCENA)
+        self.assertIn("EventKind::CURA", corpo)
+        self.assertIn("EventKind::PURIFICA", corpo)
+        self.assertIn("quanti - 1", corpo)
+        self.assertIn("consuma_oggetto(evento);", SCENA)
+        autotest = open(os.path.join(RADICE, "src", "autotest_oggetti.cpp"), encoding="utf-8").read()
+        self.assertIn("static_assert(CRESCIA.pv_dopo <= CRESCIA.pv_max", autotest)
+
+    def test_negativa_consumo_alla_scelta(self):
+        """Togliere l'oggetto quando lo si sceglie (e non all'evento) e' quello che il test rifiuta."""
+        finto = "void scegli_comandi() { _partita->oggetti[0] -= 1; }"
+        self.assertEqual(consumo_all_evento(finto), "")
+
+
 class Scena(unittest.TestCase):
 
     def test_le_barre_si_leggono_dalla_vista(self):

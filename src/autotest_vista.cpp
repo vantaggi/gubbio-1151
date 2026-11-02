@@ -51,7 +51,7 @@ namespace
 
                 v.consuma(e);
                 int bersaglio = slot_vista(e.bersaglio_nemico, e.bersaglio);
-                bool tocca_pv = e.kind == EventKind::HIT || e.kind == EventKind::BURN_TICK;
+                bool tocca_pv = e.kind == EventKind::HIT || e.kind == EventKind::BURN_TICK || e.kind == EventKind::CURA;
                 bool tocca_fervore = e.kind == EventKind::FERVOR_GAIN || e.kind == EventKind::FERVOR_SPEND;
 
                 for(int s = 0; s < SLOT_VISTA; ++s)

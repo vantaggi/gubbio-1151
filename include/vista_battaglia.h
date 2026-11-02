@@ -6,7 +6,7 @@
 // La vista della battaglia, senza Butano: quel che lo schermo mostra (le barre dei PV e del Fervore,
 // chi e' caduto) e come si anima ogni evento. Il modello (include/battaglia.h) risolve un round tutto
 // insieme; la vista consuma gli eventi uno per volta, e una barra cambia solo nel momento in cui la
-// scena consuma l'evento che la riguarda (HIT, BURN_TICK, FERVOR_GAIN, FERVOR_SPEND): mai leggendo
+// scena consuma l'evento che la riguarda (HIT, BURN_TICK, CURA, FERVOR_GAIN, FERVOR_SPEND): mai leggendo
 // i PV gia' risolti del modello. src/autotest_vista.cpp lo prova a tempo di compilazione.
 namespace gubbio::battaglia
 {
@@ -30,6 +30,7 @@ enum class Gesto : uint8_t
     POTERE,         // l'attore si raccoglie: barriera, guardia, carica, difesa su, azione persa
     USTIONE,        // il bersaglio lampeggia di fuoco, il danno sale
     CADUTA,         // il bersaglio sparisce
+    CURA,           // un consumabile: chi lo usa si raccoglie, il bersaglio si illumina, i PV salgono
 };
 
 struct Mossa
@@ -85,6 +86,15 @@ public:
         case EventKind::BURN_TICK:
             _pv[bersaglio] = e.pv_dopo;
             m = { Gesto::USTIONE, -1, bersaglio, e.quantita };
+            break;
+
+        case EventKind::CURA:
+            _pv[bersaglio] = e.pv_dopo;
+            m = { Gesto::CURA, attore, bersaglio, e.quantita };
+            break;
+
+        case EventKind::PURIFICA:
+            m = { Gesto::CURA, attore, bersaglio, 0 };
             break;
 
         case EventKind::FERVOR_GAIN:
@@ -178,6 +188,11 @@ enum class Puntamento : uint8_t
 
 [[nodiscard]] constexpr Puntamento mira_del_comando(const Comando& c)
 {
+    if(c.tipo == TipoComando::OGGETTO)
+    {
+        return Puntamento::ALLEATO;
+    }
+
     if(c.tipo != TipoComando::USA_ABILITA)
     {
         return Puntamento::NESSUNO;

@@ -207,7 +207,9 @@ namespace
     class Scena
     {
     public:
-        Scena(int incontro, Guida guida, const bn::sprite_palette_ptr& palette_testo, bool istantanee) :
+        Scena(int incontro, Guida guida, const bn::sprite_palette_ptr& palette_testo, bool istantanee,
+              GameState* partita) :
+            _partita(partita),
             _incontro(incontro),
             _guida(guida),
             _istantanee(istantanee),
@@ -300,7 +302,9 @@ namespace
 
                 for(int i = 0; i < g_scena.eventi_round(); ++i)
                 {
-                    Mossa m = _vista.consuma(g_scena.evento(i));
+                    const Evento& evento = g_scena.evento(i);
+                    Mossa m = _vista.consuma(evento);
+                    consuma_oggetto(evento);
                     aggiorna_barre();
                     bool fotografa = false;
 
@@ -365,6 +369,8 @@ namespace
         }
 
     private:
+        GameState* _partita;
+        int _riservati[int(OggettoId::CONTEGGIO)] = {};     // oggetti gia' scelti in questo round
         int _incontro;
         Guida _guida;
         bool _istantanee;
@@ -433,6 +439,26 @@ namespace
             }
         }
 
+        // L'oggetto si toglie dall'inventario quando il suo effetto arriva a schermo, non quando si
+        // sceglie: chi cade prima di agire non lo spreca.
+        void consuma_oggetto(const Evento& e)
+        {
+            OggettoId usato = e.kind == EventKind::CURA ? OggettoId::CRESCIA : OggettoId::BISCOTTI;
+
+            if(! _partita || (e.kind != EventKind::CURA && e.kind != EventKind::PURIFICA))
+            {
+                return;
+            }
+
+            uint8_t& quanti = _partita->oggetti[int(usato)];
+            quanti = quanti > 0 ? uint8_t(quanti - 1) : 0;
+        }
+
+        [[nodiscard]] int disponibili(OggettoId o) const
+        {
+            return _partita ? _partita->oggetti[int(o)] - _riservati[int(o)] : 0;
+        }
+
         void posa(int s, bool azione)
         {
             _sprite[s]->set_tiles(*_figure[s], azione ? 1 : 0);
@@ -457,6 +483,11 @@ namespace
 
         void scegli_comandi()
         {
+            for(int& r : _riservati)
+            {
+                r = 0;
+            }
+
             for(int e = 0; e < EROI; ++e)
             {
                 const Unita& eroe = g_scena.eroe(e);
@@ -466,7 +497,7 @@ namespace
                     continue;
                 }
 
-                bn::vector<Opzione, 4> opzioni;
+                bn::vector<Opzione, 6> opzioni;
                 AbilitaId firma = GUBBIO_VOCE(ABILITA_FIRMA, e);
 
                 if(eroe.carica)
@@ -501,6 +532,21 @@ namespace
                     {
                         opzioni.push_back({ TestoId::BATT_CARICA, { TipoComando::CARICA, firma, -1, 0 } });
                     }
+
+                    // i consumabili dell'inventario (quelli usabili, se ne restano)
+                    const OggettoId usabili[2] = { OggettoId::CRESCIA, OggettoId::BISCOTTI };
+                    const TestoId nomi_oggetti[2] = { TestoId::BATT_CRESCIA, TestoId::BATT_BISCOTTI };
+
+                    for(int k = 0; k < 2; ++k)
+                    {
+                        if(disponibili(usabili[k]) > 0)
+                        {
+                            Comando c;
+                            c.tipo = TipoComando::OGGETTO;
+                            c.oggetto = usabili[k];
+                            opzioni.push_back({ nomi_oggetti[k], c });
+                        }
+                    }
                 }
 
                 int scelta = 0;
@@ -518,6 +564,17 @@ namespace
                             scelta = (scelta + passo) % opzioni.size();
                             _voce.mostra(opzioni[scelta].testo);
                             _voce.rivela_tutto();
+                        }
+
+                        // per un oggetto, quanti ne restano
+                        if(opzioni[scelta].comando.tipo == TipoComando::OGGETTO)
+                        {
+                            _numero.mostra(disponibili(opzioni[scelta].comando.oggetto));
+                            _numero.colloca(200, PANNELLO_Y + 18);
+                        }
+                        else
+                        {
+                            _numero.nascondi();
                         }
 
                         if(bn::keypad::a_pressed())
@@ -540,6 +597,13 @@ namespace
                 }
 
                 _sprite[e]->set_y(_y[e]);
+                _numero.nascondi();
+
+                if(comando.tipo == TipoComando::OGGETTO)
+                {
+                    _riservati[int(comando.oggetto)] += 1;
+                }
+
                 g_scena.imposta_comando(e, comando);
                 attendi(1);
             }
@@ -726,7 +790,7 @@ Esito scena_battaglia(int incontro, uint32_t seme, Guida guida, const bn::sprite
     Esito esito;
 
     {
-        Scena scena(incontro, guida, palette_testo, istantanee);
+        Scena scena(incontro, guida, palette_testo, istantanee, partita);
         esito = scena.gioca(partita);
     }
 

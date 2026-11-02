@@ -26,7 +26,9 @@ DATI = open(os.path.join(RADICE, "include", "battaglia_dati.h"), encoding="utf-8
 MOTORE = open(os.path.join(RADICE, "include", "battaglia.h"), encoding="utf-8").read()
 LOG_GBA = os.path.join(RADICE, "tests", "dati", "battaglia_mgba.txt")
 FIRME = B.tutte_le_firme()
-TUTTI_I_TIPI = (1 << len(B.EVENT_KINDS)) - 1
+# I tipi che il pilota puo' emettere: tutti tranne quelli dei consumabili (CURA, PURIFICA), che
+# usa solo il giocatore e che si provano a tempo di compilazione (src/autotest_oggetti.cpp).
+TUTTI_I_TIPI = (1 << B.TIPI_DEL_PILOTA) - 1
 
 
 def righe_tabella(testo, nome):
