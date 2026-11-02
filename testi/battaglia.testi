@@ -25,3 +25,5 @@ BATT_BERSAGLIO            | DIALOGO | Su e giù per il bersaglio, A conferma, B 
 BATT_SALE_UBALDO          | DIALOGO | Sant'Ubaldo sale di livello!
 BATT_SALE_GIORGIO         | DIALOGO | San Giorgio sale di livello!
 BATT_SALE_ANTONIO         | DIALOGO | Sant'Antonio sale di livello!
+BATT_CRESCIA              | DIALOGO | Crescia di Pasqua
+BATT_BISCOTTI             | DIALOGO | Biscotti all'Anice

@@ -233,6 +233,36 @@ inline constexpr Incontro INCONTRO[INCONTRI] = {
     { 1, { NemicoId::CORRADO_DI_SPOLETO } },                                                          // Duello con Corrado
 };
 
+// I consumabili (dal prototipo, include/item_data.h, Sezione 8E del GDD), nell'ordine dei posti
+// di GameState::oggetti. In battaglia per ora si usano la Crescia (cura) e i Biscotti (purificano
+// dall'ustione); gli altri sono nell'inventario ma non ancora usabili.
+enum class OggettoId : uint8_t
+{
+    CRESCIA,        // Crescia di Pasqua al Formaggio
+    CENERE,         // Crescia sotto la Cenere
+    BACCALA,        // Baccala' alla Ceraiola
+    BISCOTTI,       // Biscotti all'Anice di Sant'Ubaldo
+    VINO,           // Vino Rosso delle Colline Eugubine
+    CONTEGGIO,
+};
+
+struct Oggetto
+{
+    bool usabile;       // si puo' scegliere in battaglia
+    int cura_pv;        // PV restituiti a un alleato vivo
+    bool purifica;      // toglie l'ustione
+    int priorita;       // si somma alla velocita' nella coda, come per le abilita'
+    int massimo;        // quanti se ne portano
+};
+
+inline constexpr Oggetto OGGETTI[int(OggettoId::CONTEGGIO)] = {
+    { true, 100, false, 6, 5 },     // Crescia
+    { false, 0, false, 6, 2 },      // Cenere (la rianimazione: piu' avanti)
+    { false, 0, false, 6, 1 },      // Baccala' (tutto il Fervore: piu' avanti)
+    { true, 0, true, 10, 5 },       // Biscotti: consumabile rapido, priorita' sopra il Bastione
+    { false, 0, false, 6, 3 },      // Vino (il potenziamento: piu' avanti)
+};
+
 inline constexpr int ROUND_MAX = 40;            // oltre, la battaglia finisce in parita'
 
 }

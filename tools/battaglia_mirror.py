@@ -90,7 +90,10 @@ NOMI_INCONTRI = ["Pattuglia Perugina", "Imboscata agli Stradoni", "Duello con Co
 (HIT, SHIELD_BREAK, BARRIER_ABSORB, GUARD_REDIRECT, FERVOR_GAIN, BURN_TICK, DEFEAT, BARRIER_UP, GUARD_UP,
  CHARGE, BREAK_SKIP, IMMUNE, FERVOR_SPEND, DEF_UP) = range(14)
 EVENT_KINDS = ["HIT", "SHIELD_BREAK", "BARRIER_ABSORB", "GUARD_REDIRECT", "FERVOR_GAIN", "BURN_TICK", "DEFEAT",
-               "BARRIER_UP", "GUARD_UP", "CHARGE", "BREAK_SKIP", "IMMUNE", "FERVOR_SPEND", "DEF_UP"]
+               "BARRIER_UP", "GUARD_UP", "CHARGE", "BREAK_SKIP", "IMMUNE", "FERVOR_SPEND", "DEF_UP",
+               # i consumabili: li usa solo il giocatore, il pilota mai (il mirror non li gioca)
+               "CURA", "PURIFICA"]
+TIPI_DEL_PILOTA = EVENT_KINDS.index("CURA")
 IN_CORSO, VITTORIA, SCONFITTA, PARITA = range(4)
 T_ABILITA, T_CARICA, T_SUPREMA = range(3)
 M32 = 0xFFFFFFFF

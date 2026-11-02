@@ -34,8 +34,14 @@ enum class EventKind : uint8_t
     IMMUNE,           // colpo fisico su Corrado non ustionato: nessun danno
     FERVOR_SPEND,     // un eroe spende Fervore per agire: quantita = spesa, pv_dopo = Fervore rimasto
     DEF_UP,           // Scudo di Forgia: quantita = percento di Difesa in piu'
+    CURA,             // un consumabile cura un alleato: quantita = PV restituiti, pv_dopo = PV dopo
+    PURIFICA,         // un consumabile toglie l'ustione a un alleato
     COUNT,
 };
+
+// I tipi che il pilota puo' emettere: tutti tranne CURA e PURIFICA (i consumabili li usa solo il
+// giocatore). E' la copertura che prova_battaglia e il mirror controllano.
+inline constexpr uint32_t TIPI_DEL_PILOTA = (1u << int(EventKind::CURA)) - 1;
 
 struct Evento
 {
@@ -80,6 +86,7 @@ enum class TipoComando : uint8_t
     USA_ABILITA,
     CARICA,
     SUPREMA,
+    OGGETTO,          // un consumabile (Comando::oggetto) su un alleato
 };
 
 struct Comando
@@ -88,6 +95,7 @@ struct Comando
     AbilitaId abilita = AbilitaId::ATTACCO;
     int bersaglio = -1;         // -1: il bersaglio predefinito
     int boost = 0;
+    OggettoId oggetto = OggettoId::CRESCIA;     // solo per OGGETTO
 };
 
 struct Unita
@@ -667,7 +675,8 @@ private:
             if(_eroi[e].vivo())
             {
                 const Comando& c = _comandi[e];
-                int priorita = c.tipo == TipoComando::CARICA ? 0 : ABILITA[int(c.abilita)].priorita;
+                int priorita = c.tipo == TipoComando::CARICA ? 0 :
+                               (c.tipo == TipoComando::OGGETTO ? OGGETTI[int(c.oggetto)].priorita : ABILITA[int(c.abilita)].priorita);
                 _azioni[_n_azioni++] = { false, e, c, _eroi[e].velocita + priorita };
             }
         }
@@ -782,6 +791,12 @@ private:
             return;
         }
 
+        if(c.tipo == TipoComando::OGGETTO)
+        {
+            usa_oggetto(azione, c);
+            return;
+        }
+
         const Abilita& abilita = ABILITA[int(c.abilita)];
 
         if(attore.fervore < abilita.costo + BOOST_COSTO[c.boost])
@@ -869,6 +884,36 @@ private:
             }
 
             colpo(azione, abilita, c.boost, bersaglio);
+        }
+    }
+
+    // Un consumabile: su un alleato vivo (il bersaglio, o il piu' ferito); se non c'e' nessuno da
+    // curare o da purificare l'oggetto non si consuma (nessun evento).
+    constexpr void usa_oggetto(const Azione& azione, const Comando& c)
+    {
+        const Oggetto& o = OGGETTI[int(c.oggetto)];
+        int bersaglio = c.bersaglio >= 0 && c.bersaglio < EROI && _eroi[c.bersaglio].vivo() ? c.bersaglio : piu_ferito();
+
+        if(! o.usabile || bersaglio < 0)
+        {
+            return;
+        }
+
+        Unita& u = _eroi[bersaglio];
+
+        if(o.cura_pv > 0)
+        {
+            int cura = u.pv + o.cura_pv > u.pv_max ? u.pv_max - u.pv : o.cura_pv;
+            u.pv += cura;
+            emetti(EventKind::CURA, false, azione.slot, false, bersaglio, cura, u.pv);
+        }
+
+        if(o.purifica)
+        {
+            u.ustione_cariche = 0;
+            u.ustione_danno = 0;
+            u.ustione_turni = 0;
+            emetti(EventKind::PURIFICA, false, azione.slot, false, bersaglio, 0, u.pv);
         }
     }
 

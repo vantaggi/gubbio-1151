@@ -34,7 +34,7 @@ void prova_battaglia()
         bn::core::update();
     }
 
-    bool copertura = tipi == (1u << int(battaglia::EventKind::COUNT)) - 1;
+    bool copertura = tipi == battaglia::TIPI_DEL_PILOTA;
     BN_LOG("Battaglie: ", uguali, " uguali al mirror, ", diverse, " diverse, tipi ", tipi,
            copertura ? ", copertura completa" : ", copertura INCOMPLETA");
 }
