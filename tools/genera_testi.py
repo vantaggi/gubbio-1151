@@ -41,6 +41,8 @@ CONTESTI = {
     "DIALOGO": (224, 3),
     "AREA": (192, 1),
     "HUD": (96, 1),
+    # la voce del narratore nelle bande nere delle cutscene (24 px): al massimo 2 righe da 224 px
+    "NARRATORE": (224, 2),
 }
 
 assert all(l <= LARGHEZZA_SPRITE * SPRITE_PER_RIGA for l, _ in CONTESTI.values())

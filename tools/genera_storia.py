@@ -170,6 +170,10 @@ def id_parlante(chi):
     return "PARLANTE_" + re.sub(r"[^A-Z]", "_", chi)
 
 
+def id_narratore(codice, k):
+    return "R_" + codice.replace("-", "_") + f"_{k:02d}"
+
+
 def id_titolo(codice):
     return "SCENA_" + codice.replace("-", "_")
 
@@ -252,6 +256,9 @@ def testi_del_copione(scene, npc):
     for s in scene:
         for k, (chi, _, frase, _) in enumerate(s["battute"]):
             righe.append(f"{id_battuta(s['codice'], k):26s}| DIALOGO | {frase}")
+            # il narratore parla anche nelle bande delle cutscene: la stessa frase, al massimo 2 righe
+            if chi == "NARRATORE":
+                righe.append(f"{id_narratore(s['codice'], k):26s}| NARRATORE | {frase}")
     for i, p in enumerate(npc):
         for k, (_, _, _, frase) in enumerate(p["frasi"]):
             righe.append(f"{id_npc(i, k):26s}| DIALOGO | {frase}")

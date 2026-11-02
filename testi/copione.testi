@@ -34,15 +34,25 @@ SCENA_B_05                | DIALOGO | Porta Metauro
 SCENA_E_01                | DIALOGO | La terza alba
 SCENA_E_02                | DIALOGO | La vetrata
 C_P_01_00                 | DIALOGO | Sul Monte Ingino c'è una vetrata che racconta una guerra.
+R_P_01_00                 | NARRATORE | Sul Monte Ingino c'è una vetrata che racconta una guerra.
 C_P_01_01                 | DIALOGO | Chi la guarda oggi vede soldati in rotta, stendardi spezzati e un vescovo con le braccia aperte.
+R_P_01_01                 | NARRATORE | Chi la guarda oggi vede soldati in rotta, stendardi spezzati e un vescovo con le braccia aperte.
 C_P_01_02                 | DIALOGO | Ma prima che il vetro avesse un colore, la storia andava ancora combattuta.
+R_P_01_02                 | NARRATORE | Ma prima che il vetro avesse un colore, la storia andava ancora combattuta.
 C_P_02_00                 | DIALOGO | Nel maggio del 1151, l'invidia e la sete di dominio spezzarono la pace dei colli.
+R_P_02_00                 | NARRATORE | Nel maggio del 1151, l'invidia e la sete di dominio spezzarono la pace dei colli.
 C_P_02_01                 | DIALOGO | Spoleto e Foligno. Assisi, Spello e Bettona. Todi e Cagli.
+R_P_02_01                 | NARRATORE | Spoleto e Foligno. Assisi, Spello e Bettona. Todi e Cagli.
 C_P_02_02                 | DIALOGO | Nocera, Gualdo Tadino e Fossato. E sopra tutte, Perugia.
+R_P_02_02                 | NARRATORE | Nocera, Gualdo Tadino e Fossato. E sopra tutte, Perugia.
 C_P_02_03                 | DIALOGO | Undici città confederate cinsero d'assedio la roccaforte di Gubbio.
+R_P_02_03                 | NARRATORE | Undici città confederate cinsero d'assedio la roccaforte di Gubbio.
 C_P_02_04                 | DIALOGO | Senza vie di fuga e con le scorte al lumicino, la città sembrò destinata a cadere nell'oblio.
+R_P_02_04                 | NARRATORE | Senza vie di fuga e con le scorte al lumicino, la città sembrò destinata a cadere nell'oblio.
 C_P_02_05                 | DIALOGO | Ma dalle pietre del Monte Ingino non sorse la resa.
+R_P_02_05                 | NARRATORE | Ma dalle pietre del Monte Ingino non sorse la resa.
 C_P_02_06                 | DIALOGO | Sorse il fuoco della Fede.
+R_P_02_06                 | NARRATORE | Sorse il fuoco della Fede.
 C_A1_01_00                | DIALOGO | Gubbio, Piazza Grande. Il primo giorno.
 C_A1_01_01                | DIALOGO | Monsignore... undici stendardi circondano la conca.
 C_A1_01_02                | DIALOGO | Datemi venti cavalieri, console. Prima di sera li ricaccio oltre i colli.
@@ -135,6 +145,7 @@ C_A1_08_06                | DIALOGO | La fiamma più piccola consuma la foresta 
 C_A1_08_07                | DIALOGO | Seconda notte.
 C_A1_08_08                | DIALOGO | Signore, non ti chiedo di vincere per noi. Ti chiedo di non farci cedere.
 C_A1_08_09                | DIALOGO | E il legno si fece luce.
+R_A1_08_09                | NARRATORE | E il legno si fece luce.
 C_A1_08_10                | DIALOGO | Il Cero della mitra si accende sopra Ubaldo. La sua verga risplende.
 C_A1_08_11                | DIALOGO | Il Cero dell'elmo si accende sopra Giorgio. La sua lancia diventa d'oro.
 C_A1_08_12                | DIALOGO | Il Cero della fiamma si accende sopra Antonio. Il suo fuoco si alza fino alle volte.
@@ -212,8 +223,11 @@ C_E_01_08                 | DIALOGO | Mi serve altra legna.
 C_E_01_09                 | DIALOGO | Resti, allora?
 C_E_01_10                 | DIALOGO | Resto finché c'è legna da bruciare. Qui, mi pare, ce ne sarà parecchia.
 C_E_02_00                 | DIALOGO | Così passò la terza alba, e Gubbio non aprì le porte.
+R_E_02_00                 | NARRATORE | Così passò la terza alba, e Gubbio non aprì le porte.
 C_E_02_01                 | DIALOGO | Un vetro ha preso il suo colore. Gli altri aspettano ancora la loro storia.
+R_E_02_01                 | NARRATORE | Un vetro ha preso il suo colore. Gli altri aspettano ancora la loro storia.
 C_E_02_02                 | DIALOGO | Fine del primo atto. La cronaca continua.
+R_E_02_02                 | NARRATORE | Fine del primo atto. La cronaca continua.
 NPC_00_00                 | DIALOGO | Non ho dormito, monsignore. Ho contato i fuochi nella piana. Sono di più.
 NPC_00_01                 | DIALOGO | La città tace, come avete chiesto. Non l'ho mai sentita così.
 NPC_01_00                 | DIALOGO | Siete scesi dal Bottaccione? E la roccia nera... l'avete vista? Ve l'avevo detto.
