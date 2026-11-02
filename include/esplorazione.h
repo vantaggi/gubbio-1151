@@ -50,7 +50,7 @@ public:
     }
 
 private:
-    bn::regular_bg_tiles_ptr _tiles;
+    bn::optional<bn::regular_bg_tiles_ptr> _tiles;
     bn::bg_palette_ptr _palette;
     bn::camera_ptr _camera;
     bn::optional<bn::regular_bg_ptr> _fondale;

@@ -238,7 +238,7 @@ class Mondo(unittest.TestCase):
         with open(G.USCITA, encoding="utf-8") as f:
             header = f.read()
         self.assertRegex(header, r"GRIGLIA_VIA_DEI_CONSOLI, MAPPA_VIA_DEI_CONSOLI, %d, %d,\s+FONDALE_VIA_DEI_CONSOLI, "
-                                 r"\d+, \d+, false, 27, 67," % (a["larghezza"], a["altezza"]))
+                                 r"\d+, \d+, false, TILE_VIA_DEI_CONSOLI, \d+, 27, 67," % (a["larghezza"], a["altezza"]))
 
     def test_negativa_spawn_a_due_tile_da_un_altro_varco(self):
         """Uno spawn d'arrivo, lontano dalla sua uscita, spostato a 2 tile da un altro varco."""
@@ -622,7 +622,7 @@ def fondali(header):
     """Da include/mondo.h: {area: (celle del fondale, larghezza, altezza, grande)}."""
     celle = {n: [int(v) for v in c.replace("\n", " ").split(",") if v.strip()]
              for n, c in re.findall(r"inline constexpr uint16_t FONDALE_(\w+)\[\d+\] = \{([^}]*)\}", header)}
-    voci = re.findall(r"FONDALE_(\w+), (\d+), (\d+), (true|false),", header)
+    voci = re.findall(r"FONDALE_(\w+), (\d+), (\d+), (true|false), TILE_", header)
     return {n: (celle[n], int(w), int(h), g == "true") for n, w, h, g in voci}
 
 
@@ -644,8 +644,9 @@ class FondaliInRom(unittest.TestCase):
         with open(G.USCITA, encoding="utf-8") as f:
             header = f.read()
         self.fondali = fondali(header)
-        self.mappe = griglie_e_mappe(header)
-        self.aree = {a["id"].upper(): a for a in (G.leggi_area(n, t) for n, t in G.sorgenti_del_repo())}
+        self.aree = {a["id"].upper(): a for a in I.aree_finali()}
+        # le celle del fondale sono gli indici dei tile dell'area, come li calcola disegna_area
+        self.mappe = {n: (None, a["indici"]) for n, a in self.aree.items()}
 
     def test_ogni_fondale_e_la_sua_mappa(self):
         self.assertEqual(len(self.fondali), 14)
@@ -674,6 +675,102 @@ class FondaliInRom(unittest.TestCase):
         fondale[33] = (fondale[33] + 1) % len(G.TILE_FONDALI)
         self.assertEqual(len(errori_disposizione(self.mappe["TEATRO_ROMANO"][1], a["larghezza"], a["altezza"],
                                                  fondale, fw, fh, grande)), 1)
+
+
+class GraficaDeiMonumenti(unittest.TestCase):
+    """I monumenti disegnati da tools/pittore_monumenti.py, area per area."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mondo = G.mondo_del_repo()
+        cls.aree = {a["id"]: a for a in I.aree_finali()}
+
+    def test_consoli_con_i_suoi_elementi(self):
+        a = self.aree["piazza_grande"]
+        _, _, elementi = G.disegna_area(a, self.mondo)
+        for mid in ("consoli", "pretorio"):
+            self.assertEqual(I.PM.elementi_mancanti(mid, elementi[mid]), {}, mid)
+        self.assertEqual(elementi["consoli"]["finestra_arco"], 6)
+
+    def test_negativa_consoli_senza_i_6_archi(self):
+        """Una facciata del Consoli con 4 finestre invece di 6 e' rifiutata."""
+        originale = I.PM.PITTORI["consoli"]
+
+        def quattro_archi(w, h, info):
+            t = originale(w, h, info)
+            t.elementi["finestra_arco"] = 4
+            return t
+        I.PM.PITTORI["consoli"] = quattro_archi
+        try:
+            with self.assertRaisesRegex(G.ErroreMondo, "il monumento consoli non ha finestra_arco \\(4 di 6\\)"):
+                G.genera(G.sorgenti_del_repo(), PALETTE)
+        finally:
+            I.PM.PITTORI["consoli"] = originale
+
+    def test_primo_lotto_completo(self):
+        for nome, mid in (("largo_bargello", "bargello"), ("san_martino", "san_domenico"), ("basilica", "basilica"),
+                          ("teatro_romano", "teatro_romano")):
+            _, _, elementi = G.disegna_area(self.aree[nome], self.mondo)
+            self.assertEqual(I.PM.elementi_mancanti(mid, elementi[mid]), {}, mid)
+        _, _, elementi = G.disegna_area(self.aree["largo_bargello"], self.mondo)
+        self.assertEqual(elementi["fontana_matti"]["vasca"], 1)
+
+    def test_negativa_bargello_senza_porta_del_morto(self):
+        self.assertEqual(I.PM.elementi_mancanti("bargello", {"portale": 1}), {"porta_del_morto": 1})
+
+    def test_tetti_diversi_per_ruolo(self):
+        self.assertEqual([I.PM.ruolo(n) for n in ("Chiesa di San Francesco", "Porta Romana", "Palazzo Ducale")],
+                         ["chiesa", "porta", "palazzo"])
+        chiesa = I.PM.generico("x", "Chiesa di Santa Maria", 10, 12, "basso", 0)
+        palazzo = I.PM.generico("x", "Palazzo del Capitano", 10, 12, "basso", 1)
+        self.assertNotEqual(chiesa.px, palazzo.px)
+
+    def test_budget_dei_tile_per_area(self):
+        for nome, a in self.aree.items():
+            self.assertLessEqual(len(a["tile"]), G.TILE_MAX_PER_AREA, nome)
+
+    def test_negativa_budget_sforato(self):
+        a = self.aree["teatro_romano"]
+        troppi = [[[i % 16] * 8 for _ in range(8)] for i in range(G.TILE_MAX_PER_AREA + 1)]
+        elementi = G.disegna_area(a, self.mondo)[2]
+        with self.assertRaisesRegex(G.ErroreMondo, "513 tile unici, il massimo per un BG e' 512"):
+            G.controlla_grafica(a, troppi, elementi)
+
+    def test_colori_nella_palette(self):
+        for nome, a in self.aree.items():
+            self.assertTrue(all(0 <= v < 16 for t in a["tile"] for r in t for v in r), nome)
+
+    def test_negativa_colore_fuori_palette(self):
+        a = self.aree["largo_bargello"]
+        tile = [list(r) for r in a["tile"][1]]
+        tile[0][0] = 16
+        elementi = G.disegna_area(a, self.mondo)[2]
+        with self.assertRaisesRegex(G.ErroreMondo, "colore 16 fuori dalla palette"):
+            G.controlla_grafica(a, [tile], elementi)
+
+    def test_facciate_non_calpestabili(self):
+        """Ogni cella di un edificio e' solida, portone compreso (non e' un varco ne' un punto
+        d'interazione)."""
+        self.assertTrue(G.CELLE["d"][1])
+        for nome, a in self.aree.items():
+            self.assertEqual(G.celle_edifici_calpestabili(a), [], nome)
+
+    def test_negativa_facciata_calpestabile(self):
+        a = copy.deepcopy(self.aree["piazza_grande"])
+        x0, y0, w, h = a["edifici"]["consoli"]
+        riga = list(a["griglia"][y0 + h - 1])
+        riga[x0 + w // 2] = "."
+        a["griglia"][y0 + h - 1] = "".join(riga)
+        self.assertEqual(G.celle_edifici_calpestabili(a), [(x0 + w // 2, y0 + h - 1)])
+
+    def test_fontana_solida_e_intorno_calpestabile(self):
+        a = self.aree["largo_bargello"]
+        g = a["griglia"]
+        fontana = {(x, y) for y, r in enumerate(g) for x, c in enumerate(r) if c == "F"}
+        self.assertEqual(len(fontana), 9)
+        intorno = {(x + dx, y + dy) for x, y in fontana for dx in (-1, 0, 1) for dy in (-1, 0, 1)} - fontana
+        self.assertTrue(all(not G.solida(g[y][x]) for x, y in intorno))
+        self.assertTrue(all(G.solida(g[y][x]) for x, y in fontana))
 
 
 class FondaleControGriglia(unittest.TestCase):

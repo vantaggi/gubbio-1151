@@ -5,6 +5,7 @@
 #include "bn_color.h"
 #include "bn_fixed.h"
 #include "bn_regular_bg_map_item.h"
+#include "bn_regular_bg_tiles_item.h"
 #include "bn_regular_bg_map_ptr.h"
 #include "bn_size.h"
 #include "bn_sprite_palette_item.h"
@@ -47,22 +48,6 @@ namespace
     constexpr Colori COLORI_FONDALI = colori(mondo::PALETTE_FONDALI);
     constexpr Colori COLORI_GIOCATORE = colori(mondo::PALETTE_GIOCATORE);
 
-    bn::regular_bg_tiles_ptr crea_tiles_fondali()
-    {
-        bn::regular_bg_tiles_ptr tiles = bn::regular_bg_tiles_ptr::allocate(mondo::TILE_FONDALI, bn::bpp_mode::BPP_4);
-        bn::span<bn::tile> vram = *tiles.vram();
-
-        for(int t = 0; t < mondo::TILE_FONDALI; ++t)
-        {
-            for(int r = 0; r < 8; ++r)
-            {
-                vram[t].data[r] = GUBBIO_VOCE(mondo::TILE_FONDALE, t * 8 + r);
-            }
-        }
-
-        return tiles;
-    }
-
     bn::sprite_ptr crea_giocatore()
     {
         bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(4, bn::bpp_mode::BPP_4);
@@ -89,7 +74,6 @@ namespace
 }
 
 Esplorazione::Esplorazione(const bn::sprite_palette_ptr& palette_testo) :
-    _tiles(crea_tiles_fondali()),
     _palette(bn::bg_palette_ptr::create(
         bn::bg_palette_item(bn::span<const bn::color>(COLORI_FONDALI.colori), bn::bpp_mode::BPP_4))),
     _camera(bn::camera_ptr::create(0, 0)),
@@ -114,11 +98,16 @@ void Esplorazione::_carica_fondale()
     _area_caricata = _e.area;
     _fondale.reset();
 
+    // Ogni area ha i suoi tile (suolo e monumenti): prima si lascia la mappa vecchia, poi i suoi tile.
+    _tiles.reset();
+    _tiles = bn::regular_bg_tiles_ptr::create(
+        bn::regular_bg_tiles_item(bn::span<const bn::tile>(a.tile, a.tile_conteggio), bn::bpp_mode::BPP_4));
+
     bn::size lati(a.larghezza_fondale, a.altezza_fondale);
     bn::regular_bg_map_item voce(*a.fondale, lati, bn::compression_type::NONE, 1, a.fondale_grande);
     _mezza_larghezza_mappa = lati.width() * mondo::TILE_PX / 2;
     _mezza_altezza_mappa = lati.height() * mondo::TILE_PX / 2;
-    _fondale = bn::regular_bg_ptr::create(0, 0, bn::regular_bg_map_ptr::create(voce, _tiles, _palette));
+    _fondale = bn::regular_bg_ptr::create(0, 0, bn::regular_bg_map_ptr::create(voce, *_tiles, _palette));
     _fondale->set_camera(_camera);
     _mostra_etichetta(a.etichetta);
     aggiorna();
