@@ -9,7 +9,7 @@ dimensioni 76 100
 # lungo dell'area, a valle c'e' l'ombra.
 monte basso
 # Belvedere: parapetto sul bordo a valle, l'area e' alta sulla citta'.
-belvedere alto
+belvedere sinistra
 riferimento 46 63
 fattore 0.73
 # Piazza Grande: 76 x 40 m, in scala.
