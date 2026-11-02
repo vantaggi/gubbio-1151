@@ -10,6 +10,7 @@ import os
 import unittest
 
 from _stile import RADICE, S
+import _sagome_x2 as V
 
 _spec = importlib.util.spec_from_file_location("genera_regia", os.path.join(RADICE, "tools", "genera_regia.py"))
 GR = importlib.util.module_from_spec(_spec)
@@ -360,6 +361,59 @@ class C3(unittest.TestCase):
     def test_negativa_un_nome_diverso_dal_copione(self):
         import genera_storia as GS
         self.assertNotEqual(GS.PARLANTI["UBALDO"], "Ubaldo")
+
+
+class SagomeX3(unittest.TestCase):
+    """Pezzo X3: Giorgio, Corrado e il maialino di Antonio rifatti. La misura: i vertici del contorno
+    (dove il bordo cambia pendenza di piu' di un pixel, per righe e per colonne). Le sagome a blocchi di
+    X2 (tests/_sagome_x2.py) sono le negative."""
+
+    SOGLIE = {"giorgio": 56, "corrado": 58, "antonio": 60}
+
+    @staticmethod
+    def pixel(disegno):
+        s = GR.PP.C3.Sagoma()
+        disegno(s)
+        return s.pixel()
+
+    def vertici(self, disegno):
+        px = self.pixel(disegno)
+        tot = 0
+        for asse in (0, 1):
+            linee = {}
+            for p in px:
+                linee.setdefault(p[asse], []).append(p[1 - asse])
+            for bordo in (min, max):
+                seq = [bordo(linee[k]) for k in sorted(linee)]
+                d = [b - a for a, b in zip(seq, seq[1:])]
+                tot += sum(1 for a, b in zip(d, d[1:]) if abs(b - a) > 1)
+        return tot
+
+    def test_contorni_con_i_dettagli(self):
+        for chi, soglia in self.SOGLIE.items():
+            self.assertGreaterEqual(self.vertici(getattr(GR.PP.C3, chi)), soglia, chi)
+
+    def test_negativa_le_sagome_a_blocchi(self):
+        for chi, soglia in self.SOGLIE.items():
+            self.assertLess(self.vertici(getattr(V, chi + "_a_blocchi")), soglia, chi)
+
+    def maialino(self, disegno):
+        zona = {(x, y) for x, y in self.pixel(disegno) if x >= 166 and y >= 74}
+        corpo = min(y for x, y in zona if 182 <= x <= 190)
+        orecchio = min(y for _, y in zona)
+        punta = sum(1 for _, y in zona if y == orecchio)
+        zampe = sorted(x for x, y in zona if y == GR.PP.C3.SUOLO - 2)
+        return corpo - orecchio, punta, 1 + sum(1 for a, b in zip(zampe, zampe[1:]) if b - a > 1)
+
+    def test_il_maialino_ha_orecchio_a_punta_e_quattro_zampe(self):
+        sopra, punta, zampe = self.maialino(GR.PP.C3.antonio)
+        self.assertGreaterEqual(sopra, 4)
+        self.assertLessEqual(punta, 2)
+        self.assertEqual(zampe, 4)
+
+    def test_negativa_il_maialino_pesce(self):
+        sopra, _, _ = self.maialino(V.antonio_a_blocchi)
+        self.assertLess(sopra, 4)
 
 
 if __name__ == "__main__":

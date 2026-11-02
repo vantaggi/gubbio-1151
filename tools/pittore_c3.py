@@ -66,6 +66,30 @@ class Sagoma:
     def __getattr__(self, nome):
         return getattr(self.t, nome)
 
+    def poligono(self, punti, colore=R_SAGOMA):
+        """Riempie il poligono (lista di vertici) a scansione di riga: il contorno segue i vertici."""
+        ys = [y for _, y in punti]
+        for y in range(int(min(ys)), int(max(ys)) + 1):
+            yc = y + 0.5
+            xs = []
+            for (x0, y0), (x1, y1) in zip(punti, punti[1:] + punti[:1]):
+                if (y0 <= yc < y1) or (y1 <= yc < y0):
+                    xs.append(x0 + (yc - y0) * (x1 - x0) / (y1 - y0))
+            xs.sort()
+            for a, b in zip(xs[::2], xs[1::2]):
+                for x in range(int(round(a)), int(round(b))):
+                    self.t.punto(x, y, colore)
+
+    def asta(self, x0, y0, x1, y1, spessore_0, spessore_1=None):
+        """Un pezzo dritto (braccio, lama, manico) da (x0, y0) a (x1, y1), largo spessore_0 in partenza
+        e spessore_1 in arrivo."""
+        spessore_1 = spessore_0 if spessore_1 is None else spessore_1
+        dx, dy = x1 - x0, y1 - y0
+        n = math.hypot(dx, dy) or 1
+        px, py = -dy / n, dx / n
+        self.poligono([(x0 + px * spessore_0 / 2, y0 + py * spessore_0 / 2), (x1 + px * spessore_1 / 2, y1 + py * spessore_1 / 2),
+                       (x1 - px * spessore_1 / 2, y1 - py * spessore_1 / 2), (x0 - px * spessore_0 / 2, y0 - py * spessore_0 / 2)])
+
     def pixel(self):
         return {(x, y) for y in range(QUADRO) for x in range(W) if self.t.px[y][x]}
 
@@ -110,27 +134,43 @@ def ubaldo(s):
 
 
 def giorgio(s):
-    """Il giovane cavaliere in avanti: la spada alzata, lo scudo a mandorla, il mantello nel vento, i
-    capelli senza elmo."""
-    cx = 150
-    s.linea(cx - 4, 72, cx - 14, SUOLO - 1, R_SAGOMA, 6)    # le gambe
-    s.linea(cx + 4, 72, cx + 14, SUOLO - 1, R_SAGOMA, 6)
-    s.trapezio(cx, 40, 76, 16, 22, R_SAGOMA)                 # la tunica
-    s.ellisse(cx, 30, 7, 8, R_SAGOMA)
-    for k in range(4):
-        s.linea(cx + 2 + k, 22 + k, cx + 9 + k * 2, 18 + k * 3, R_SAGOMA)   # i capelli al vento
-    s.linea(cx - 7, 44, cx - 20, 30, R_SAGOMA, 4)            # il braccio alzato
-    s.linea(cx - 21, 30, cx - 42, 2, R_SAGOMA, 2)            # la lama
-    s.linea(cx - 27, 26, cx - 16, 34, R_SAGOMA, 2)           # l'elsa
-    s.trapezio(cx + 15, 44, 74, 16, 2, R_SAGOMA)             # lo scudo a mandorla
-    for k in range(30):
-        s.rett(cx + 6, 40 + k, 6 + k, 1, R_SAGOMA)           # il mantello
-    return s.t
+    """Il giovane cavaliere, sei teste d'altezza: l'elmo a cono col nasale, la cotta di maglia che si
+    allarga ai fianchi con l'orlo frastagliato, le gambe divaricate col peso sulla destra (la sinistra
+    piegata al ginocchio), il braccio con spalla e gomito che alza la spada larga con l'elsa e la
+    guardia a croce, lo scudo a mandorla avanti sull'altro braccio, il mantello che svolazza in tre pieghe."""
+    # il mantello, dietro a tutto
+    s.poligono([(154, 37), (170, 33), (184, 38), (180, 44), (192, 50), (186, 56), (196, 64), (184, 64), (188, 74),
+                (174, 70), (164, 62)])
+    # le gambe: la destra dritta col peso, la sinistra avanti piegata
+    s.poligono([(152, 70), (161, 70), (165, 84), (168, 97), (174, 100), (160, 100), (161, 97), (157, 85)])
+    s.poligono([(141, 70), (151, 72), (141, 85), (133, 97), (135, 100), (121, 100), (126, 97), (134, 84), (136, 78)])
+    # la cotta: spalle, vita, fianchi larghi, l'orlo a denti
+    s.poligono([(139, 37), (159, 37), (161, 46), (157, 58), (164, 70), (161, 73), (158, 70), (155, 73), (152, 70),
+                (149, 73), (146, 70), (143, 73), (140, 70), (136, 72), (142, 58), (138, 46)])
+    s.rett(141, 57, 17, 2, R_SAGOMA)                         # la cintura sporge un poco
+    # il collo, la testa, l'elmo a cono col nasale
+    s.rett(146, 32, 7, 6, R_SAGOMA)
+    s.poligono([(143, 23), (155, 23), (155, 30), (152, 33), (146, 33), (143, 30), (141, 27)])
+    s.poligono([(149, 9), (157, 21), (157, 24), (141, 24), (141, 21)])
+    s.rett(142, 24, 2, 5, R_SAGOMA)                          # il nasale
+    # il braccio della spada: spalla, gomito, mano in alto
+    s.asta(142, 40, 131, 36, 7, 5)
+    s.asta(131, 36, 127, 24, 5, 4)
+    # la spada: il pomo, l'impugnatura, la guardia a croce, la lama larga che si assottiglia
+    gx, gy = 126, 22                                          # la mano sulla guardia
+    dx, dy = -0.62, -0.78                                     # verso la punta
+    s.asta(gx - dx * 6, gy - dy * 6, gx, gy, 3)               # l'impugnatura
+    s.ellisse(gx - dx * 7, gy - dy * 7, 2, 2, R_SAGOMA)       # il pomo
+    s.asta(gx + dy * 6, gy - dx * 6, gx - dy * 6, gy + dx * 6, 3)    # la guardia a croce
+    s.asta(gx + dx * 2, gy + dy * 2, gx + dx * 26, gy + dy * 26, 4, 1)   # la lama
+    # lo scudo a mandorla sull'altro braccio, portato avanti: esce dal contorno della cotta
+    s.poligono([(122, 46), (137, 43), (140, 55), (131, 75), (123, 59)])
 
 
 def antonio(s):
-    """L'eremita curvo nel saio col cappuccio, la barba lunga, il bastone a tau, la fiamma accesa nella
-    mano (il fuoco e' luce, non sagoma) e il maialino ai piedi."""
+    """L'eremita curvo nel saio col cappuccio, la barba lunga, il bastone a tau, il braccio verso la
+    fiamma accesa nella mano (il fuoco e' luce, non sagoma); ai piedi il maialino in piedi, di profilo
+    verso di lui: il grugno, l'orecchio a punta, quattro zampette, la coda a ricciolo."""
     cx = 146
     for y in range(36, SUOLO):
         largo = 20 + (y - 36) * 14 // 64
@@ -141,14 +181,16 @@ def antonio(s):
     s.rett(cx - 24, 22, 3, SUOLO - 22, R_SAGOMA)             # il bastone a tau
     s.rett(cx - 29, 20, 13, 3, R_SAGOMA)
     s.linea(cx - 4, 50, cx - 16, 58, R_SAGOMA, 4)            # il braccio verso la fiamma
-    s.ellisse(cx + 30, 92, 12, 7, R_SAGOMA)                  # il maialino
-    s.rett(cx + 16, 90, 5, 4, R_SAGOMA)
-    s.rett(cx + 22, 84, 3, 3, R_SAGOMA)
-    for gx in (cx + 22, cx + 27, cx + 34, cx + 38):
-        s.rett(gx, 97, 2, 3, R_SAGOMA)
-    s.rett(cx + 42, 88, 2, 2, R_SAGOMA)
-    t = s.t
-    return t
+    # il maialino, staccato dal saio
+    s.ellisse(186, 89, 11, 6, R_SAGOMA)                      # il corpo
+    s.ellisse(174, 88, 5, 5, R_SAGOMA)                       # la testa
+    s.poligono([(170, 86), (166, 87), (165, 91), (170, 92)])  # il grugno
+    s.rett(164, 87, 2, 4, R_SAGOMA)                          # il disco del grugno
+    s.poligono([(173, 84), (176, 77), (178, 85)])            # l'orecchio a punta
+    for zx in (177, 181, 190, 194):
+        s.rett(zx, 94, 2, 6, R_SAGOMA)                       # le quattro zampette
+    for x, y in ((197, 88), (198, 87), (199, 86), (200, 86), (201, 87), (201, 88), (200, 89), (199, 88)):
+        s.punto(x, y, R_SAGOMA)                              # la coda a ricciolo
 
 
 def fiamma(t, x, y):
@@ -160,22 +202,48 @@ def fiamma(t, x, y):
 
 
 def corrado(s):
-    """Il Colosso delle Forge: il doppio di un uomo, l'elmo chiuso con la feritoia accesa, gli spallacci,
-    il martello enorme sulla spalla."""
-    cx = 156
-    s.rett(cx - 18, 72, 13, SUOLO - 72, R_SAGOMA)            # le gambe
-    s.rett(cx + 5, 72, 13, SUOLO - 72, R_SAGOMA)
-    s.trapezio(cx, 30, 76, 50, 38, R_SAGOMA)                 # il busto corazzato
-    s.ellisse(cx - 24, 34, 9, 7, R_SAGOMA)                   # gli spallacci
-    s.ellisse(cx + 24, 34, 9, 7, R_SAGOMA)
-    s.rett(cx - 8, 10, 17, 22, R_SAGOMA)                     # l'elmo
-    s.trapezio(cx, 6, 11, 8, 17, R_SAGOMA)
-    s.linea(cx - 30, 62, cx + 22, 12, R_SAGOMA, 4)           # il manico del martello
-    s.rett(cx + 14, 2, 24, 16, R_SAGOMA)                     # la testa del martello
-    s.rett(cx + 12, 5, 2, 10, R_SAGOMA)
-    s.linea(cx - 24, 38, cx - 30, 60, R_SAGOMA, 8)           # il braccio che regge il manico
-    s.ellisse(cx - 30, 62, 5, 4, R_SAGOMA)                   # il pugno
-    return s.t
+    """Il Colosso delle Forge in armatura del XII secolo: l'elmo a cilindro (la feritoia la accende il
+    bagliore), gli spallacci tondi sovrapposti, la cotta di maglia che scende in una gonna a denti, la
+    cintura, le gambe massicce col ginocchio, il mantello strappato dietro e il martello da guerra a
+    manico lungo sulla spalla, con la testa a blocco e la punta."""
+    # il mantello strappato, dietro
+    s.poligono([(170, 34), (190, 44), (198, 66), (200, 92), (195, 86), (191, 97), (186, 88), (181, 98), (177, 84),
+                (172, 70)])
+    # le gambe col ginocchio
+    for x0 in (140, 159):
+        s.poligono([(x0, 78), (x0 + 13, 78), (x0 + 14, 86), (x0 + 12, 90), (x0 + 13, 97), (x0 + 16, 100), (x0 - 2, 100),
+                    (x0 + 1, 97), (x0, 90), (x0 - 2, 86)])
+    # la gonna di maglia a denti e la cintura
+    gonna = [(140, 64), (174, 64), (180, 80)]
+    for k in range(10):
+        gonna.append((180 - k * 5.2, 84 if k % 2 == 0 else 79))
+    s.poligono(gonna + [(134, 80)])
+    s.rett(137, 61, 40, 4, R_SAGOMA)
+    # il busto
+    s.poligono([(134, 34), (180, 34), (176, 50), (172, 62), (142, 62), (138, 50)])
+    # gli spallacci sovrapposti
+    for cx, verso in ((134, -1), (180, 1)):
+        s.ellisse(cx, 34, 11, 8, R_SAGOMA)
+        s.ellisse(cx + verso * 3, 42, 10, 6, R_SAGOMA)
+        s.ellisse(cx + verso * 5, 48, 8, 4, R_SAGOMA)
+    # l'elmo a cilindro, il cimiero basso
+    s.poligono([(148, 10), (151, 7), (163, 7), (166, 10), (166, 31), (148, 31)])
+    s.rett(153, 4, 8, 3, R_SAGOMA)
+    # il braccio che regge il martello: spalla, gomito, pugno
+    s.asta(130, 44, 124, 60, 9, 8)
+    s.asta(124, 60, 134, 70, 8, 7)
+    s.ellisse(135, 70, 5, 4, R_SAGOMA)
+    # l'altro braccio lungo il fianco
+    s.asta(184, 46, 188, 62, 8, 7)
+    s.ellisse(188, 65, 4, 4, R_SAGOMA)
+    # il martello da guerra: il manico lungo dal pugno oltre la spalla, la testa a blocco con la punta
+    s.asta(136, 74, 182, 14, 3)
+    hx, hy = 184, 11                                          # dove il manico entra nella testa
+    dx, dy = 0.61, -0.79                                      # lungo il manico
+    px, py = 0.79, 0.61                                       # di traverso
+    s.poligono([(hx + px * 9 - dx * 5, hy + py * 9 - dy * 5), (hx + px * 9 + dx * 5, hy + py * 9 + dy * 5),
+                (hx - px * 6 + dx * 4, hy - py * 6 + dy * 4), (hx - px * 15 + dx * 1, hy - py * 15 + dy * 1),
+                (hx - px * 6 - dx * 4, hy - py * 6 - dy * 4)])
 
 
 def ritratto(chi, disegno):
