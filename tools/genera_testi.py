@@ -50,6 +50,13 @@ class ErroreTesti(Exception):
     pass
 
 
+# Una vocale seguita dall'apostrofo a fine parola ("giu'", "perche'", "citta'") e' l'accento scritto
+# alla vecchia maniera delle tastiere: nel gioco si usano le lettere accentate vere. L'apostrofo
+# dell'elisione ("Sant'Ubaldo", "dell'armatura") e' seguito da una lettera e resta; "po'" e' giusto.
+APOSTROFO_PER_ACCENTO = re.compile(r"\w*[aeiouAEIOU]'(?![^\W\d_])")
+ELISIONI_GIUSTE = {"po'"}
+
+
 def leggi_voci(nome, dati):
     """Voci (id, contesto, testo, riga) di un file sorgente, dati in byte."""
     try:
@@ -70,6 +77,10 @@ def leggi_voci(nome, dati):
             raise ErroreTesti(f"{nome}:{n}: ID '{ident}' non valido (maiuscole, cifre, _)")
         if contesto not in CONTESTI:
             raise ErroreTesti(f"{nome}:{n}: contesto '{contesto}' sconosciuto ({', '.join(CONTESTI)})")
+        apostrofo = APOSTROFO_PER_ACCENTO.search(frase)
+        if apostrofo and apostrofo.group(0).lower() not in ELISIONI_GIUSTE:
+            raise ErroreTesti(f"{nome}:{n}: {ident}: '{apostrofo.group(0)}' ha l'apostrofo al posto "
+                              f"dell'accento: si scrive con la lettera accentata (giù, perché, città)")
         voci.append((ident, contesto, frase, f"{nome}:{n}"))
     return voci
 

@@ -453,13 +453,26 @@ def duomo(w, h, info):
 
 
 def ducale(w, h, info):
-    """Palazzo Ducale: dall'alto il cortile rinascimentale, con il portico su quattro lati."""
+    """Palazzo Ducale: dall'alto il cortile rinascimentale, con il portico su quattro lati. Con la
+    facciata di lato (sinistra o destra) si vede di scorcio il fronte sulla stradina del Duomo:
+    le finestre regolari a cornice di pietra e il portale."""
     t = Tela(w, h)
-    t.falde(0, 0, w * 8, (h - 2) * 8)
-    t.gronda(0, (h - 2) * 8 - 3, w * 8)
-    t.conci(0, (h - 2) * 8, w * 8, 16, TINTE[2])
+    faccia = info.get("faccia")
+    spostamento = 0
+    if faccia in ("sinistra", "destra"):
+        x0, larga = facciata_di_lato(t, w, h, faccia, TINTE[2])
+        for y in range(12, h * 8 - 12, 14):
+            t.rett(x0 + larga // 2 - 4, y - 1, 8, 10, PIETRA_LUCE)
+            t.rett(x0 + larga // 2 - 3, y, 6, 8, CONTORNO)
+        t.arco(x0 + larga // 2 - 5, h * 4 - 8, 10, 16, LEGNO_SCURO)
+        t.elementi["facciata"] += 1
+        spostamento = (larga // 2) * (1 if faccia == "sinistra" else -1)
+    else:
+        t.falde(0, 0, w * 8, (h - 2) * 8)
+        t.gronda(0, (h - 2) * 8 - 3, w * 8)
+        t.conci(0, (h - 2) * 8, w * 8, 16, TINTE[2])
     cw, ch = (w * 8) * 2 // 5, (h * 8) * 2 // 5
-    cx0, cy0 = (w * 8 - cw) // 2, (h * 8 - ch) // 2
+    cx0, cy0 = (w * 8 - cw) // 2 + spostamento, (h * 8 - ch) // 2
     t.rett(cx0 - 3, cy0 - 3, cw + 6, ch + 6, CONTORNO)
     t.conci(cx0, cy0, cw, ch, (PIETRA_LUCE, PIETRA_CHIARA, PIETRA_LUCE))
     for x in range(cx0, cx0 + cw - 6, 8):
