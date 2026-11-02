@@ -48,6 +48,9 @@ namespace
 
     constexpr Colori COLORI_FONDALI = colori(mondo::PALETTE_FONDALI);
     constexpr Colori COLORI_FONDALI_CUPI = colori(mondo::PALETTE_FONDALI_CUPA);
+    constexpr int FRAME_RIFLESSI = 20;             // ogni quanto i riflessi dell'acqua cambiano
+    constexpr int COLORE_ACQUA = 12;               // i due colori dell'acqua nella palette dei fondali
+    constexpr int COLORE_ACQUA_CHIARA = 13;
     constexpr Colori COLORI_GIOCATORE = colori(mondo::PALETTE_GIOCATORE);
 
     // Il cartiglio: sei pezzi da 32x16 (sinistro, quattro centrali, destro) in cima allo schermo,
@@ -259,6 +262,15 @@ void Esplorazione::sincronizza(mondo::Evento evento)
 
 void Esplorazione::aggiorna()
 {
+    // i riflessi del torrente nelle stanze della gola: i due colori dell'acqua si scambiano
+    if(mondo::area(_area_caricata).cupa && ++_riflessi % FRAME_RIFLESSI == 0)
+    {
+        const Colori& c = COLORI_FONDALI_CUPI;
+        bool scambio = (_riflessi / FRAME_RIFLESSI) % 2;
+        _palette.set_color(COLORE_ACQUA, c.colori[scambio ? COLORE_ACQUA_CHIARA : COLORE_ACQUA]);
+        _palette.set_color(COLORE_ACQUA_CHIARA, c.colori[scambio ? COLORE_ACQUA : COLORE_ACQUA_CHIARA]);
+    }
+
     // Dissolvenza: in uscita scurisce, a meta' carica la nuova area, in entrata schiarisce.
     if(_dissolvenza > 0)
     {

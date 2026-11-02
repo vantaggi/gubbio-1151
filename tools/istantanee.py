@@ -84,6 +84,9 @@ COLORI = {
     "~": (60, 110, 170),    # il torrente
     "x": (40, 35, 35),      # la striscia nera nella rupe
     "g": (110, 150, 70),    # la nebbia dei miasmi
+    "i": (210, 205, 190),   # la lapide
+    "+": (150, 110, 60),    # il ponticello
+    "|": (120, 115, 105),   # la diga
 }
 COLORE_VARCO = (230, 60, 60)
 COLORE_SPAWN = (40, 90, 230)

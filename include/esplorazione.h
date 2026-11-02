@@ -75,6 +75,7 @@ private:
     int _mezza_larghezza_mappa = 0;
     int _mezza_altezza_mappa = 0;
     int _dissolvenza = 0;           // >0 in uscita, <0 in entrata
+    int _riflessi = 0;              // i frame dei riflessi dell'acqua nelle stanze della gola
     int _attesa_etichetta = 0;
 
     void _carica_fondale();
