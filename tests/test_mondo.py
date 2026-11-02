@@ -1318,7 +1318,8 @@ class LaRifinitura(unittest.TestCase):
         cls.aree = {a["id"]: a for a in I.aree_finali()}
 
     def alberi(self, a):
-        return [(x, y) for y, r in enumerate(a["griglia"]) for x, c in enumerate(r) if c in "Tr"]
+        """I centri degli alberi (chiome 2x2, cipressi 1x2, alberi piccoli e cespugli)."""
+        return [(x + w / 2, y + h / 2) for x, y, w, h, _ in G.alberi_dell_area(a["griglia"])]
 
     def test_alberi_mai_in_griglia(self):
         provate = 0
@@ -1334,16 +1335,21 @@ class LaRifinitura(unittest.TestCase):
         reticolo = [(x, y) for x in range(2, 40, 4) for y in range(3, 30, 3)]
         self.assertLess(dispersione_vicini(reticolo), 0.15)
 
-    def test_tre_chiome_e_cespugli(self):
-        a = self.aree["teatro_romano"]
-        nomi = {n for n, _ in G.TILE_FONDALI}
-        usati = {G.TILE_FONDALI[G.tile_per_cella(a["griglia"], x, y)][0] for x, y in self.alberi(a)}
-        self.assertTrue({"ALBERO", "ROVERELLA", "CIPRESSO", "CESPUGLIO"} <= usati & nomi, usati)
+    def test_alberi_grandi(self):
+        """Chiome di 2x2 tile, cipressi di 1x2 e cespugli, in ogni area alberata; nel bosco degli
+        stradoni le chiome grandi sono la maggioranza."""
+        for nome in ("teatro_romano", "piazza_quaranta_martiri", "basilica", "monte_ingino"):
+            forme = {(w, h, c) for _, _, w, h, c in G.alberi_dell_area(self.aree[nome]["griglia"])}
+            self.assertTrue({(2, 2, "T"), (1, 2, "u"), (1, 1, "r")} <= forme, (nome, forme))
+        bosco = G.alberi_dell_area(self.aree["monte_ingino"]["griglia"])
+        self.assertGreater(sum(1 for t in bosco if t[2] == 2), len(bosco) // 2)
+        self.assertEqual(G.PM.chioma("leccio").w, 16)
+        self.assertEqual((G.PM.cipresso().w, G.PM.cipresso().h), (8, 16))
 
-    def test_negativa_una_chioma_sola(self):
-        g = ["T" * 3]
-        usati = {G.TILE_FONDALI[G.tile_per_cella(g, 0, 0)][0]}
-        self.assertEqual(len(usati), 1)
+    def test_negativa_alberi_da_un_tile(self):
+        """Una fila di T sparsi a un tile non diventa una chioma 2x2."""
+        forme = {(w, h) for _, _, w, h, _ in G.alberi_dell_area(["T.T.T", ".T.T."])}
+        self.assertEqual(forme, {(1, 1)})
 
     def passi_dei_corsi(self, a):
         x0, y0, pw, ph = G.rettangolo_piazza(a)

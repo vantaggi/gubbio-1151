@@ -128,6 +128,7 @@ CELLE = {
     "R": ("GRADINATA", True),      # la cavea del Teatro Romano
     "U": ("ARCATA", True),         # l'anello esterno di arcate del Teatro
     "r": ("CESPUGLIO", True),      # un cespuglio basso, nel prato e ai margini del bosco
+    "u": ("CIPRESSO", True),       # un cipresso, alto e stretto: 1x2 tile
     "v": ("VASCA", True),          # la vasca all'incrocio dei vialetti dei giardini
     "m": ("MURETTO", True),        # muretto a secco sul lato esterno dei tornanti
     "p": ("PARACARRO", True),      # i paracarri sul lato a valle degli stradoni
@@ -710,8 +711,8 @@ def tile_per_cella(griglia, x, y, del_monte=False, monte=None):
             return INDICE_TILE["MURO_FRONTE"]
         return INDICE_TILE[tetto_della_casa(x, y)]
     if nome == "ALBERO":
-        # tre chiome: leccio scuro, roverella, cipresso, a caso fisso
-        return INDICE_TILE[("ALBERO", "ROVERELLA", "CIPRESSO")[int(pseudo(x, y, 5) * 3)]]
+        # un albero piccolo (quel che avanza delle chiome 2x2): leccio o roverella, a caso fisso
+        return INDICE_TILE["ROVERELLA" if pseudo(x, y, 5) < 0.4 else "ALBERO"]
     if nome == "LASTRICO":
         # lastre di tre toni, a gruppi di 2x2 tile
         return INDICE_TILE[("LASTRICO", "LASTRICO_2", "LASTRICO_3")[int(pseudo(x // 2, y // 2, 6) * 3)]]
@@ -1113,10 +1114,47 @@ def semina(posti, densita, raggio, seme):
     return piantati
 
 
-def piantagione(g, posti, densita, raggio, seme, cespugli=0.3):
-    """Pianta alberi (T) e cespugli bassi (r) nei posti scelti da semina()."""
-    for x, y in semina(posti, densita, raggio, seme):
-        g[y][x] = "r" if pseudo(x, y, seme + 3) < cespugli else "T"
+def piantagione(g, posti, densita, raggio, seme, cespugli=0.3, cipressi=0.2):
+    """Pianta nei posti scelti da semina(): chiome di 2x2 tile (T: lecci e roverelle), cipressi di
+    1x2 (u) e cespugli bassi (r). Un albero grande ha bisogno di tutti i suoi posti liberi."""
+    posti = set(posti)
+    for x, y in semina(posti, densita, max(raggio, 2), seme):
+        tipo = pseudo(x, y, seme + 3)
+        if tipo < cespugli:
+            g[y][x] = "r"
+        elif tipo < cespugli + cipressi and (x, y + 1) in posti:
+            g[y][x] = g[y + 1][x] = "u"
+        elif {(x + 1, y), (x, y + 1), (x + 1, y + 1)} <= posti:
+            for i in range(2):
+                for j in range(2):
+                    g[y + j][x + i] = "T"
+        else:
+            g[y][x] = "r"
+
+
+def alberi_dell_area(griglia):
+    """Gli alberi della griglia: [(x, y, larghezza, altezza, cella)]. Le chiome T si leggono a blocchi
+    di 2x2 (da sinistra a destra, dall'alto), quel che avanza e' un albero piccolo da un tile; i
+    cipressi u a coppie verticali; i cespugli r da soli."""
+    out, presi = [], set()
+    h, w = len(griglia), len(griglia[0])
+    for y in range(h):
+        for x in range(w):
+            c = griglia[y][x]
+            if (x, y) in presi or c not in "Tur":
+                continue
+            if c == "T" and x + 1 < w and y + 1 < h and all(
+                    griglia[y + j][x + i] == "T" and (x + i, y + j) not in presi for i in range(2) for j in range(2)):
+                celle = [(x + i, y + j) for i in range(2) for j in range(2)]
+                out.append((x, y, 2, 2, "T"))
+            elif c == "u" and y + 1 < h and griglia[y + 1][x] == "u" and (x, y + 1) not in presi:
+                celle = [(x, y), (x, y + 1)]
+                out.append((x, y, 1, 2, "u"))
+            else:
+                celle = [(x, y)]
+                out.append((x, y, 1, 1, c))
+            presi.update(celle)
+    return out
 
 
 def decora_piazza(a):
@@ -1262,7 +1300,7 @@ def costruisci_porte(a, grafo):
             g[y][x] = "X"
         for x, y in arco:
             # l'arco copre la strada (fora la cinta, toglie un albero): un passaggio murato resta murato (e il varco non si raggiunge)
-            if not solida(g[y][x]) or g[y][x] in "WTr":
+            if not solida(g[y][x]) or g[y][x] in "WTru":
                 g[y][x] = "J"
         a["porte"][lettera] = (nome, lato, piloni, arco)
     a["griglia"] = ["".join(riga) for riga in g]
@@ -1304,7 +1342,7 @@ def composizione(a):
     for mid, (x0, y0, ew, eh) in a.get("edifici", {}).items():
         if sum(1 for x, y in leggibili if x0 <= x < x0 + ew and y0 <= y < y0 + eh) >= 6:
             visti.add(mid)
-    segni = {"h": "chiostro", "q": "panche", "l": "candelieri", "w": "vetrate", "m": "muretti", "p": "muretti", "v": "vasca", "r": "alberi", "c": "cappelletta", "a": "altare", "e": "ceri", "n": "colonne", "=": "parapetto", "X": "porta", "Y": "giardini", "T": "alberi", "D": "giardini", "O": "pozzo",
+    segni = {"u": "alberi", "h": "chiostro", "q": "panche", "l": "candelieri", "w": "vetrate", "m": "muretti", "p": "muretti", "v": "vasca", "r": "alberi", "c": "cappelletta", "a": "altare", "e": "ceri", "n": "colonne", "=": "parapetto", "X": "porta", "Y": "giardini", "T": "alberi", "D": "giardini", "O": "pozzo",
              "F": "fontana", "Q": "lampioni", "R": "teatro_romano", "U": "teatro_romano", "W": "mura"}
     for x, y in leggibili:
         c = a["griglia"][y][x]
@@ -1576,6 +1614,15 @@ def disegna_area(a, mondo):
                 for tx, pix in enumerate(riga):
                     if (bx0 + tx, by0 + ty) in blocco:
                         tile_di[(bx0 + tx, by0 + ty)] = pix
+    # gli alberi grandi: le chiome 2x2 (leccio o roverella) e i cipressi 1x2, con l'ombra
+    fondo = PM.VERDE_SCURO if a["id"] in AREE_DEL_MONTE else PM.VERDE
+    for x0, y0, aw, ah, c in alberi_dell_area(a["griglia"]):
+        if (aw, ah) == (1, 1):
+            continue
+        tela = PM.chioma("roverella" if pseudo(x0, y0, 5) < 0.4 else "leccio", fondo) if c == "T" else PM.cipresso(fondo)
+        for ty, riga in enumerate(tela.tagli()):
+            for tx, pix in enumerate(riga):
+                tile_di[(x0 + tx, y0 + ty)] = pix
     tile_unici = {tuple(map(tuple, _tile(tile_vuoto))): 0}
     indici = []
     for y in range(h):
@@ -1847,7 +1894,7 @@ def controlla_proporzioni(a, misure):
         for y in range(y0, y0 + h):
             for x in range(x0, x0 + w):
                 if not (0 <= x < a["larghezza"] and 0 <= y < a["altezza"]) or \
-                        (solida(a["griglia"][y][x]) and a["griglia"][y][x] not in "FQOYTDrv"):
+                        (solida(a["griglia"][y][x]) and a["griglia"][y][x] not in "FQOYTDrvu"):
                     raise ErroreMondo(f"{a['file']}:{n}: {nome} ({w}x{h} tile intorno al riferimento) non e' "
                                       f"libera in ({x}, {y})")
 

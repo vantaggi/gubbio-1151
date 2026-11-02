@@ -1045,3 +1045,44 @@ PITTORI["basilica"] = basilica
 REQUISITI.update({"basilica": {"scalinata": 1, "portale": 1, "facciata": 1, "campanile": 1}})
 
 
+
+
+# --- alberi grandi ----------------------------------------------------------------------------------
+
+def chioma(tipo, fondo=VERDE):
+    """Una chioma di 2x2 tile vista dall'alto: il leccio scuro e compatto, la roverella chiara a lobi;
+    la luce in alto a sinistra, l'ombra che cade in basso a destra sul terreno."""
+    t = Tela(2, 2, fondo)
+    cx, cy, r = 7.0, 7.0, 6.6
+    for y in range(16):
+        for x in range(16):
+            d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            ombra = ((x - cx - 2) ** 2 + (y - cy - 2) ** 2) ** 0.5
+            lobi = 0.9 * ((x * 5 + y * 3) % 4 == 0) if tipo == "roverella" else 0
+            if d <= r - lobi:
+                luce = (x - cx) + (y - cy) < -3
+                if tipo == "roverella":
+                    c = VERDE if luce or (x * 3 + y * 5) % 7 == 0 else VERDE_SCURO
+                else:
+                    c = VERDE if luce and (x + y) % 3 == 0 else VERDE_SCURO
+                if d > r - 1.2 - lobi and not luce:
+                    c = CONTORNO
+                t.punto(x, y, c)
+            elif ombra <= r:
+                t.punto(x, y, CONTORNO)
+    t.elementi["chioma"] += 1
+    return t
+
+
+def cipresso(fondo=VERDE):
+    """Un cipresso di 1x2 tile: il fuso scuro e stretto, la punta in alto, l'ombra lunga a destra."""
+    t = Tela(1, 2, fondo)
+    for y in range(16):
+        meta = 1 if y < 3 else (2 if y < 6 or y > 13 else 3)
+        for x in range(8):
+            if abs(x - 3.5) <= meta - 0.5:
+                t.punto(x, y, VERDE if x < 3 and y % 3 == 0 else VERDE_SCURO)
+            elif x == int(3.5 + meta) and y > 2:
+                t.punto(x, y, CONTORNO)
+    t.elementi["cipresso"] += 1
+    return t

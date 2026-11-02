@@ -63,6 +63,7 @@ COLORI = {
     "N": (120, 170, 90),    # prato
     "b": (226, 216, 190),   # ghiaia degli stradoni
     "r": (80, 140, 70),     # cespuglio
+    "u": (30, 80, 40),      # cipresso
     "m": (160, 150, 130),   # muretto a secco
     "h": (170, 150, 120),   # chiostro
     "q": (120, 80, 40),     # panca
