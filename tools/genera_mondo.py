@@ -1014,13 +1014,17 @@ def composizione(a):
     """(elementi riconoscibili, quota di pavimento nudo) nella schermata dello spawn: monumenti,
     parapetto, porte, mura, giardini, pozzi e fontane; nudo e' il suolo semplice o il prato, senza disegno."""
     celle = finestra_dello_spawn(a)
+    # conta solo quel che si legge: non le prime 3 righe (il cartiglio del nome) ne' l'ultima colonna
+    # per lato, e un monumento vale se se ne vedono almeno 6 celle
+    xs, ys = sorted({x for x, _ in celle}), sorted({y for _, y in celle})
+    leggibili = [(x, y) for x, y in celle if y >= ys[0] + 3 and xs[0] < x < xs[-1]]
     visti = set()
     for mid, (x0, y0, ew, eh) in a.get("edifici", {}).items():
-        if any(x0 <= x < x0 + ew and y0 <= y < y0 + eh for x, y in celle):
+        if sum(1 for x, y in leggibili if x0 <= x < x0 + ew and y0 <= y < y0 + eh) >= 6:
             visti.add(mid)
     segni = {"=": "parapetto", "X": "porta", "Y": "giardini", "T": "alberi", "D": "giardini", "O": "pozzo",
              "F": "fontana", "Q": "lampioni", "R": "teatro_romano", "U": "teatro_romano", "W": "mura"}
-    for x, y in celle:
+    for x, y in leggibili:
         c = a["griglia"][y][x]
         if c in segni:
             visti.add(segni[c])

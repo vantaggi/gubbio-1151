@@ -20,7 +20,7 @@ sposta consoli -11 -10
 sposta pretorio 9 23
 # ranghiasci: spostato di (7, 8) tile, fuori dalla piazza o da un altro edificio.
 sposta ranghiasci 7 8
-spawn 0 19 55
+spawn 0 22 31
 spawn 2 10 101
 spawn 3 27 5
 uscita A via_dei_consoli 3
