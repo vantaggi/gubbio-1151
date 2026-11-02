@@ -1,51 +1,45 @@
-# Area impaginata da mondo/monumenti.json (F2, scala 1 tile = 1,5 m). Gli edifici li disegna
-# tools/genera_mondo.py; qui ci sono il fondo, i varchi, gli spawn e i decori.
+# Area impaginata in proporzione (F2): vie larghe quanto misura OSM, piazze in scala, edifici a
+# misura vera disegnati da tools/genera_mondo.py; fuori dalle vie e dalle piazze case e muro.
 id largo_bargello
 etichetta AREA_LARGO_BARGELLO
-dimensioni 32 32
+dimensioni 31 22
 # Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
 # lungo dell'area, a valle c'e' l'ombra.
 monte basso
-riferimento 16 16
+riferimento 18 11
 fattore 0.73
-# Decoro: la Fontana dei Matti (F, 3x3) dove la mette il censimento, rispetto al Bargello.
-spawn 0 19 16
-spawn 1 9 22
-spawn 2 15 8
-spawn 3 20 22
+# Largo del Bargello: 19 x 13 m, in scala.
+piazza Largo del Bargello
+# bargello: spostato di (-9, 0) tile, fuori dalla piazza o da un altro edificio.
+sposta bargello -9 0
+# Decoro: la Fontana dei Matti (F, 3x3) al centro del Largo.
+spawn 0 20 11
+spawn 1 12 12
+spawn 2 17 8
+spawn 3 20 12
 uscita B via_dei_consoli 1
 uscita A san_martino 2
 uscita E duomo_ducale 3
 griglia
-##############AAAA##############
-#.............AAAA.............#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#.............FFF..............#
-#.............FFF..............#
-#.............FFF..............#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#..............................#
-#.......BBBB.......EEEE........#
-########BBBB#######EEEE#########
+################AAAA###########
+################AAAA###########
+################....###########
+################....###########
+################....###########
+################....###########
+################....###########
+############.............######
+############.............######
+############.............######
+############.....FFF.....######
+############.....FFF.....######
+############.....FFF.....######
+############.............######
+############.............######
+############.............######
+########........##....#########
+########........##....#########
+########........##....#########
+########........##....#########
+########BBBB######EEEE#########
+########BBBB######EEEE#########

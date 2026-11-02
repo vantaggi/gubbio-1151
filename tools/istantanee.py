@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 """Istantanee delle aree: come si vedono nel gioco e com'e' fatta la loro griglia.
 
-    python tools/istantanee.py CARTELLA             # griglie e schermate
-    python tools/istantanee.py CARTELLA --griglie   # solo le griglie, senza emulatore
+    python tools/istantanee.py CARTELLA                      # solo le griglie
+    python tools/istantanee.py CARTELLA --rom ROM_ISTANTANEE  # griglie e schermate
 
 Griglie (ovunque): per ogni area un PNG di 1 pixel per tile ingrandito x4, dalla griglia finale del
-generatore (edifici di monumenti.json compresi), con suolo, strade, muri, facciate, portoni, varchi e
+generatore (edifici e dislivello compresi), con suolo, strade, muri, facciate, portoni, varchi e
 spawn in colori diversi: griglia_<area>.png.
 
-Schermate (solo Windows, con mGBA 0.10): avvia la ROM gubbio1151.gba tenendo premuto R, che la mette
-nel modo istantanee (src/istantanee.cpp): ogni area sullo spawn 0, una dopo l'altra. Per ogni riga
-"Istantanea N" del log di mGBA preme il tasto dello scatto (F12, la scorciatoia predefinita di mGBA)
-e alla fine rinomina i PNG 240x160 come schermata_<area>.png. Il tasto R e' quello della tastiera
-configurata in mGBA: MGBA_TASTO_R (codice virtuale Windows, predefinito 0x45, la E).
+Schermate (solo Windows, con mGBA 0.10): serve una ROM che parta da sola nel modo istantanee
+(src/istantanee.cpp), compilata a parte e poi rimessa com'era:
+
+    touch src/main.cpp && bash build.sh USERFLAGS=-DGUBBIO_AVVIO=2 && cp gubbio1151.gba ROM_ISTANTANEE
+    touch src/main.cpp && bash build.sh
+
+Nessun tasto simulato: per ogni riga "Istantanea N" del log di mGBA la finestra viene catturata
+(PrintWindow) e salvata come schermata_<area>.png, 240x160.
 """
 import glob
 import os
@@ -96,36 +99,64 @@ def griglie(cartella):
     print(f"[istantanee] {len(aree_finali())} griglie in {cartella}")
 
 
-def schermate(cartella):
+def schermate(cartella, rom):
+    """Schermate dalla ROM compilata con GUBBIO_AVVIO=2: niente tasti simulati (finirebbero nella
+    finestra attiva, se mGBA non ha il fuoco). mGBA gira a scala 1; a ogni riga "Istantanea N" del
+    log la finestra si cattura con PrintWindow, che non ha bisogno del fuoco, e si tengono le ultime
+    160 righe del client (sopra c'e' la barra dei menu)."""
     import ctypes
     from ctypes import wintypes
-    user32 = ctypes.windll.user32
-    tasto_r = int(os.environ.get("MGBA_TASTO_R", "0x45"), 16)
-    F12 = 0x7B
+    user32, gdi32 = ctypes.windll.user32, ctypes.windll.gdi32
+    user32.SetProcessDPIAware()
 
-    def premi(vk, giu=True):
-        user32.keybd_event(vk, 0, 0 if giu else 2, 0)
+    class BIH(ctypes.Structure):
+        _fields_ = [("biSize", wintypes.DWORD), ("biWidth", wintypes.LONG), ("biHeight", wintypes.LONG),
+                    ("biPlanes", wintypes.WORD), ("biBitCount", wintypes.WORD), ("biCompression", wintypes.DWORD),
+                    ("biSizeImage", wintypes.DWORD), ("biXPelsPerMeter", wintypes.LONG),
+                    ("biYPelsPerMeter", wintypes.LONG), ("biClrUsed", wintypes.DWORD), ("biClrImportant", wintypes.DWORD)]
 
     def finestra(pid):
         trovate = []
 
         @ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
         def ciascuna(hwnd, _):
-            p = wintypes.DWORD()
-            user32.GetWindowThreadProcessId(hwnd, ctypes.byref(p))
-            if p.value == pid and user32.IsWindowVisible(hwnd):
+            q = wintypes.DWORD()
+            user32.GetWindowThreadProcessId(hwnd, ctypes.byref(q))
+            if q.value == pid and user32.IsWindowVisible(hwnd):
                 trovate.append(hwnd)
             return True
         user32.EnumWindows(ciascuna, 0)
         return trovate[0] if trovate else None
 
+    def cattura(hwnd, percorso):
+        r = wintypes.RECT()
+        user32.GetClientRect(hwnd, ctypes.byref(r))
+        w, h = r.right, r.bottom
+        hdc = user32.GetDC(hwnd)
+        mdc = gdi32.CreateCompatibleDC(hdc)
+        bmp = gdi32.CreateCompatibleBitmap(hdc, w, h)
+        gdi32.SelectObject(mdc, bmp)
+        user32.PrintWindow(hwnd, mdc, 3)
+        bi = BIH()
+        bi.biSize, bi.biWidth, bi.biHeight, bi.biPlanes, bi.biBitCount = ctypes.sizeof(BIH), w, -h, 1, 32
+        buf = ctypes.create_string_buffer(w * h * 4)
+        gdi32.GetDIBits(mdc, bmp, 0, h, buf, ctypes.byref(bi), 0)
+        gdi32.DeleteObject(bmp)
+        gdi32.DeleteDC(mdc)
+        user32.ReleaseDC(hwnd, hdc)
+        raw = buf.raw
+        x0 = (w - 240) // 2
+        righe = [[(raw[(y * w + x) * 4 + 2], raw[(y * w + x) * 4 + 1], raw[(y * w + x) * 4]) for x in range(x0, x0 + 240)]
+                 for y in range(h - 160, h)]
+        png(percorso, 240, 160, righe)
+
     nomi = [a["id"] for a in aree_finali()]
     lavoro = tempfile.mkdtemp(prefix="gubbio-istantanee-")
-    rom = os.path.join(lavoro, "rom.gba")
-    shutil.copy(ROM, rom)
+    copia = os.path.join(lavoro, "rom.gba")
+    shutil.copy(rom, copia)
     log = os.path.join(lavoro, "mgba.log")
-    proc = subprocess.Popen([MGBA, "-l", "255", "-C", "logToFile=1", "-C", f"logFile={log}",
-                             "-C", f"screenshotPath={lavoro}", rom])
+    proc = subprocess.Popen([MGBA, "-1", "-l", "255", "-C", "logToFile=1", "-C", f"logFile={log}", copia])
+    scattate = 0
     try:
         hwnd = None
         for _ in range(100):
@@ -135,15 +166,9 @@ def schermate(cartella):
             time.sleep(0.1)
         if not hwnd:
             raise SystemExit("[istantanee] la finestra di mGBA non si apre")
-        user32.SetForegroundWindow(hwnd)
-        premi(tasto_r)
-        # R si rilascia dopo l'avvio, ma il log si legge da subito: la prima area arriva presto.
-        scattate, letto, inizio, r_premuto = 0, 0, time.time(), True
-        while time.time() - inizio < 300:
+        letto, inizio, finito = 0, time.time(), False
+        while time.time() - inizio < 300 and not finito:
             time.sleep(0.05)
-            if r_premuto and time.time() - inizio > 1.5:
-                premi(tasto_r, False)
-                r_premuto = False
             if not os.path.exists(log):
                 continue
             with open(log, encoding="utf-8", errors="replace") as f:
@@ -151,25 +176,15 @@ def schermate(cartella):
                 nuovo = f.read()
                 letto = f.tell()
             for riga in nuovo.splitlines():
-                if "Istantanea " in riga and "GBA Debug" in riga:
-                    user32.SetForegroundWindow(hwnd)
-                    premi(F12)
-                    time.sleep(0.05)
-                    premi(F12, False)
+                if "Istantanea " in riga and "GBA Debug" in riga and scattate < len(nomi):
+                    cattura(hwnd, os.path.join(cartella, f"schermata_{nomi[scattate]}.png"))
                     scattate += 1
                 if "Istantanee finite" in riga:
-                    break
-            else:
-                continue
-            break
-        time.sleep(1)
+                    finito = True
     finally:
         proc.terminate()
-    scatti = sorted(glob.glob(os.path.join(lavoro, "*.png")), key=os.path.getmtime)
-    if len(scatti) != len(nomi):
-        raise SystemExit(f"[istantanee] {len(scatti)} scatti per {len(nomi)} aree (log in {log})")
-    for percorso, nome in zip(scatti, nomi):
-        shutil.move(percorso, os.path.join(cartella, f"schermata_{nome}.png"))
+    if scattate != len(nomi):
+        raise SystemExit(f"[istantanee] {scattate} schermate per {len(nomi)} aree (log in {log})")
     print(f"[istantanee] {len(nomi)} schermate in {cartella}")
 
 
@@ -180,8 +195,8 @@ def main(argv):
     cartella = argv[0]
     os.makedirs(cartella, exist_ok=True)
     griglie(cartella)
-    if "--griglie" not in argv:
-        schermate(cartella)
+    if "--rom" in argv:
+        schermate(cartella, argv[argv.index("--rom") + 1])
     return 0
 
 

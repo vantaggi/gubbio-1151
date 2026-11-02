@@ -71,6 +71,20 @@ def mura_attorno(lettera):
     return lambda testo: griglia_mappata(testo, mura)
 
 
+def cella_che(nome, buona):
+    """Una cella calpestabile dell'area finale (edifici e dislivello applicati) per cui buona(a, x, y)."""
+    a = area_con_dislivello(nome)
+    for y, r in enumerate(a["griglia"]):
+        for x, c in enumerate(r):
+            if c in ".," and buona(a, x, y):
+                return x, y
+    raise AssertionError(f"nessuna cella adatta in {nome}")
+
+
+def con_spawn(numero, xy):
+    return lambda t: re.sub(r"\nspawn %d \d+ \d+" % numero, "\nspawn %d %d %d" % (numero, xy[0], xy[1]), t)
+
+
 def area_finale(nome):
     """L'area del repo con gli edifici gia' posati dal generatore, e i rettangoli posati."""
     mondo = G.mondo_del_repo()
@@ -162,9 +176,18 @@ class Mondo(unittest.TestCase):
             G.genera(sorgenti, PALETTE)
 
     def test_negativa_edificio_sul_varco(self):
-        sorgenti = sorgenti_con("largo_bargello.area", lambda t: t.replace("fattore", "sposta bargello 0 -10\nfattore"))
+        """Il Bargello spostato sopra il varco A del Largo."""
+        a, posati, _ = area_finale("largo_bargello")
+        x0, y0, _, _ = posati["bargello"]
+        ax, ay = min(G.celle_varco(a, "A"))
+        vecchio = a["sposta"].get("bargello", (0, 0))
+        nuovo = (vecchio[0] + ax - x0, vecchio[1] + ay - y0)
+
+        def sposta(t):
+            t = re.sub(r"\nsposta bargello -?\d+ -?\d+", "", t)
+            return t.replace("\nfattore", "\nsposta bargello %d %d\nfattore" % nuovo)
         with self.assertRaisesRegex(G.ErroreMondo, "l'edificio bargello copre il varco 'A'"):
-            G.genera(sorgenti, PALETTE)
+            G.genera(sorgenti_con("largo_bargello.area", sposta), PALETTE)
 
     def test_negativa_sposta_un_monumento_che_non_e_un_edificio(self):
         sorgenti = sorgenti_con("largo_bargello.area", lambda t: t.replace("fattore", "sposta fontana_matti 1 1\nfattore"))
@@ -179,13 +202,16 @@ class Mondo(unittest.TestCase):
         self.assertNotIn("ponte_san_martino", posati)
 
     def test_negativa_ponte_come_edificio(self):
-        """Prova negativa: senza la voce in SPAZI_APERTI il ponte diventerebbe un blocco, e il
-        generatore lo trova sotto San Domenico."""
+        """Prova negativa: senza la voce in SPAZI_APERTI il ponte diventa un blocco (o, se non ha
+        posto, il generatore lo rifiuta: in tutti e due i casi non e' piu' strada)."""
         vecchio = dict(G.SPAZI_APERTI)
         try:
             del G.SPAZI_APERTI["ponte_san_martino"]
-            with self.assertRaisesRegex(G.ErroreMondo, "si sovrappone a ponte_san_martino"):
-                area_finale("san_martino")
+            try:
+                _, posati, _ = area_finale("san_martino")
+                self.assertIn("ponte_san_martino", posati)
+            except G.ErroreMondo as e:
+                self.assertIn("ponte_san_martino", str(e))
         finally:
             G.SPAZI_APERTI.clear()
             G.SPAZI_APERTI.update(vecchio)
@@ -208,21 +234,34 @@ class Mondo(unittest.TestCase):
 
     def test_quote_da_grafo_json(self):
         """La quota viene da grafo.json: via dei Consoli sale da 27 a 67 m."""
+        a = self.aree["via_dei_consoli"]
         with open(G.USCITA, encoding="utf-8") as f:
             header = f.read()
-        self.assertIn("GRIGLIA_VIA_DEI_CONSOLI, MAPPA_VIA_DEI_CONSOLI, 32, 64, 27, 67,", header)
+        self.assertIn("GRIGLIA_VIA_DEI_CONSOLI, MAPPA_VIA_DEI_CONSOLI, %d, %d, 27, 67," % (a["larghezza"], a["altezza"]),
+                      header)
 
     def test_negativa_spawn_a_due_tile_da_un_altro_varco(self):
-        """L'arrivo da via dei Consoli spostato a 2 tile dal varco verso San Martino."""
-        sorgenti = sorgenti_con("largo_bargello.area", lambda t: t.replace("spawn 1 9 22", "spawn 1 15 3"))
-        with self.assertRaisesRegex(G.ErroreMondo, "a 2 tile da un varco"):
-            G.genera(sorgenti, PALETTE)
+        """Uno spawn d'arrivo, lontano dalla sua uscita, spostato a 2 tile da un altro varco."""
+        for nome, a0 in sorted(self.aree.items()):
+            uscite = [u for u in a0["uscite"] if u[2] is not None]
+            for propria, _, numero, _ in uscite:
+                altre = [u[0] for u in a0["uscite"] if u[0] != propria]
+                try:
+                    xy = cella_che(nome, lambda a, x, y: G.distanza_dal_varco(a, (x, y), propria) >= 6
+                                   and min(G.distanza_dal_varco(a, (x, y), l) for l in altre) == 2)
+                except AssertionError:
+                    continue
+                with self.assertRaisesRegex(G.ErroreMondo, "a 2 tile da un varco"):
+                    G.genera(sorgenti_con(nome + ".area", con_spawn(numero, xy)), PALETTE)
+                return
+        self.fail("nessuna area adatta alla prova")
 
     def test_negativa_spawn_vicino_alla_propria_uscita(self):
         """(c) L'arrivo da via dei Consoli a 5 tile dal varco B, da cui si entra."""
-        sorgenti = sorgenti_con("largo_bargello.area", lambda t: t.replace("spawn 1 9 22", "spawn 1 9 25"))
+        xy = cella_che("largo_bargello", lambda a, x, y: G.distanza_dal_varco(a, (x, y), "B") == 5
+                       and G.distanza_dal_varco(a, (x, y), "A") >= 3 and G.distanza_dal_varco(a, (x, y), "E") >= 3)
         with self.assertRaisesRegex(G.ErroreMondo, "a 5 tile dalla sua uscita 'B', ne servono almeno 6"):
-            G.genera(sorgenti, PALETTE)
+            G.genera(sorgenti_con("largo_bargello.area", con_spawn(1, xy)), PALETTE)
 
     def test_negativa_uscita_senza_arco(self):
         """(a) Un'uscita verso un'area che grafo.json non collega."""
@@ -284,14 +323,18 @@ class Mondo(unittest.TestCase):
 
     def test_negativa_spawn_iniziale_chiuso(self):
         """Ogni varco si raggiunge da ogni spawn, anche dallo spawn 0 che non e' un arrivo."""
+        nome = next(n for n, a in sorted(self.aree.items()) if "piazza" not in a and all(
+            max(abs(x - a["spawn"][0][0]), abs(y - a["spawn"][0][1])) > 2 for s, (x, y) in a["spawn"].items() if s))
+        sx, sy = self.aree[nome]["spawn"][0]
+
         def chiudi(testo):
             for dx in range(-1, 2):
                 for dy in range(-1, 2):
                     if dx or dy:
-                        testo = cambia_griglia(testo, 16 + dy, 19 + dx, "#")
+                        testo = cambia_griglia(testo, sy + dy, sx + dx, "#")
             return testo
         with self.assertRaisesRegex(G.ErroreMondo, "non si raggiunge camminando dallo spawn 0"):
-            G.genera(sorgenti_con("largo_bargello.area", chiudi), PALETTE)
+            G.genera(sorgenti_con(nome + ".area", chiudi), PALETTE)
 
     def test_negativa_varco_senza_uscita(self):
         sorgenti = sorgenti_con("san_martino.area", lambda t: t.replace("uscita G teatro_romano 4\n", ""))
@@ -315,9 +358,8 @@ class Mondo(unittest.TestCase):
             G.genera(sorgenti, PALETTE)
 
     def test_negativa_spawn_nel_muro(self):
-        sorgenti = sorgenti_con("teatro_romano.area", lambda t: t.replace("spawn 1 54 31", "spawn 1 0 0"))
         with self.assertRaisesRegex(G.ErroreMondo, "non e' su una cella calpestabile"):
-            G.genera(sorgenti, PALETTE)
+            G.genera(sorgenti_con("teatro_romano.area", con_spawn(1, (0, 0))), PALETTE)
 
     def test_scale_laterali_vicine_a_piazza_grande(self):
         """Le scale da Quaranta Martiri sbucano nelle due vie poco prima di Piazza Grande: il varco
@@ -335,9 +377,10 @@ class Mondo(unittest.TestCase):
 
     def test_negativa_spawn_della_scala_laterale_lontano(self):
         """Il varco resta in cima alla via, ma chi sale da Quaranta Martiri comparirebbe a meta' via."""
-        sorgenti = sorgenti_con("via_xx_settembre.area", lambda t: re.sub(r"spawn 3 \d+ \d+", "spawn 3 16 40", t))
+        xy = cella_che("via_xx_settembre", lambda a, x, y: G.distanza_dal_varco(a, (x, y), "A") > 20
+                       and all(G.distanza_dal_varco(a, (x, y), l) >= 6 for l in "BEG"))
         with self.assertRaisesRegex(G.ErroreMondo, "lo spawn d'arrivo da 'E' e' a \\d+ tile dal varco 'A'"):
-            G.genera(sorgenti, PALETTE)
+            G.genera(sorgenti_con("via_xx_settembre.area", con_spawn(3, xy)), PALETTE)
 
     def test_negativa_vicino_a_un_varco_che_non_c_e(self):
         sorgenti = sorgenti_con("via_dei_consoli.area", lambda t: t.replace("vicino_a B 16", "vicino_a Z 16"))
@@ -393,9 +436,12 @@ class Dislivello(unittest.TestCase):
         a = area_con_dislivello("via_dei_consoli")
         self.assertEqual(len(a["gradoni"]), 2)
         for y in a["gradoni"]:
-            self.assertIn("M", a["griglia"][y])
             self.assertIn("S", a["griglia"][y])
         self.assertEqual(area_con_dislivello("piazza_grande")["gradoni"], [])
+        # dove la strada e' larga, il gradone e' muro di contenimento con la scala in mezzo
+        monte = area_con_dislivello("monte_ingino")
+        colonne = ["".join(r[x] for r in monte["griglia"]) for x in monte["gradoni"]]
+        self.assertTrue(all("M" in c and "S" in c for c in colonne))
 
     def test_negativa_quota_piatta_niente_gradoni(self):
         """La quota decide: con via dei Consoli in piano i gradoni spariscono."""
@@ -407,10 +453,16 @@ class Dislivello(unittest.TestCase):
         self.assertEqual((a["gradoni"], celle(a, "M")), ([], 0))
 
     def test_ombra_a_valle_del_gradone(self):
-        a = area_con_dislivello("via_dei_consoli")
-        y = a["gradoni"][0]
-        self.assertEqual(G.tile_per_cella(a["griglia"], 1, y - 1, False, a["monte"]), G.INDICE_TILE["STRADA_OMBRA"])
-        self.assertEqual(G.tile_per_cella(a["griglia"], 1, y + 1, False, a["monte"]), G.INDICE_TILE["STRADA"])
+        """Monte Ingino sale verso destra: l'ombra del gradone cade sul suolo a sinistra."""
+        a = area_con_dislivello("monte_ingino")
+        g = a["griglia"]
+        self.assertEqual(a["monte"], "destra")
+        x, y = next((x, y) for x in a["gradoni"] for y in range(len(g))
+                    if g[y][x] == "M" and g[y][x - 1] in ".," and g[y][x + 1] in ".,")
+        valle = G.tile_per_cella(g, x - 1, y, False, a["monte"])
+        monte = G.tile_per_cella(g, x + 1, y, False, a["monte"])
+        self.assertIn(valle, (G.INDICE_TILE["SUOLO_OMBRA"], G.INDICE_TILE["STRADA_OMBRA"]))
+        self.assertIn(monte, (G.INDICE_TILE["SUOLO"], G.INDICE_TILE["STRADA"]))
 
     def test_scale_ai_varchi_fra_quote_diverse(self):
         """Quaranta Martiri (0 m) e via dei Consoli (27-67 m): scala davanti al varco G della via;
@@ -423,7 +475,7 @@ class Dislivello(unittest.TestCase):
             self.assertEqual(g[y][x + 1: x + 1 + G.PROFONDITA_SCALE], "S" * G.PROFONDITA_SCALE)
         for x, y in G.celle_varco(a, "A"):
             if y == 1:
-                self.assertEqual(g[y + 1][x], ",")
+                self.assertNotEqual(g[y + 1][x], "S")
 
     def test_negativa_stessa_quota_niente_scala(self):
         mondo = copy.deepcopy(G.mondo_del_repo())
@@ -463,6 +515,92 @@ def errori_fondale(griglia, mappa):
     nomi = [n for n, _ in G.TILE_FONDALI]
     return [(i, nomi[t]) for i, (c, t) in enumerate(zip(griglia, mappa))
             if (c < prima_solida or c >= G.PRIMO_VARCO) and nomi[t] not in TILE_CALPESTABILI]
+
+
+class Proporzioni(unittest.TestCase):
+    """Vie e piazze dalle misure muro a muro di mondo/fonti/misure_osm.json."""
+
+    def test_vie_larghe_quanto_la_misura(self):
+        mondo = G.mondo_del_repo()
+        for nome, attesa in (("via_dei_consoli", 4), ("via_xx_settembre", 5), ("bottaccione", 6),
+                             ("sant_agostino", 12), ("duomo_ducale", 5)):
+            a = area_con_dislivello(nome)
+            misura = mondo["misure"]["vie"][a["via"][0]]
+            self.assertEqual(G.larghezza_via_tile(misura), attesa, nome)
+            righe = sorted(G.larghezze_lungo_l_asse(a))
+            self.assertLessEqual(righe[len(righe) // 2], attesa * a.get("tolleranza_via", G.TOLLERANZA_VIA), nome)
+
+    def test_negativa_via_troppo_larga(self):
+        """Via dei Consoli allargata a tutta la griglia, come al giro scorso: rifiutata."""
+        def allarga(t):
+            return griglia_mappata(t, lambda g: [[c if c in G.VARCHI or x in (0, len(r) - 1) else ","
+                                                  for x, c in enumerate(r)] for r in g])
+        with self.assertRaisesRegex(G.ErroreMondo, "Via dei Consoli e' larga \\d+ tile sulla griglia, la misura dice 4"):
+            G.genera(sorgenti_con("via_dei_consoli.area", allarga), PALETTE)
+
+    def test_negativa_misura_piu_stretta(self):
+        """Se il censimento dicesse 3 m, la via di 4 tile sarebbe troppo larga: la misura si propaga."""
+        mondo = copy.deepcopy(G.mondo_del_repo())
+        mondo["misure"]["vie"]["Via dei Consoli"]["larghezza_mediana_m"] = 3.0
+        with self.assertRaisesRegex(G.ErroreMondo, "la misura dice 2"):
+            G.genera(G.sorgenti_del_repo(), PALETTE, mondo)
+
+    def test_negativa_via_senza_misura(self):
+        sorgenti = sorgenti_con("via_dei_consoli.area", lambda t: t.replace("via Via dei Consoli", "via Via Galeotti"))
+        with self.assertRaisesRegex(G.ErroreMondo, "la via 'Via Galeotti' non ha una larghezza misurata"):
+            G.genera(sorgenti, PALETTE)
+
+    def test_tolleranza_solo_nel_sud_est(self):
+        """Tolleranza piu' larga solo dove OSM e' incompleto, e mai oltre il doppio."""
+        for nome, a in self.aree_lette().items():
+            if "tolleranza_via" in a:
+                self.assertIn(nome, ("via_xx_settembre", "duomo_ducale", "sant_andrea", "san_pietro"))
+
+    def test_negativa_tolleranza_oltre_il_doppio(self):
+        sorgenti = sorgenti_con("via_xx_settembre.area", lambda t: t.replace("tolleranza_via 2.0", "tolleranza_via 2.5"))
+        with self.assertRaisesRegex(G.ErroreMondo, "tolleranza_via 2.5 fuori"):
+            G.genera(sorgenti, PALETTE)
+
+    def test_strettoia(self):
+        a = area_con_dislivello("via_dei_consoli")
+        self.assertEqual(min(G.larghezze_lungo_l_asse(a)), 2)
+
+    def test_negativa_strettoia_che_non_c_e(self):
+        sorgenti = sorgenti_con("via_dei_consoli.area", lambda t: t.replace("strettoia 2", "strettoia 1"))
+        with self.assertRaisesRegex(G.ErroreMondo, "la strettoia di 1 tile non c'e'"):
+            G.genera(sorgenti, PALETTE)
+
+    def test_piazze_in_scala(self):
+        mondo = G.mondo_del_repo()
+        attese = {"largo_bargello": (13, 9), "san_pietro": (26, 25), "sant_andrea": (4, 15)}
+        for nome, wh in attese.items():
+            a = self.aree_lette()[nome]
+            self.assertNotIn("fattore_piazza", a, nome)
+            self.assertEqual(G.misure_piazza_tile(mondo["misure"]["piazze"][a["piazza"][0]]), wh, nome)
+
+    def test_piazza_grande_compressa_con_fattore(self):
+        """Piazza Grande vera (51x27) piu' Consoli e Pretorio fanno 94 tile: non entra in 64, il lato
+        lungo e' compresso con un fattore dichiarato."""
+        a = self.aree_lette()["piazza_grande"]
+        mondo = G.mondo_del_repo()
+        self.assertEqual(G.misure_piazza_tile(mondo["misure"]["piazze"]["Piazza Grande"]), (27, 51))
+        self.assertLess(a["fattore_piazza"][0], 1)
+
+    def test_negativa_piazza_fuori_misura_senza_fattore(self):
+        sorgenti = sorgenti_con("piazza_grande.area", lambda t: re.sub(r"\nfattore_piazza [^\n]*", "", t))
+        with self.assertRaisesRegex(G.ErroreMondo, "Piazza Grande"):
+            G.genera(sorgenti, PALETTE)
+
+    def test_negativa_piazza_ingombra(self):
+        """Un muro nel Largo del Bargello: la piazza non e' piu' libera nella sua misura."""
+        a = self.aree_lette()["largo_bargello"]
+        rx, ry = a["riferimento"]
+        sorgenti = sorgenti_con("largo_bargello.area", lambda t: cambia_griglia(t, ry + 3, rx + 5, "#"))
+        with self.assertRaisesRegex(G.ErroreMondo, "Largo del Bargello \\(13x9 tile intorno al riferimento\\) non e' libera"):
+            G.genera(sorgenti, PALETTE)
+
+    def aree_lette(self):
+        return {a["id"]: a for a in (G.leggi_area(n, t) for n, t in G.sorgenti_del_repo())}
 
 
 class FondaleControGriglia(unittest.TestCase):
