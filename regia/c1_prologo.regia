@@ -1,8 +1,8 @@
 # C1 Prologo (proposta approvata, scambio/cutscene/PROPOSTA.md): al posto dei segnaposto P-01 e P-02.
 # La vetrata a colori come la si vede oggi, che sfuma nei vetri chiari ("prima che il vetro avesse un
-# colore"); la pergamena con gli undici stendardi; Gubbio dalla valle dal giorno alla notte coi fuochi
-# del campo nella conca; il fuoco della Fede in cima alla torre dei Consoli. Le battute sono quelle del
-# narratore del copione, in ordine.
+# colore"); la pergamena con gli undici stendardi, dove ogni nome compare quando il narratore lo dice;
+# Gubbio dalla valle dal giorno alla notte coi fuochi del campo nella conca; il fuoco della Fede in cima
+# al Palazzo dei Consoli. Le battute sono quelle del narratore del copione, in ordine.
 cutscene C1 | Il prologo
 inquadratura 6 | vetrata_storia | 0
 narratore R_P_01_00
@@ -10,9 +10,11 @@ inquadratura 6 | vetrata_storia | 0
 narratore R_P_01_01
 inquadratura 6 | vetrata vetrata_storia | 0 | dissolvi
 narratore R_P_01_02
-inquadratura 14 | pergamena | 6
+inquadratura 5 | pergamena | 0
 narratore R_P_02_00
+inquadratura 5 | pergamena_nomi1 | 0
 narratore R_P_02_01
+inquadratura 4 | pergamena_nomi2 | 0
 narratore R_P_02_02
 inquadratura 8 | cielo:giorno monte:giorno gubbio:giorno campo:giorno | 12
 narratore R_P_02_03

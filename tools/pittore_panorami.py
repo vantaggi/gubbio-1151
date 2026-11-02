@@ -14,6 +14,7 @@ import os
 import random
 
 from genera_battaglia import Tela
+import stendardi as ST
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 W, H = 512, 256
@@ -130,72 +131,201 @@ def monumenti_dalla_valle():
     return out
 
 
-def edificio(t, x, base, alto, tipo, notte):
-    largo = {"torre": 14, "palazzo": 18, "chiesa": 16, "porta": 8, "case": 12}[tipo]
-    x0 = x - largo // 2
-    if tipo == "chiesa":
-        t.rett(x0, base - alto + 6, largo, alto - 6, PIETRA_C)
-        t.rett(x0 + largo - 4, base - alto + 6, 4, alto - 6, PIETRA)
-        t.trapezio(x, base - alto, base - alto + 6, 2, largo + 2, COTTO)
-        t.rett(x0 + largo - 3, base - alto - 6, 4, 12, PIETRA_C)
-        t.rett(x - 1, base - alto + 9, 3, 3, CONTORNO)
-    elif tipo == "torre":
-        corpo = alto * 2 // 3
-        t.rett(x0, base - corpo, largo, corpo, PIETRA_L)
-        t.rett(x0 + largo - 4, base - corpo, 4, corpo, PIETRA_M)
+def finestra(t, x, y, tipo, notte, r):
+    """Una finestra di tipo diverso: feritoia, quadrata, alta, ad arco o bifora. Di notte qualcuna e'
+    accesa (l'oro, che non si trasforma)."""
+    c = ORO if notte and r.random() < 0.3 else CONTORNO
+    if tipo == "feritoia":
+        t.rett(x, y, 1, 3, c)
+    elif tipo == "quadrata":
+        t.rett(x, y, 2, 2, c)
+    elif tipo == "alta":
+        t.rett(x, y, 2, 4, c)
+    elif tipo == "arco":
+        t.rett(x, y + 1, 3, 4, c)
+        t.punto(x + 1, y, c)
+    else:                                       # bifora: due luci ad arco e la colonnina in mezzo
+        t.rett(x, y + 1, 1, 3, c)
+        t.rett(x + 2, y + 1, 1, 3, c)
+        t.punto(x, y, c)
+        t.punto(x + 2, y, c)
+
+
+def tetto(t, x0, y, largo, falde=False):
+    """Il tetto a coppi: la fila dei coppi a righe, la gronda che fa ombra sul muro sotto."""
+    if falde:
+        t.trapezio(x0 + largo // 2, y - 3, y, largo - 4, largo + 2, COTTO)
+    t.rett(x0 - 1, y, largo + 2, 2, COTTO)
+    for k in range(x0 - 1, x0 + largo + 1, 2):
+        t.punto(k, y, COTTO_C)
+    t.rett(x0, y + 2, largo, 1, PIETRA_S)
+
+
+def casa(t, x0, base, largo, alto, notte, r, torre=False):
+    """Una casa del pendio: il muro in uno dei toni del calcare, il fianco destro in ombra, i marcapiani,
+    le finestre diverse per piano (non in griglia), il tetto a coppi o i merli se e' una torre."""
+    tono = r.choice((PIETRA, PIETRA_M, PIETRA_M, PIETRA_C))
+    cima = base - alto
+    t.rett(x0, cima, largo, alto, tono)
+    t.rett(x0 + largo - 2, cima, 2, alto, max(PIETRA_S, tono - 1))
+    for y in range(cima + 7, base - 2, 7):
+        if alto > 11:
+            t.rett(x0, y, largo - 2, 1, min(PIETRA_L, tono + 1))     # il marcapiano
+    if torre:
         for k in range(0, largo, 3):
-            t.rett(x0 + k, base - corpo - 2, 2, 2, PIETRA_L)
-        t.rett(x0 + 2, base - alto, 5, alto - corpo, PIETRA_L)
-        t.rett(x0 + 5, base - alto, 2, alto - corpo, PIETRA_M)
-        t.rett(x0 + 3, base - alto + 3, 2, 3, CONTORNO)
-        for fy in range(base - corpo + 4, base - 3, 7):
-            for fx in range(x0 + 2, x0 + largo - 4, 4):
-                t.rett(fx, fy, 2, 3, ORO if notte and (fx + fy) % 3 == 0 else CONTORNO)
-    elif tipo == "porta":
-        t.rett(x0, base - alto, largo, alto, PIETRA_M)
-        for k in range(0, largo, 3):
-            t.rett(x0 + k, base - alto - 2, 2, 2, PIETRA_M)
-        t.rett(x0 + 2, base - 5, 4, 5, CONTORNO)
+            t.rett(x0 + k, cima - 2, 2, 2, tono)
     else:
-        t.rett(x0, base - alto, largo, alto, PIETRA_C)
-        t.rett(x0 + largo - 4, base - alto, 4, alto, PIETRA)
-        t.rett(x0, base - alto - 2, largo, 2, COTTO)
-        for fx in range(x0 + 2, x0 + largo - 4, 4):
-            t.rett(fx, base - alto + 4, 2, 3, ORO if notte and fx % 3 == 0 else CONTORNO)
+        tetto(t, x0, cima - 2, largo, falde=r.random() < 0.4)
+    for y in range(cima + 3, base - 3, 7):
+        x = x0 + 1 + r.randint(0, 2)
+        while x < x0 + largo - 4:
+            if r.random() < 0.75:
+                tipo = "feritoia" if torre else r.choice(("quadrata", "alta", "alta", "arco", "bifora"))
+                finestra(t, x, y + r.randint(0, 1), tipo, notte, r)
+            x += r.randint(4, 6)
+    if not torre and r.random() < 0.5 and largo > 8:
+        porta = x0 + r.randint(1, largo - 5)
+        t.rett(porta, base - 4, 3, 4, CONTORNO)
+        t.punto(porta + 1, base - 5, CONTORNO)
 
 
-def gubbio(momento):
-    """La citta' sul pendio: le case a gradoni, i monumenti del censimento, il drappo rosso sulla torre
-    dei Consoli, le mura in basso."""
+def palazzo_dei_consoli(t, x, base, alto, notte, fuoco):
+    """Il Palazzo dei Consoli visto dalla valle: il corpo alto di calcare chiaro, i merli guelfi, il
+    campaniletto a vela in cima a sinistra, la fila delle bifore in alto, le finestre ad arco sotto, i
+    grandi archi alla base (la loggia sul pendio). In cima, il drappo di Gubbio o il fuoco della Fede."""
+    largo = 24
+    x0 = x - largo // 2
+    cima = base - alto + 8
+    t.rett(x0, cima, largo, base - cima, PIETRA_L)
+    t.rett(x0 + largo - 5, cima, 5, base - cima, PIETRA_M)
+    for k in range(0, largo, 3):
+        t.rett(x0 + k, cima - 2, 2, 2, PIETRA_L if k < largo - 5 else PIETRA_M)
+    t.rett(x0, cima + 2, largo, 1, PIETRA_C)
+    for k in range(3):
+        finestra(t, x0 + 2 + k * 6, cima + 4, "bifora", notte, random.Random(k))
+    for k in range(3):
+        finestra(t, x0 + 3 + k * 6, cima + 12, "arco", notte, random.Random(k + 5))
+    t.rett(x0, base - 9, largo, 1, PIETRA_C)
+    for k in range(4):
+        ax = x0 + 1 + k * 6
+        t.rett(ax, base - 7, 4, 7, CONTORNO)
+        t.rett(ax + 1, base - 8, 2, 1, CONTORNO)
+    # il campaniletto a vela: un muro sottile con l'arco della campana
+    vx = x0 + 2
+    t.rett(vx, cima - 9, 5, 7, PIETRA_L)
+    t.rett(vx + 4, cima - 9, 1, 7, PIETRA_M)
+    t.rett(vx + 1, cima - 11, 3, 2, PIETRA_L)
+    t.punto(vx + 2, cima - 12, PIETRA_L)
+    t.rett(vx + 2, cima - 7, 1, 2, CONTORNO)
+    if fuoco:
+        fuoco_della_fede(t, x + 4, cima - 5)
+    else:
+        t.rett(x + 3, cima - 13, 1, 11, CONTORNO)
+        ST.drappo(t, x + 4, cima - 13, ST.GUBBIO["gioco"], {("vermiglio comunale", 2): VERMIGLIO,
+                                                           ("neutri", 4): PIETRA_L, ST.CONTORNO: CONTORNO}, 11, 8)
+
+
+def chiesa(t, x, base, alto, notte, r):
+    """Una chiesa: la facciata a capanna col portale, il rosone, il tetto a coppi, il campanile a lato
+    con la cella a bifora e la cuspide."""
+    largo = 16
+    x0 = x - largo // 2
+    cima = base - alto + 8
+    t.rett(x0, cima, largo, base - cima, PIETRA_C)
+    t.rett(x0 + largo - 3, cima, 3, base - cima, PIETRA)
+    t.trapezio(x, cima - 6, cima, 2, largo + 2, COTTO)
+    t.trapezio(x, cima - 5, cima - 1, 1, largo - 2, PIETRA_C)
+    t.punto(x, cima - 3, CONTORNO)                                       # l'oculo del timpano
+    t.ellisse(x - 0.5, cima + 5, 2.2, 2.2, CONTORNO)                     # il rosone
+    t.punto(x - 1, cima + 4, PIETRA_L)
+    t.rett(x - 2, base - 6, 4, 6, CONTORNO)                              # il portale
+    t.rett(x - 1, base - 7, 2, 1, CONTORNO)
+    cx = x0 + largo + 1
+    t.rett(cx, cima - 10, 5, base - cima + 10, PIETRA_C)
+    t.rett(cx + 4, cima - 10, 1, base - cima + 10, PIETRA)
+    finestra(t, cx + 1, cima - 7, "bifora", notte, r)
+    t.trapezio(cx + 2, cima - 15, cima - 10, 1, 6, COTTO)
+
+
+def torre(t, x, base, alto, notte, r):
+    """Una torre civica: alta e stretta, i merli guelfi, le feritoie a quote diverse, la faccia destra in
+    ombra."""
+    largo = 9
+    x0 = x - largo // 2
+    t.rett(x0, base - alto, largo, alto, PIETRA_C)
+    t.rett(x0 + largo - 3, base - alto, 3, alto, PIETRA)
+    for k in range(0, largo, 3):
+        t.rett(x0 + k, base - alto - 2, 2, 2, PIETRA_C)
+    t.rett(x0, base - alto + 3, largo, 1, PIETRA_L)
+    for y in range(base - alto + 6, base - 4, 6):
+        finestra(t, x0 + 2 + r.randint(0, 2), y + r.randint(0, 2), "feritoia", notte, r)
+
+
+def porta_urbica(t, x, base, alto):
+    """Una porta delle mura: la torre-porta coi merli e il fornice ad arco."""
+    largo = 12
+    x0 = x - largo // 2
+    t.rett(x0, base - alto, largo, alto, PIETRA_M)
+    t.rett(x0 + largo - 3, base - alto, 3, alto, PIETRA)
+    for k in range(0, largo, 3):
+        t.rett(x0 + k, base - alto - 2, 2, 2, PIETRA_M)
+    t.rett(x0 + 3, base - 7, 5, 7, CONTORNO)
+    t.rett(x0 + 4, base - 8, 3, 1, CONTORNO)
+
+
+def edificio(t, nome, x, base, alto, tipo, notte, r, fuoco=False):
+    if nome == "consoli":
+        palazzo_dei_consoli(t, x, base, alto, notte, fuoco)
+    elif tipo == "chiesa":
+        chiesa(t, x, base, alto, notte, r)
+    elif tipo == "torre":
+        torre(t, x, base, alto, notte, r)
+    elif tipo == "porta":
+        return                                  # le porte stanno sulle mura (gubbio_disegno)
+    else:
+        casa(t, x - 9, base, 18, alto, notte, r)
+
+
+def gubbio_disegno(momento, fuoco=False):
     t = Tela(W, H)
     notte = momento == "notte"
     r = random.Random(7)
     mura = QUADRO - 8
-    # le case: dal basso a sinistra in su verso destra, come sale la citta'
-    x = 20
-    while x < W - 20:
-        w = r.randint(8, 14)
-        cima = int(mura - 14 - (x / W) * 26 - r.randint(0, 8))
-        t.rett(x, cima, w, mura - cima, PIETRA_M if (x // w) % 2 else PIETRA)
-        t.rett(x + w - 2, cima, 2, mura - cima, PIETRA_S)
-        t.rett(x, cima - 2, w, 2, COTTO if r.random() < 0.6 else COTTO_C)
-        for fy in range(cima + 4, mura - 3, 6):
-            for fx in range(x + 2, x + w - 3, 5):
-                t.punto(fx, fy, ORO if notte and r.random() < 0.3 else CONTORNO)
-        x += w
+    # le case a gradoni: file parallele al pendio, quelle piu' in alto dietro; la citta' sale verso il
+    # monte (a destra) e ogni fila ha case di larghezza, altezza e tono diversi, qualche torre
+    for fila in range(4, -1, -1):
+        x = 16 + fila * 5
+        while x < W - 16:
+            largo = r.randint(7, 15)
+            sale = (x / W) * 28
+            base = int(mura - fila * 8 - sale + r.randint(0, 1))
+            torre_g = r.random() < 0.08
+            alto = r.randint(16, 24) if torre_g else r.randint(9, 15)
+            casa(t, x, base, 6 if torre_g else largo, alto, notte, r, torre=torre_g)
+            x += (6 if torre_g else largo) + r.randint(0, 1)
     for nome, mx, base, alto, tipo in sorted(monumenti_dalla_valle(), key=lambda m: m[2]):
-        edificio(t, mx, min(base, mura), alto, tipo, notte)
-        if nome == "consoli":
-            # il drappo di Gubbio: rosso col monte bianco
-            t.rett(mx - 4, min(base, mura) - alto - 10, 1, 10, CONTORNO)
-            t.rett(mx - 3, min(base, mura) - alto - 10, 7, 5, VERMIGLIO)
-            t.rett(mx - 2, min(base, mura) - alto - 7, 5, 1, PIETRA_L)
-    # le mura col camminamento merlato
+        edificio(t, nome, mx, min(base, mura), alto, tipo, notte, r, fuoco)
+    # le mura col camminamento a merli guelfi, le torri di cinta
     t.rett(0, mura, W, 8, PIETRA)
+    t.rett(0, mura + 6, W, 2, PIETRA_S)
+    t.rett(0, mura + 1, W, 1, PIETRA_M)
     for k in range(0, W, 4):
         t.rett(k, mura - 2, 2, 2, PIETRA)
-    t.rett(0, mura + 6, W, 2, PIETRA_S)
-    return t, PALETTE_PANORAMA, notte
+    for k in range(30, W, 96):
+        t.rett(k, mura - 6, 7, 14, PIETRA_M)
+        t.rett(k + 5, mura - 6, 2, 14, PIETRA)
+        for m in range(0, 7, 3):
+            t.rett(k + m, mura - 8, 2, 2, PIETRA_M)
+    for nome, mx, base, alto, tipo in monumenti_dalla_valle():
+        if tipo == "porta":
+            porta_urbica(t, mx, mura + 8, 18)
+    return t
+
+
+def gubbio(momento):
+    """La citta' sul pendio: le case a gradoni, i monumenti del censimento, il Palazzo dei Consoli col
+    drappo di Gubbio, le mura merlate con le porte."""
+    return gubbio_disegno(momento), PALETTE_PANORAMA, momento == "notte"
 
 
 # --- la conca col campo nemico ------------------------------------------------------------------------
@@ -244,15 +374,9 @@ def fuoco_della_fede(t, x, y):
 
 
 def gubbio_fede(momento):
-    """La citta' di notte quando 'sorse il fuoco della Fede': il fuoco al posto del drappo in cima alla
-    torre dei Consoli."""
-    t, palette, _ = gubbio("notte")
-    for nome, mx, base, alto, _ in monumenti_dalla_valle():
-        if nome == "consoli":
-            cima = min(base, QUADRO - 8) - alto
-            t.rett(mx - 4, cima - 10, 8, 10, 0)
-            fuoco_della_fede(t, mx, cima - 3)
-    return t, palette, True
+    """La citta' di notte quando 'sorse il fuoco della Fede': il fuoco al posto del drappo in cima al
+    Palazzo dei Consoli."""
+    return gubbio_disegno("notte", fuoco=True), PALETTE_PANORAMA, True
 
 
 PITTORI = {"cielo": cielo, "monte": monte, "gubbio": gubbio, "campo": campo, "gubbio_fede": gubbio_fede}
@@ -415,52 +539,186 @@ def vetrata_storia(momento):
 
 
 # --- la pergamena dell'Umbria con gli stendardi -------------------------------------------------------
-PALETTE_PERGAMENA = [("neutri", 0), ("neutri", 0), ("legno e cuoio", 1), ("legno e cuoio", 3), ("oro e bronzo", 2),
-                     ("oro e bronzo", 3), ("pelle", 2), ("pelle", 1), ("vermiglio comunale", 1), ("vermiglio comunale", 2),
-                     ("neutri", 4), ("verde dei monti", 2), ("cielo e acqua", 2), ("pietra calcarea", 3), ("neutri", 2),
-                     ("oro e bronzo", 1)]
+import sys as _sys  # noqa: E402
 
-# le undici citta' della coalizione (README del copione, Sez. 3 del GDD), dove stanno rispetto a Gubbio
-CITTA_COALIZIONE = [("Perugia", 150, 74, True), ("Spoleto", 320, 92, False), ("Foligno", 290, 80, False),
-                    ("Assisi", 236, 76, False), ("Spello", 262, 82, False), ("Bettona", 206, 84, False),
-                    ("Todi", 176, 98, False), ("Cagli", 214, 22, False), ("Nocera", 316, 58, False),
-                    ("Gualdo Tadino", 306, 42, False), ("Fossato", 282, 32, False)]
-GUBBIO_SULLA_MAPPA = (238, 46)
+_sys.path.insert(0, os.path.join(RADICE, "stile"))
+import stile as _S  # noqa: E402
+
+FONT = _S.carica("font")
+MAPPA = json.load(open(os.path.join(RADICE, "dati", "mappa_umbria.json"), encoding="utf-8"))
+TESTI = os.path.join(RADICE, "testi", "copione.testi")
+
+PALETTE_PERGAMENA = [("neutri", 0), ("legno e cuoio", 0), ("legno e cuoio", 1), ("legno e cuoio", 2), ("pelle", 2),
+                     ("pelle", 1), ("pelle", 0), ("vermiglio comunale", 1), ("vermiglio comunale", 2), ("neutri", 4),
+                     ("oro e bronzo", 3), ("cielo e acqua", 1), ("verde dei monti", 1), ("cielo e acqua", 2),
+                     ("oro e bronzo", 2), ("legno e cuoio", 3)]
+P_INCHIOSTRO, P_ASTA, P_CARTA, P_CARTA_S, P_RILIEVO = 2, 3, 4, 5, 6
+P_ORO, P_FIUME, P_LAGO, P_ALONE = 10, 11, 13, 14
+INDICI_PERGAMENA = {r: i for i, r in reversed(list(enumerate(PALETTE_PERGAMENA))) if i}
+
+# la proiezione: nord in alto, la stessa scala in orizzontale e in verticale (px per km), il quadro
+# fra le bande e' 240x112 e la mappa ci sta tutta (non scorre)
+PX_PER_KM = 1.05
+KM_PER_GRADO_LAT = 111.2
+KM_PER_GRADO_LON = 111.2 * math.cos(math.radians(43.15))
+ORIGINE = (43.55, 12.57, 126, 8)          # lat, lon -> x, y: Cagli in cima, Gubbio a x=126
+BANDIERA = 10                             # i drappi della coalizione sulla mappa, 10x10
+COLONNA_OVEST, COLONNA_EST = 66, 164
+DIVISORIO_LON = 12.63                     # a ovest di qui il drappo va nella colonna di sinistra
+
+
+def proietta(lat, lon):
+    la0, lo0, x0, y0 = ORIGINE
+    return (x0 + (lon - lo0) * KM_PER_GRADO_LON * PX_PER_KM, y0 + (la0 - lat) * KM_PER_GRADO_LAT * PX_PER_KM)
+
+
+def scrivi(t, x, y, testo, colore):
+    for ch in _S.normalizza(FONT, testo):
+        g = FONT["glifi"][ch]
+        for r, riga in enumerate(g):
+            for k, v in enumerate(riga):
+                if v == "#":
+                    t.punto(x + k, y + r, colore)
+        x += len(g[0]) + FONT["spaziatura"]
+
+
+def larghezza(testo):
+    return _S.larghezza_testo(FONT, _S.normalizza(FONT, testo))
+
+
+def battuta(ident):
+    for riga in open(TESTI, encoding="utf-8"):
+        if riga.startswith(ident + " "):
+            return riga.split("|", 2)[2].strip()
+    raise KeyError(ident)
+
+
+def nominate(battute):
+    """{id: come la chiama il narratore} delle citta' della coalizione nominate in quelle battute (il
+    nome piu' lungo, a parole intere dall'inizio, che compare nel testo: 'Fossato', 'Gualdo Tadino')."""
+    testo = " ".join(battuta(b) for b in battute)
+    out = {}
+    for c in ST.COALIZIONE:
+        parole = c["nome"].split()
+        for n in range(len(parole), 0, -1):
+            if " ".join(parole[:n]) in testo:
+                out[c["id"]] = " ".join(parole[:n])
+                break
+    return out
+
+
+def posti_delle_bandiere():
+    """{id: (x_drappo, y_drappo, x_citta, y_citta)} delle undici citta': il punto dov'e' la citta' e il
+    drappo nella colonna di ovest o di est, all'altezza della citta' o spinto quanto basta perche' i
+    drappi non si tocchino."""
+    out = {}
+    for colonna, ovest in ((COLONNA_OVEST, True), (COLONNA_EST, False)):
+        qui = sorted((proietta(*MAPPA["citta"][c["id"]])[1], c["id"]) for c in ST.COALIZIONE
+                     if (MAPPA["citta"][c["id"]][1] < DIVISORIO_LON) == ovest)
+        ys = [y - BANDIERA // 2 for y, _ in qui]
+        passo = BANDIERA + 3
+        for i in range(1, len(ys)):
+            ys[i] = max(ys[i], ys[i - 1] + passo)
+        ys[-1] = min(ys[-1], QUADRO - 6 - BANDIERA)
+        for i in range(len(ys) - 2, -1, -1):
+            ys[i] = min(ys[i], ys[i + 1] - passo)
+        for (_, ident), y in zip(qui, ys):
+            cx, cy = proietta(*MAPPA["citta"][ident])
+            out[ident] = (colonna, int(y), int(round(cx)), int(round(cy)))
+    return out
+
+
+def linea_geo(t, punti, colore, tratteggio=0):
+    xy = [proietta(*p) for p in punti]
+    k = 0
+    for (x0, y0), (x1, y1) in zip(xy, xy[1:]):
+        n = int(max(abs(x1 - x0), abs(y1 - y0))) + 1
+        for i in range(n):
+            if not tratteggio or (k // tratteggio) % 2 == 0:
+                t.punto(round(x0 + (x1 - x0) * i / n), round(y0 + (y1 - y0) * i / n), colore)
+            k += 1
+
+
+def collina(t, x, y, largo, alto):
+    """Un monte a tratto di penna: il pendio in ombra a destra (la luce viene da sinistra)."""
+    for dy in range(alto):
+        m = largo * (dy + 1) // (2 * alto)
+        t.rett(x - m, y - alto + dy, 2 * m + 1, 1, P_RILIEVO if dy else P_INCHIOSTRO)
+        t.punto(x - m, y - alto + dy, P_INCHIOSTRO)
+        t.punto(x + m, y - alto + dy, P_INCHIOSTRO)
+
+
+def pergamena_con(battute):
+    """La pergamena dell'Umbria: nord in alto e una scala sola (dati/mappa_umbria.json), l'Appennino a
+    est, il Monte Ingino dietro Gubbio, il Tevere, il Chiascio, il Topino e il Trasimeno, le strade che
+    portano a Gubbio. Gli undici stendardi (tools/stendardi.py) stanno in due colonne con un filo fino
+    alla loro citta'; il nome compare accanto quando il narratore lo dice (le battute date). Gubbio e'
+    segnata d'oro, col suo drappo piu' grande."""
+    t = Tela(W, H, P_CARTA)
+    for y in range(H):
+        for x in range(W):
+            if (x % 8, y % 8) in ((3, 5), (7, 1)):
+                t.punto(x, y, P_CARTA_S)
+    t.rett(0, 0, W, 2, P_INCHIOSTRO)
+    t.rett(0, QUADRO - 2, W, 2, P_INCHIOSTRO)
+    # l'Appennino: colline lungo il crinale, il Monte Ingino dietro Gubbio
+    xy = [proietta(*p) for p in MAPPA["appennino"]]
+    for (x0, y0), (x1, y1) in zip(xy, xy[1:]):
+        n = int(abs(y1 - y0) // 7) + 1
+        for i in range(n):
+            collina(t, int(x0 + (x1 - x0) * i / n) + (i % 2) * 3, int(y0 + (y1 - y0) * i / n), 9, 5)
+    ix, iy = proietta(*MAPPA["luoghi"]["monte_ingino"])
+    collina(t, int(ix), int(iy) + 1, 11, 6)
+    # il Trasimeno, i fiumi, le strade
+    lx, ly = proietta(*MAPPA["luoghi"]["trasimeno"])
+    t.ellisse(lx, ly, 9, 6, P_FIUME)
+    t.ellisse(lx, ly, 8, 5, P_LAGO)
+    for corso in MAPPA["fiumi"].values():
+        linea_geo(t, corso, P_FIUME)
+    for strada in MAPPA["strade"].values():
+        linea_geo(t, strada, P_INCHIOSTRO, tratteggio=2)
+    sx, sy = proietta(*MAPPA["luoghi"]["scheggia"])
+    t.rett(int(sx) - 1, int(sy), 3, 1, P_INCHIOSTRO)          # il passo della Scheggia
+    # gli stendardi della coalizione, il filo fino alla citta' e il nome se e' stato detto
+    nomi = nominate(battute)
+    for ident, (fx, fy, cx, cy) in posti_delle_bandiere().items():
+        ovest = fx == COLONNA_OVEST
+        asta = fx + BANDIERA + 1 if ovest else fx - 2
+        t.rett(asta, fy - 2, 1, BANDIERA + 5, P_ASTA)
+        ax, ay = asta, fy + BANDIERA + 2
+        n = max(abs(cx - ax), abs(cy - ay), 1)
+        for i in range(0, n, 2):
+            t.punto(round(ax + (cx - ax) * i / n), round(ay + (cy - ay) * i / n), P_INCHIOSTRO)
+        t.rett(cx - 1, cy - 1, 3, 3, ST.indici_o(INDICI_PERGAMENA, ST.CONTORNO))
+        ST.drappo(t, fx, fy, ST.per_id(ident)["gioco"], INDICI_PERGAMENA, BANDIERA, BANDIERA)
+        if ident in nomi:
+            nome = nomi[ident]
+            scrivi(t, fx - 4 - larghezza(nome) if ovest else fx + BANDIERA + 4, fy, nome, 1)
+    # Gubbio: il punto d'oro, il drappo grande col monte a cinque cime, il nome sempre scritto
+    gx, gy = (int(round(v)) for v in proietta(*MAPPA["citta"]["gubbio"]))
+    t.ellisse(gx + 0.5, gy + 0.5, 4, 4, P_ALONE)
+    t.ellisse(gx + 0.5, gy + 0.5, 3, 3, P_ORO)
+    t.rett(gx - 1, gy - 1, 3, 3, 1)
+    t.rett(gx - 5, gy - 22, 1, 20, P_ASTA)
+    ST.drappo(t, gx - 19, gy - 22, ST.GUBBIO["gioco"], INDICI_PERGAMENA, 13, 10)
+    scrivi(t, gx - 6 - larghezza("Gubbio"), gy - 3, "Gubbio", 1)
+    return t
 
 
 def pergamena(momento):
-    """La pergamena dell'Umbria medievale: l'inchiostro dei fiumi e dei colli, gli undici stendardi della
-    coalizione piantati sui valichi (Perugia il piu' grande, rosso col grifo d'argento coronato d'oro),
-    Gubbio al centro col suo drappo rosso e il monte bianco a cinque cime."""
-    t = Tela(W, H, 7)
-    for y in range(H):
-        for x in range(W):
-            if (x * 7 + y * 13) % 29 == 0:
-                t.punto(x, y, 6)
-    t.rett(0, 0, W, 3, 2)
-    t.rett(0, 109, W, 3, 2)
-    for k in range(6):
-        cx = 60 + k * 70
-        t.ellisse(cx, 60 + (k % 2) * 20, 18, 7, 13)
-    for x in range(40, 480):
-        y = int(70 + 14 * math.sin(x / 40.0))
-        t.punto(x, y, 12)
-    for nome, x, y, grande in CITTA_COALIZIONE:
-        alto = 22 if grande else 12
-        t.rett(x, y - alto, 1, alto, 2)
-        largo = 12 if grande else 7
-        t.rett(x + 1, y - alto, largo, alto // 2, 9 if grande else 8)
-        if grande:
-            t.rett(x + 4, y - alto + 2, 5, 6, 10)
-            t.rett(x + 5, y - alto, 3, 2, 5)
-        t.ellisse(x, y, 2, 1, 2)
-    gx, gy = GUBBIO_SULLA_MAPPA
-    t.rett(gx, gy - 12, 1, 12, 2)
-    t.rett(gx + 1, gy - 12, 8, 6, 9)
-    for k in range(5):
-        t.punto(gx + 2 + k, gy - 8 - (k % 2), 10)
-        t.punto(gx + 2 + k, gy - 7, 10)
-    return t, PALETTE_PERGAMENA, False
+    """La pergamena all'inizio della guerra: gli stendardi, nessun nome ancora."""
+    return pergamena_con([]), PALETTE_PERGAMENA, False
 
 
-PITTORI.update({"vetrata": vetrata, "vetrata_storia": vetrata_storia, "pergamena": pergamena})
+def pergamena_nomi1(momento):
+    """... con i nomi detti in 'Spoleto e Foligno. Assisi, Spello e Bettona. Todi e Cagli.'"""
+    return pergamena_con(["R_P_02_01"]), PALETTE_PERGAMENA, False
+
+
+def pergamena_nomi2(momento):
+    """... e con quelli di 'Nocera, Gualdo Tadino e Fossato. E sopra tutte, Perugia.'"""
+    return pergamena_con(["R_P_02_01", "R_P_02_02"]), PALETTE_PERGAMENA, False
+
+
+PITTORI.update({"vetrata": vetrata, "vetrata_storia": vetrata_storia, "pergamena": pergamena,
+                "pergamena_nomi1": pergamena_nomi1, "pergamena_nomi2": pergamena_nomi2})

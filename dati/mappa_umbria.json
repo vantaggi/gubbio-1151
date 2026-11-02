@@ -1,0 +1,34 @@
+{
+ "_nota": "La pergamena del prologo (tools/pittore_panorami.py). Coordinate in gradi decimali (WGS84) dei centri storici, arrotondate al centesimo: sono quelle delle pagine Wikipedia dei comuni (it.wikipedia.org/wiki/<nome>), scritte da Claude a memoria il 2 nov 2026 e da ricontrollare. Fiumi, crinale e strade sono tracciati approssimati (punti noti lungo il corso), non rilievi: servono a mettere ogni cosa dalla parte giusta. Della coalizione 10 citta' su 11 vengono da sud e sud-est (la pianura), solo Cagli da nord-nord-est oltre la Scheggia.",
+ "citta": {
+  "gubbio": [43.35, 12.57],
+  "perugia": [43.11, 12.39],
+  "spoleto": [42.73, 12.74],
+  "cagli": [43.55, 12.65],
+  "foligno": [42.96, 12.70],
+  "todi": [42.78, 12.41],
+  "nocera": [43.11, 12.79],
+  "gualdo": [43.23, 12.78],
+  "fossato": [43.30, 12.76],
+  "assisi": [43.08, 12.62],
+  "bettona": [43.01, 12.48],
+  "spello": [42.99, 12.67]
+ },
+ "luoghi": {
+  "scheggia": [43.40, 12.67],
+  "monte_ingino": [43.37, 12.59],
+  "trasimeno": [43.13, 12.10]
+ },
+ "fiumi": {
+  "tevere": [[43.62, 12.17], [43.46, 12.24], [43.31, 12.33], [43.19, 12.39], [43.09, 12.44], [43.03, 12.44], [42.98, 12.42], [42.86, 12.40], [42.78, 12.37], [42.66, 12.40]],
+  "chiascio": [[43.38, 12.70], [43.30, 12.65], [43.22, 12.62], [43.16, 12.60], [43.07, 12.55], [43.03, 12.44]],
+  "topino": [[43.11, 12.79], [43.03, 12.75], [42.96, 12.70], [42.93, 12.61], [42.99, 12.58], [43.04, 12.53]]
+ },
+ "appennino": [[43.62, 12.70], [43.47, 12.73], [43.36, 12.75], [43.25, 12.84], [43.12, 12.88], [42.98, 12.90], [42.84, 12.88], [42.70, 12.86]],
+ "strade": {
+  "cagli": [[43.35, 12.57], [43.40, 12.67], [43.55, 12.65]],
+  "perugia": [[43.35, 12.57], [43.22, 12.48], [43.11, 12.39]],
+  "assisi": [[43.35, 12.57], [43.16, 12.60], [43.08, 12.62]],
+  "flaminia": [[43.35, 12.57], [43.30, 12.76], [43.23, 12.78], [43.11, 12.79], [42.96, 12.70], [42.73, 12.74]]
+ }
+}
