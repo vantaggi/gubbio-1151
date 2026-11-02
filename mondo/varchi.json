@@ -21,7 +21,7 @@
         "verso": "LARGO_BARGELLO",
         "bussola": "NO",
         "lato": "alto",
-        "come": "si scende lungo la via"
+        "come": "si scende lungo via dei Consoli"
       },
       {
         "verso": "PIAZZA_GRANDE",
@@ -33,21 +33,27 @@
         "verso": "PIAZZA_QUARANTA_MARTIRI",
         "bussola": "S",
         "lato": "sinistra",
-        "come": "in salita per via Baldassini e le scale (al contrario)"
+        "come": "si sale per via Piccardi e via Gattapone e si sbuca in via dei Consoli poco prima di Piazza Grande (al contrario)"
       }
     ],
     "LARGO_BARGELLO": [
       {
+        "verso": "DUOMO_DUCALE",
+        "bussola": "E",
+        "lato": "basso",
+        "come": "si scende per via della Cattedrale fino al Camignano (al contrario)"
+      },
+      {
         "verso": "SAN_MARTINO",
         "bussola": "O",
         "lato": "alto",
-        "come": "in piano, sul ponte del Camignano"
+        "come": "via dei Consoli prosegue in piano sul Ponte di San Martino fino alla piazza"
       },
       {
         "verso": "VIA_DEI_CONSOLI",
         "bussola": "SE",
         "lato": "basso",
-        "come": "si scende lungo la via (al contrario)"
+        "come": "si scende lungo via dei Consoli (al contrario)"
       }
     ],
     "SAN_MARTINO": [
@@ -55,39 +61,39 @@
         "verso": "BOTTACCIONE",
         "bussola": "NE",
         "lato": "destra",
-        "come": "rientro in citta' da Porta Metauro (al contrario)"
-      },
-      {
-        "verso": "DUOMO_DUCALE",
-        "bussola": "E",
-        "lato": "basso",
-        "come": "si scende dal Voltone per via della Cattedrale (al contrario)"
+        "come": "rientro in citta' da Porta Metauro, via di Giove Pennino e via Gabrielli (al contrario)"
       },
       {
         "verso": "LARGO_BARGELLO",
         "bussola": "E",
         "lato": "basso",
-        "come": "in piano, sul ponte del Camignano (al contrario)"
+        "come": "via dei Consoli prosegue in piano sul Ponte di San Martino fino alla piazza (al contrario)"
       },
       {
         "verso": "PIAZZA_QUARANTA_MARTIRI",
         "bussola": "S",
         "lato": "sinistra",
-        "come": "si scende ancora, verso sud"
+        "come": "si scende per via Cavour"
       },
       {
         "verso": "TEATRO_ROMANO",
         "bussola": "SO",
         "lato": "sinistra",
-        "come": "fuori le mura, piu' in basso"
+        "come": "via Cavour, poi il sentiero fuori Porta Castello, piu' in basso"
       }
     ],
     "TEATRO_ROMANO": [
       {
+        "verso": "PIAZZA_QUARANTA_MARTIRI",
+        "bussola": "E",
+        "lato": "basso",
+        "come": "via degli Ortacci e Porta degli Ortacci, poi via Buozzi (al contrario)"
+      },
+      {
         "verso": "SAN_MARTINO",
         "bussola": "NE",
         "lato": "destra",
-        "come": "fuori le mura, piu' in basso (al contrario)"
+        "come": "via Cavour, poi il sentiero fuori Porta Castello, piu' in basso (al contrario)"
       }
     ],
     "PIAZZA_QUARANTA_MARTIRI": [
@@ -95,25 +101,31 @@
         "verso": "SAN_MARTINO",
         "bussola": "N",
         "lato": "destra",
-        "come": "si scende ancora, verso sud (al contrario)"
+        "come": "si scende per via Cavour (al contrario)"
       },
       {
         "verso": "SAN_PIETRO",
         "bussola": "SE",
         "lato": "basso",
-        "come": "via Mazzini"
+        "come": "Largo di Porta Marmorea, via Mazzatinti, via Reposati"
+      },
+      {
+        "verso": "TEATRO_ROMANO",
+        "bussola": "O",
+        "lato": "alto",
+        "come": "via degli Ortacci e Porta degli Ortacci, poi via Buozzi"
       },
       {
         "verso": "VIA_DEI_CONSOLI",
         "bussola": "N",
         "lato": "destra",
-        "come": "in salita per via Baldassini e le scale"
+        "come": "si sale per via Piccardi e via Gattapone e si sbuca in via dei Consoli poco prima di Piazza Grande"
       },
       {
         "verso": "VIA_XX_SETTEMBRE",
-        "bussola": "E",
+        "bussola": "NE",
         "lato": "basso",
-        "come": "in salita per via della Repubblica e le scale"
+        "come": "si sale per via della Repubblica e le scale di via Oderigi Lucarelli e si sbuca in via XX Settembre poco dopo Piazza Grande"
       }
     ],
     "SAN_PIETRO": [
@@ -121,15 +133,21 @@
         "verso": "PIAZZA_QUARANTA_MARTIRI",
         "bussola": "NO",
         "lato": "alto",
-        "come": "via Mazzini (al contrario)"
+        "come": "Largo di Porta Marmorea, via Mazzatinti, via Reposati (al contrario)"
+      },
+      {
+        "verso": "SANT_AGOSTINO",
+        "bussola": "E",
+        "lato": "basso",
+        "come": "via Armanni, corso Garibaldi, via Dante"
       }
     ],
     "VIA_XX_SETTEMBRE": [
       {
-        "verso": "MONTE_INGINO",
-        "bussola": "NE",
+        "verso": "DUOMO_DUCALE",
+        "bussola": "N",
         "lato": "destra",
-        "come": "in salita per via Colomboni a scale, poi via del Monte fino a Porta Sant'Ubaldo"
+        "come": "si sale per via Federico da Montefeltro, dall'inizio della via vicino a Piazza Grande"
       },
       {
         "verso": "PIAZZA_GRANDE",
@@ -139,15 +157,15 @@
       },
       {
         "verso": "PIAZZA_QUARANTA_MARTIRI",
-        "bussola": "O",
+        "bussola": "SO",
         "lato": "alto",
-        "come": "in salita per via della Repubblica e le scale (al contrario)"
+        "come": "si sale per via della Repubblica e le scale di via Oderigi Lucarelli e si sbuca in via XX Settembre poco dopo Piazza Grande (al contrario)"
       },
       {
         "verso": "SANT_ANDREA",
         "bussola": "SE",
         "lato": "basso",
-        "come": "in fondo alla via, San Marziale"
+        "come": "in fondo alla via, Largo San Marziale"
       }
     ],
     "SANT_AGOSTINO": [
@@ -155,35 +173,53 @@
         "verso": "SANT_ANDREA",
         "bussola": "NO",
         "lato": "destra",
-        "come": "si scende fuori da Porta Romana (al contrario)"
+        "come": "via Dante e Porta Romana, si scende (al contrario)"
+      },
+      {
+        "verso": "SAN_PIETRO",
+        "bussola": "O",
+        "lato": "alto",
+        "come": "via Armanni, corso Garibaldi, via Dante (al contrario)"
       }
     ],
     "SANT_ANDREA": [
       {
+        "verso": "MONTE_INGINO",
+        "bussola": "N",
+        "lato": "destra",
+        "come": "in salita per via Appennino fino a Porta Sant'Ubaldo"
+      },
+      {
         "verso": "SANT_AGOSTINO",
         "bussola": "SE",
         "lato": "sinistra",
-        "come": "si scende fuori da Porta Romana"
+        "come": "via Dante e Porta Romana, si scende"
       },
       {
         "verso": "VIA_XX_SETTEMBRE",
         "bussola": "NO",
         "lato": "alto",
-        "come": "in fondo alla via, San Marziale (al contrario)"
+        "come": "in fondo alla via, Largo San Marziale (al contrario)"
       }
     ],
     "DUOMO_DUCALE": [
       {
+        "verso": "LARGO_BARGELLO",
+        "bussola": "O",
+        "lato": "alto",
+        "come": "si scende per via della Cattedrale fino al Camignano"
+      },
+      {
         "verso": "MONTE_INGINO",
         "bussola": "E",
         "lato": "basso",
-        "come": "in salita, verso la vetta"
+        "come": "in salita per via Sant'Ubaldo fino a Porta Sant'Ubaldo"
       },
       {
-        "verso": "SAN_MARTINO",
-        "bussola": "O",
-        "lato": "alto",
-        "come": "si scende dal Voltone per via della Cattedrale"
+        "verso": "VIA_XX_SETTEMBRE",
+        "bussola": "S",
+        "lato": "sinistra",
+        "come": "si sale per via Federico da Montefeltro, dall'inizio della via vicino a Piazza Grande (al contrario)"
       }
     ],
     "MONTE_INGINO": [
@@ -191,19 +227,19 @@
         "verso": "BASILICA",
         "bussola": "NE",
         "lato": "destra",
-        "come": "2 km di sterrato: la salita lunga"
+        "come": "gli stradoni: la salita lunga fino alla cima"
       },
       {
         "verso": "DUOMO_DUCALE",
         "bussola": "O",
         "lato": "alto",
-        "come": "in salita, verso la vetta (al contrario)"
+        "come": "in salita per via Sant'Ubaldo fino a Porta Sant'Ubaldo (al contrario)"
       },
       {
-        "verso": "VIA_XX_SETTEMBRE",
-        "bussola": "SO",
+        "verso": "SANT_ANDREA",
+        "bussola": "S",
         "lato": "sinistra",
-        "come": "in salita per via Colomboni a scale, poi via del Monte fino a Porta Sant'Ubaldo (al contrario)"
+        "come": "in salita per via Appennino fino a Porta Sant'Ubaldo (al contrario)"
       }
     ],
     "BASILICA": [
@@ -217,7 +253,7 @@
         "verso": "MONTE_INGINO",
         "bussola": "SO",
         "lato": "sinistra",
-        "come": "2 km di sterrato: la salita lunga (al contrario)"
+        "come": "gli stradoni: la salita lunga fino alla cima (al contrario)"
       }
     ],
     "BOTTACCIONE": [
@@ -231,7 +267,7 @@
         "verso": "SAN_MARTINO",
         "bussola": "SO",
         "lato": "sinistra",
-        "come": "rientro in citta' da Porta Metauro"
+        "come": "rientro in citta' da Porta Metauro, via di Giove Pennino e via Gabrielli"
       }
     ]
   }
