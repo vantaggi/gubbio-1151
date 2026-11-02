@@ -89,6 +89,10 @@ DUNGEON = {"gola_bottaccione": "AREA_GOLA_BOTTACCIONE"}
 # Aree fuori citta': il muro e' il pendio del monte, non un tetto.
 AREE_DEL_MONTE = {"monte_ingino", "bottaccione"}
 
+# Gli stradoni del Monte Ingino: i dati del percorso (tools/disegna_stradoni.py ne fa la griglia).
+STRADONI = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mondo", "stradoni.json")
+LUNGHEZZA_MIN_TRATTO = 10   # una colonna di ghiaia piu' lunga e' un tratto, non un tornante
+
 # Uno spawn d'arrivo a 2 tile dal varco rimanda indietro chi tiene premuta la direzione.
 DISTANZA_MIN_SPAWN = 3
 # Dalla propria uscita, quella da cui si e' entrati, lo spawn sta piu' lontano: si arriva gia'
@@ -105,6 +109,7 @@ CELLE = {
     "Z": ("VIALETTO", False),      # i vialetti dei giardini
     "J": ("ARCO", False),          # sotto l'arco di una porta della citta': si passa
     "N": ("PRATO", False),         # il prato fuori le mura ("prato" nella .area)
+    "b": ("BRECCIA", False),       # la ghiaia degli stradoni del Monte Ingino
     "F": ("FONTANA", True),
     "d": ("PORTONE", True),        # portone di un edificio: solo visivo, non si attraversa
     "#": ("MURO", True),
@@ -122,6 +127,11 @@ CELLE = {
     "X": ("TORRE", True),          # i piloni della torre di una porta, ai lati dell'arco
     "R": ("GRADINATA", True),      # la cavea del Teatro Romano
     "U": ("ARCATA", True),         # l'anello esterno di arcate del Teatro
+    "c": ("CAPPELLETTA", True),    # le cappellette ai tornanti degli stradoni
+    "k": ("ROCCIA", True),         # le rocce sulle scarpate del monte
+    "n": ("COLONNA", True),        # le colonne fra le navate di un interno
+    "a": ("ALTARE", True),         # l'altare, con l'urna del santo
+    "e": ("CERO", True),           # un cero esposto
 }
 VARCHI = "ABEGHI"                 # I e' l'ingresso di un dungeon
 
@@ -440,6 +450,48 @@ def tile_arcata(x, y):
     return 1 if 2 <= x <= 5 and y >= 3 else 4
 
 
+def tile_breccia(x, y):
+    # ghiaia chiara e battuta, sassi sparsi
+    if (x * 5 + y * 3) % 7 == 0:
+        return 3
+    return 5 if (x * 3 + y * 7) % 4 else 4
+
+
+def tile_cappelletta(x, y):
+    return 2 if y < 3 else 4
+
+
+def tile_roccia(x, y):
+    # un masso calcareo nel bosco: luce in alto a sinistra, ombra in basso
+    d = (x - 3.5) ** 2 + (y - 4) ** 2
+    if d > 13:
+        return 10
+    return 5 if x + y < 6 else (3 if x + y < 10 else 2)
+
+
+def tile_colonna(x, y):
+    # il fusto di una colonna visto dall'alto: tondo chiaro, ombra a destra
+    d = (x - 3.5) ** 2 + (y - 3.5) ** 2
+    if d > 10:
+        return 4
+    return 5 if x < 4 else 3
+
+
+def tile_altare(x, y):
+    return 2 if y in (0, 7) else 5
+
+
+def tile_cero(x, y):
+    return 2 if x in (2, 5) else 4
+
+
+def tile_muro_interno(x, y):
+    # la parete di una chiesa vista dall'alto: conci chiari e grossi
+    if y % 4 == 3 or (x + (y // 4) * 4) % 8 == 7:
+        return 3
+    return 4
+
+
 def tile_vuoto(x, y):
     return 1
 
@@ -485,6 +537,13 @@ TILE_FONDALI = [
     ("TORRE", tile_torre),
     ("GRADINATA", tile_gradinata),
     ("ARCATA", tile_arcata),
+    ("BRECCIA", tile_breccia),
+    ("CAPPELLETTA", tile_cappelletta),
+    ("ROCCIA", tile_roccia),
+    ("COLONNA", tile_colonna),
+    ("ALTARE", tile_altare),
+    ("CERO", tile_cero),
+    ("MURO_INTERNO", tile_muro_interno),
 ]
 INDICE_TILE = {nome: i for i, (nome, _) in enumerate(TILE_FONDALI)}
 
@@ -640,6 +699,14 @@ def leggi_area(nome_file, testo):
                 a["giardini"] = True
             elif t[0] == "prato":
                 a["prato"] = True
+            elif t[0] == "sagrato":
+                a["sagrato"] = int(t[1])
+            elif t[0] == "stradoni":
+                a["stradoni"] = True
+            elif t[0] == "interno":
+                a["interno"] = True
+            elif t[0] == "ingresso":
+                a.setdefault("ingressi", {})[t[1]] = t[2]
             elif t[0] == "mura":
                 if t[1] not in ("alto", "basso", "sinistra", "destra"):
                     raise ErroreMondo(f"{nome_file}:{n}: lato delle mura '{t[1]}' sconosciuto")
@@ -864,6 +931,14 @@ def decora_piazza(a):
     """Il lastricato di una piazza: lastre e corsi di pietra ogni 5 tile, i lampioni agli angoli, un
     pozzo; nei giardini ("giardini" nella .area) aiuole, siepi, alberi e vialetti al centro."""
     g = [list(riga) for riga in a["griglia"]]
+    if a.get("sagrato"):
+        # il sagrato lastricato intorno agli edifici, largo quanto dice la riga "sagrato"
+        d = a["sagrato"]
+        for x0, y0, ew, eh in a.get("edifici", {}).values():
+            for y in range(max(0, y0 - d), min(a["altezza"], y0 + eh + d)):
+                for x in range(max(0, x0 - d), min(a["larghezza"], x0 + ew + d)):
+                    if g[y][x] == ".":
+                        g[y][x] = "L"
     if a.get("prato"):
         # il prato e qualche albero sparso, lontano da varchi, spawn e costruzioni
         g = [["N" if c == "." else c for c in riga] for riga in g]
@@ -1022,7 +1097,7 @@ def composizione(a):
     for mid, (x0, y0, ew, eh) in a.get("edifici", {}).items():
         if sum(1 for x, y in leggibili if x0 <= x < x0 + ew and y0 <= y < y0 + eh) >= 6:
             visti.add(mid)
-    segni = {"=": "parapetto", "X": "porta", "Y": "giardini", "T": "alberi", "D": "giardini", "O": "pozzo",
+    segni = {"c": "cappelletta", "a": "altare", "e": "ceri", "n": "colonne", "=": "parapetto", "X": "porta", "Y": "giardini", "T": "alberi", "D": "giardini", "O": "pozzo",
              "F": "fontana", "Q": "lampioni", "R": "teatro_romano", "U": "teatro_romano", "W": "mura"}
     for x, y in leggibili:
         c = a["griglia"][y][x]
@@ -1030,6 +1105,93 @@ def composizione(a):
             visti.add(segni[c])
     nudo = sum(1 for x, y in celle if a["griglia"][y][x] in ".N")
     return visti, nudo / len(celle)
+
+
+def blocchi(griglia, lettera):
+    """Le macchie (4-connesse) di celle 'lettera' della griglia, come insiemi di celle."""
+    viste, out = set(), []
+    for y, r in enumerate(griglia):
+        for x, c in enumerate(r):
+            if c != lettera or (x, y) in viste:
+                continue
+            blocco, coda = set(), deque([(x, y)])
+            viste.add((x, y))
+            while coda:
+                cx, cy = coda.popleft()
+                blocco.add((cx, cy))
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = cx + dx, cy + dy
+                    if 0 <= ny < len(griglia) and 0 <= nx < len(griglia[0]) and griglia[ny][nx] == lettera \
+                            and (nx, ny) not in viste:
+                        viste.add((nx, ny))
+                        coda.append((nx, ny))
+            out.append(blocco)
+    return out
+
+
+def tratti_degli_stradoni(a):
+    """Letti dalla griglia: i tratti (colonne di ghiaia lunghe almeno LUNGHEZZA_MIN_TRATTO, unite
+    fra colonne vicine) da sinistra a destra, ognuno come (x0, x1, y0, y1)."""
+    g, w, h = a["griglia"], a["larghezza"], a["altezza"]
+    via = "bJ"
+    colonne = []
+    for x in range(w):
+        y = 0
+        while y < h:
+            if g[y][x] in via:
+                y0 = y
+                while y < h and g[y][x] in via:
+                    y += 1
+                if y - y0 >= LUNGHEZZA_MIN_TRATTO:
+                    colonne.append((x, y0, y - 1))
+            else:
+                y += 1
+    tratti = []
+    for x, y0, y1 in colonne:
+        if tratti and tratti[-1][1] == x - 1 and tratti[-1][2] <= y1 and y0 <= tratti[-1][3]:
+            t = tratti[-1]
+            tratti[-1] = (t[0], x, min(t[2], y0), max(t[3], y1))
+        else:
+            tratti.append((x, x, y0, y1))
+    return tratti
+
+
+def tornanti_degli_stradoni(a, tratti):
+    """Il tornante n (dal basso, da 1) e' la ghiaia orizzontale fra il tratto n e il successivo:
+    le celle di ghiaia fra le due colonne, all'estremo comune."""
+    g = a["griglia"]
+    out = []
+    for (ax0, ax1, ay0, ay1), (bx0, bx1, by0, by1) in zip(tratti, tratti[1:]):
+        celle = {(x, y) for y in range(max(ay0, by0), min(ay1, by1) + 1) for x in range(ax1 + 1, bx0)
+                 if g[y][x] == "b"}
+        out.append(celle)
+    return out
+
+
+def errori_stradoni(a, dati):
+    """Gli stradoni della griglia contro mondo/stradoni.json: quanti tratti e quanto lunghi, ogni
+    tornante che c'e', ogni cappelletta nel gomito del suo tornante."""
+    err = []
+    tratti = tratti_degli_stradoni(a)
+    lunghezze = [t[3] - t[2] + 1 for t in tratti]
+    if lunghezze != dati["tratti"]:
+        err.append(f"tratti {lunghezze}, i dati ne vogliono {dati['tratti']}")
+        return err
+    tornanti = tornanti_degli_stradoni(a, tratti)
+    for n, celle in enumerate(tornanti, 1):
+        if not celle:
+            err.append(f"manca il tornante {n}")
+    capp = blocchi(a["griglia"], "c")
+    if len(capp) != len(dati["cappellette"]):
+        err.append(f"{len(capp)} cappellette, i dati ne vogliono {len(dati['cappellette'])}")
+    trovate = []
+    for blocco in capp:
+        accanto = {(x + dx, y + dy) for x, y in blocco for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))}
+        trovate.append(sorted(n for n, celle in enumerate(tornanti, 1) if accanto & celle))
+    for c in dati["cappellette"]:
+        if [c["tornante"]] not in trovate:
+            err.append(f"{c['nome']}: non e' al tornante {c['tornante']} (cappellette ai tornanti {trovate})")
+    return err
 
 
 def errori_belvedere(a):
@@ -1054,6 +1216,8 @@ def errori_belvedere(a):
 
 
 def numero_gradoni(a, grafo):
+    if a.get("stradoni") or a.get("interno"):
+        return 0  # il dislivello lo fanno i tornanti; dentro una chiesa non ce n'e'
     q0, q1 = quote_dell_area(a, grafo)
     return min(GRADONI_MAX, int((q1 - q0) // METRI_PER_GRADONE))
 
@@ -1192,14 +1356,28 @@ def disegna_area(a, mondo):
             for tx, pix in enumerate(riga):
                 if (px0 + tx, py0 + ty) in pozzo:
                     tile_di[(px0 + tx, py0 + ty)] = pix
+    for lettera, pittore in (("c", PM.cappelletta), ("a", PM.altare), ("e", PM.cero)):
+        for blocco in blocchi(a["griglia"], lettera):
+            bx0, by0 = min(x for x, _ in blocco), min(y for _, y in blocco)
+            bw, bh = max(x for x, _ in blocco) - bx0 + 1, max(y for _, y in blocco) - by0 + 1
+            tela = pittore(bw, bh)
+            elementi.setdefault(lettera, {})
+            for k, v in tela.elementi.items():
+                elementi[lettera][k] = elementi[lettera].get(k, 0) + v
+            for ty, riga in enumerate(tela.tagli()):
+                for tx, pix in enumerate(riga):
+                    if (bx0 + tx, by0 + ty) in blocco:
+                        tile_di[(bx0 + tx, by0 + ty)] = pix
     tile_unici = {tuple(map(tuple, _tile(tile_vuoto))): 0}
     indici = []
     for y in range(h):
         for x in range(w):
             pix = tile_di.get((x, y))
             if pix is None:
-                pix = _tile(TILE_FONDALI[tile_per_cella(a["griglia"], x, y, a["id"] in AREE_DEL_MONTE,
-                                                        a.get("monte"))][1])
+                indice = tile_per_cella(a["griglia"], x, y, a["id"] in AREE_DEL_MONTE, a.get("monte"))
+                if a.get("interno") and TILE_FONDALI[indice][0] not in ("MURO_FRONTE",) and a["griglia"][y][x] == "#":
+                    indice = INDICE_TILE["MURO_INTERNO"]
+                pix = _tile(TILE_FONDALI[indice][1])
             chiave = tuple(map(tuple, pix))
             indici.append(tile_unici.setdefault(chiave, len(tile_unici)))
     return list(tile_unici), indici, elementi
@@ -1224,7 +1402,8 @@ def celle_edifici_calpestabili(a):
     """Celle di un edificio su cui si potrebbe camminare: devono essere nessuna."""
     return sorted((x, y) for mid, (x0, y0, w, h) in a.get("edifici", {}).items() if mid not in FORME
                   for y in range(y0, y0 + h) for x in range(x0, x0 + w)
-                  if not solida(a["griglia"][y][x]) or a["griglia"][y][x] in VARCHI)
+                  if (not solida(a["griglia"][y][x]) or a["griglia"][y][x] in VARCHI)
+                  and a["griglia"][y][x] not in a.get("ingressi", {}))
 
 
 def controlla_edifici(a, posati, monumenti):
@@ -1334,7 +1513,11 @@ def controlla(aree, mondo):
             # (b) il varco sta sul bordo che varchi.json da' a quell'arco
             atteso = [v["lato"] for v in lati_attesi[a["id"].upper()] if v["verso"] == dest.upper()]
             lati = lati_del_varco(a, lettera)
-            if lati != set(atteso):
+            if atteso == ["dentro"]:
+                if lati or lettera not in a.get("ingressi", {}):
+                    raise ErroreMondo(f"{a['file']}:{n}: il varco '{lettera}' verso {dest} e' un portale: "
+                                      f"va su un edificio con la riga 'ingresso', non sul bordo")
+            elif lati != set(atteso):
                 trovato = ", ".join(sorted(lati)) or "nessun bordo"
                 raise ErroreMondo(f"{a['file']}:{n}: il varco '{lettera}' verso {dest} sta su {trovato}, "
                                   f"varchi.json lo vuole a {atteso[0]}")
@@ -1734,14 +1917,32 @@ def mondo_del_repo():
         monumenti = json.load(f)["monumenti"]
     with open(os.path.join(RADICE, "mondo", "fonti", "misure_osm.json"), encoding="utf-8") as f:
         misure = json.load(f)
+    with open(STRADONI, encoding="utf-8") as f:
+        stradoni = json.load(f)
     return {"grafo": M.carica_grafo(), "varchi": varchi, "monumenti": monumenti, "misure": misure,
-            "censimento": M.carica_censimento()}
+            "censimento": M.carica_censimento(), "stradoni": stradoni}
+
+
+def apri_ingressi(a):
+    """"ingresso E basilica": il portone dell'edificio diventa il varco E, che porta dentro."""
+    g = [list(r) for r in a["griglia"]]
+    for lettera, mid in a.get("ingressi", {}).items():
+        if mid not in a.get("edifici", {}):
+            raise ErroreMondo(f"{a['file']}: ingresso '{lettera}' su {mid}, che non e' un edificio dell'area")
+        x0, y0, w, h = a["edifici"][mid]
+        portone = [(x, y) for y in range(y0, y0 + h) for x in range(x0, x0 + w) if g[y][x] == PORTONE_EDIFICIO]
+        if not portone:
+            raise ErroreMondo(f"{a['file']}: ingresso '{lettera}': {mid} non ha un portone")
+        for x, y in portone:
+            g[y][x] = lettera
+    a["griglia"] = ["".join(r) for r in g]
 
 
 def prepara_area(a, mondo):
     """L'area come la vede il gioco: edifici posati e controllati, decoro della piazza, dislivello,
     porte della citta'."""
     controlla_edifici(a, posa_edifici(a, mondo["monumenti"]), mondo["monumenti"])
+    apri_ingressi(a)
     decora_piazza(a)
     applica_dislivello(a, mondo["grafo"])
     costruisci_porte(a, mondo["grafo"])
@@ -1763,6 +1964,10 @@ def genera(sorgenti, palette_stile, mondo=None):
         oltre = errori_belvedere(a)
         if oltre:
             raise ErroreMondo(f"{a['file']}: oltre il parapetto del belvedere ci sono tetti a quota piena: {oltre[:4]}")
+        if a.get("stradoni"):
+            stradoni = errori_stradoni(a, mondo["stradoni"])
+            if stradoni:
+                raise ErroreMondo(f"{a['file']}: gli stradoni non tornano: " + "; ".join(stradoni))
         porte = errori_porte(a, mondo["grafo"])
         if porte:
             raise ErroreMondo(f"{a['file']}: " + "; ".join(porte))

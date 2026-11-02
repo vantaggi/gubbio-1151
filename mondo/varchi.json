@@ -244,6 +244,12 @@
     ],
     "BASILICA": [
       {
+        "verso": "BASILICA_INTERNO",
+        "bussola": "N",
+        "lato": "dentro",
+        "come": "dal portale si entra in chiesa: le navate, l'altare con l'urna e i tre ceri"
+      },
+      {
         "verso": "BOTTACCIONE",
         "bussola": "NO",
         "lato": "destra",
@@ -254,6 +260,14 @@
         "bussola": "SO",
         "lato": "sinistra",
         "come": "gli stradoni: la salita lunga fino alla cima (al contrario)"
+      }
+    ],
+    "BASILICA_INTERNO": [
+      {
+        "verso": "BASILICA",
+        "bussola": "S",
+        "lato": "basso",
+        "come": "dal portale si entra in chiesa: le navate, l'altare con l'urna e i tre ceri (al contrario)"
       }
     ],
     "BOTTACCIONE": [

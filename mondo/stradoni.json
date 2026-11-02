@@ -1,0 +1,10 @@
+{
+  "_leggimi": "Gli stradoni del Monte Ingino come percorso: tools/disegna_stradoni.py ne ricava mondo/aree/monte_ingino.area, tools/genera_mondo.py controlla che la griglia abbia questi tratti e queste cappellette. Lunghezze in tile, compresse: nella realta' 8 stradoni imbrecciati a zig-zag, circa 2,5 km da Porta Sant'Ubaldo alla Basilica.",
+  "fonte_cappellette": "Cioti, 2 novembre 2026 (indicazione al coordinatore): le cappellette stanno al 3o tornante (Sant'Ubaldo), al 6o (San Giorgio) e al 7o (Sant'Antonio), contando dal basso.",
+  "tratti": [52, 49, 55, 30, 32, 57, 53, 50],
+  "cappellette": [
+    {"id": "cappelletta_ubaldo", "nome": "Cappelletta di Sant'Ubaldo", "tornante": 3},
+    {"id": "cappelletta_giorgio", "nome": "Cappelletta di San Giorgio", "tornante": 6},
+    {"id": "cappelletta_antonio", "nome": "Cappelletta di Sant'Antonio", "tornante": 7}
+  ]
+}

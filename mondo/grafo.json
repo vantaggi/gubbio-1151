@@ -14,6 +14,7 @@
     {"id": "DUOMO_DUCALE",            "nome": "Duomo e Palazzo Ducale",   "quota_m": [109, 109],   "ancora": "duomo",          "monumenti": ["duomo", "ducale", "canonici"]},
     {"id": "MONTE_INGINO",            "nome": "Monte Ingino (gli stradoni)",             "quota_m": [100, 350], "ancora": null, "ancora_stimata": [43.3549, 12.5838], "monumenti": ["porta_sant_ubaldo", "mura_rocca"], "fuori_le_mura": true},
     {"id": "BASILICA",                "nome": "Basilica di Sant'Ubaldo",  "quota_m": [380, 380], "ancora": "basilica",       "monumenti": ["basilica"], "fuori_le_mura": true},
+    {"id": "BASILICA_INTERNO",        "nome": "Basilica di Sant'Ubaldo, l'interno", "quota_m": [380, 380], "ancora": null, "ancora_stimata": [43.356367, 12.584993], "monumenti": [], "fuori_le_mura": true},
     {"id": "BOTTACCIONE",             "nome": "Strada del Bottaccione",   "quota_m": [30, 300],  "ancora": "gola_bottaccione", "monumenti": ["gola_bottaccione", "acquedotto", "sant_ambrogio"], "dungeon": "Gola del Bottaccione: dungeon separato, si entra da quest'area (decisione del 1 nov 2026)", "fuori_le_mura": true}
   ],
   "archi": [
@@ -36,7 +37,8 @@
     {"da": "DUOMO_DUCALE",            "a": "LARGO_BARGELLO",          "verso": "O",  "come": "si scende per via della Cattedrale fino al Camignano"},
     {"da": "SAN_PIETRO",              "a": "SANT_AGOSTINO",           "verso": "E",  "come": "via Armanni, corso Garibaldi, via Dante", "porta": "Porta San Pietro"},
     {"da": "MONTE_INGINO",            "a": "BASILICA",                "verso": "NE", "come": "gli stradoni: la salita lunga fino alla cima"},
-    {"da": "BASILICA",                "a": "BOTTACCIONE",             "verso": "NO", "come": "si scende sul versante nord"}
+    {"da": "BASILICA",                "a": "BOTTACCIONE",             "verso": "NO", "come": "si scende sul versante nord"},
+    {"da": "BASILICA",                "a": "BASILICA_INTERNO",        "verso": "N",  "come": "dal portale si entra in chiesa: le navate, l'altare con l'urna e i tre ceri", "dentro": true}
   ],
   "anello": ["PIAZZA_GRANDE", "VIA_XX_SETTEMBRE", "DUOMO_DUCALE", "MONTE_INGINO", "BASILICA", "BOTTACCIONE", "SAN_MARTINO", "LARGO_BARGELLO", "VIA_DEI_CONSOLI", "PIAZZA_GRANDE"],
   "direzioni_da_confermare": {},

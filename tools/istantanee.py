@@ -61,6 +61,12 @@ COLORI = {
     "Y": (60, 120, 60),     # siepe
     "D": (150, 190, 110),   # aiuola
     "N": (120, 170, 90),    # prato
+    "b": (226, 216, 190),   # ghiaia degli stradoni
+    "c": (200, 120, 90),    # cappelletta
+    "k": (140, 140, 130),   # roccia
+    "n": (230, 230, 220),   # colonna
+    "a": (250, 240, 200),   # altare
+    "e": (150, 90, 40),     # cero
     "T": (40, 100, 50),     # albero
     "X": (100, 90, 80),     # torre di una porta
     "R": (170, 160, 140),   # gradinata del Teatro

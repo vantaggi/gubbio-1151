@@ -894,3 +894,104 @@ REQUISITI.update({
     "loggia_tiratori": {"arcata": 6, "ospedale": 1, "fianco": 1},
     "san_pietro": {"portale": 1, "arcata_cieca": 4, "campanile": 1},
 })
+
+
+# --- il Monte e la Basilica: cappellette, chiostro, interno -----------------------------------------
+
+def cappelletta(w, h):
+    """Una cappelletta degli stradoni vista dall'alto: il tettuccio di coppi a capanna, la fronte di
+    pietra con l'arco dell'edicola e la croce sul colmo."""
+    t = Tela(w, h)
+    t.falde(0, 0, w * 8, h * 8 - 10)
+    t.conci(0, h * 8 - 10, w * 8, 10, TINTE[0])
+    t.arco(w * 4 - 4, h * 8 - 10, 8, 10, CONTORNO)
+    t.rett(w * 4 - 1, 1, 2, 6, PIETRA_LUCE)
+    t.rett(w * 4 - 3, 3, 6, 2, PIETRA_LUCE)
+    t.elementi["edicola"] += 1
+    t.elementi["croce"] += 1
+    t.contorno()
+    return t
+
+
+def altare(w, h):
+    """L'altare maggiore con l'urna di vetro del santo sopra: mensa di marmo, l'urna al centro."""
+    t = Tela(w, h, PIETRA_LUCE)
+    t.rett(0, 0, w * 8, 2, PIETRA)
+    t.rett(0, h * 8 - 2, w * 8, 2, PIETRA_SCURA)
+    x0, largo = w * 2, w * 4
+    t.rett(x0, 3, largo, h * 8 - 7, CONTORNO)
+    t.rett(x0 + 1, 4, largo - 2, h * 8 - 9, ACQUA)
+    t.rett(x0 + 3, h * 4 - 2, largo - 6, 3, COTTO_LUCE)
+    t.elementi["mensa"] += 1
+    t.elementi["urna"] += 1
+    return t
+
+
+def cero(w, h):
+    """Un cero esposto, visto dall'alto: i due prismi di legno sovrapposti e, in cima, il santo."""
+    t = Tela(w, h, PIETRA_CHIARA)
+    largo = w * 8
+    for y in range(4, h * 8 - 2):
+        banda = (y // 6) % 2
+        t.rett(largo // 2 - 5, y, 10, 1, LEGNO if banda else LEGNO_SCURO)
+    t.rett(largo // 2 - 5, h * 4 - 1, 10, 2, CONTORNO)
+    t.rett(largo // 2 - 2, 0, 4, 5, COTTO_LUCE)
+    t.rett(largo // 2 - 1, 1, 2, 2, PIETRA_LUCE)
+    t.elementi["prismi"] += 1
+    t.elementi["santo"] += 1
+    return t
+
+
+def basilica(w, h, info):
+    """Basilica di Sant'Ubaldo: in alto la chiesa (tetto e campanile), al centro il chiostro col
+    loggiato su colonne e il pozzo, in basso la fronte con il portale e la scalinata d'ingresso."""
+    t = Tela(w, h)
+    largo, alto = w * 8, h * 8
+    fronte = 6 * 8                   # la fronte e la scalinata
+    chiostro = min(14 * 8, alto - fronte - 10 * 8)
+    y_chiostro = alto - fronte - chiostro
+    # la chiesa: tetto a capanna, il campanile in alto a destra
+    t.falde(0, 0, largo, y_chiostro)
+    t.gronda(0, y_chiostro - 3, largo)
+    t.conci(largo - 32, 0, 24, 40, TINTE[1])
+    t.merli(largo - 32, 0, 24, TINTE[1])
+    t.arco(largo - 25, 14, 10, 14)
+    t.elementi["campanile"] += 1
+    # il chiostro: cortile lastricato, il loggiato di colonne tutto intorno, il pozzo al centro
+    t.rett(0, y_chiostro, largo, chiostro, PIETRA)
+    t.rett(10, y_chiostro + 10, largo - 20, chiostro - 20, PIETRA_LUCE)
+    for x in range(12, largo - 12, 8):
+        for y in (y_chiostro + 6, y_chiostro + chiostro - 8):
+            t.rett(x, y, 3, 3, PIETRA_CHIARA)
+            t.punto(x + 2, y + 2, CONTORNO)
+    for y in range(y_chiostro + 14, y_chiostro + chiostro - 12, 8):
+        for x in (6, largo - 9):
+            t.rett(x, y, 3, 3, PIETRA_CHIARA)
+            t.punto(x + 2, y + 2, CONTORNO)
+    t.elementi["loggiato"] += 1
+    cx, cy = largo // 2, y_chiostro + chiostro // 2
+    for y in range(cy - 6, cy + 7):
+        for x in range(cx - 6, cx + 7):
+            d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            if d <= 6:
+                t.punto(x, y, PIETRA_CHIARA if d > 3.5 else ACQUA_SCURA)
+    t.rett(cx - 6, cy, 13, 1, LEGNO)
+    t.elementi["chiostro"] += 1
+    t.elementi["pozzo"] += 1
+    # la fronte con il portale e, sotto, la scalinata
+    y0 = alto - fronte
+    t.conci(0, y0, largo, fronte - 16, TINTE[0])
+    t.arco(largo // 2 - 8, y0 + 4, 16, fronte - 20, LEGNO_SCURO)
+    t.elementi["portale"] += 1
+    for k in range(4):
+        y = alto - 16 + k * 4
+        t.rett(0, y, largo, 3, PIETRA_LUCE)
+        t.rett(0, y + 3, largo, 1, PIETRA)
+    t.elementi["scalinata"] += 1
+    t.contorno()
+    return t
+
+
+PITTORI["basilica"] = basilica
+REQUISITI.update({"basilica": {"scalinata": 1, "portale": 1, "chiostro": 1, "loggiato": 1, "pozzo": 1,
+                               "campanile": 1}})
