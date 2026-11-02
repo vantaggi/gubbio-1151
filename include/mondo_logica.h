@@ -168,7 +168,7 @@ class Navigatore
 {
 
 public:
-    static constexpr int CELLE_MAX = 64 * 64;
+    static constexpr int CELLE_MAX = LATO_MAX * LATO_MAX;
 
     // Prepara la strada dalla cella del giocatore al varco 'obiettivo'. false se non esiste.
     constexpr bool prepara(const Esploratore& e, int obiettivo)

@@ -44,6 +44,11 @@ struct NessunOsservatore
     constexpr void operator()(const Esploratore&, Evento) const
     {
     }
+
+    // Il navigatore ha appena cercato una strada: lavoro dell'autotest, non del gioco.
+    constexpr void strada_pronta() const
+    {
+    }
 };
 
 template<typename Osservatore>
@@ -207,6 +212,8 @@ private:
         {
             return _fallisci(ErroreMondo::VARCO_IRRAGGIUNGIBILE, a, k);
         }
+
+        _osservatore->strada_pronta();
 
         while(true)
         {
