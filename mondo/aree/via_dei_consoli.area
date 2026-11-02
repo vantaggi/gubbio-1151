@@ -5,13 +5,15 @@ dimensioni 16 64
 spawn 0 7 32
 spawn 1 7 8
 spawn 2 7 55
-spawn 3 7 32
+spawn 3 8 31
 spawn 4 7 32
 spawn 5 7 32
 # F2: lati dei varchi da mondo/varchi.json (alto = ovest): il Largo del Bargello e' in alto,
 # Piazza Grande in basso. Scambiate le destinazioni dei due varchi del prototipo.
+# F2, regola di Cioti: a meta' via si apre a sinistra (G, sud) la salita da Quaranta Martiri.
 uscita A largo_bargello 1
 uscita B piazza_grande 2
+uscita G piazza_quaranta_martiri 3
 griglia
 ##,,,,AAAA,,,,##
 ##,,,,AAAA,,,,##
@@ -43,10 +45,10 @@ griglia
 ##,,,,,,,,,,,,##
 ##,,,,,,,,,,,,##
 ##,,,,,,,,,,,,##
-##,,,,,,,,,,,,##
-##,,,,,,,,,,,,##
-##,,,,,,,,,,,,==
-##,,,,,,,,,,,,==
+GG,,,,,,,,,,,,##
+GG,,,,,,,,,,,,##
+GG,,,,,,,,,,,,==
+GG,,,,,,,,,,,,==
 ##,,,,,,,,,,,,==
 ##,,,,,,,,,,,,##
 ##,,,,,,,,,,,,##

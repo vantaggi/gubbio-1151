@@ -70,7 +70,7 @@ CELLE = {
     "C": ("FACCIATA", True),       # facciata monumentale (Consoli, San Francesco, ...)
     "P": ("FACCIATA_2", True),     # seconda facciata (Pretorio, Bargello, acquedotto, ...)
 }
-VARCHI = "ABEGI"
+VARCHI = "ABEGHI"                 # I e' l'ingresso di un dungeon
 PRIMO_VARCO = 16                   # cella = PRIMO_VARCO + indice del varco nell'area
 
 # --- Fondali procedurali ----------------------------------------------------------------------

@@ -11,14 +11,16 @@ spawn 3 23 20
 # passaggio dal campiello verso sud-ovest (sinistra), fuori le mura, con il varco G sul bordo;
 # lo spawn 4, l'arrivo dal Teatro, sta all'imbocco del passaggio.
 spawn 4 7 20
-spawn 5 15 9
+spawn 5 25 31
 # F2: lati dei varchi da mondo/varchi.json. Il Largo del Bargello (A) passa in basso, dove
 # era il varco del Bottaccione; il Bottaccione (E) si apre a destra, con un passaggio dal campiello
 # speculare a quello del Teatro; il vecchio varco in alto e' murato.
+# F2, regola di Cioti: in basso a destra (H, est) si sale per via della Cattedrale al Duomo.
 uscita A largo_bargello 1
 uscita B piazza_quaranta_martiri 2
 uscita E bottaccione 3
 uscita G teatro_romano 4
+uscita H duomo_ducale 5
 griglia
 ################################
 ################################
@@ -50,13 +52,13 @@ BB,,SSS,,,,,,,,,,,##############
 BB,,SSS,,,,,,,,,,,##############
 ##############,,,,##############
 ##############,,,,##############
-##############,,,,##############
-##############,,,,##############
-##############,,,,##############
-##############,,,,##############
-##############,,,,##############
-##############,,,,##############
-##############,,,,##############
-##############,,,,##############
-##############AAAA##############
-##############AAAA##############
+##############,,,,######,,,,####
+##############,,,,######,,,,####
+##############,,,,######,,,,####
+##############,,,,######,,,,####
+##############,,,,######,,,,####
+##############,,,,######,,,,####
+##############,,,,,,,,,,,,,,####
+##############,,,,,,,,,,,,,,####
+##############AAAA######HHHH####
+##############AAAA######HHHH####

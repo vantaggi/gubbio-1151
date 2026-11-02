@@ -108,10 +108,10 @@ class Mondo(unittest.TestCase):
                                         G.DISTANZA_MIN_SPAWN_USCITA, f"{a['id']} spawn {spawn}")
 
     def test_quote_da_grafo_json(self):
-        """La quota viene da grafo.json: via dei Consoli sale da 50 a 68 m."""
+        """La quota viene da grafo.json: via dei Consoli sale da 27 a 67 m."""
         with open(G.USCITA, encoding="utf-8") as f:
             header = f.read()
-        self.assertIn("GRIGLIA_VIA_DEI_CONSOLI, MAPPA_VIA_DEI_CONSOLI, 16, 64, 50, 68,", header)
+        self.assertIn("GRIGLIA_VIA_DEI_CONSOLI, MAPPA_VIA_DEI_CONSOLI, 16, 64, 27, 67,", header)
 
     # --- prove negative ---------------------------------------------------------------------
 
