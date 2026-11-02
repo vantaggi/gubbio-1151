@@ -3,6 +3,9 @@
 id sant_agostino
 etichetta AREA_SANT_AGOSTINO
 dimensioni 32 64
+# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# lungo dell'area, a valle c'e' l'ombra.
+monte basso
 riferimento 11 35
 fattore 0.73
 spawn 0 18 32

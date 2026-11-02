@@ -3,6 +3,9 @@
 id sant_andrea
 etichetta AREA_SANT_ANDREA
 dimensioni 64 64
+# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# lungo dell'area, a valle c'e' l'ombra.
+monte basso
 riferimento 47 36
 fattore 0.73
 spawn 0 32 32

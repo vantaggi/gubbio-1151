@@ -33,6 +33,13 @@ meno di DISTANZA_MIN_SPAWN da un altro varco, uno spawn su una cella non calpest
 che da uno spawn d'arrivo non si raggiunge camminando. Spawn e camminata li rifa' l'autotest C++
 (include/mondo_autotest.h) a tempo di compilazione.
 
+Il dislivello si vede in tre modi, tutti ricavati da quote e lati a monte (non da archi
+particolari): scale davanti ai varchi fra aree con quote diverse; gradoni con il muro di
+contenimento e l'ombra a valle dove la quota dell'area sale al suo interno (uno ogni
+METRI_PER_GRADONE, al massimo GRADONI_MAX, con una scala di passaggio in ogni tratto); belvederi
+(parapetto) sul bordo a valle delle aree alte. La salita va sempre verso nord-est, cioe' in basso a
+destra: ogni .area dichiara "monte basso" o "monte destra", e un belvedere sta su un lato a valle.
+
 Controlli sugli edifici: ognuno compare nella sua area con le misure in tile esatte (un edificio
 che esce dalla griglia o che risulta rimpicciolito e' rifiutato), nessuno si sovrappone a un altro o
 a un varco, e dopo averli posati ogni varco resta raggiungibile da ogni spawn.
@@ -80,6 +87,7 @@ CELLE = {
     "=": ("PARAPETTO", True),      # affaccio sul vuoto
     "C": ("FACCIATA", True),       # facciata monumentale (Consoli, San Francesco, ...)
     "P": ("FACCIATA_2", True),     # seconda facciata (Pretorio, Bargello, acquedotto, ...)
+    "M": ("MURO_CONTENIMENTO", True),  # il gradone: il terreno a monte sta piu' in alto
 }
 VARCHI = "ABEGHI"                 # I e' l'ingresso di un dungeon
 
@@ -92,6 +100,16 @@ SPAZI_APERTI = {
 # Celle che un edificio disegnato dal generatore puo' occupare.
 MURO_EDIFICIO, FACCIATA_EDIFICIO, PORTONE_EDIFICIO = "#", "C", "d"
 FATTORE_PREDEFINITO = 0.73   # compressione delle distanze del GDD
+
+# Dislivello. La salita va verso nord-est: sullo schermo in basso (est) o a destra (nord).
+LATI_A_MONTE = ("basso", "destra")
+LATI_A_VALLE = {"basso": "alto", "destra": "sinistra"}
+QUOTA_MIN_BELVEDERE = 60       # metri: sotto non c'e' niente da guardare dall'alto
+METRI_PER_GRADONE = 15
+GRADONI_MAX = 3
+DISLIVELLO_PER_SCALE = 5       # metri fra le quote di due aree oltre cui il varco ha la scala
+PROFONDITA_SCALE = 3           # tile di scala davanti al varco
+LARGO_PASSAGGIO = 4            # la scala che attraversa un gradone
 PRIMO_VARCO = 16                   # cella = PRIMO_VARCO + indice del varco nell'area
 
 # --- Fondali procedurali ----------------------------------------------------------------------
@@ -222,6 +240,24 @@ def tile_bosco(x, y):
     return 11 if v < 3 and x % 4 < 2 else 10
 
 
+def tile_muro_contenimento(x, y):
+    # muro di contenimento visto dall'alto: cimasa chiara in basso (verso monte), conci, ombra a valle
+    if y >= 6:
+        return 5
+    if y <= 1:
+        return 1
+    return 2 if (x + (y // 2) * 2) % 4 == 3 or y % 2 == 0 else 3
+
+
+def tile_suolo_ombra(x, y):
+    # il lastricato all'ombra del gradone: stessi giunti, un tono sotto
+    return {5: 3, 4: 3, 3: 2}[tile_suolo(x, y)]
+
+
+def tile_strada_ombra(x, y):
+    return {4: 3, 3: 2, 2: 1}[tile_strada(x, y)]
+
+
 def tile_vuoto(x, y):
     return 1
 
@@ -241,13 +277,21 @@ TILE_FONDALI = [
     ("VARCO", tile_varco),
     ("INGRESSO", tile_ingresso),
     ("BOSCO", tile_bosco),
+    ("MURO_CONTENIMENTO", tile_muro_contenimento),
+    ("SUOLO_OMBRA", tile_suolo_ombra),
+    ("STRADA_OMBRA", tile_strada_ombra),
 ]
 INDICE_TILE = {nome: i for i, (nome, _) in enumerate(TILE_FONDALI)}
 
 
-def tile_per_cella(griglia, x, y, del_monte=False):
-    """Il tile del fondale per la cella (x, y): l'unica regola che decide come si vede il mondo."""
+def tile_per_cella(griglia, x, y, del_monte=False, monte=None):
+    """Il tile del fondale per la cella (x, y): l'unica regola che decide come si vede il mondo.
+    monte: il lato a monte dell'area; il suolo subito a valle di un gradone e' in ombra."""
     c = griglia[y][x]
+    if c in ".," and monte:
+        mx, my = (x, y + 1) if monte == "basso" else (x + 1, y)
+        if my < len(griglia) and mx < len(griglia[0]) and griglia[my][mx] == "M":
+            return INDICE_TILE["SUOLO_OMBRA" if c == "." else "STRADA_OMBRA"]
     if c in VARCHI:
         return INDICE_TILE["INGRESSO" if c == "I" else "VARCO"]
     nome = CELLE[c][0]
@@ -296,7 +340,7 @@ def solida(c):
 
 
 def leggi_area(nome_file, testo):
-    a = {"file": nome_file, "spawn": {}, "uscite": [], "griglia": [], "sposta": {}, "vicino": {},
+    a = {"file": nome_file, "spawn": {}, "uscite": [], "griglia": [], "sposta": {}, "vicino": {}, "belvedere": [],
          "fattore": FATTORE_PREDEFINITO, "riferimento": None}
     in_griglia = False
     for n, riga in enumerate(testo.split("\n"), 1):
@@ -328,6 +372,13 @@ def leggi_area(nome_file, testo):
                     elif len(t) != 4:
                         raise ValueError
                     a["uscite"].append((t[1], t[2], int(t[3]), n))
+            elif t[0] == "monte":
+                if t[1] not in LATI_A_MONTE:
+                    raise ErroreMondo(f"{nome_file}:{n}: lato a monte '{t[1]}': la salita va verso nord-est, "
+                                      f"il lato a monte e' basso o destra")
+                a["monte"] = t[1]
+            elif t[0] == "belvedere":
+                a["belvedere"].append((t[1], n))
             elif t[0] == "riferimento":
                 a["riferimento"] = (int(t[1]), int(t[2]))
             elif t[0] == "fattore":
@@ -342,7 +393,7 @@ def leggi_area(nome_file, testo):
                 raise ErroreMondo(f"{nome_file}:{n}: riga '{t[0]}' sconosciuta")
         except (IndexError, ValueError):
             raise ErroreMondo(f"{nome_file}:{n}: riga malformata: {riga}") from None
-    for campo in ("id", "etichetta", "larghezza", "riferimento"):
+    for campo in ("id", "etichetta", "larghezza", "riferimento", "monte"):
         if campo not in a:
             raise ErroreMondo(f"{nome_file}: manca '{campo}'")
     if len(a["griglia"]) != a["altezza"]:
@@ -409,6 +460,92 @@ def posa_edifici(a, monumenti):
     a["griglia"] = ["".join(r) for r in g]
     a["edifici"] = posati
     return posati
+
+
+def quote_dell_area(a, grafo):
+    q = [g["quota_m"] for g in grafo["aree"] if g["id"].lower() == a["id"]][0]
+    return min(q), max(q)
+
+
+def numero_gradoni(a, grafo):
+    q0, q1 = quote_dell_area(a, grafo)
+    return min(GRADONI_MAX, int((q1 - q0) // METRI_PER_GRADONE))
+
+
+def applica_dislivello(a, grafo):
+    """Belvederi, gradoni e scale ai varchi, sulla griglia con gli edifici gia' posati."""
+    g = [list(r) for r in a["griglia"]]
+    w, h = a["larghezza"], a["altezza"]
+    q0, q1 = quote_dell_area(a, grafo)
+    edifici = {(x, y) for (x0, y0, ew, eh) in a.get("edifici", {}).values()
+               for x in range(x0, x0 + ew) for y in range(y0, y0 + eh)}
+
+    # belvederi: parapetto sul bordo a valle, dove c'e' il muro di bordo
+    for lato, n in a["belvedere"]:
+        if lato in LATI_A_MONTE:
+            raise ErroreMondo(f"{a['file']}:{n}: belvedere sul lato a monte ({lato}): dall'alto si guarda "
+                              f"a valle, cioe' {LATI_A_VALLE[a['monte']]} o {LATI_A_VALLE[[l for l in LATI_A_MONTE if l != a['monte']][0]]}")
+        if lato not in LATI_A_VALLE.values():
+            raise ErroreMondo(f"{a['file']}:{n}: lato del belvedere '{lato}' sconosciuto")
+        if (q0 + q1) / 2 < QUOTA_MIN_BELVEDERE:
+            raise ErroreMondo(f"{a['file']}:{n}: belvedere a {(q0 + q1) / 2:g} m: un'area sotto "
+                              f"{QUOTA_MIN_BELVEDERE} m non ha niente da guardare dall'alto")
+        celle = {"alto": [(x, 0) for x in range(w)], "basso": [(x, h - 1) for x in range(w)],
+                 "sinistra": [(0, y) for y in range(h)], "destra": [(w - 1, y) for y in range(h)]}[lato]
+        for x, y in celle:
+            if g[y][x] == "#" and (x, y) not in edifici:
+                g[y][x] = "="
+
+    # scale davanti ai varchi verso aree a un'altra quota
+    for lettera, dest, _, _ in a["uscite"]:
+        if dest in DUNGEON:
+            continue
+        d0, d1 = [min(x["quota_m"]) if k == 0 else max(x["quota_m"]) for x in grafo["aree"]
+                  if x["id"].lower() == dest for k in (0, 1)]
+        if max(d0 - q1, q0 - d1, 0) <= DISLIVELLO_PER_SCALE:
+            continue
+        celle = [(x, y) for y, r in enumerate(g) for x, c in enumerate(r) if c == lettera]
+        lati = {"sinistra": (1, 0), "destra": (-1, 0), "alto": (0, 1), "basso": (0, -1)}
+        for lato in lati_del_varco({"griglia": ["".join(r) for r in g], "larghezza": w, "altezza": h}, lettera):
+            dx, dy = lati[lato]
+            for x, y in celle:
+                for k in range(1, PROFONDITA_SCALE + 1):
+                    nx, ny = x + dx * k, y + dy * k
+                    if 0 <= nx < w and 0 <= ny < h and g[ny][nx] in ".,":
+                        g[ny][nx] = "S"
+
+    # gradoni: righe (monte basso) o colonne (monte destra) di muro, con una scala in ogni tratto
+    n = numero_gradoni(a, grafo)
+    lungo = h if a["monte"] == "basso" else w
+    vietate = set(a["spawn"].values()) | {(x, y) for y, r in enumerate(g) for x, c in enumerate(r)
+                                          if c in VARCHI or c == "S"}
+    a["gradoni"] = []
+    for k in range(n):
+        voluto = lungo * (k + 1) // (n + 1)
+        for scarto in sorted(range(-lungo // 4, lungo // 4 + 1), key=abs):
+            pos = voluto + scarto
+            if not 2 <= pos < lungo - 2:
+                continue
+            linea = [(x, pos) for x in range(w)] if a["monte"] == "basso" else [(pos, y) for y in range(h)]
+            vicine = {(x + dx, y + dy) for x, y in linea for dx in (-2, -1, 0, 1, 2) for dy in (-2, -1, 0, 1, 2)}
+            if not vicine & vietate:
+                break
+        else:
+            raise ErroreMondo(f"{a['file']}: non c'e' posto per il gradone {k + 1} di {n}")
+        a["gradoni"].append(pos)
+        tratto = []
+        for cella in linea + [None]:
+            if cella is not None and g[cella[1]][cella[0]] in ".,":
+                tratto.append(cella)
+                continue
+            if tratto:
+                meta = len(tratto) // 2
+                passaggio = set(tratto) if len(tratto) < LARGO_PASSAGGIO + 2 else \
+                    set(tratto[meta - LARGO_PASSAGGIO // 2:meta + LARGO_PASSAGGIO // 2])
+                for cx, cy in tratto:
+                    g[cy][cx] = "S" if (cx, cy) in passaggio else "M"
+                tratto = []
+    a["griglia"] = ["".join(r) for r in g]
 
 
 def controlla_edifici(a, posati, monumenti):
@@ -692,7 +829,7 @@ def scrivi_header(aree, grafo, palette_stile):
                     celle.append(PRIMO_VARCO + lettere.index(c))
                 else:
                     celle.append(list(CELLE).index(c))
-                mappa.append(tile_per_cella(a["griglia"], x, y, a["id"] in AREE_DEL_MONTE))
+                mappa.append(tile_per_cella(a["griglia"], x, y, a["id"] in AREE_DEL_MONTE, a.get("monte")))
         n = a["larghezza"] * a["altezza"]
         nome = a["id"].upper()
         out += [f"inline constexpr uint8_t GRIGLIA_{nome}[{n}] = {{", a_blocchi(celle, 32), "};", "",
@@ -766,6 +903,7 @@ def genera(sorgenti, palette_stile, mondo=None):
     aree = [leggi_area(nome, testo) for nome, testo in sorgenti]
     for a in aree:
         controlla_edifici(a, posa_edifici(a, mondo["monumenti"]), mondo["monumenti"])
+        applica_dislivello(a, mondo["grafo"])
     controlla(aree, mondo)
     for a in aree:
         controlla_vicinanze(a)

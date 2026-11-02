@@ -345,6 +345,106 @@ class Mondo(unittest.TestCase):
             G.genera(sorgenti, PALETTE)
 
 
+def area_con_dislivello(nome, mondo=None, modifica=None):
+    """L'area del repo con edifici e dislivello applicati (modifica: testo -> testo del file .area)."""
+    mondo = mondo or G.mondo_del_repo()
+    testo = dict(G.sorgenti_del_repo())["mondo/aree/%s.area" % nome]
+    a = G.leggi_area(nome, modifica(testo) if modifica else testo)
+    G.posa_edifici(a, mondo["monumenti"])
+    G.applica_dislivello(a, mondo["grafo"])
+    return a
+
+
+def celle(a, carattere):
+    return sum(r.count(carattere) for r in a["griglia"])
+
+
+class Dislivello(unittest.TestCase):
+    """Il dislivello in tre modi: scale ai varchi, gradoni, belvederi. Tutto da quote e lati a monte."""
+
+    def test_la_salita_va_in_basso_a_destra(self):
+        for n, t in G.sorgenti_del_repo():
+            self.assertIn(G.leggi_area(n, t)["monte"], ("basso", "destra"), n)
+
+    def test_negativa_lato_a_monte_in_alto(self):
+        sorgenti = sorgenti_con("san_pietro.area", lambda t: t.replace("monte basso", "monte alto"))
+        with self.assertRaisesRegex(G.ErroreMondo, "lato a monte 'alto': la salita va verso nord-est"):
+            G.genera(sorgenti, PALETTE)
+
+    def test_belvederi_delle_aree_alte(self):
+        """Piazza Grande, Duomo, Basilica e Monte Ingino hanno il parapetto sul bordo a valle."""
+        for nome in ("piazza_grande", "duomo_ducale", "basilica", "monte_ingino"):
+            a = area_con_dislivello(nome)
+            self.assertTrue(a["belvedere"], nome)
+            self.assertGreater(celle(a, "="), 0, nome)
+
+    def test_negativa_belvedere_sul_lato_a_monte(self):
+        with self.assertRaisesRegex(G.ErroreMondo, "belvedere sul lato a monte \\(basso\\)"):
+            area_con_dislivello("piazza_grande", modifica=lambda t: t.replace("belvedere alto", "belvedere basso"))
+
+    def test_negativa_belvedere_in_un_area_bassa(self):
+        with self.assertRaisesRegex(G.ErroreMondo, "belvedere a 0 m: un'area sotto 60 m"):
+            area_con_dislivello("piazza_quaranta_martiri",
+                                modifica=lambda t: t.replace("monte basso", "monte basso\nbelvedere alto"))
+
+    def test_gradoni_dalla_quota(self):
+        """Via dei Consoli sale da 27 a 67 m: due gradoni da 15 m, con muro e scala di passaggio.
+        Piazza Grande e' in piano: nessun gradone."""
+        a = area_con_dislivello("via_dei_consoli")
+        self.assertEqual(len(a["gradoni"]), 2)
+        for y in a["gradoni"]:
+            self.assertIn("M", a["griglia"][y])
+            self.assertIn("S", a["griglia"][y])
+        self.assertEqual(area_con_dislivello("piazza_grande")["gradoni"], [])
+
+    def test_negativa_quota_piatta_niente_gradoni(self):
+        """La quota decide: con via dei Consoli in piano i gradoni spariscono."""
+        mondo = copy.deepcopy(G.mondo_del_repo())
+        for x in mondo["grafo"]["aree"]:
+            if x["id"] == "VIA_DEI_CONSOLI":
+                x["quota_m"] = [47, 47]
+        a = area_con_dislivello("via_dei_consoli", mondo)
+        self.assertEqual((a["gradoni"], celle(a, "M")), ([], 0))
+
+    def test_ombra_a_valle_del_gradone(self):
+        a = area_con_dislivello("via_dei_consoli")
+        y = a["gradoni"][0]
+        self.assertEqual(G.tile_per_cella(a["griglia"], 1, y - 1, False, a["monte"]), G.INDICE_TILE["STRADA_OMBRA"])
+        self.assertEqual(G.tile_per_cella(a["griglia"], 1, y + 1, False, a["monte"]), G.INDICE_TILE["STRADA"])
+
+    def test_scale_ai_varchi_fra_quote_diverse(self):
+        """Quaranta Martiri (0 m) e via dei Consoli (27-67 m): scala davanti al varco G della via;
+        verso il Largo del Bargello (27 m) la via e' allo stesso livello e non c'e' scala."""
+        a = area_con_dislivello("via_dei_consoli")
+        g = a["griglia"]
+        interne = [(x, y) for x, y in G.celle_varco(a, "G") if g[y][x + 1] != "G"]
+        self.assertTrue(interne)
+        for x, y in interne:
+            self.assertEqual(g[y][x + 1: x + 1 + G.PROFONDITA_SCALE], "S" * G.PROFONDITA_SCALE)
+        for x, y in G.celle_varco(a, "A"):
+            if y == 1:
+                self.assertEqual(g[y + 1][x], ",")
+
+    def test_negativa_stessa_quota_niente_scala(self):
+        mondo = copy.deepcopy(G.mondo_del_repo())
+        for x in mondo["grafo"]["aree"]:
+            if x["id"] == "PIAZZA_QUARANTA_MARTIRI":
+                x["quota_m"] = [27, 27]
+        a = area_con_dislivello("via_dei_consoli", mondo)
+        g = a["griglia"]
+        interne = [(x, y) for x, y in G.celle_varco(a, "G") if g[y][x + 1] != "G"]
+        self.assertTrue(interne)
+        for x, y in interne:
+            self.assertNotEqual(g[y][x + 1], "S")
+
+    def test_tile_unici_sotto_512(self):
+        with open(G.USCITA, encoding="utf-8") as f:
+            aree = griglie_e_mappe(f.read())
+        picco = max(len(set(mappa)) for _, mappa in aree.values())
+        self.assertLessEqual(picco, 512)
+        self.assertLessEqual(len(G.TILE_FONDALI), 512)
+
+
 def griglie_e_mappe(header):
     """Da include/mondo.h: {area: (griglia, mappa)} come liste di interi, quelle che usa la ROM."""
     out = {}
@@ -353,7 +453,8 @@ def griglie_e_mappe(header):
     return {k: (v["GRIGLIA"], v["MAPPA"]) for k, v in out.items()}
 
 
-TILE_CALPESTABILI = {"SUOLO", "STRADA", "SCALINATA", "PORTONE", "VARCO", "INGRESSO"}
+TILE_CALPESTABILI = {"SUOLO", "STRADA", "SCALINATA", "PORTONE", "VARCO", "INGRESSO", "SUOLO_OMBRA",
+                     "STRADA_OMBRA"}
 
 
 def errori_fondale(griglia, mappa):

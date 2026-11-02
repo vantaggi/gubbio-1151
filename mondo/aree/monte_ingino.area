@@ -3,6 +3,11 @@
 id monte_ingino
 etichetta AREA_MONTE_INGINO
 dimensioni 64 32
+# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# lungo dell'area, a valle c'e' l'ombra.
+monte destra
+# Belvedere: parapetto sul bordo a valle, l'area e' alta sulla citta'.
+belvedere alto
 riferimento 32 16
 fattore 0.73
 spawn 0 32 16
