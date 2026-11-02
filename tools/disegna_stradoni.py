@@ -122,11 +122,21 @@ def disegna(dati):
                   if 0 <= y + dy < H and 0 <= x + dx < W]
         if any(c in "ABEc" for c in vicino) or any((x + i, y + j) in piantati for i in (-1, 0, 1) for j in (-1, 0, 1)):
             continue
-        macchia = caso(x // 7, y // 7, 5)
+        macchia = caso(x // 6, y // 6, 5)
         sul_bordo = "b" in vicino
         r = caso(x, y, 6)
-        if r < (0.30 if sul_bordo else 0.10) * (0.5 + macchia):
-            g[y][x] = "T" if caso(x, y, 7) > 0.25 else "r"
+        quattro = [(x + i, y + j) for i in range(2) for j in range(2)]
+        if not sul_bordo and macchia > 0.3 and r < 0.85 and \
+                all(g[v][u] == "#" and (u, v) not in piantati for u, v in quattro):
+            # nel folto: chiome di 2x2 una accanto all'altra, la macchia di bosco
+            for u, v in quattro:
+                g[v][u] = "T"
+            piantati.update(quattro)
+        elif r < (0.30 if sul_bordo else 0.06) * (0.5 + macchia):
+            g[y][x] = "u" if caso(x, y, 7) < 0.2 and g[y + 1][x] == "#" else ("r" if caso(x, y, 7) < 0.5 else "k")
+            if g[y][x] == "u":
+                g[y + 1][x] = "u"
+                piantati.add((x, y + 1))
             piantati.add((x, y))
         elif r > 0.985 or (sul_bordo and r > 0.94):
             g[y][x] = "k"
