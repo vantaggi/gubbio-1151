@@ -7,6 +7,7 @@
 #include "bn_regular_bg_ptr.h"
 #include "bn_regular_bg_tiles_ptr.h"
 #include "bn_sprite_ptr.h"
+#include "bn_vector.h"
 
 #include "mondo_logica.h"
 #include "vista_testo.h"
@@ -55,6 +56,7 @@ private:
     bn::camera_ptr _camera;
     bn::optional<bn::regular_bg_ptr> _fondale;
     bn::sprite_ptr _giocatore;
+    bn::vector<bn::sprite_ptr, 6> _cartiglio;  // creato per primo: sta sotto il testo
     VistaTesto _ombra;              // creata prima: i suoi sprite stanno sotto quelli dell'etichetta
     VistaTesto _etichetta;
     mondo::Esploratore _e;
@@ -66,6 +68,7 @@ private:
 
     void _carica_fondale();
     void _mostra_etichetta(testi::TestoId id);
+    void _mostra_cartiglio(bool visibile);
     void _dopo_evento(mondo::Evento evento);
 };
 

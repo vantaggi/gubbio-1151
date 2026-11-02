@@ -6,6 +6,10 @@ dimensioni 55 45
 # Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
 # lungo dell'area, a valle c'e' l'ombra.
 monte basso
+# San Pietro: facciata verso la piazza a sud-ovest; la piazza sta a sinistra della chiesa.
+facciata san_pietro sinistra
+# Mura: la cinta a sud, verso Porta San Pietro (a sinistra).
+mura sinistra
 riferimento 20 22
 fattore 0.73
 # Piazza San Pietro: 39 x 38 m, in scala.

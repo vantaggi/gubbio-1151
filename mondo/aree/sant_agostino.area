@@ -6,6 +6,10 @@ dimensioni 59 64
 # Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
 # lungo dell'area, a valle c'e' l'ombra.
 monte basso
+# Sant'Agostino: facciata verso ovest e il piazzale, cioe' in alto: se ne vede il retro.
+facciata sant_agostino alto
+# Mura: la cinta a est, verso Porta Romana (in basso).
+mura basso
 riferimento 20 35
 fattore 0.73
 # Via di Porta Romana: larga 17.3 m in mediana (min 9.1), cioe' 12 tile; lunga 1219 m, compressa.

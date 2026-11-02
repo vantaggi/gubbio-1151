@@ -12,6 +12,7 @@
 #include "bn_sprite_palette_ptr.h"
 #include "bn_sprite_palettes.h"
 #include "bn_sprite_shape_size.h"
+#include "bn_sprite_tiles_item.h"
 #include "bn_sprite_tiles_ptr.h"
 #include "bn_tile.h"
 
@@ -48,6 +49,34 @@ namespace
     constexpr Colori COLORI_FONDALI = colori(mondo::PALETTE_FONDALI);
     constexpr Colori COLORI_GIOCATORE = colori(mondo::PALETTE_GIOCATORE);
 
+    // Il cartiglio: sei pezzi da 32x16 (sinistro, quattro centrali, destro) in cima allo schermo,
+    // dietro il nome dell'area, con la palette dei fondali. Nascosto finche' non c'e' un nome.
+    constexpr int CARTIGLIO_X = 16;
+    constexpr int CARTIGLIO_Y = 4;
+    constexpr int CARTIGLIO_PEZZI = 6;
+
+    bn::vector<bn::sprite_ptr, CARTIGLIO_PEZZI> crea_cartiglio()
+    {
+        bn::sprite_palette_ptr palette = bn::sprite_palette_ptr::create(
+            bn::sprite_palette_item(bn::span<const bn::color>(COLORI_FONDALI.colori), bn::bpp_mode::BPP_4));
+        bn::vector<bn::sprite_ptr, CARTIGLIO_PEZZI> out;
+
+        for(int i = 0; i < CARTIGLIO_PEZZI; ++i)
+        {
+            int pezzo = i == 0 ? 0 : (i == CARTIGLIO_PEZZI - 1 ? 2 : 1);
+            bn::sprite_tiles_item tiles(bn::span<const bn::tile>(
+                mondo::TILE_CARTIGLIO + pezzo * mondo::TILE_PER_PEZZO_CARTIGLIO, mondo::TILE_PER_PEZZO_CARTIGLIO),
+                bn::bpp_mode::BPP_4);
+            bn::sprite_ptr sprite = bn::sprite_ptr::create(
+                CARTIGLIO_X + 16 + i * 32 - LARGHEZZA_SCHERMO / 2, CARTIGLIO_Y + 8 - ALTEZZA_SCHERMO / 2,
+                bn::sprite_shape_size(32, 16), tiles.create_tiles(), palette);
+            sprite.set_visible(false);
+            out.push_back(bn::move(sprite));
+        }
+
+        return out;
+    }
+
     bn::sprite_ptr crea_giocatore()
     {
         bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(4, bn::bpp_mode::BPP_4);
@@ -78,6 +107,7 @@ Esplorazione::Esplorazione(const bn::sprite_palette_ptr& palette_testo) :
         bn::bg_palette_item(bn::span<const bn::color>(COLORI_FONDALI.colori), bn::bpp_mode::BPP_4))),
     _camera(bn::camera_ptr::create(0, 0)),
     _giocatore(crea_giocatore()),
+    _cartiglio(crea_cartiglio()),
     _ombra(testo::Contesto::AREA, 25, 9, INCHIOSTRO_OMBRA, palette_testo),
     _etichetta(testo::Contesto::AREA, 24, 8, INCHIOSTRO_ETICHETTA, palette_testo)
 {
@@ -117,7 +147,16 @@ void Esplorazione::_mostra_etichetta(testi::TestoId id)
 {
     _ombra.mostra(id);
     _etichetta.mostra(id);
+    _mostra_cartiglio(true);
     _attesa_etichetta = FRAME_ETICHETTA;
+}
+
+void Esplorazione::_mostra_cartiglio(bool visibile)
+{
+    for(bn::sprite_ptr& pezzo : _cartiglio)
+    {
+        pezzo.set_visible(visibile);
+    }
 }
 
 void Esplorazione::_dopo_evento(mondo::Evento evento)
@@ -229,6 +268,7 @@ void Esplorazione::aggiorna()
         {
             _ombra.nascondi();
             _etichetta.nascondi();
+            _mostra_cartiglio(false);
         }
     }
 }
@@ -238,6 +278,7 @@ void Esplorazione::nascondi_etichetta()
     _attesa_etichetta = 0;
     _ombra.nascondi();
     _etichetta.nascondi();
+    _mostra_cartiglio(false);
 }
 
 }

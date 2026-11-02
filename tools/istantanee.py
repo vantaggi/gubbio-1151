@@ -51,6 +51,7 @@ COLORI = {
     "I": (20, 20, 20),      # ingresso di un dungeon
     "M": (150, 120, 90),    # muro di contenimento di un gradone
     "V": (40, 30, 40),      # la citta' bassa oltre il parapetto di un belvedere
+    "W": (110, 100, 90),    # le mura della citta
 }
 COLORE_VARCO = (230, 60, 60)
 COLORE_SPAWN = (40, 90, 230)

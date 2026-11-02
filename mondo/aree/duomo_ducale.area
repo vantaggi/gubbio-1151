@@ -8,6 +8,8 @@ dimensioni 64 64
 monte basso
 # Belvedere: parapetto sul bordo a valle, l'area e' alta sulla citta'.
 belvedere sinistra
+# Duomo: la facciata guarda la via in salita, a sud-ovest reale; sulla mappa ruotata alto e sinistra, si sceglie sinistra (in alto si vedrebbe solo il retro).
+facciata duomo sinistra
 riferimento 29 41
 # Fattore ridotto: con 0,73 gli edifici e le distanze non entrano in 64 tile.
 fattore 0.68

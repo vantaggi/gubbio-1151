@@ -108,6 +108,7 @@ CELLE = {
     "P": ("FACCIATA_2", True),     # seconda facciata (Pretorio, Bargello, acquedotto, ...)
     "M": ("MURO_CONTENIMENTO", True),  # il gradone: il terreno a monte sta piu' in alto
     "V": ("CITTA_BASSA", True),    # oltre il parapetto di un belvedere: la citta' vista dall'alto
+    "W": ("MURA", True),           # le mura della citta', dove l'area tocca il perimetro
 }
 VARCHI = "ABEGHI"                 # I e' l'ingresso di un dungeon
 
@@ -322,6 +323,33 @@ def tile_cortile(x, y):
     return 10 if (x * 3 + y) % 5 else 1
 
 
+def tile_mura(x, y):
+    # le mura viste dall'alto: cammino di ronda chiaro, conci, un dente di merlo ogni tile
+    if y < 2:
+        return 5 if x % 4 < 2 else 1
+    sfalsa = 2 if (y // 3) % 2 else 0
+    return 2 if y % 3 == 0 or (x + sfalsa) % 4 == 3 else 3
+
+
+def tile_tetto_falda_luce(x, y):
+    # falda di un tetto a capanna, quella in luce
+    return 6 if y % 4 == 3 else [9, 9, 8, 7][x % 4]
+
+
+def tile_tetto_falda_ombra(x, y):
+    # l'altra falda, in ombra, con il colmo chiaro in cima
+    if y == 0:
+        return 9
+    return 1 if y % 4 == 3 else [7, 6, 6, 1][x % 4]
+
+
+def tile_terrazzino(x, y):
+    # un terrazzino di cotto con il parapetto
+    if x in (0, 7) or y in (0, 7):
+        return 4
+    return 8 if (x + y) % 2 else 7
+
+
 def tile_vuoto(x, y):
     return 1
 
@@ -350,6 +378,10 @@ TILE_FONDALI = [
     ("TETTO_SCURO", tile_tetto_scuro),
     ("COMIGNOLO", tile_comignolo),
     ("CORTILE", tile_cortile),
+    ("MURA", tile_mura),
+    ("TETTO_FALDA_LUCE", tile_tetto_falda_luce),
+    ("TETTO_FALDA_OMBRA", tile_tetto_falda_ombra),
+    ("TERRAZZINO", tile_terrazzino),
 ]
 INDICE_TILE = {nome: i for i, (nome, _) in enumerate(TILE_FONDALI)}
 
@@ -381,15 +413,18 @@ def tile_per_cella(griglia, x, y, del_monte=False, monte=None):
     return INDICE_TILE[nome]
 
 
+VARIANTI_TETTO = 6
+
+
 def variante_tetto(x, y):
     """La variante del tetto per il blocco 4x4 di case che contiene (x, y): deterministica."""
     bx, by = x // 4, y // 4
-    return (bx * 7 + by * 13 + bx * by) % 4
+    return (bx * 7 + by * 13 + bx * by) % VARIANTI_TETTO
 
 
 def tetto_della_casa(x, y):
     """Le case non sono tutte uguali: colmo in un senso o nell'altro, coppi scuri con il comignolo,
-    un piccolo cortile in mezzo al blocco."""
+    un piccolo cortile in mezzo al blocco, falde a capanna, un terrazzino."""
     v = variante_tetto(x, y)
     dx, dy = x % 4, y % 4
     if v == 1:
@@ -398,6 +433,10 @@ def tetto_della_casa(x, y):
         return "COMIGNOLO" if (dx, dy) == (2, 1) else "TETTO_SCURO"
     if v == 3 and dx in (1, 2) and dy in (1, 2):
         return "CORTILE"
+    if v == 4:
+        return "TETTO_FALDA_LUCE" if dy < 2 else "TETTO_FALDA_OMBRA"
+    if v == 5:
+        return "TERRAZZINO" if (dx, dy) == (1, 2) else ("COMIGNOLO" if (dx, dy) == (3, 0) else "TETTO")
     return "TETTO"
 
 
@@ -436,7 +475,7 @@ def solida(c):
 
 
 def leggi_area(nome_file, testo):
-    a = {"file": nome_file, "spawn": {}, "uscite": [], "griglia": [], "sposta": {}, "vicino": {}, "belvedere": [], "largo": {},
+    a = {"file": nome_file, "spawn": {}, "uscite": [], "griglia": [], "sposta": {}, "vicino": {}, "belvedere": [], "largo": {}, "mura": [], "facciata": {},
          "fattore": FATTORE_PREDEFINITO, "riferimento": None}
     in_griglia = False
     for n, riga in enumerate(testo.split("\n"), 1):
@@ -494,6 +533,14 @@ def leggi_area(nome_file, testo):
                 a["monte"] = t[1]
             elif t[0] == "belvedere":
                 a["belvedere"].append((t[1], n))
+            elif t[0] == "mura":
+                if t[1] not in ("alto", "basso", "sinistra", "destra"):
+                    raise ErroreMondo(f"{nome_file}:{n}: lato delle mura '{t[1]}' sconosciuto")
+                a["mura"].append(t[1])
+            elif t[0] == "facciata":
+                if t[2] not in ("alto", "basso", "sinistra", "destra"):
+                    raise ErroreMondo(f"{nome_file}:{n}: lato della facciata '{t[2]}' sconosciuto")
+                a["facciata"][t[1]] = (t[2], n)
             elif t[0] == "riferimento":
                 a["riferimento"] = (int(t[1]), int(t[2]))
             elif t[0] == "fattore":
@@ -525,6 +572,17 @@ def leggi_area(nome_file, testo):
     return a
 
 
+def faccia_di(a, mid, monumenti):
+    """Il lato della facciata: vince il censimento (facciata_lato_schermo); se non lo da', la riga
+    "facciata" della .area; se manca anche quella, il default del pittore (o nessuna)."""
+    dato = monumenti[mid].get("facciata_lato_schermo")
+    scelta = a.get("facciata", {}).get(mid)
+    if dato and scelta and scelta[0] != dato:
+        raise ErroreMondo(f"{a['file']}:{scelta[1]}: facciata di {mid} a {scelta[0]}, ma il censimento la "
+                          f"vuole a {dato}: vince il dato")
+    return dato or (scelta[0] if scelta else PM.FACCIATA_DI_DEFAULT.get(mid))
+
+
 def edifici_attesi(aid, monumenti):
     """{id: (larghezza, altezza)} in tile degli edifici che l'area deve contenere."""
     out = {}
@@ -542,7 +600,7 @@ def posa_edifici(a, monumenti):
     una cella che non sia suolo."""
     g = [list(r) for r in a["griglia"]]
     rx, ry = a["riferimento"]
-    for mid in a["sposta"]:
+    for mid in list(a["sposta"]) + list(a.get("facciata", {})):
         if mid not in edifici_attesi(a["id"], monumenti):
             raise ErroreMondo(f"{a['file']}: 'sposta {mid}', ma {mid} non e' un edificio di quest'area")
     posati, occupate = {}, {}
@@ -555,7 +613,7 @@ def posa_edifici(a, monumenti):
         if x0 < 0 or y0 < 0 or x0 + w > a["larghezza"] or y0 + h > a["altezza"]:
             raise ErroreMondo(f"{a['file']}: l'edificio {mid} ({w}x{h} tile in {x0}, {y0}) esce dalla "
                               f"griglia {a['larghezza']}x{a['altezza']}")
-        faccia = m.get("facciata_lato_schermo") or PM.FACCIATA_DI_DEFAULT.get(mid)
+        faccia = faccia_di(a, mid, monumenti)
         for y in range(y0, y0 + h):
             for x in range(x0, x0 + w):
                 if (x, y) in occupate:
@@ -673,6 +731,14 @@ def applica_dislivello(a, grafo):
     edifici = {(x, y) for (x0, y0, ew, eh) in a.get("edifici", {}).values()
                for x in range(x0, x0 + ew) for y in range(y0, y0 + eh)}
 
+    # mura della citta': il bordo dell'area su quel lato, fuori da varchi ed edifici
+    for lato in a.get("mura", []):
+        celle = {"alto": [(x, 0) for x in range(w)], "basso": [(x, h - 1) for x in range(w)],
+                 "sinistra": [(0, y) for y in range(h)], "destra": [(w - 1, y) for y in range(h)]}[lato]
+        for x, y in celle:
+            if g[y][x] == "#" and (x, y) not in edifici:
+                g[y][x] = "W"
+
     # belvederi: parapetto sul bordo a valle, dove c'e' il muro di bordo
     for lato, n in a["belvedere"]:
         if lato in LATI_A_MONTE:
@@ -753,7 +819,7 @@ def disegna_area(a, mondo):
     elementi = {}
     for n, (mid, (x0, y0, ew, eh)) in enumerate(sorted(a.get("edifici", {}).items())):
         m = monumenti[mid]
-        faccia = m.get("facciata_lato_schermo") or PM.FACCIATA_DI_DEFAULT.get(mid)
+        faccia = faccia_di(a, mid, monumenti)
         altezza = censimento.get(mid, {}).get("altezza_m", "").strip()
         tela = PM.dipingi(mid, m["nome"], ew, eh, faccia, {"altezza_m": float(altezza) if altezza else None}, n)
         elementi[mid] = tela.elementi
@@ -1040,6 +1106,39 @@ def anello(grafo):
 
 # --- Uscita C++ -------------------------------------------------------------------------------
 
+def pixel_cartiglio(pezzo):
+    """Il pezzo 'sinistro', 'centrale' o 'destro' del cartiglio, 32x16 pixel: pergamena di pietra
+    chiara con il bordo scuro, le volute alle estremita'."""
+    out = []
+    for y in range(16):
+        riga = []
+        for x in range(32):
+            bordo = y in (0, 15) or (pezzo == "sinistro" and x == 0) or (pezzo == "destro" and x == 31)
+            dentro = y in (1, 14) or (pezzo == "sinistro" and x == 1) or (pezzo == "destro" and x == 30)
+            voluta = (pezzo == "sinistro" and x < 4 and y in (3, 12)) or (pezzo == "destro" and x > 27 and y in (3, 12))
+            if bordo or voluta:
+                riga.append(1)
+            elif dentro:
+                riga.append(4)
+            else:
+                riga.append(5 if (x + y) % 9 else 4)
+        out.append(riga)
+    return out
+
+
+def tile_cartiglio():
+    """Le parole dei tre pezzi del cartiglio, 8 tile ciascuno (4x2, riga per riga)."""
+    pezzi = []
+    for pezzo in ("sinistro", "centrale", "destro"):
+        px = pixel_cartiglio(pezzo)
+        parole = []
+        for ty in range(2):
+            for tx in range(4):
+                parole += parole_tile([r[tx * 8:tx * 8 + 8] for r in px[ty * 8:ty * 8 + 8]])
+        pezzi.append(parole)
+    return pezzi
+
+
 def parole_tile(pixel):
     out = []
     for riga in pixel:
@@ -1240,6 +1339,15 @@ def scrivi_header(aree, grafo, palette_stile):
             "inline constexpr uint16_t PALETTE_FONDALI[16] = {",
             a_blocchi([colore(r) for r in PALETTE_FONDALI], 8, lambda v: f"0x{v:04X}"),
             "};", ""]
+
+    out += ["// Il cartiglio dietro il nome dell'area: tre pezzi da 32x16 (sinistro, centrale, destro),",
+            "// 8 tile ciascuno in mappatura 1D, con la palette dei fondali.",
+            "inline constexpr int TILE_PER_PEZZO_CARTIGLIO = 8;",
+            "inline constexpr bn::tile TILE_CARTIGLIO[3 * TILE_PER_PEZZO_CARTIGLIO] = {"]
+    for pezzo in tile_cartiglio():
+        for k in range(0, len(pezzo), 8):
+            out.append("    { { " + ", ".join(f"0x{v:08X}" for v in pezzo[k:k + 8]) + " } },")
+    out += ["};", ""]
 
     pixel = [[int(c, 16) if c != "." else 0 for c in riga] for riga in GIOCATORE]
     tiles = []

@@ -386,13 +386,31 @@ PITTORI = {"consoli": consoli, "pretorio": pretorio, "bargello": bargello, "san_
 def dipingi(mid, nome, w, h, faccia, info, n):
     """La tela del monumento mid, larga w e alta h tile."""
     if mid in PITTORI:
-        return PITTORI[mid](w, h, info)
+        return PITTORI[mid](w, h, dict(info, faccia=faccia))
     return generico(mid, nome, w, h, faccia, n)
 
 
 def elementi_mancanti(mid, elementi):
     """Gli elementi richiesti che la tela non ha (vuoto: tutto c'e')."""
     return {k: v for k, v in REQUISITI.get(mid, {}).items() if elementi.get(k, 0) < v}
+
+
+def facciata_di_lato(t, w, h, lato, tinta, larga=3):
+    """Tetto a falde e, sul lato sinistro o destro, la facciata vista di scorcio: una striscia di conci
+    larga 'larga' tile. Ritorna (x0, larghezza in pixel) della striscia."""
+    t.falde(0, 0, w * 8, h * 8)
+    x0 = 0 if lato == "sinistra" else (w - larga) * 8
+    t.conci(x0, 0, larga * 8, h * 8, tinta)
+    t.rett(x0 + (larga * 8 - 2 if lato == "sinistra" else 0), 0, 2, h * 8, COTTO_CHIARO)
+    return x0, larga * 8
+
+
+def solo_retro(t, w, h, tinta):
+    """La facciata guarda in alto: si vedono il tetto e il muro di dietro."""
+    t.falde(0, 0, w * 8, (h - 2) * 8)
+    t.gronda(0, (h - 2) * 8 - 3, w * 8)
+    t.conci(0, (h - 2) * 8, w * 8, 16, tinta)
+    t.elementi["retro"] += 1
 
 
 # --- secondo lotto -----------------------------------------------------------------------------
@@ -408,15 +426,27 @@ def rosone(t, cx, cy, r):
 
 
 def duomo(w, h, info):
-    """Duomo: facciata semplice con il portale a sesto acuto e il rosone sopra."""
+    """Duomo: facciata semplice con il portale a sesto acuto e il rosone sopra. La facciata guarda la
+    via in salita: di fronte in basso, o di scorcio a sinistra o a destra."""
     t = Tela(w, h)
     tinta = TINTE[1]
-    fh = altezza_facciata(h, None, 6)
-    tetto_e_facciata(t, w, h, fh, tinta)
-    largo, base = w * 8, h * 8
-    t.arco_acuto(largo // 2 - 10, base - 28, 20, 28)
+    faccia = info.get("faccia", "basso")
+    if faccia == "alto":
+        solo_retro(t, w, h, tinta)
+        t.contorno()
+        return t
+    if faccia in ("sinistra", "destra"):
+        x0, larga = facciata_di_lato(t, w, h, faccia, tinta)
+        mezzo = h * 8 // 2
+        t.arco_acuto(x0 + larga // 2 - 8, mezzo, 16, 24)
+        rosone(t, x0 + larga // 2, mezzo - 14, 7)
+    else:
+        fh = altezza_facciata(h, None, 6)
+        tetto_e_facciata(t, w, h, fh, tinta)
+        largo, base = w * 8, h * 8
+        t.arco_acuto(largo // 2 - 10, base - 28, 20, 28)
+        rosone(t, largo // 2, (h - fh) * 8 + 14, 8)
     t.elementi["portale_acuto"] += 1
-    rosone(t, largo // 2, (h - fh) * 8 + 14, 8)
     t.elementi["rosone"] += 1
     t.contorno()
     return t
@@ -485,8 +515,13 @@ def loggia_tiratori(w, h, info):
 
 
 def sant_agostino(w, h, info):
-    """Sant'Agostino: facciata semplice a capanna, portale e occhio."""
+    """Sant'Agostino: facciata semplice a capanna, portale e occhio; se guarda in alto (a ovest, verso
+    il piazzale) se ne vede il retro."""
     t = Tela(w, h)
+    if info.get("faccia", "basso") == "alto":
+        solo_retro(t, w, h, TINTE[2])
+        t.contorno()
+        return t
     fh = altezza_facciata(h, None, 5)
     tetto_e_facciata(t, w, h, fh, TINTE[2])
     largo, base = w * 8, h * 8
@@ -498,8 +533,22 @@ def sant_agostino(w, h, info):
 
 
 def san_pietro(w, h, info):
-    """San Pietro: la facciata dell'abbazia con le arcate cieche e il portale."""
+    """San Pietro: la facciata dell'abbazia con le arcate cieche e il portale, verso la piazza: di
+    fronte in basso o di scorcio a sinistra o a destra."""
     t = Tela(w, h)
+    faccia = info.get("faccia", "basso")
+    if faccia in ("sinistra", "destra"):
+        x0, larga = facciata_di_lato(t, w, h, faccia, TINTE[1])
+        passo = h * 8 // 6
+        for k in range(1, 6):
+            if k == 3:
+                t.arco(x0 + 3, k * passo, larga - 6, passo, LEGNO_SCURO)
+                t.elementi["portale"] += 1
+            else:
+                t.arco(x0 + 5, k * passo + 2, larga - 10, passo - 4, PIETRA_SCURA)
+                t.elementi["arcata_cieca"] += 1
+        t.contorno()
+        return t
     fh = altezza_facciata(h, None, 6)
     tetto_e_facciata(t, w, h, fh, TINTE[1])
     largo, base = w * 8, h * 8
@@ -546,3 +595,104 @@ REQUISITI.update({
     "porta_romana": {"merlatura": 1, "fornice": 1},
 })
 FACCIATA_DI_DEFAULT.update({"duomo": "basso", "sant_agostino": "basso", "san_pietro": "basso"})
+
+
+# --- terzo lotto -------------------------------------------------------------------------------
+
+def san_marziale(w, h, info):
+    """San Marziale (in origine Sant'Andrea): chiesetta romanica, tetto a capanna, campanile a vela e
+    portale."""
+    t = Tela(w, h)
+    fh = altezza_facciata(h, None, 4)
+    tetto_e_facciata(t, w, h, fh, TINTE[0])
+    largo, base = w * 8, h * 8
+    t.conci(largo // 2 - 8, (h - fh) * 8 - 20, 16, 18, TINTE[0])
+    t.arco(largo // 2 - 4, (h - fh) * 8 - 17, 8, 10)
+    t.elementi["campanile_vela"] += 1
+    t.arco(largo // 2 - 6, base - 18, 12, 18, LEGNO_SCURO)
+    t.elementi["portale"] += 1
+    t.contorno()
+    return t
+
+
+def santa_maria_nuova(w, h, info):
+    """Santa Maria Nuova: chiesa semplice, tetto a capanna, portale ad arco e una monofora."""
+    t = Tela(w, h)
+    fh = altezza_facciata(h, None, 4)
+    tetto_e_facciata(t, w, h, fh, TINTE[1])
+    largo, base = w * 8, h * 8
+    t.arco(largo // 2 - 6, base - 18, 12, 18, LEGNO_SCURO)
+    t.elementi["portale"] += 1
+    t.arco(largo // 2 - 2, (h - fh) * 8 + 5, 4, 10, CONTORNO)
+    t.elementi["monofora"] += 1
+    t.contorno()
+    return t
+
+
+def capitano_popolo(w, h, info):
+    """Palazzo del Capitano del Popolo: blocco gotico di pietra, merlato, con le finestre ad arco
+    acuto e il portale."""
+    t = Tela(w, h)
+    tinta = TINTE[1]
+    fh = altezza_facciata(h, None, 4)
+    tetto_e_facciata(t, w, h, fh, tinta)
+    y0 = (h - fh) * 8
+    largo, base = w * 8, h * 8
+    t.merli(0, y0, largo, tinta)
+    t.elementi["merlatura"] += 1
+    for k in range(3):
+        t.arco_acuto(8 + k * (largo - 16) // 3, y0 + 10, 8, 12, CONTORNO)
+        t.elementi["finestra_acuta"] += 1
+    t.arco(largo // 2 - 6, base - 16, 12, 16, LEGNO_SCURO)
+    t.elementi["portale"] += 1
+    t.contorno()
+    return t
+
+
+def ranghiasci(w, h, info):
+    """Palazzo Ranghiasci-Brancaleoni: la facciata neoclassica guarda a sud, cioe' a sinistra: una
+    lunga fila regolare di finestre rettangolari e il portone al centro."""
+    t = Tela(w, h)
+    faccia = info.get("faccia") if info.get("faccia") in ("sinistra", "destra") else "sinistra"
+    x0, larga = facciata_di_lato(t, w, h, faccia, TINTE[2], 2)
+    for y in range(8, h * 8 - 8, 12):
+        t.rett(x0 + 4, y, larga - 8, 7, CONTORNO)
+        t.rett(x0 + 4, y + 7, larga - 8, 1, PIETRA_LUCE)
+        t.elementi["finestra_regolare"] += 1
+    t.rett(x0 + 2, h * 8 // 2 - 8, larga - 4, 16, LEGNO_SCURO)
+    t.elementi["portone"] += 1
+    t.contorno()
+    return t
+
+
+def sant_ambrogio(w, h, info):
+    """Eremo di Sant'Ambrogio: muri di pietra addossati alla roccia della gola, tetto basso, la
+    cappella con la porta."""
+    t = Tela(w, h, PIETRA_SCURA)
+    for y in range(t.h):
+        for x in range(t.w):
+            if (x * 5 + y * 3) % 9 == 0:
+                t.punto(x, y, CONTORNO)
+    fh = max(2, h // 3)
+    t.falde(8, 8, w * 8 - 16, (h - fh) * 8 - 8)
+    t.elementi["roccia"] += 1
+    t.conci(8, (h - fh) * 8, w * 8 - 16, fh * 8, TINTE[1])
+    t.arco(w * 4 - 5, h * 8 - 14, 10, 14, LEGNO_SCURO)
+    t.elementi["porta"] += 1
+    t.contorno()
+    return t
+
+
+PITTORI.update({"san_marziale": san_marziale, "santa_maria_nuova": santa_maria_nuova,
+                "capitano_popolo": capitano_popolo, "ranghiasci": ranghiasci, "sant_ambrogio": sant_ambrogio})
+REQUISITI.update({
+    "san_marziale": {"campanile_vela": 1, "portale": 1},
+    "santa_maria_nuova": {"portale": 1, "monofora": 1},
+    "capitano_popolo": {"merlatura": 1, "finestra_acuta": 3, "portale": 1},
+    "ranghiasci": {"finestra_regolare": 10, "portone": 1},
+    "sant_ambrogio": {"roccia": 1, "porta": 1},
+    # la facciata di Sant'Agostino guarda a ovest, in alto: se ne vede il retro
+    "sant_agostino": {"retro": 1},
+})
+FACCIATA_DI_DEFAULT.update({"san_marziale": "basso", "santa_maria_nuova": "basso", "capitano_popolo": "basso",
+                            "sant_ambrogio": "basso"})
