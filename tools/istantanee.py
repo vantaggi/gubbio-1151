@@ -205,9 +205,13 @@ def schermate(cartella, rom, battaglia=False):
         gdi32.DeleteDC(mdc)
         user32.ReleaseDC(hwnd, hdc)
         raw = buf.raw
-        x0 = (w - 240) // 2
-        righe = [[(raw[(y * w + x) * 4 + 2], raw[(y * w + x) * 4 + 1], raw[(y * w + x) * 4]) for x in range(x0, x0 + 240)]
-                 for y in range(h - 160, h)]
+        # se la finestra e' stata ingrandita a meta' giro, l'immagine GBA e' scalata e centrata sotto la
+        # barra dei menu (alta quanto il client a scala 1 meno 160): si ricampiona al centro di ogni pixel
+        menu = 21
+        s = min(w / 240, (h - menu) / 160)
+        x0, y0 = (w - 240 * s) / 2, menu + (h - menu - 160 * s) / 2
+        righe = [[tuple(raw[(int(y0 + (y + 0.5) * s) * w + int(x0 + (x + 0.5) * s)) * 4 + k] for k in (2, 1, 0))
+                  for x in range(240)] for y in range(160)]
         png(percorso, 240, 160, righe)
 
     nomi = [] if battaglia else [a["id"] for a in aree_finali()]
@@ -227,6 +231,11 @@ def schermate(cartella, rom, battaglia=False):
             time.sleep(0.1)
         if not hwnd:
             raise SystemExit("[istantanee] la finestra di mGBA non si apre")
+        # se mGBA ricorda la finestra massimizzata (l'ha usata cosi' chi gioca), PrintWindow riprende
+        # l'immagine ingrandita: la finestra torna normale, a scala 1 (niente tasti, solo ShowWindow)
+        if user32.IsZoomed(hwnd):
+            user32.ShowWindow(hwnd, 9)
+            time.sleep(0.5)
         letto, inizio, finito = 0, time.time(), False
         while time.time() - inizio < 300 and not finito:
             time.sleep(0.05)

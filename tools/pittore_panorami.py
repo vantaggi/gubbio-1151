@@ -25,14 +25,17 @@ PALETTE_CIELO = [("neutri", 0), ("cielo e acqua", 0), ("cielo e acqua", 1), ("ci
                  ("cielo e acqua", 4), ("oro e bronzo", 1), ("oro e bronzo", 2), ("oro e bronzo", 3),
                  ("vermiglio comunale", 1), ("vermiglio comunale", 3), ("neutri", 0), ("neutri", 1), ("neutri", 2),
                  ("neutri", 4), ("cotto e coppi", 4)]
-# panorama: 0 trasparente, poi contorno, pietra, cotto, vermiglio, verde, oro (fuochi, finestre accese)
+# panorama: 0 trasparente, poi contorno, pietra, cotto, vermiglio, verde, l'alone e l'oro dei fuochi.
+# Le luci non si trasformano: un colore segnato ACCESO resta col tono del giorno anche di notte (i fuochi,
+# le finestre accese), cosi' e' il punto di luce della scena. Solo l'alone e l'oro dei panorami lo sono.
+ACCESO = "acceso"
 PALETTE_PANORAMA = [("neutri", 0), ("neutri", 0), ("pietra calcarea", 1), ("pietra calcarea", 2), ("pietra calcarea", 3),
                     ("pietra calcarea", 4), ("pietra calcarea", 5), ("cotto e coppi", 1), ("cotto e coppi", 2),
                     ("cotto e coppi", 3), ("vermiglio comunale", 2), ("verde dei monti", 0), ("verde dei monti", 1),
-                    ("verde dei monti", 2), ("verde dei monti", 3), ("oro e bronzo", 3)]
+                    ("verde dei monti", 2), ("cotto e coppi", 4, ACCESO), ("oro e bronzo", 3, ACCESO)]
 CONTORNO, PIETRA_S, PIETRA, PIETRA_M, PIETRA_C, PIETRA_L = 1, 2, 3, 4, 5, 6
 COTTO_S, COTTO, COTTO_C, VERMIGLIO = 7, 8, 9, 10
-VERDE_S, VERDE_M, VERDE, VERDE_C, ORO = 11, 12, 13, 14, 15
+VERDE_S, VERDE_M, VERDE, ALONE, ORO = 11, 12, 13, 14, 15
 
 
 # --- cielo --------------------------------------------------------------------------------------------
@@ -197,13 +200,16 @@ def gubbio(momento):
 
 # --- la conca col campo nemico ------------------------------------------------------------------------
 def fuoco(t, x, y):
-    """Un fuoco del campo: il cuore 2x2 oro caldo, l'alone di un pixel cotto piu' scuro. Il tremolio lo
-    fa la scena alternando il colore ORO (src/regia.cpp)."""
-    for dx in range(-1, 3):
-        for dy in range(-1, 3):
-            t.punto(x + dx, y + dy, COTTO_C)
-    t.rett(x, y, 2, 2, ORO)
-
+    """Un fuoco del campo, il punto di luce della notte: il cuore 3x3 oro caldo, l'alone acceso di un
+    pixel e un bagliore vermiglio a scacchiera intorno. Il tremolio lo fa la scena alternando il colore
+    ORO (src/regia.cpp)."""
+    for dx in range(-3, 6):
+        for dy in range(-3, 6):
+            if (dx + dy) % 2 == 0 and ((dx - 1) / 4.5) ** 2 + ((dy - 1) / 4.5) ** 2 <= 1:
+                t.punto(x + dx, y + dy, VERMIGLIO)
+    t.rett(x - 1, y - 1, 5, 5, ALONE)
+    t.rett(x, y, 3, 3, ORO)
+    t.punto(x + 1, y - 2, ORO)
 
 
 def campo(momento):
@@ -224,46 +230,188 @@ def campo(momento):
     return t, PALETTE_PANORAMA, notte
 
 
-PITTORI = {"cielo": cielo, "monte": monte, "gubbio": gubbio, "campo": campo}
+def fuoco_della_fede(t, x, y):
+    """Il fuoco acceso in cima alla torre dei Consoli: una fiamma alta 8 px col cuore oro 3x5, l'alone
+    cotto e un bagliore vermiglio largo; si legge da lontano e trema come i fuochi del campo."""
+    for dy in range(-12, 6):
+        for dx in range(-9, 10):
+            if (dx + dy) % 2 == 0 and (dx / 9) ** 2 + (dy / 10) ** 2 <= 1:
+                t.punto(x + dx, y + dy, VERMIGLIO)
+    t.ellisse(x + 0.5, y - 1, 4, 6, ALONE)
+    t.rett(x - 1, y - 4, 3, 5, ORO)
+    t.rett(x, y - 7, 1, 3, ORO)
+    t.rett(x - 3, y + 2, 7, 1, CONTORNO)          # il braciere
+
+
+def gubbio_fede(momento):
+    """La citta' di notte quando 'sorse il fuoco della Fede': il fuoco al posto del drappo in cima alla
+    torre dei Consoli."""
+    t, palette, _ = gubbio("notte")
+    for nome, mx, base, alto, _ in monumenti_dalla_valle():
+        if nome == "consoli":
+            cima = min(base, QUADRO - 8) - alto
+            t.rett(mx - 4, cima - 10, 8, 10, 0)
+            fuoco_della_fede(t, mx, cima - 3)
+    return t, palette, True
+
+
+PITTORI = {"cielo": cielo, "monte": monte, "gubbio": gubbio, "campo": campo, "gubbio_fede": gubbio_fede}
 
 
 # --- la vetrata della Basilica ------------------------------------------------------------------------
-PALETTE_VETRATA = [("neutri", 0), ("neutri", 0), ("neutri", 1), ("pietra calcarea", 2), ("pietra calcarea", 4),
-                   ("cielo e acqua", 3), ("cielo e acqua", 4), ("neutri", 4), ("vermiglio comunale", 1),
-                   ("vermiglio comunale", 2), ("oro e bronzo", 2), ("oro e bronzo", 3), ("verde dei monti", 2),
-                   ("cielo e acqua", 1), ("cotto e coppi", 2), ("pietra calcarea", 1)]
+PALETTE_VETRATA = [("neutri", 0), ("neutri", 0), ("pietra calcarea", 0), ("pietra calcarea", 1), ("pietra calcarea", 3),
+                   ("pietra calcarea", 5), ("cielo e acqua", 3), ("cielo e acqua", 4), ("neutri", 4),
+                   ("vermiglio comunale", 2), ("oro e bronzo", 3), ("verde dei monti", 2), ("cielo e acqua", 1),
+                   ("legno e cuoio", 2), ("pelle", 2), ("neutri", 2)]
+V_BUIO, V_PILASTRO, V_SPIGOLO, V_PIETRA, V_PIETRA_L = 1, 2, 3, 4, 5
+V_CHIARO, V_CHIARO_L, V_BIANCO, V_ROSSO, V_ORO, V_VERDE, V_BLU, V_LEGNO, V_PELLE, V_GRIGIO = range(6, 16)
+VETRI_CHIARI = {V_CHIARO, V_CHIARO_L}
+# la bifora, centrata nel quadro (la mappa si vede da x=0 a 240): due lancette e un oculo sotto un arco
+# acuto, l'imposta degli archi a y=65 (arco grande) e 70 (lancette), il davanzale a y=100
+V_CENTRO, V_LARGA, V_SOGLIA = 120, 80, 100
+LANCETTE = ((82, 118), (122, 158))
+OCULO = (120, 34, 9)
+
+
+def ogiva(x, y, x0, x1, imposta, raggio):
+    """Dentro un arco acuto da x0 a x1 con l'imposta a y=imposta (sotto, il rettangolo fino al davanzale)?"""
+    if not x0 <= x < x1 or y >= V_SOGLIA:
+        return False
+    if y >= imposta:
+        return True
+    return (x + 0.5 - (x0 + raggio)) ** 2 + (y + 0.5 - imposta) ** 2 <= raggio ** 2 and \
+        (x + 0.5 - (x1 - raggio)) ** 2 + (y + 0.5 - imposta) ** 2 <= raggio ** 2
+
+
+def nel_vetro(x, y):
+    if any(ogiva(x, y, a, b, 70, 27) for a, b in LANCETTE):
+        return True
+    cx, cy, r = OCULO
+    return (x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 <= r * r
+
+
+def nella_finestra(x, y, bordo=0):
+    return ogiva(x, y, V_CENTRO - V_LARGA // 2 - bordo, V_CENTRO + V_LARGA // 2 + bordo, 65, 60 + bordo)
+
+
+def figure_della_storia(t):
+    """La vetrata come la vede chi la guarda oggi: a sinistra i soldati in rotta e uno stendardo
+    spezzato, a destra il vescovo con le braccia aperte, nell'oculo la luce. Figure semplici a pezzi di
+    vetro: il colore cambia, il piombo segue il bordo."""
+    for y in range(0, V_SOGLIA):
+        for x in range(V_CENTRO - V_LARGA // 2, V_CENTRO + V_LARGA // 2):
+            if nel_vetro(x, y):
+                t.punto(x, y, V_BLU if (x // 6 + y // 8) % 2 else V_CHIARO)
+    # la terra verde in fondo alle lancette
+    for a, b in LANCETTE:
+        t.rett(a, 90, b - a, 10, V_VERDE)
+    # sinistra: lo stendardo spezzato (asta di legno rotta, drappo rosso a terra) e tre soldati in fuga
+    t.linea(86, 88, 96, 58, V_LEGNO, 2)
+    t.linea(97, 56, 104, 50, V_LEGNO, 2)
+    t.trapezio(92, 74, 86, 12, 4, V_ROSSO)
+    for k, (sx, sy) in enumerate(((100, 78), (108, 72), (91, 64))):
+        t.rett(sx, sy, 5, 9, V_ROSSO if k % 2 == 0 else V_LEGNO)    # il corpo, chino nella corsa
+        t.rett(sx + 1, sy - 4, 4, 4, V_GRIGIO)                      # l'elmo
+        t.linea(sx + 5, sy + 2, sx + 9, sy + 6, V_GRIGIO)           # la lancia abbassata
+        t.rett(sx, sy + 9, 2, 4, V_LEGNO)
+        t.rett(sx + 3, sy + 9, 2, 3, V_LEGNO)
+    # destra: il vescovo con le braccia aperte, la mitra d'oro e il pastorale
+    t.rett(136, 64, 9, 26, V_BIANCO)
+    t.trapezio(140, 70, 90, 9, 14, V_BIANCO)
+    t.rett(124, 66, 12, 4, V_BIANCO)
+    t.rett(145, 66, 12, 4, V_BIANCO)
+    t.rett(124, 64, 3, 3, V_PELLE)
+    t.rett(154, 64, 3, 3, V_PELLE)
+    t.rett(137, 56, 7, 7, V_PELLE)
+    t.trapezio(140, 46, 56, 2, 8, V_ORO)
+    t.rett(152, 48, 2, 42, V_ORO)
+    t.rett(150, 46, 4, 3, V_ORO)
+    t.rett(138, 72, 5, 14, V_ORO)                               # la stola
+    # l'oculo: la luce
+    cx, cy, r = OCULO
+    t.ellisse(cx, cy, r, r, V_ORO)
+    t.ellisse(cx, cy, r - 4, r - 4, V_BIANCO)
+
+
+def vetrata_disegno(vetri):
+    """La bifora gotica nell'interno buio della Basilica: i pilastri e l'arco appena accennati, la luce
+    che entra di sbieco, la cornice di pietra, i piombi neri. vetri: "chiari" (il prologo), "uno" (un
+    solo vetro ha preso colore, l'epilogo), "storia" (la vetrata come la si vede oggi)."""
+    t = Tela(W, H, V_BUIO)
+    # i pilastri ai lati e l'arco della navata, lo spigolo verso la finestra preso dalla luce
+    for px0, spigolo in ((14, 42), (196, 196)):
+        t.rett(px0, 0, 30, QUADRO, V_PILASTRO)
+        t.rett(spigolo, 0, 2, QUADRO, V_SPIGOLO)
+    for x in range(14, 226):
+        y = int(14 - 14 * (1 - ((x - 120) / 106) ** 2) ** 0.5) if abs(x - 120) < 106 else 14
+        t.rett(x, y, 1, 3, V_PILASTRO)
+    # la luce che entra: fasci a scacchiera che scendono a destra dalla finestra fino al pavimento
+    for y in range(V_SOGLIA - 30, QUADRO):
+        for x in range(V_CENTRO - 30, 196):
+            fascio = (x - V_CENTRO - (y - V_SOGLIA + 30) * 1.1) % 26 < 8
+            if fascio and not nella_finestra(x, y, 5) and (x + y) % 2 == 0:
+                t.punto(x, y, V_PILASTRO)
+    # la cornice di pietra (4 px, il bordo in alto a sinistra in luce) e il timpano fra le lancette
+    for y in range(QUADRO):
+        for x in range(V_CENTRO - V_LARGA, V_CENTRO + V_LARGA):
+            if nella_finestra(x, y, 4) and not nella_finestra(x, y, 0):
+                t.punto(x, y, V_PIETRA_L if x < V_CENTRO and not nella_finestra(x + 1, y + 1, 4) else V_PIETRA)
+            elif nella_finestra(x, y):
+                t.punto(x, y, V_PIETRA)
+    t.rett(V_CENTRO - V_LARGA // 2 - 6, V_SOGLIA, V_LARGA + 12, 3, V_PIETRA_L)
+    t.rett(V_CENTRO - V_LARGA // 2 - 6, V_SOGLIA + 3, V_LARGA + 12, 1, V_PILASTRO)
+    # i vetri
+    if vetri == "storia":
+        figure_della_storia(t)
+    else:
+        for y in range(V_SOGLIA):
+            for x in range(V_CENTRO - V_LARGA // 2, V_CENTRO + V_LARGA // 2):
+                if nel_vetro(x, y):
+                    luce = (x - 82) + (y - 30) // 2 < 40
+                    t.punto(x, y, V_CHIARO_L if luce and (x + y) % 3 else V_CHIARO)
+        if vetri == "uno":
+            # il vetro del Bottaccione, in basso nella lancetta destra: il gigante di ferro sopra gli
+            # archi dell'acquedotto, sotto tre uomini coi ceri
+            vx, vy, vw, vh = 124, 74, 32, 26
+            t.rett(vx, vy, vw, vh, V_BLU)
+            for k in range(3):
+                t.rett(vx + 2 + k * 10, vy + vh - 9, 6, 7, V_LEGNO)
+            t.rett(vx + 2, vy + vh - 13, vw - 4, 4, V_PIETRA)
+            t.rett(vx + vw // 2 - 3, vy + 2, 6, 9, V_GRIGIO)
+            for k in range(3):
+                t.rett(vx + 4 + k * 10, vy + vh - 4, 3, 4, V_ROSSO)
+                t.punto(vx + 5 + k * 10, vy + vh - 5, V_ORO)
+            t.rett(vx, vy + vh - 2, vw, 2, V_VERDE)
+    # i piombi: lungo i bordi fra un colore e l'altro, piu' le traverse di ferro ogni 12 px e, nei vetri
+    # chiari, i montanti ogni 9 px
+    vetro = [[nel_vetro(x, y) for x in range(W)] for y in range(QUADRO)]
+    colore = [r[:] for r in t.px[:QUADRO]]
+    for y in range(QUADRO - 1):
+        for x in range(W - 1):
+            if not vetro[y][x]:
+                continue
+            bordo = any(vetro[v][u] and colore[v][u] != colore[y][x] and not {colore[v][u], colore[y][x]} <= VETRI_CHIARI
+                        for u, v in ((x + 1, y), (x, y + 1)))
+            if bordo or y % 12 == 0 or (vetri != "storia" and (x - 82) % 9 == 0 and y > 46):
+                t.punto(x, y, V_BUIO)
+    # il piombo di contorno: il primo pixel di pietra intorno a ogni vetro
+    for y in range(1, QUADRO - 1):
+        for x in range(1, W - 1):
+            if not vetro[y][x] and nella_finestra(x, y) and any(vetro[v][u] for u, v in
+                                                               ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1))):
+                t.punto(x, y, V_BUIO)
+    return t
 
 
 def vetrata(momento):
-    """La vetrata grande della Basilica: il telaio di pietra, i piombi neri, i vetri chiari dove la luce
-    entra di sbieco. Nel prologo (giorno) sono tutti chiari; all'epilogo (alba) uno solo ha preso
-    colore e figure: il gigante di ferro sopra gli archi dell'acquedotto, sotto tre uomini coi ceri."""
-    t = Tela(W, H, 3)
-    x0, larga, y0, alta = 168, 176, 4, 104
-    t.rett(x0 - 6, y0, larga + 12, alta + 4, 4)
-    t.ellisse(x0 + larga // 2, y0 + 20, larga // 2, 24, 4)
-    for y in range(y0 + 4, y0 + alta):
-        for x in range(x0, x0 + larga):
-            luce = (x - x0) + (y - y0) // 2 < 70
-            t.punto(x, y, 7 if luce and (x + y) % 3 else 6 if (x * 3 + y) % 5 else 5)
-    # i piombi: la griglia dei vetri, sei colonne per quattro file, e i tondi in cima
-    for x in range(x0, x0 + larga + 1, larga // 6):
-        t.rett(x, y0 + 4, 2, alta - 4, 1)
-    for y in range(y0 + 4, y0 + alta + 1, (alta - 4) // 4):
-        t.rett(x0, y, larga, 2, 1)
-    if momento == "alba":
-        # il vetro del Bottaccione: il secondo della terza fila
-        vx, vy = x0 + larga // 6 + 2, y0 + 4 + 2 * ((alta - 4) // 4) + 2
-        vw, vh = larga // 6 - 2, (alta - 4) // 4 - 2
-        t.rett(vx, vy, vw, vh, 13)
-        for k in range(3):
-            t.rett(vx + 2 + k * 8, vy + vh - 8, 4, 6, 14)
-        t.rett(vx + 4, vy + vh - 14, vw - 8, 3, 3)
-        t.rett(vx + vw // 2 - 3, vy + 2, 6, 8, 2)
-        for k in range(3):
-            t.rett(vx + 3 + k * 9, vy + vh - 4, 3, 4, 9)
-            t.punto(vx + 4 + k * 9, vy + vh - 5, 11)
-    return t, PALETTE_VETRATA, False
+    """La vetrata della Basilica: nel prologo (giorno) i vetri tutti chiari, all'epilogo (alba) uno solo
+    ha preso colore."""
+    return vetrata_disegno("uno" if momento == "alba" else "chiari"), PALETTE_VETRATA, False
+
+
+def vetrata_storia(momento):
+    """La vetrata a colori, come la vede chi la guarda oggi (la prima inquadratura del prologo)."""
+    return vetrata_disegno("storia"), PALETTE_VETRATA, False
 
 
 # --- la pergamena dell'Umbria con gli stendardi -------------------------------------------------------
@@ -315,4 +463,4 @@ def pergamena(momento):
     return t, PALETTE_PERGAMENA, False
 
 
-PITTORI.update({"vetrata": vetrata, "pergamena": pergamena})
+PITTORI.update({"vetrata": vetrata, "vetrata_storia": vetrata_storia, "pergamena": pergamena})
