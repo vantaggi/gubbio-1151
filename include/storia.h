@@ -319,6 +319,7 @@ struct Npc
     uint8_t ty;
     uint16_t prima_frase[3];     // per fase (ULTIMATUM, DIGIUNO, NOTTE); 0xFFFF: non c'e'
     uint8_t frasi[3];
+    uint8_t figura;               // FIGURA_NPC (tools/figure_npc.py)
 };
 
 inline constexpr int FRASI_NPC = 40;
@@ -367,19 +368,54 @@ inline constexpr Battuta FRASE_NPC[FRASI_NPC] = {
 
 inline constexpr int NPC = 13;
 inline constexpr Npc NPC_AMBIENTE[NPC] = {
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 18, 30, { 0xFFFF, 0, 1 }, { 0, 1, 1 } },  // Il console Guido
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 26, 30, { 2, 3, 6 }, { 1, 3, 1 } },  // Berto il Tagliapietre
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 18, 34, { 7, 8, 9 }, { 1, 1, 1 } },  // Popolana
-    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 10, 28, { 10, 11, 12 }, { 1, 1, 1 } },  // Merciaio
-    { int8_t(mondo::AreaId::LARGO_BARGELLO), 16, 14, { 13, 14, 16 }, { 1, 2, 1 } },  // Mastro Tano
-    { int8_t(mondo::AreaId::SAN_MARTINO), 35, 28, { 0xFFFF, 17, 18 }, { 0, 1, 1 } },  // Cecco il Balestriere
-    { int8_t(mondo::AreaId::SAN_MARTINO), 39, 28, { 19, 20, 21 }, { 1, 1, 1 } },  // Lavandaia
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 64, 50, { 22, 23, 24 }, { 1, 1, 1 } },  // Venditore delle Logge dei Tiratori
-    { int8_t(mondo::AreaId::SAN_PIETRO), 22, 18, { 25, 26, 27 }, { 1, 1, 1 } },  // Lucia la Tessitrice
-    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 10, 28, { 28, 30, 31 }, { 2, 1, 1 } },  // Vecchio sulla scalinata
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 29, 24, { 32, 33, 34 }, { 1, 1, 1 } },  // Frate agostiniano
-    { int8_t(mondo::AreaId::SANT_ANDREA), 42, 22, { 35, 36, 37 }, { 1, 1, 1 } },  // Sentinella di Porta Romana
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 27, 28, { 38, 0xFFFF, 39 }, { 1, 0, 1 } },  // Canonico
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 18, 30, { 0xFFFF, 0, 1 }, { 0, 1, 1 }, 3 },  // Il console Guido
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 26, 30, { 2, 3, 6 }, { 1, 3, 1 }, 4 },  // Berto il Tagliapietre
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 18, 34, { 7, 8, 9 }, { 1, 1, 1 }, 0 },  // Popolana
+    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 10, 28, { 10, 11, 12 }, { 1, 1, 1 }, 3 },  // Merciaio
+    { int8_t(mondo::AreaId::LARGO_BARGELLO), 16, 14, { 13, 14, 16 }, { 1, 2, 1 }, 4 },  // Mastro Tano
+    { int8_t(mondo::AreaId::SAN_MARTINO), 35, 28, { 0xFFFF, 17, 18 }, { 0, 1, 1 }, 2 },  // Cecco il Balestriere
+    { int8_t(mondo::AreaId::SAN_MARTINO), 39, 28, { 19, 20, 21 }, { 1, 1, 1 }, 0 },  // Lavandaia
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 64, 50, { 22, 23, 24 }, { 1, 1, 1 }, 3 },  // Venditore delle Logge dei Tiratori
+    { int8_t(mondo::AreaId::SAN_PIETRO), 22, 18, { 25, 26, 27 }, { 1, 1, 1 }, 0 },  // Lucia la Tessitrice
+    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 10, 28, { 28, 30, 31 }, { 2, 1, 1 }, 4 },  // Vecchio sulla scalinata
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 29, 24, { 32, 33, 34 }, { 1, 1, 1 }, 1 },  // Frate agostiniano
+    { int8_t(mondo::AreaId::SANT_ANDREA), 42, 22, { 35, 36, 37 }, { 1, 1, 1 }, 2 },  // Sentinella di Porta Romana
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 27, 28, { 38, 0xFFFF, 39 }, { 1, 0, 1 }, 1 },  // Canonico
+};
+
+// Le figure degli NPC, 16x16 (4 tile in mappatura 1D) con la palette dei popolani: popolana, frate, soldato, mercante, anziano.
+inline constexpr int FIGURE_NPC = 5;
+inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][4 * 8] = {
+    {  // popolana
+        0x11000000, 0x66100000, 0x66610000, 0x33610000, 0x31610000, 0x33610000, 0x33100000, 0x44410000,
+        0x00000011, 0x00000166, 0x00001666, 0x00001633, 0x00001631, 0x00001633, 0x00000133, 0x00001444,
+        0x66441000, 0x66441000, 0x66441000, 0x66441000, 0x44441000, 0x44444100, 0x11111000, 0x00000000,
+        0x00014466, 0x00014466, 0x00014466, 0x00014466, 0x00014444, 0x00144444, 0x00011111, 0x00000000,
+    },
+    {  // frate
+        0x00000000, 0xAA100000, 0x3AA10000, 0x33AA1000, 0x313A1000, 0x333A1000, 0x33A10000, 0xAAAA1000,
+        0x00000000, 0x000001AA, 0x00001AA3, 0x0001AA33, 0x0001A313, 0x0001A333, 0x00001A33, 0x0001AAAA,
+        0xAAABA100, 0xAAABA100, 0x6666A100, 0x6AAA1000, 0x6AAA1000, 0xAAAA1000, 0x00210000, 0x00110000,
+        0x001ABAAA, 0x001ABAAA, 0x001A6666, 0x0001AAAA, 0x0001AAAA, 0x0001AAAA, 0x00001200, 0x00001100,
+    },
+    {  // soldato
+        0x00000000, 0x11000000, 0xDDD10000, 0x77DD1000, 0x33310000, 0x31310000, 0x33310000, 0x33100000,
+        0x00D00000, 0x00D00011, 0x00B01DDD, 0x00B1DD77, 0x00B01333, 0x00B01313, 0x00B01333, 0x00B00133,
+        0x44410000, 0x64441000, 0x66641000, 0x64441000, 0x44410000, 0xCCC10000, 0x01C10000, 0x00110000,
+        0x00B01444, 0x00B14446, 0x00B14666, 0x00B14446, 0x00B01444, 0x00B01CCC, 0x00B01C10, 0x00B01100,
+    },
+    {  // mercante
+        0x55000000, 0x55500000, 0x55510000, 0x33310000, 0x31310000, 0x33310000, 0x33100000, 0xBBB10000,
+        0x00000055, 0x00000555, 0x00001555, 0x00001333, 0x00001313, 0x00001333, 0x00000133, 0x00001BBB,
+        0xBBBB1000, 0xBBBB1000, 0xEEEE1000, 0xBBBB1000, 0xBBBB1000, 0xBBBBB100, 0x11111100, 0x00000000,
+        0x0001BBBB, 0x0001BBBB, 0x0001EEEE, 0x00014EBB, 0x00014BBB, 0x001BBBBB, 0x00111111, 0x00000000,
+    },
+    {  // anziano
+        0x00000000, 0x11000000, 0xDD100000, 0x33D10000, 0x13D10000, 0x36D10000, 0x66100000, 0x68810000,
+        0x00000000, 0x00000011, 0x000001DD, 0x00001D33, 0x00001D33, 0x00001D63, 0x00000166, 0x00001886,
+        0x88881A00, 0x88881300, 0x88881A00, 0x88881A00, 0x88810A00, 0x88810A00, 0x0A100A00, 0x01100A00,
+        0x00188888, 0x00188888, 0x00188888, 0x00188888, 0x00188888, 0x00018888, 0x00001A10, 0x00001110,
+    },
 };
 
 }

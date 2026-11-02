@@ -127,8 +127,8 @@ namespace
         return bn::sprite_palette_ptr::create(bn::sprite_palette_item(bn::span<const bn::color>(c), bn::bpp_mode::BPP_4));
     }
 
-    // Un NPC con la figura del giocatore e i colori dei popolani (le vesti chiare).
-    bn::sprite_ptr crea_npc(const bn::sprite_palette_ptr& palette)
+    // Un NPC con la figura del suo mestiere (FIGURA_NPC) e i colori dei popolani.
+    bn::sprite_ptr crea_npc(const bn::sprite_palette_ptr& palette, int figura)
     {
         bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(4, bn::bpp_mode::BPP_4);
         bn::span<bn::tile> vram = *tiles.vram();
@@ -137,7 +137,7 @@ namespace
         {
             for(int r = 0; r < 8; ++r)
             {
-                vram[t].data[r] = GUBBIO_VOCE(mondo::TILE_GIOCATORE, t * 8 + r);
+                vram[t].data[r] = GUBBIO_VOCE(GUBBIO_VOCE(FIGURA_NPC, figura), t * 8 + r);
             }
         }
 
@@ -320,7 +320,7 @@ void Storia::_prepara_npc(const Esplorazione& esplorazione)
 
         if(n.area == _area && GUBBIO_VOCE(n.frasi, fase) > 0)
         {
-            bn::sprite_ptr sprite = crea_npc(palette);
+            bn::sprite_ptr sprite = crea_npc(palette, n.figura);
             esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(n.tx), mondo::piedi_y(n.ty), 14);
             _npc.push_back(bn::move(sprite));
             _indici.push_back(i);
@@ -439,6 +439,42 @@ void prova_storia(const bn::sprite_palette_ptr& palette_testo)
 
 namespace gubbio
 {
+
+void prova_figure_npc(Esplorazione& esplorazione)
+{
+    esplorazione.entra(mondo::AreaId::PIAZZA_GRANDE, 0);
+    bn::sprite_palette_ptr palette = palette_npc();
+    bn::vector<bn::sprite_ptr, FIGURE_NPC> figure;
+    const mondo::Esploratore& e = esplorazione.esploratore();
+
+    for(int f = 0; f < FIGURE_NPC; ++f)
+    {
+        bn::sprite_ptr sprite = crea_npc(palette, f);
+        esplorazione.colloca_sulla_mappa(sprite, e.x + (f - 2) * 20, e.y - 24, 14);
+        figure.push_back(bn::move(sprite));
+    }
+
+    for(int f = 0; f < 90; ++f)
+    {
+        esplorazione.aggiorna();
+        bn::core::update();
+    }
+
+    BN_LOG("Istantanea figure_npc");
+
+    for(int f = 0; f < 60; ++f)
+    {
+        esplorazione.aggiorna();
+        bn::core::update();
+    }
+
+    BN_LOG("Istantanee finite");
+
+    while(true)
+    {
+        bn::core::update();
+    }
+}
 
 void prova_prologo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo)
 {
