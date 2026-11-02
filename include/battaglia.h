@@ -39,6 +39,8 @@ enum class EventKind : uint8_t
     COUNT,
 };
 
+inline constexpr uint8_t TUTTI_PRESENTI = 0b111;
+
 // I tipi che il pilota puo' emettere: tutti tranne CURA e PURIFICA (i consumabili li usa solo il
 // giocatore). E' la copertura che prova_battaglia e il mirror controllano.
 inline constexpr uint32_t TIPI_DEL_PILOTA = (1u << int(EventKind::CURA)) - 1;
@@ -252,8 +254,10 @@ public:
     // Il pilota debole sceglie male apposta (solo l'Attacco): serve a mostrare che si puo' perdere.
     // 'eroi': le statistiche dei tre Santi al loro livello (include/progressione.h); senza, quelle
     // di base del livello 1, le stesse del mirror Python.
+    // 'presenti': un bit per Santo nel gruppo (la storia: Giorgio dall'ultimatum, Antonio dal Teatro);
+    // chi non c'e' parte a 0 PV e non agisce mai.
     constexpr void ricomincia(int incontro, uint32_t seme, bool pilota_debole = false,
-                              const Statistiche* eroi = nullptr)
+                              const Statistiche* eroi = nullptr, uint8_t presenti = TUTTI_PRESENTI)
     {
         _caso = Caso(seme);
         _pilota_debole = pilota_debole;
@@ -266,6 +270,12 @@ public:
         {
             _eroi[e] = da_statistiche(eroi ? eroi[e] : STATISTICHE_EROI[e], false);
             _eroi[e].fervore = (_eroi[e].fervore_max * FERVORE_INIZIALE[e]) / 100;
+
+            if(! ((presenti >> e) & 1))
+            {
+                _eroi[e].pv = 0;
+                _eroi[e].fervore = 0;
+            }
         }
 
         const Incontro& i = INCONTRO[incontro];

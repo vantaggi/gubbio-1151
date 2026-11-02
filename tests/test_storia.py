@@ -162,9 +162,24 @@ class Tabelle(unittest.TestCase):
         log = open(os.path.join(RADICE, "tests", "dati", "storia_mgba.txt"), encoding="utf-8").read()
         self.assertNotEqual(scene_del_log(log.replace("Scena A1-06\n", "")), sorted(s["codice"] for s in SCENE))
 
+    def test_il_prologo_giocabile_sul_gba(self):
+        """La ROM GUBBIO_AVVIO=9: l'ultimatum, la postierla, la Pattuglia che compare al Teatro solo ora,
+        la battaglia (col pilota) che salva Antonio, il gruppo di tre, la Pattuglia che sparisce."""
+        log = open(os.path.join(RADICE, "tests", "dati", "prologo_mgba.txt"), encoding="utf-8").read()
+        self.assertEqual(re.findall(r"^Scena (\S+)$", log, re.M), ["P-00", "P-01", "P-02", "A1-01", "A1-03", "A1-04"])
+        self.assertIn("Prologo: Giorgio nel gruppo si, Pattuglia sulla mappa si, Antonio salvato si, gruppo 7, "
+                      "Pattuglia sulla mappa dopo sparita", log)
+
+    def test_negativa_prologo_senza_antonio(self):
+        log = open(os.path.join(RADICE, "tests", "dati", "prologo_mgba.txt"), encoding="utf-8").read()
+        self.assertNotIn("Prologo: Giorgio nel gruppo si, Pattuglia sulla mappa si, Antonio salvato si",
+                         log.replace("Antonio salvato si", "Antonio salvato NO"))
+
     def test_prove_in_cpp(self):
         autotest = open(os.path.join(RADICE, "src", "autotest_storia.cpp"), encoding="utf-8").read()
-        for prova in ("tutta_la_storia()", "visitate_con_la_tabella_guasta() < SCENE", "fasi()"):
+        for prova in ("tutta_la_storia()", "visitate_con_la_tabella_guasta() < SCENE", "fasi()",
+                      "pattuglia_quando_serve()", "gruppo_della_storia()", "! agisce(0b001, battaglia::GIORGIO)",
+                      "agisce(0b111, battaglia::GIORGIO)"):
             self.assertIn("static_assert(" + prova, autotest)
 
 
