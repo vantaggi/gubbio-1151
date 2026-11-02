@@ -171,31 +171,31 @@ private:
 // La scelta del bersaglio nel menu: su chi punta un comando, chi si puo' scegliere, da chi si parte.
 enum class Puntamento : uint8_t
 {
-    NESSUNA,        // il comando non sceglie (Bastione su se stesso, Carica, la Suprema su tutti)
-    NEMICI,
-    ALLEATI,        // il Muro della Fede
+    NESSUNO,        // il comando non sceglie (Bastione su se stesso, Carica, la Suprema su tutti)
+    NEMICO,
+    ALLEATO,        // il Muro della Fede
 };
 
 [[nodiscard]] constexpr Puntamento mira_del_comando(const Comando& c)
 {
     if(c.tipo != TipoComando::USA_ABILITA)
     {
-        return Puntamento::NESSUNA;
+        return Puntamento::NESSUNO;
     }
 
     const Abilita& a = ABILITA[int(c.abilita)];
 
     if(a.bersaglio == Bersaglio::NEMICO)
     {
-        return Puntamento::NEMICI;
+        return Puntamento::NEMICO;
     }
 
-    return a.effetto == Effetto::MURO_DELLA_FEDE ? Puntamento::ALLEATI : Puntamento::NESSUNA;
+    return a.effetto == Effetto::MURO_DELLA_FEDE ? Puntamento::ALLEATO : Puntamento::NESSUNO;
 }
 
 [[nodiscard]] constexpr bool sceglibile(const Battaglia& b, Puntamento m, int i)
 {
-    return m == Puntamento::NEMICI ? i >= 0 && i < NEMICI_MAX && b.nemico(i).vivo() :
+    return m == Puntamento::NEMICO ? i >= 0 && i < NEMICI_MAX && b.nemico(i).vivo() :
                                i >= 0 && i < EROI && b.eroe(i).vivo();
 }
 
@@ -205,14 +205,14 @@ enum class Puntamento : uint8_t
 {
     int scelto = -1;
 
-    if(m == Puntamento::NEMICI)
+    if(m == Puntamento::NEMICO)
     {
         for(int i = 0; i < NEMICI_MAX && scelto < 0; ++i)
         {
             scelto = sceglibile(b, m, i) ? i : -1;
         }
     }
-    else if(m == Puntamento::ALLEATI)
+    else if(m == Puntamento::ALLEATO)
     {
         for(int e = 0; e < EROI; ++e)
         {
@@ -231,7 +231,7 @@ enum class Puntamento : uint8_t
 // Il bersaglio dopo 'da' nel verso 'passo' (+1 o -1), saltando chi e' caduto; da' 'da' se non c'e' altri.
 [[nodiscard]] constexpr int prossimo_bersaglio(const Battaglia& b, Puntamento m, int da, int passo)
 {
-    int quanti = m == Puntamento::NEMICI ? NEMICI_MAX : EROI;
+    int quanti = m == Puntamento::NEMICO ? NEMICI_MAX : EROI;
 
     for(int k = 1; k <= quanti; ++k)
     {

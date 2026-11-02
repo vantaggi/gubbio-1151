@@ -280,7 +280,7 @@ namespace
                 {
                     mostra_menu(UBALDO, TestoId::BATT_GIUDIZIO);
                     // la freccia del bersaglio sul nemico predefinito, come la vedrebbe il giocatore
-                    int s = slot_vista(true, bersaglio_predefinito(g_scena, Puntamento::NEMICI));
+                    int s = slot_vista(true, bersaglio_predefinito(g_scena, Puntamento::NEMICO));
                     _aiuto.mostra(TestoId::BATT_BERSAGLIO);
                     _aiuto.rivela_tutto();
                     _freccia.set_position(_x[s], bn::max(_y[s] - _sprite[s]->shape_size().height() / 2 - 6, FRECCIA_Y_MIN));
@@ -532,7 +532,7 @@ namespace
         {
             Puntamento mira = mira_del_comando(comando);
 
-            if(mira == Puntamento::NESSUNA)
+            if(mira == Puntamento::NESSUNO)
             {
                 return true;
             }
@@ -555,7 +555,7 @@ namespace
                     break;
                 }
 
-                int s = slot_vista(mira == Puntamento::NEMICI, scelto);
+                int s = slot_vista(mira == Puntamento::NEMICO, scelto);
                 int alto = (_sprite[s]->shape_size().height()) / 2;
                 _freccia.set_position(_x[s], bn::max(_y[s] - alto - 6, FRECCIA_Y_MIN));
                 _freccia.set_tiles(_freccia_tiles, (f / 12) % 2);
