@@ -178,7 +178,7 @@ def gubbio(momento):
         t.rett(x, cima - 2, w, 2, COTTO if r.random() < 0.6 else COTTO_C)
         for fy in range(cima + 4, mura - 3, 6):
             for fx in range(x + 2, x + w - 3, 5):
-                t.punto(fx, fy, ORO if notte and r.random() < 0.15 else CONTORNO)
+                t.punto(fx, fy, ORO if notte and r.random() < 0.3 else CONTORNO)
         x += w
     for nome, mx, base, alto, tipo in sorted(monumenti_dalla_valle(), key=lambda m: m[2]):
         edificio(t, mx, min(base, mura), alto, tipo, notte)
@@ -196,6 +196,16 @@ def gubbio(momento):
 
 
 # --- la conca col campo nemico ------------------------------------------------------------------------
+def fuoco(t, x, y):
+    """Un fuoco del campo: il cuore 2x2 oro caldo, l'alone di un pixel cotto piu' scuro. Il tremolio lo
+    fa la scena alternando il colore ORO (src/regia.cpp)."""
+    for dx in range(-1, 3):
+        for dy in range(-1, 3):
+            t.punto(x + dx, y + dy, COTTO_C)
+    t.rett(x, y, 2, 2, ORO)
+
+
+
 def campo(momento):
     """La conca davanti alle mura: i campi, le tende della coalizione e, di notte, i fuochi."""
     t = Tela(W, H)
@@ -210,9 +220,99 @@ def campo(momento):
         t.trapezio(x, y - 7, y, 1, 11, PIETRA_C if k % 3 else VERMIGLIO)
         t.rett(x, y - 9, 1, 3, CONTORNO)
         if notte and k % 2 == 0:
-            t.ellisse(x + 8, y - 1, 2, 2, ORO)
-            t.punto(x + 8, y - 4, VERMIGLIO)
+            fuoco(t, x + 9, y - 3)
     return t, PALETTE_PANORAMA, notte
 
 
 PITTORI = {"cielo": cielo, "monte": monte, "gubbio": gubbio, "campo": campo}
+
+
+# --- la vetrata della Basilica ------------------------------------------------------------------------
+PALETTE_VETRATA = [("neutri", 0), ("neutri", 0), ("neutri", 1), ("pietra calcarea", 2), ("pietra calcarea", 4),
+                   ("cielo e acqua", 3), ("cielo e acqua", 4), ("neutri", 4), ("vermiglio comunale", 1),
+                   ("vermiglio comunale", 2), ("oro e bronzo", 2), ("oro e bronzo", 3), ("verde dei monti", 2),
+                   ("cielo e acqua", 1), ("cotto e coppi", 2), ("pietra calcarea", 1)]
+
+
+def vetrata(momento):
+    """La vetrata grande della Basilica: il telaio di pietra, i piombi neri, i vetri chiari dove la luce
+    entra di sbieco. Nel prologo (giorno) sono tutti chiari; all'epilogo (alba) uno solo ha preso
+    colore e figure: il gigante di ferro sopra gli archi dell'acquedotto, sotto tre uomini coi ceri."""
+    t = Tela(W, H, 3)
+    x0, larga, y0, alta = 168, 176, 4, 104
+    t.rett(x0 - 6, y0, larga + 12, alta + 4, 4)
+    t.ellisse(x0 + larga // 2, y0 + 20, larga // 2, 24, 4)
+    for y in range(y0 + 4, y0 + alta):
+        for x in range(x0, x0 + larga):
+            luce = (x - x0) + (y - y0) // 2 < 70
+            t.punto(x, y, 7 if luce and (x + y) % 3 else 6 if (x * 3 + y) % 5 else 5)
+    # i piombi: la griglia dei vetri, sei colonne per quattro file, e i tondi in cima
+    for x in range(x0, x0 + larga + 1, larga // 6):
+        t.rett(x, y0 + 4, 2, alta - 4, 1)
+    for y in range(y0 + 4, y0 + alta + 1, (alta - 4) // 4):
+        t.rett(x0, y, larga, 2, 1)
+    if momento == "alba":
+        # il vetro del Bottaccione: il secondo della terza fila
+        vx, vy = x0 + larga // 6 + 2, y0 + 4 + 2 * ((alta - 4) // 4) + 2
+        vw, vh = larga // 6 - 2, (alta - 4) // 4 - 2
+        t.rett(vx, vy, vw, vh, 13)
+        for k in range(3):
+            t.rett(vx + 2 + k * 8, vy + vh - 8, 4, 6, 14)
+        t.rett(vx + 4, vy + vh - 14, vw - 8, 3, 3)
+        t.rett(vx + vw // 2 - 3, vy + 2, 6, 8, 2)
+        for k in range(3):
+            t.rett(vx + 3 + k * 9, vy + vh - 4, 3, 4, 9)
+            t.punto(vx + 4 + k * 9, vy + vh - 5, 11)
+    return t, PALETTE_VETRATA, False
+
+
+# --- la pergamena dell'Umbria con gli stendardi -------------------------------------------------------
+PALETTE_PERGAMENA = [("neutri", 0), ("neutri", 0), ("legno e cuoio", 1), ("legno e cuoio", 3), ("oro e bronzo", 2),
+                     ("oro e bronzo", 3), ("pelle", 2), ("pelle", 1), ("vermiglio comunale", 1), ("vermiglio comunale", 2),
+                     ("neutri", 4), ("verde dei monti", 2), ("cielo e acqua", 2), ("pietra calcarea", 3), ("neutri", 2),
+                     ("oro e bronzo", 1)]
+
+# le undici citta' della coalizione (README del copione, Sez. 3 del GDD), dove stanno rispetto a Gubbio
+CITTA_COALIZIONE = [("Perugia", 150, 74, True), ("Spoleto", 320, 92, False), ("Foligno", 290, 80, False),
+                    ("Assisi", 236, 76, False), ("Spello", 262, 82, False), ("Bettona", 206, 84, False),
+                    ("Todi", 176, 98, False), ("Cagli", 214, 22, False), ("Nocera", 316, 58, False),
+                    ("Gualdo Tadino", 306, 42, False), ("Fossato", 282, 32, False)]
+GUBBIO_SULLA_MAPPA = (238, 46)
+
+
+def pergamena(momento):
+    """La pergamena dell'Umbria medievale: l'inchiostro dei fiumi e dei colli, gli undici stendardi della
+    coalizione piantati sui valichi (Perugia il piu' grande, rosso col grifo d'argento coronato d'oro),
+    Gubbio al centro col suo drappo rosso e il monte bianco a cinque cime."""
+    t = Tela(W, H, 7)
+    for y in range(H):
+        for x in range(W):
+            if (x * 7 + y * 13) % 29 == 0:
+                t.punto(x, y, 6)
+    t.rett(0, 0, W, 3, 2)
+    t.rett(0, 109, W, 3, 2)
+    for k in range(6):
+        cx = 60 + k * 70
+        t.ellisse(cx, 60 + (k % 2) * 20, 18, 7, 13)
+    for x in range(40, 480):
+        y = int(70 + 14 * math.sin(x / 40.0))
+        t.punto(x, y, 12)
+    for nome, x, y, grande in CITTA_COALIZIONE:
+        alto = 22 if grande else 12
+        t.rett(x, y - alto, 1, alto, 2)
+        largo = 12 if grande else 7
+        t.rett(x + 1, y - alto, largo, alto // 2, 9 if grande else 8)
+        if grande:
+            t.rett(x + 4, y - alto + 2, 5, 6, 10)
+            t.rett(x + 5, y - alto, 3, 2, 5)
+        t.ellisse(x, y, 2, 1, 2)
+    gx, gy = GUBBIO_SULLA_MAPPA
+    t.rett(gx, gy - 12, 1, 12, 2)
+    t.rett(gx + 1, gy - 12, 8, 6, 9)
+    for k in range(5):
+        t.punto(gx + 2 + k, gy - 8 - (k % 2), 10)
+        t.punto(gx + 2 + k, gy - 7, 10)
+    return t, PALETTE_PERGAMENA, False
+
+
+PITTORI.update({"vetrata": vetrata, "pergamena": pergamena})

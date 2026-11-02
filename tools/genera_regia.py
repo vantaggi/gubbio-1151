@@ -223,9 +223,11 @@ def genera(sorgenti, palette_stile):
         out += ["    { { " + ", ".join(f"0x{v:08X}" for v in parole(t)) + " } }," for t in tile]
         out += ["};", "", f"inline constexpr uint16_t MAPPA_{c}[2048] = {{", blocchi(mappa, 32, str), "};", ""]
     out += ["struct Piano", "{", "    const bn::tile* tile;", "    uint16_t tile_conteggio;", "    const uint16_t* mappa;",
-            "    const uint16_t* palette;      // 16 colori della Guida (di notte, le rampe di notte)", "};", "",
+            "    const uint16_t* palette;      // 16 colori della Guida (di notte, le rampe di notte)",
+            "    bool notte;                   // di notte il colore 15 (i fuochi, le finestre) trema", "};", "",
             f"inline constexpr int PIANI = {len(usati)};", "inline constexpr Piano PIANO[PIANI] = {"]
-    out += [f"    {{ TILE_{id_c(n)}, {len(dipinti[n][0])}, MAPPA_{id_c(n)}, PALETTE_{id_c(n)} }},  // {n}" for n in usati]
+    out += [f"    {{ TILE_{id_c(n)}, {len(dipinti[n][0])}, MAPPA_{id_c(n)}, PALETTE_{id_c(n)}, "
+            f"{'true' if dipinti[n][3] else 'false'} }},  // {n}" for n in usati]
     out += ["};", "", "struct Inquadratura", "{", "    int8_t piani[PIANI_PER_INQUADRATURA];   // dal piu' lontano, -1 vuoto",
             "    uint16_t frame;", "    uint8_t velocita;                        // px/s del primo piano", "    uint16_t prima_battuta;",
             "    uint8_t battute;", "};", "", "struct Cutscene", "{", "    const char* codice;", "    uint16_t prima_inquadratura;",

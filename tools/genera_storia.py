@@ -55,9 +55,12 @@ PAROLE_LUOGO = {"PIAZZA_GRANDE": "Piazza Grande", "VIA_DEI_CONSOLI": "via dei Co
 # Le condizioni che non sono bandiere: la scena segue quella indicata (o, per P-00, l'accensione).
 SEGUE = {"P-01": "P-00", "P-02": "P-01", "B-02": "B-01", "B-03": "B-02", "B-04": "B-03"}
 
-# Le scene che diventeranno cutscene (la proposta delle cutscene aspetta Cioti): per ora il runner
-# le tratta come un nodo segnaposto che mostra il cartello col titolo e passa oltre.
-CUTSCENE = {"P-01", "P-02"}
+# Le scene che sono cutscene (proposta approvata da Cioti, scambio/cutscene/PROPOSTA.md): il runner
+# recita la cutscene del copione di regia (regia/*.regia); P-02 sta dentro C1 insieme a P-01.
+REGIA = {"P-01": "C1", "E-02": "C4"}
+DENTRO_LA_PRECEDENTE = {"P-02"}
+CUTSCENE = set(REGIA) | DENTRO_LA_PRECEDENTE
+REGIA_DENTRO = -2           # la scena e' gia' recitata dalla cutscene della scena prima
 
 # Le battaglie delle scene (battaglia::INCONTRO). Quelle con un nemico sulla mappa partono toccandolo;
 # gli Spettri del Dubbio di A1-08 compaiono durante il rito: la scena parte entrando nella Basilica.
@@ -168,6 +171,25 @@ def id_battuta(codice, k):
 
 def id_parlante(chi):
     return "PARLANTE_" + re.sub(r"[^A-Z]", "_", chi)
+
+
+def codici_regia():
+    """I codici delle cutscene nell'ordine di include/regia.h (i file regia/*.regia in ordine)."""
+    import glob
+    codici = []
+    for p in sorted(glob.glob(os.path.join(RADICE, "regia", "*.regia"))):
+        for riga in open(p, encoding="utf-8"):
+            if riga.startswith("cutscene "):
+                codici.append(riga.split()[1])
+    return codici
+
+
+def indice_regia(codice):
+    if codice in DENTRO_LA_PRECEDENTE:
+        return REGIA_DENTRO
+    if codice in REGIA:
+        return codici_regia().index(REGIA[codice])
+    return -1
 
 
 def id_narratore(codice, k):
@@ -285,7 +307,7 @@ def header(scene, npc, posti):
             "struct Battuta", "{", "    testi::TestoId testo;", "    testi::TestoId parlante;     // per un PERSONAGGIO",
             "    TipoBattuta tipo;", "    Espressione espressione;", "};", "",
             "struct Scena", "{", "    const char* codice;", "    testi::TestoId titolo;",
-            "    bool cutscene;               // segnaposto: per ora solo il cartello col titolo", "    int8_t area;                 // mondo::AreaId, o NESSUNA_AREA (a schermo intero)",
+            "    bool cutscene;", "    int8_t regia;                // la cutscene (regia::CUTSCENE_DATI), -2 dentro la precedente", "    int8_t area;                 // mondo::AreaId, o NESSUNA_AREA (a schermo intero)",
             "    uint64_t richieste;          // tutte accese", "    uint64_t vietate;            // nessuna accesa",
             "    uint64_t imposta;            // accese alla fine", "    int8_t segue;                // la scena che deve essere gia' fatta, o -1",
             "    int8_t battaglia;            // battaglia::INCONTRO, o -1", "    uint16_t prima_battuta;",
@@ -301,7 +323,7 @@ def header(scene, npc, posti):
         area = f"int8_t(mondo::AreaId::{AREE[s['codice']]})" if AREE[s["codice"]] else "NESSUNA_AREA"
         segue = codici.index(SEGUE[s["codice"]]) if s["codice"] in SEGUE else -1
         righe_scene.append(f"    {{ \"{s['codice']}\", testi::TestoId::{id_titolo(s['codice'])}, "
-                           f"{'true' if s['codice'] in CUTSCENE else 'false'}, {area}, 0x{maschera(s['richieste']):X}u, 0x{maschera(s['vietate']):X}u, "
+                           f"{'true' if s['codice'] in CUTSCENE else 'false'}, {indice_regia(s['codice'])}, {area}, 0x{maschera(s['richieste']):X}u, 0x{maschera(s['vietate']):X}u, "
                            f"0x{maschera(s['imposta']):X}u, {segue}, {BATTAGLIE.get(s['codice'], -1)}, {prima}, {len(s['battute'])} }},")
     out += [f"inline constexpr int BATTUTE = {len(battute)};", "inline constexpr Battuta BATTUTA[BATTUTE] = {"] + battute + ["};", ""]
     out += ["inline constexpr Scena SCENA[SCENE] = {"] + righe_scene + ["};", ""]

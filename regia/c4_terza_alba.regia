@@ -1,0 +1,11 @@
+# C4 La terza alba (proposta approvata): i piani di C1 all'alba rosata, i fuochi del campo spenti, la
+# salita al monte e la vetrata con un solo vetro colorato; al posto della regia di E-02.
+cutscene C4 | La terza alba
+inquadratura 8 | cielo:alba monte:alba gubbio:alba campo:alba | 12
+inquadratura 6 | cielo:alba monte:alba | 8
+inquadratura 8 | vetrata:alba | 0
+narratore R_E_02_00
+inquadratura 8 | vetrata:alba | 4
+narratore R_E_02_01
+inquadratura 6 | vetrata:alba | 0
+narratore R_E_02_02

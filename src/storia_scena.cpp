@@ -14,6 +14,8 @@
 #include "esplorazione.h"
 #include "game_state.h"
 #include "progressione.h"
+#include "regia_logica.h"
+#include "regia_scena.h"
 #include "scena_battaglia.h"
 #include "scontri_mappa.h"
 #include "storia_logica.h"
@@ -155,9 +157,39 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
         bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));
     }
 
-    if(s.cutscene)
+    if(s.cutscene && s.regia >= 0)
     {
-        // il nodo segnaposto delle cutscene: per ora il cartello col titolo, poi si passa oltre
+        // la cutscene del copione di regia; una gia' vista non riparte da sola
+        if(regia::vista(g_game_state, s.regia))
+        {
+            BN_LOG("Cutscene ", s.codice, " gia' vista");
+        }
+        else
+        {
+            // la cutscene usa tutti e quattro i BG: lo sfondo dell'area si libera e torna dopo
+            if(esplorazione)
+            {
+                svuota();
+                bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
+                esplorazione->sospendi();
+                attendi(1);
+            }
+
+            recita_cutscene(s.regia, palette_testo, false, automatica);
+
+            if(esplorazione)
+            {
+                esplorazione->ricompari();
+            }
+        }
+    }
+    else if(s.cutscene && s.regia == -2)
+    {
+        BN_LOG("Cutscene ", s.codice, " dentro la precedente");
+    }
+    else if(s.cutscene)
+    {
+        // il nodo segnaposto: il cartello col titolo, poi si passa oltre
         VistaTesto cartello(Contesto::DIALOGO, 16, 72, INCHIOSTRO_CHIARO, palette_testo);
         cartello.mostra(s.titolo);
         cartello.rivela_tutto();
@@ -379,6 +411,10 @@ void prova_prologo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& pal
 {
     progressione::partita_nuova(g_game_state);
     Storia storia;
+
+    // il prologo (la cutscene C1) prima di entrare in citta': lo sfondo dell'area non c'e' ancora
+    esplorazione.sospendi();
+    attendi(1);
     storia.prologo(palette_testo, true);
 
     // l'ultimatum a Piazza Grande
