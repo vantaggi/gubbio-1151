@@ -10,9 +10,9 @@ spawn 4 17 19
 spawn 5 17 19
 # F2: lati dei varchi da mondo/varchi.json: il Monte Ingino (B) e' in basso (est). Il varco
 # del prototipo sul bordo destro e' murato e si scende da un passaggio nel parapetto, in fondo.
-# F2, grafo reale: Piazza Grande (A) e' in alto (ovest). Il varco del prototipo sul bordo
-# sinistro e' murato; dalla piazza si scende dall'angolo in alto a sinistra.
-uscita A piazza_grande 1
+# F2, regola di Cioti: dal Duomo non si va piu' in Piazza Grande; il varco in alto (A, ovest)
+# scende dal Voltone per via della Cattedrale a San Martino.
+uscita A san_martino 1
 uscita B monte_ingino 2
 griglia
 #AAAA#CCCCCCCCCC####PPPPPPPPPPPPPPPPPPPP######.##.##.##.########

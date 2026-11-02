@@ -342,6 +342,25 @@ def errori_eccezioni_superflue(grafo, censimento, tolleranza=90.0):
     return err
 
 
+def errori_accessi_esclusivi(grafo):
+    """I vincoli "accessi_esclusivi" di grafo.json: i vicini dell'area sono esattamente quelli
+    dichiarati, e ognuno di loro confina anche con l'area "collegati_a"."""
+    vicini = {a["id"]: set() for a in grafo["aree"]}
+    for e in grafo["archi"]:
+        vicini.setdefault(e["da"], set()).add(e["a"])
+        vicini.setdefault(e["a"], set()).add(e["da"])
+    err = []
+    for aid, v in sorted(grafo.get("vincoli", {}).get("accessi_esclusivi", {}).items()):
+        attesi = set(v["vicini"])
+        if vicini.get(aid, set()) != attesi:
+            err.append("a %s si entra da %s, il vincolo vuole solo %s"
+                       % (aid, sorted(vicini.get(aid, set())), sorted(attesi)))
+        for w in sorted(attesi):
+            if v["collegati_a"] not in vicini.get(w, set()):
+                err.append("%s non e' collegata a %s, come vuole il vincolo su %s" % (w, v["collegati_a"], aid))
+    return err
+
+
 def errori_monumenti(grafo, censimento):
     """Ogni monumento del censimento sta in una e una sola area, e viceversa."""
     err = []
@@ -381,6 +400,7 @@ def tutti_gli_errori(grafo, censimento):
     return (errori_archi(grafo) + errori_connessione(grafo) + errori_anello(grafo)
             + errori_quote(grafo) + errori_direzioni(grafo, censimento)
             + errori_eccezioni_superflue(grafo, censimento)
+            + errori_accessi_esclusivi(grafo)
             + errori_monumenti(grafo, censimento)
             + errori_lati_varchi(calcola_varchi(grafo, censimento)))
 
