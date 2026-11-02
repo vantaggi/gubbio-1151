@@ -3,6 +3,9 @@
 id san_pietro
 etichetta AREA_SAN_PIETRO
 dimensioni 64 64
+# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# lungo dell'area, a valle c'e' l'ombra.
+monte basso
 riferimento 31 31
 fattore 0.73
 spawn 0 39 32

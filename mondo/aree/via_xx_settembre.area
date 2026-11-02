@@ -3,6 +3,9 @@
 id via_xx_settembre
 etichetta AREA_VIA_XX_SETTEMBRE
 dimensioni 32 64
+# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# lungo dell'area, a valle c'e' l'ombra.
+monte basso
 riferimento 16 32
 fattore 0.73
 spawn 0 16 32

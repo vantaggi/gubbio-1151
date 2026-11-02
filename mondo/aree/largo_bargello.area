@@ -3,6 +3,9 @@
 id largo_bargello
 etichetta AREA_LARGO_BARGELLO
 dimensioni 32 32
+# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# lungo dell'area, a valle c'e' l'ombra.
+monte basso
 riferimento 16 16
 fattore 0.73
 # Decoro: la Fontana dei Matti (F, 3x3) dove la mette il censimento, rispetto al Bargello.

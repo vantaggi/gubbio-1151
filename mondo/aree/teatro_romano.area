@@ -3,6 +3,9 @@
 id teatro_romano
 etichetta AREA_TEATRO_ROMANO
 dimensioni 64 64
+# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# lungo dell'area, a valle c'e' l'ombra.
+monte basso
 riferimento 32 31
 fattore 0.73
 spawn 0 45 32

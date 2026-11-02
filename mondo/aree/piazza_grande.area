@@ -3,6 +3,11 @@
 id piazza_grande
 etichetta AREA_PIAZZA_GRANDE
 dimensioni 64 64
+# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# lungo dell'area, a valle c'e' l'ombra.
+monte basso
+# Belvedere: parapetto sul bordo a valle, l'area e' alta sulla citta'.
+belvedere alto
 riferimento 37 32
 # Fattore ridotto: con 0,73 gli edifici e le distanze non entrano in 64x64 tile.
 fattore 0.53
