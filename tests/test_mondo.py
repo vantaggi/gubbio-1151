@@ -504,6 +504,26 @@ class FondaleControGriglia(unittest.TestCase):
         self.assertTrue({v for r in G._tile(vecchio) for v in r} & {6, 7, 8, 9})
 
 
+_spec_ist = importlib.util.spec_from_file_location("istantanee", os.path.join(RADICE, "tools", "istantanee.py"))
+I = importlib.util.module_from_spec(_spec_ist)
+_spec_ist.loader.exec_module(I)
+
+
+def celle_senza_colore(celle, colori):
+    return sorted(c for c in celle if c not in colori and c not in G.VARCHI)
+
+
+class ColoriDelleIstantanee(unittest.TestCase):
+    """tools/istantanee.py ha un colore per ogni cella del generatore: una cella nuova senza colore
+    fermerebbe le griglie PNG."""
+
+    def test_ogni_cella_ha_un_colore(self):
+        self.assertEqual(celle_senza_colore(G.CELLE, I.COLORI), [])
+
+    def test_negativa_cella_nuova_senza_colore(self):
+        self.assertEqual(celle_senza_colore(list(G.CELLE) + ["Z"], I.COLORI), ["Z"])
+
+
 class Fondali(unittest.TestCase):
 
     def test_tile_a_16_colori(self):

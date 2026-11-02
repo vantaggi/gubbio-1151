@@ -43,6 +43,7 @@ COLORI = {
     "d": (110, 70, 40),     # portone
     "F": (90, 150, 200),    # fontana
     "I": (20, 20, 20),      # ingresso di un dungeon
+    "M": (150, 120, 90),    # muro di contenimento di un gradone
 }
 COLORE_VARCO = (230, 60, 60)
 COLORE_SPAWN = (40, 90, 230)
@@ -64,11 +65,12 @@ def png(percorso, larghezza, altezza, pixel):
 
 
 def aree_finali():
-    """Le aree nell'ordine di include/mondo.h, con gli edifici posati."""
+    """Le aree nell'ordine di include/mondo.h, con gli edifici posati e il dislivello."""
     mondo = G.mondo_del_repo()
     aree = [G.leggi_area(n, t) for n, t in G.sorgenti_del_repo()]
     for a in aree:
         G.posa_edifici(a, mondo["monumenti"])
+        G.applica_dislivello(a, mondo["grafo"])
     return G.ordina(aree, G.anello(mondo["grafo"]))
 
 
