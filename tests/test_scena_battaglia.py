@@ -122,7 +122,7 @@ class ScontriSullaMappa(unittest.TestCase):
     def test_le_prove_a_tempo_di_compilazione(self):
         autotest = open(os.path.join(RADICE, "src", "autotest_progressione.cpp"), encoding="utf-8").read()
         for prova in ("curva_buona(ESPERIENZA_PER_LIVELLO)", "! curva_buona(CURVA_SBAGLIATA)", "crescita_buona()",
-                      "livello_dopo_i_tre_scontri() == 5", "i_livelli_contano()", "posti_dei_nemici()", "contatto()"):
+                      "livello_dopo_i_tre_scontri() == 6", "livello_prima_di_corrado() == 5", "i_livelli_contano()", "posti_dei_nemici()", "contatto()"):
             self.assertIn("static_assert(" + prova, autotest)
 
 
