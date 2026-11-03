@@ -108,11 +108,11 @@ def tavola(percorso):
         testo(fimg, 4, 3 + i * 15, r, rgb(["legno e cuoio", 0]))
     out.paste(fimg.resize((240 * Z, 64 * Z), Image.NEAREST), (16, 160 * Z + 32))
     # ritratti 3x3
-    rimg = Image.new("RGB", (3 * 36, 3 * 36), rgb(["cielo e acqua", 3]))
+    rimg = Image.new("RGB", (3 * 36, len(R["personaggi"]) * 36), rgb(["cielo e acqua", 3]))
     for j, n in enumerate(R["personaggi"]):
         for i, e in enumerate(R["espressioni"]):
             ritratto(rimg, 2 + i * 36, 2 + j * 36, n, e)
-    out.paste(rimg.resize((108 * 4, 108 * 4), Image.NEAREST), (x0, 330))
+    out.paste(rimg.resize((rimg.width * 2, rimg.height * 2), Image.NEAREST), (x0, 330))
     # pose: scheletri
     y = 160 * Z + 64 * Z + 56
     pimg = Image.new("RGB", (240, 110), rgb(["pietra calcarea", 3]))
