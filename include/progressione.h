@@ -23,8 +23,10 @@ inline constexpr int ESPERIENZA_PER_LIVELLO[LIVELLO_MAX] = { 0, 40, 100, 190, 31
 // quelle di base: le battaglie del mirror Python (giocate al livello 1) restano le stesse.
 inline constexpr int CRESCITA_PERCENTO[LIVELLO_MAX] = { 100, 108, 116, 125, 134, 144, 155, 166 };
 
-// L'esperienza che da' ogni nemico vinto, nell'ordine di NemicoId.
-inline constexpr int ESPERIENZA_NEMICO[int(battaglia::NemicoId::CONTEGGIO)] = { 15, 25, 200, 12, 30 };
+// L'esperienza che da' ogni nemico vinto, nell'ordine di NemicoId (F8, docs/bilanciamento.md):
+// Pattuglia 115 (livello 3), Imboscata 81 (livello 4), Spettri 120 (livello 5), cosi' a Corrado si
+// arriva al livello 5, o al 6 con le quest (55 ciascuna). Tarata con tools/bilanciamento.py.
+inline constexpr int ESPERIENZA_NEMICO[int(battaglia::NemicoId::CONTEGGIO)] = { 35, 45, 200, 27, 60 };
 
 [[nodiscard]] constexpr int livello_da_esperienza(int esperienza)
 {

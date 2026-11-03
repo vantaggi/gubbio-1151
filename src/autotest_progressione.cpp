@@ -90,8 +90,22 @@ namespace
     static_assert(crescita_buona(), "la crescita delle statistiche non e' quella attesa");
 
     // Il passo dell'atto: vinti i tre scontri della mappa, i Santi sono al livello 4.
-    static_assert(esperienza_incontro(0) == 55 && esperienza_incontro(1) == 36 && esperienza_incontro(2) == 200 &&
-                  esperienza_incontro(3) == 60, "l'esperienza degli scontri");
+    static_assert(esperienza_incontro(0) == 115 && esperienza_incontro(1) == 81 && esperienza_incontro(2) == 200 &&
+                  esperienza_incontro(3) == 120, "l'esperienza degli scontri (F8, docs/bilanciamento.md)");
+
+    // Nell'ordine della storia (Pattuglia, Imboscata, Spettri) i Santi arrivano a Corrado al livello 5.
+    consteval int livello_prima_di_corrado()
+    {
+        GameState p = {};
+        partita_nuova(p);
+        bool saliti[EROI] = {};
+        assegna_esperienza(p, 0, saliti);
+        assegna_esperienza(p, 1, saliti);
+        assegna_esperienza(p, 3, saliti);
+        return p.livello[0];
+    }
+
+    static_assert(livello_prima_di_corrado() == 5, "a Corrado si arriva al livello 5 senza quest");
 
     consteval int livello_dopo_i_tre_scontri()
     {
@@ -107,8 +121,8 @@ namespace
         return p.livello[0];
     }
 
-    // con il rito della Basilica (gli Spettri) gli scontri dell'atto sono quattro: livello 5
-    static_assert(livello_dopo_i_tre_scontri() == 5, "dopo i quattro scontri i Santi devono essere al livello 5");
+    // dopo i quattro scontri, Corrado compreso: livello 6
+    static_assert(livello_dopo_i_tre_scontri() == 6, "dopo i quattro scontri i Santi devono essere al livello 6");
 
     // I livelli contano: col pilota debole (solo l'Attacco), la Pattuglia Perugina batte i Santi al
     // livello 1 ma non all'8, almeno per un seme. La negativa e' il livello 1 stesso. (Con Corrado
