@@ -1,0 +1,23 @@
+# Cutscene C2P, il pastorale (2,5 s): la scossa e il lampo. Una volta sola.
+titolo: Gubbio 1151 - Il pastorale
+bpm: 90
+battuta: 8
+anello: no
+durata_attesa: 2.5
+canale campana campana 128
+canale cassa grancassa 128
+canale bordone bordone 128
+canale corno corno 100
+canale voci coro 150
+
+ordine: A F
+
+[A] 8
+campana: D3:8!64
+cassa: X:2!60 x:2!40 x:4!30
+bordone: D3:8!30
+corno: D2:8!40
+voci: A3:8!28
+
+[F] 8
+voci: r:8

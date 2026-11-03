@@ -1,0 +1,41 @@
+# La salita al Monte Ingino per gli stradoni. Passo di pellegrino, re misolidio.
+titolo: Gubbio 1151 - Gli stradoni
+bpm: 96
+battuta: 16
+canale melodia flauto 150
+canale liuto liuto 100
+canale arpa arpa 180
+canale bordone bordone 128
+canale tamburo tamburo 128
+
+def melA: D4:4 F#4:4 A4:6 G4:2 | F#4:4 E4:4 D4:8 | E4:4 F#4:4 G4:4 A4:4 | B4:8 A4:8 |
+def melA: C5:4 B4:4 A4:4 G4:4 | A4:6 G4:2 F#4:8 | G4:4 E4:4 F#4:2 E4:2 C4:4 | D4:16 |
+def melB: A4:4 D5:4 C5:4 A4:4 | B4:4 G4:4 A4:8 | C5:4 B4:2 A4:2 G4:4 E4:4 | F#4:8 D4:8 |
+def melB: A4:4 D5:4 C5:4 B4:4 | C5:4 A4:4 B4:8 | A4:4 G4:4 F#4:4 E4:4 | D4:16 |
+def D: D3:4 A3:4 F#3:4 A3:4
+def G: G2:4 D3:4 B2:4 D3:4
+def C: C3:4 G3:4 E3:4 G3:4
+def accA: $D | $D | $G | $G | $C | $D | $C | $D |
+def accB: $D | $G | $C | $D | $D | $G | $C | $D |
+def passi: (x:8!26 x:8!20)*8
+
+ordine: *A B A2
+
+[A] 128
+melodia: !44 $melA+12
+liuto: !40 $accA
+bordone: D3:128!24
+tamburo: $passi
+
+[B] 128
+melodia: !42 $melB+12
+liuto: !40 $accB
+bordone: ~:128
+tamburo: $passi
+
+[A2] 128
+arpa: !36 $melA+12
+melodia: !30 $melA+24
+liuto: !38 $accA
+bordone: ~:128
+tamburo: $passi

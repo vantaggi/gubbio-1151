@@ -1,0 +1,44 @@
+# Cutscene C4, la terza alba (28 s): alba rosata, il Campanone a doppi, il Tema in trionfo, la vetrata.
+# Dopo la prima passata riparte dal Tema: fa da sottofondo ai titoli finche' non arriva la canzone.
+titolo: Gubbio 1151 - La terza alba
+bpm: 80
+battuta: 16
+durata_attesa: 28
+canale campana campana 128
+canale bordone bordone 128
+canale voci coro 100
+canale canto ciaramella 140
+canale melodia flauto 170
+canale liuto liuto 90
+canale tamburo tamburo 128
+canale corno corno 80
+
+ordine: ALBA DOPPI *TEMA VETRATA
+
+[ALBA] 32
+bordone: D3:32!26
+voci: A3:16!20 D4:16
+liuto: !30 (D3:4 A3:4 D4:4 A3:4)*2
+
+[DOPPI] 32
+campana: (D3:4!60 A2:4!54)*4
+tamburo: !34 (X:4 x:2 x:2)*4
+corno: D3:32!36
+bordone: ~:32
+voci: D4:32!26
+
+[TEMA] 64
+canto: !48 $tema1
+melodia: = canto +12 !28
+liuto: !38 $acc1
+corno: D3:16!36 C3:16 F3:16 D3:16
+tamburo: !34 (X:4 x:2 x:2)*8
+campana: D4:64!28
+bordone: ~:64
+
+[VETRATA] 16
+voci: E4:8!30 D4:8
+liuto: !34 D3:2 A3:2 D4:2 F4:2 A4:8
+campana: r:8 A5:8!26
+bordone: ~:16
+melodia: r:8 D5:8!26

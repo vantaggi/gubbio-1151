@@ -1,0 +1,45 @@
+# Corrado di Spoleto, il Colosso delle Forge. Mi frigio, corno che martella, incudine.
+titolo: Gubbio 1151 - Corrado
+bpm: 160
+battuta: 16
+canale canto ciaramella 150
+canale corno corno 100
+canale bordone bordone 128
+canale tamburo tamburo 140
+canale cassa grancassa 128
+canale incudine incudine 170
+
+def riff: E3:3 E3:3 F3:2 E3:3 E3:3 G3:2
+def riff2: E3:3 E3:3 F3:2 G3:3 F3:3 D3:2
+def riffi: $riff | $riff | $riff | $riff2 | $riff | $riff | $riff | $riff2 |
+def leadA: B4:8 C5:4 B4:4 | A4:4 G4:4 F4:8 | E4:4 F4:4 G4:4 A4:4 | B4:12 r:4 |
+def leadA: E5:8 D5:4 C5:4 | D5:4 C5:4 B4:8 | C5:4 B4:4 A4:4 F4:4 | E4:16 |
+def leadB: G5:4 F5:4 E5:4 F5:4 | E5:4 D5:4 C5:8 | D5:4 C5:4 B4:4 C5:4 | B4:16 |
+def leadB: G5:4 F5:4 E5:4 F5:4 | E5:4 D5:4 C5:8 | B4:4 A4:4 G4:4 F4:4 | E4:16 |
+def tamb: (X:2 x:2 x:2 x:2)*16
+def cassa: (X:4 x:4 X:4 x:4)*8
+def incud: (r:4 x:4 r:4 X:4)*8
+
+ordine: I *A B
+
+[I] 32
+corno: !44 $riff $riff
+cassa: !46 (X:4 x:4 X:4 x:4)*2
+incudine: X:16!44 X:16
+bordone: E2:32!30
+
+[A] 128
+canto: !46 $leadA
+corno: !40 $riffi
+bordone: ~:128
+tamburo: !32 $tamb
+cassa: !44 $cassa
+incudine: !34 $incud
+
+[B] 128
+canto: !48 $leadB
+corno: !42 $riffi
+bordone: ~:128
+tamburo: !34 $tamb
+cassa: !46 $cassa
+incudine: !36 $incud

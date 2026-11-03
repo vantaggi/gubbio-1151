@@ -1,0 +1,72 @@
+# Titoli di coda: «La canzone di Flaviano». Flaviano la promette sul Ponte di San Martino
+# («Tre luci sul monte. Ecco la canzone nuova. Manca solo l'alba.»): eccola, con l'alba in fondo.
+# Ballata in 3/4, re misolidio, la viella di Flaviano davanti. Il ritornello sale per tre note,
+# come le tre luci; la coda e' l'alba: il Tema di Gubbio, che finalmente arriva.
+titolo: La canzone di Flaviano
+bpm: 132
+battuta: 12
+canale viella viella 120
+canale melodia flauto 170
+canale canto ciaramella 90
+canale liuto liuto 100
+canale bordone bordone 128
+canale tamburo tamburo 140
+canale sonagli sonagli 190
+canale campana campana 128
+
+def strofa: D4:4 F#4:4 A4:4 | B4:6 A4:2 G4:4 | F#4:4 E4:4 F#4:4 | D4:12 |
+def strofa: A4:4 B4:4 C5:4 | D5:6 C5:2 B4:4 | A4:4 G4:4 E4:4 | D4:12 |
+def luci: A4:4 C5:4 D5:4 | D5:12 | A4:4 C5:4 D5:4 | E5:12 |
+def luci: F#5:4 E5:4 D5:4 | C5:6 B4:2 A4:4 | B4:4 G4:4 E4:4 | D4:12 |
+def D: D3:4 A3:4 D4:4
+def G: G2:4 D3:4 G3:4
+def C: C3:4 G3:4 C4:4
+def A: A2:4 E3:4 A3:4
+def accS: $D | $G | $D | $D | $A | $G | $A | $D |
+def accR: $D | $D | $C | $A | $D | $C | $G | $D |
+def tamb: (X:4 x:4 x:4)*8
+def son: (r:4 x:4 x:4)*8
+
+ordine: INTRO STROFA RIT STROFA2 RIT2 ALBA
+
+[INTRO] 48
+viella: !44 D4:4 F#4:4 A4:4 | D5:12 | C5:4 A4:4 G4:4 | A4:12 |
+bordone: D3:48!22
+
+[STROFA] 96
+viella: !46 $strofa
+liuto: !38 $accS
+bordone: ~:96
+tamburo: !32 $tamb
+
+[RIT] 96
+melodia: !44 $luci+12
+viella: !36 $luci
+liuto: !38 $accR
+bordone: ~:96
+tamburo: !34 $tamb
+sonagli: !20 $son
+
+[STROFA2] 96
+canto: !40 $strofa
+viella: !30 D4:12 | D4:12 | D4:12 | D4:12 | E4:12 | D4:12 | E4:12 | D4:12 |
+liuto: !38 $accS
+bordone: ~:96
+tamburo: !32 $tamb
+sonagli: !18 $son
+
+[RIT2] 96
+melodia: !46 $luci+12
+canto: !34 $luci
+viella: !36 $luci-12
+liuto: !40 $accR
+bordone: ~:96
+tamburo: !36 $tamb
+sonagli: !22 $son
+
+[ALBA] 80 /16
+melodia: !42 $tema1 D5:16
+viella: !34 $acc1+12 A4:16
+liuto: !36 $acc1 D3:16
+bordone: ~:80
+campana: D4:64!28 D3:16!50
