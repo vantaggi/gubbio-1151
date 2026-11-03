@@ -1,0 +1,29 @@
+{
+ "_nota": "Gli amici del copione v2 (copione/05_npc_amici.md): per ognuno il nome a schermo, la figura (una delle figure base di tools/figure_npc.py piu' un accessorio, o una figura nuova) e dove sta nella sua area: 'ancora' e' un monumento dell'area (mondo/grafo.json), un varco ('varco A') o un edificio nuovo ('edificio casa_medico'); il gioco lo mette nella cella libera piu' vicina. 'borgo': con BORGO_DENTRO, in DIGIUNO e NOTTE, sta in Sant'Andrea dietro Porta Romana.",
+ "amici": {
+  "CIACCIO":    {"nome": "Ciaccio", "base": "soldato", "accessorio": "arco_lungo", "ancora": "varco E"},
+  "GIULIANA":   {"nome": "Giuliana", "base": "popolana", "accessorio": "salterio", "ancora": "san_domenico"},
+  "FLAVIANO":   {"nome": "Flaviano", "base": "mercante", "accessorio": "viella", "ancora": "ponte_san_martino"},
+  "COMPAGNO":   {"nome": "Compagno", "base": "anziano_glabro", "accessorio": "borsa_medico", "ancora": "edificio casa_medico"},
+  "MASIO":      {"nome": "Masio il Romano", "base": "mercante", "accessorio": "fascia_gialla_rossa", "ancora": "porta_metauro"},
+  "MONTANO":    {"nome": "Montano", "base": "mercante", "accessorio": "pinze_tavoletta", "ancora": "edificio banco_montano"},
+  "RUFINO":     {"nome": "Mastro Rufino", "base": "mercante", "accessorio": "ruota", "ancora": "edificio bottega_carradore"},
+  "GIORDANO":   {"nome": "Giordano", "base": "anziano_glabro", "accessorio": "secchio_corda", "ancora": "loggia_tiratori"},
+  "FEBO":       {"nome": "Febo", "base": "soldato", "accessorio": "tamburo", "ancora": "san_pietro"},
+  "GIAMBONO":   {"nome": "Giambono", "base": "soldato", "accessorio": "balestra", "ancora": "porta_san_pietro"},
+  "GABRIONE":   {"nome": "Gabrione", "base": "gabrione", "accessorio": "carboncino", "ancora": "edificio spezieria"},
+  "RICCIARDO":  {"nome": "Ricciardo", "base": "mercante", "accessorio": "tavoletta_cera", "ancora": "san_pietro"},
+  "AURELIA":    {"nome": "Aurelia", "base": "popolana", "accessorio": "libro", "ancora": "san_pietro"},
+  "LEONORA":    {"nome": "Leonora", "base": "popolana", "accessorio": "rotolo", "ancora": "porta_san_pietro"},
+  "VALENZA":    {"nome": "Valenza", "base": "popolana", "accessorio": "ciotola", "ancora": "edificio spezieria"},
+  "PADELLINO":  {"nome": "Padellino", "base": "mercante", "accessorio": "fiasco_grembiule", "ancora": "edificio taverna"},
+  "CIOTTO":     {"nome": "Ciotto", "base": "mercante", "accessorio": "tavoliere", "ancora": "edificio bottega_conti", "borgo": true},
+  "FAZIO":      {"nome": "Fazio", "base": "mercante", "accessorio": "chiave", "ancora": "edificio bottega_conti", "borgo": true},
+  "LAURETTA":   {"nome": "Lauretta", "base": "popolana", "accessorio": "tavoletta_conti", "ancora": "edificio bottega_conti", "borgo": true},
+  "NICOLUCCIO": {"nome": "Nicoluccio", "base": "bambino", "accessorio": null, "ancora": "edificio bottega_conti", "borgo": true},
+  "BUBO":       {"nome": "Bubo", "base": "frate", "accessorio": "rotolo", "ancora": "sant_agostino", "borgo": true},
+  "VALERIANA":  {"nome": "Valeriana", "base": "popolana", "accessorio": "lanterna_bastone", "ancora": "varco A", "borgo": true},
+  "RAGNETTO":   {"nome": "Ragnetto", "base": "soldato_nudo", "accessorio": "trave", "ancora": "edificio calcara", "borgo": true},
+  "ANDREUCCIO": {"nome": "Andreuccio", "base": "soldato", "accessorio": "scudo_monte", "ancora": "porta_romana"}
+ }
+}

@@ -21,7 +21,7 @@ _spec_m = importlib.util.spec_from_file_location("genera_mondo", os.path.join(RA
 GM = importlib.util.module_from_spec(_spec_m)
 _spec_m.loader.exec_module(GM)
 
-_, NPC = GS.leggi_copione()
+NPC = [p for p in GS.leggi_copione()[1] if not p.get("amico")]     # gli NPC d'ambiente: gli amici in test_amici.py
 
 
 def sagoma(righe):
@@ -66,13 +66,14 @@ class FigureNpc(unittest.TestCase):
 
     def test_la_tabella_del_gioco(self):
         h = open(os.path.join(RADICE, "include", "storia.h"), encoding="utf-8").read()
-        self.assertIn(f"inline constexpr int FIGURE_NPC = {len(FN.ORDINE)};", h)
+        self.assertIn(f"inline constexpr int FIGURE_NPC = {len(FN.ORDINE) + len(GS.AMICI)};", h)
         for p in NPC:
             riga = next(r for r in h.splitlines() if r.endswith("// " + p["nome"]))
-            figura = re.search(r"\}, (\d+), \d+, \d+ \},\s*//", riga).group(1)
-            self.assertEqual(int(figura), FN.ORDINE.index(FN.figura_di(p["nome"])), p["nome"])
-        parole = FN.parole("frate")
-        self.assertIn(", ".join(f"0x{v:08X}" for v in parole[:8]), h)
+            figura = int(re.search(r"\}, (\d+), \d+, \d+, \d+, \d+, (?:true|false) \},\s*//", riga).group(1))
+            self.assertEqual(GS.figura_dell_npc(p), FN.figura_composta(FN.figura_di(p["nome"]), None), p["nome"])
+            self.assertLess(figura, 5 + len(GS.AMICI) + 1)
+        parole = FN.parole(FN.figura_composta("frate", None))
+        self.assertIn(", ".join(f"0x{v:08X}" for v in parole[32:40]), h)
 
     def test_negativa_parole_di_un_altra_figura(self):
         self.assertNotEqual(FN.parole("frate"), FN.parole("soldato"))

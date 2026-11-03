@@ -103,7 +103,7 @@ class Tabelle(unittest.TestCase):
     def test_le_scene_del_copione(self):
         self.assertEqual(len(SCENE), 20)
         self.assertEqual(sum(len(s["battute"]) for s in SCENE), 223)
-        self.assertEqual(len(NPC), 13)
+        self.assertEqual(len(NPC), 13 + 24)                 # gli NPC d'ambiente e gli amici
 
     def test_ogni_bandiera_scritta_e_letta(self):
         """Letta da una scena, dal gioco (LETTE_DAL_GIOCO, ognuna col suo punto nel codice) o in elenco
@@ -159,7 +159,7 @@ class Tabelle(unittest.TestCase):
             self.assertTrue(p["frasi"], p["nome"])
             self.assertTrue(all(b["fase"] in GS.FASI for b in p["frasi"]))
         storia_h = open(GS.USCITA_H, encoding="utf-8").read()
-        self.assertIn("inline constexpr int NPC = 13;", storia_h)
+        self.assertIn(f"inline constexpr int NPC = {len(NPC)};", storia_h)
 
     def test_la_storia_sul_gba(self):
         """La ROM GUBBIO_AVVIO=8 ha recitato ogni scena, dalla prima ai titoli di coda (log in tests/dati)."""

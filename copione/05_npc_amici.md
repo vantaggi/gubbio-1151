@@ -46,13 +46,23 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 
 ---
 
+## Via dei Consoli
+
+**Montano**, cavadenti e ritrattista, eugubino che lavora a Bergamo. Tornato per la madre, è rimasto chiuso dentro dall'assedio. Luogo: un banco all'aperto sotto le case di via dei Consoli (nessun edificio nuovo). Figura: mercante con le pinze alla cintura e una tavoletta dipinta. Galante con tutte, ma sempre con garbo: nessuna battuta lo mette in ridicolo.
+
+- NOTTE: MONTANO: Stanotte ho ritratto le ragazze di guardia. Tutte più belle del Grifo, s'intende.
+- DIGIUNO: MONTANO: A Bergamo cavo denti da dieci anni. Qui li cavo gratis, finché dura l'assedio.
+- ULTIMATUM: MONTANO: Torno da Bergamo per mia madre e trovo undici eserciti. Gubbio sa accogliere.
+
+---
+
 ## Piazza Quaranta Martiri
 
-**Mastro Rufino**, carpentiere di mulini e argani. Luogo: mulino sul Camignano coperto (edificio nuovo). Figura: mercante con l'ascia. Nota: la battuta del DIGIUNO imposta `RUFINO_ASCOLTATO`.
+**Mastro Rufino**, carradore: costruisce e prepara i carri da corsa e da traino. Luogo: bottega del carradore (edificio nuovo). Figura: mercante con una ruota cerchiata di ferro. Nota: la battuta del DIGIUNO imposta `RUFINO_ASCOLTATO`.
 
-- NOTTE: RUFINO: La ruota ha ripreso a girare. L'acqua è tornata: qualcuno ha lavorato.
-- DIGIUNO: RUFINO: Nessun ferro è stregato, è solo piegato bene. Si apre col calore.
-- ULTIMATUM: RUFINO: Un trabucco? Datemi tre giorni e travi buone, e ve ne faccio due.
+- NOTTE: RUFINO: Finito l'assedio, si rifà la corsa dei carri giù per la piana. Il mio è già unto.
+- DIGIUNO: RUFINO: Da vent'anni cerchio le ruote col ferro. Nessun ferro è stregato: col calore si apre.
+- ULTIMATUM: RUFINO: Undici eserciti e nemmeno un carro decente. Il mio arriva a Perugia prima di loro.
 
 **Giordano**, fontaniere. Luogo: vasca del fontaniere. Figura: anziano con secchio e corda, senza barba bianca. Nota: la battuta del DIGIUNO imposta `INDIZIO_ACQUA`; è anche il terzo indizio di Q-SP01.
 

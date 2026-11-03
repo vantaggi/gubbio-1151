@@ -25,6 +25,9 @@ USCITA_H = os.path.join(RADICE, "include", "storia.h")
 USCITA_TESTI = os.path.join(RADICE, "testi", "copione.testi")
 FILE_SCENE = ("00_prologo.md", "01_atto_I.md", "02_bottaccione_epilogo.md")
 FILE_NPC = "03_npc_ambiente.md"
+FILE_AMICI = "05_npc_amici.md"
+AMICI = __import__("json").load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                                  "dati", "amici.json"), encoding="utf-8"))["amici"]
 
 # Le bandiere della storia (README del copione, intervallo 0-63), nell'ordine di comparsa.
 BANDIERE = ["PROLOGO_VISTO", "ULTIMATUM_RICEVUTO", "GIORGIO_NEL_GRUPPO", "CHIACCHIERA_CONSOLI", "POSTIERLA_APERTA",
@@ -106,7 +109,8 @@ AREE_NPC = {"Piazza Grande": "PIAZZA_GRANDE", "via dei Consoli": "VIA_DEI_CONSOL
             "via XX Settembre": "VIA_XX_SETTEMBRE", "Duomo e Palazzo Ducale": "DUOMO_DUCALE",
             "Sant'Agostino": "SANT_AGOSTINO", "Sant'Andrea": "SANT_ANDREA",
             "Piazza Quaranta Martiri": "PIAZZA_QUARANTA_MARTIRI", "San Pietro": "SAN_PIETRO",
-            "Monte Ingino": "MONTE_INGINO", "Basilica": "BASILICA", "Strada del Bottaccione": "BOTTACCIONE"}
+            "Monte Ingino": "MONTE_INGINO", "Basilica": "BASILICA", "Strada del Bottaccione": "BOTTACCIONE",
+            "Via dei Consoli": "VIA_DEI_CONSOLI", "Sant'Agostino (fuori Porta Romana)": "SANT_AGOSTINO"}
 
 RIGA_BATTUTA = re.compile(r"^- ([A-Z][A-Z' ]*?)(?: \(([a-z]+)\))?: (.+)$")
 RIGA_NPC = re.compile(r"^- (ULTIMATUM|DIGIUNO|NOTTE)(?: \(se (non )?([A-Z_0-9]+)\))?: ([A-Z][A-Z' ]*?)(?: \(([a-z]+)\))?: (.+)$")
@@ -307,7 +311,7 @@ def leggi_scene(testi_file):
     return scene
 
 
-def leggi_npc(testo):
+def leggi_npc(testo, file=FILE_NPC):
     """[{area, nome, frasi: [(fase, parlante, espressione, testo)]}] da 03_npc_ambiente.md."""
     npc, area, attuale = [], None, None
     for riga in testo.splitlines():
@@ -319,7 +323,7 @@ def leggi_npc(testo):
         m = re.match(r"^\*\*(.+?)\*\*", riga)
         if m and area:
             attuale = {"area": area, "nome": m.group(1), "frasi": [], "imposta": None, "imposta_fasi": 0}
-            varianti = Varianti(f"{FILE_NPC} ({m.group(1)})")
+            varianti = Varianti(f"{file} ({m.group(1)})")
             fase_corrente = None
             nota = re.search(r"(una qualunque sua battuta|la battuta del (ULTIMATUM|DIGIUNO|NOTTE)) imposta `([A-Z_0-9]+)`",
                              riga)
@@ -354,6 +358,10 @@ def leggi_npc(testo):
 
 def id_battuta(codice, k):
     return "C_" + codice.replace("-", "_").upper() + f"_{k:02d}"
+
+
+for _chi, _amico in AMICI.items():
+    PARLANTI.setdefault(_chi, _amico["nome"])
 
 
 def id_parlante(chi):
@@ -407,21 +415,29 @@ def posti_degli_npc(npc):
         aree[a["id"].upper()] = a
     occupati = {}
     posti = []
+    richieste = []
     for p in npc:
-        a = aree[p["area"]]
+        ancora = AMICI[p["amico"]]["ancora"] if p.get("amico") else None
+        richieste.append((p, p["area"], ancora))
+    for p in npc:
+        if p.get("amico") and AMICI[p["amico"]].get("borgo"):
+            # con il borgo dentro: accampati in Sant'Andrea, dietro Porta Romana (il varco verso Sant'Agostino)
+            richieste.append((p, "SANT_ANDREA", "varco B"))
+    for p, area_id, ancora in richieste:
+        a = aree[area_id]
         g = a["griglia"]
         varchi = [(x, y) for y, r in enumerate(g) for x, c in enumerate(r) if c in G.VARCHI]
-        fermi = varchi + list(a["spawn"].values()) + occupati.get(p["area"], [])
-        cx, cy = a["spawn"][0]
+        fermi = varchi + list(a["spawn"].values()) + occupati.get(area_id, [])
+        cx, cy = punto_dell_ancora(a, ancora, G)
         scelto = None
-        for raggio in range(2, 40):
+        for raggio in range(0, 90):
             for y in range(max(1, cy - raggio), min(a["altezza"] - 1, cy + raggio + 1)):
                 for x in range(max(1, cx - raggio), min(a["larghezza"] - 1, cx + raggio + 1)):
                     if max(abs(x - cx), abs(y - cy)) != raggio:
                         continue
                     libero = all(not G.solida(g[y + j][x + i]) and g[y + j][x + i] not in G.VARCHI
                                  for i in (-1, 0, 1) for j in (-1, 0, 1))
-                    if libero and all(max(abs(x - u), abs(y - v)) >= 4 for u, v in fermi):
+                    if libero and all(max(abs(x - u), abs(y - v)) >= 3 for u, v in fermi):
                         scelto = (x, y)
                         break
                 if scelto:
@@ -429,17 +445,55 @@ def posti_degli_npc(npc):
             if scelto:
                 break
         if not scelto:
-            raise ErroreStoria(f"nessun posto per {p['nome']} in {p['area']}")
-        occupati.setdefault(p["area"], []).append(scelto)
+            raise ErroreStoria(f"nessun posto per {p['nome']} in {area_id}")
+        occupati.setdefault(area_id, []).append(scelto)
         posti.append(scelto)
-    return posti
+    # i primi len(npc) sono i posti di sempre; poi quelli del borgo, nell'ordine degli NPC del borgo
+    principali = posti[:len(npc)]
+    borgo = iter(posti[len(npc):])
+    return [(xy, next(borgo) if p.get("amico") and AMICI[p["amico"]].get("borgo") else None)
+            for p, xy in zip(npc, principali)]
+
+
+def punto_dell_ancora(a, ancora, G):
+    """Il punto da cui cercare il posto di un NPC: lo spawn 0, o davanti al monumento, al varco o
+    all'edificio nuovo dell'ancora (se l'edificio non c'e' ancora, lo spawn 0)."""
+    if ancora:
+        tipo, _, nome = ancora.partition(" ")
+        if tipo == "varco":
+            celle = [(x, y) for y, r in enumerate(a["griglia"]) for x, c in enumerate(r) if c == nome]
+            return sum(x for x, _ in celle) // len(celle), sum(y for _, y in celle) // len(celle)
+        chiave = nome if tipo == "edificio" else ancora
+        if chiave in a.get("edifici", {}):
+            x0, y0, w, h = a["edifici"][chiave]
+            return x0 + w // 2, min(a["altezza"] - 2, y0 + h + 1)
+    return a["spawn"][0]
 
 
 def leggi_copione():
     testi = [(f, open(os.path.join(COPIONE, f), encoding="utf-8").read()) for f in FILE_SCENE]
     scene = leggi_scene(testi)
     npc = leggi_npc(open(os.path.join(COPIONE, FILE_NPC), encoding="utf-8").read())
-    return scene, npc
+    amici = leggi_npc(open(os.path.join(COPIONE, FILE_AMICI), encoding="utf-8").read(), FILE_AMICI)
+    for p in amici:
+        p["amico"] = parlante_dell_amico(p)
+    return scene, npc + amici
+
+
+def parlante_dell_amico(p):
+    """L'amico di una scheda: il parlante delle sue battute, che deve stare in dati/amici.json."""
+    chi = {b[0] for b in p["frasi"] if b[0] not in SENZA_NOME and b[0] not in ("UBALDO", "GIORGIO", "ANTONIO")}
+    if len(chi) != 1 or next(iter(chi)) not in AMICI:
+        raise ErroreStoria(f"{FILE_AMICI} ({p['nome']}): parlante {sorted(chi)} senza voce in dati/amici.json")
+    return next(iter(chi))
+
+
+def figura_dell_npc(p):
+    """La figura nel gioco: per un NPC d'ambiente quella del mestiere, per un amico la sua (dati/amici.json)."""
+    if p.get("amico"):
+        a = AMICI[p["amico"]]
+        return FN.figura_composta(a["base"], a["accessorio"])
+    return FN.figura_composta(FN.figura_di(p["nome"]), None)
 
 
 def controlla(scene):
@@ -562,7 +616,11 @@ def header(scene, npc, posti):
             "    uint16_t prima_frase[3];     // per fase (ULTIMATUM, DIGIUNO, NOTTE); 0xFFFF: non c'e'",
             "    uint8_t frasi[3];", "    uint8_t figura;               // FIGURA_NPC (tools/figure_npc.py)",
             "    uint8_t imposta;              // la bandiera che accende parlando, o NESSUNA_BANDIERA",
-            "    uint8_t imposta_fasi;         // in quali fasi (bit 0 ULTIMATUM, 1 DIGIUNO, 2 NOTTE)", "};", ""]
+            "    uint8_t imposta_fasi;         // in quali fasi (bit 0 ULTIMATUM, 1 DIGIUNO, 2 NOTTE)",
+            "    uint8_t tx_borgo;             // del borgo: con BORGO_DENTRO, in DIGIUNO e NOTTE, sta qui in Sant'Andrea",
+            "    uint8_t ty_borgo;",
+            "    bool del_borgo;", "};", ""]
+    figure = []
     frasi = []
     righe_npc = []
     for i, p in enumerate(npc):
@@ -577,23 +635,29 @@ def header(scene, npc, posti):
             conte.append(str(len(ordinate)))
             for k, b in ordinate:
                 frasi.append(riga_battuta(b, id_npc(i, k), npc=True))
-        tx, ty = posti[i]
+        (tx, ty), borgo = posti[i]
         imposta = p["imposta"] if p["imposta"] is not None else NESSUNA
+        figura = figura_dell_npc(p)
+        if figura not in figure:
+            figure.append(figura)
+        bx, by = borgo or (0, 0)
         righe_npc.append(f"    {{ int8_t(mondo::AreaId::{p['area']}), {tx}, {ty}, {{ {', '.join(prime)} }}, {{ {', '.join(conte)} }}, "
-                         f"{FN.ORDINE.index(FN.figura_di(p['nome']))}, {imposta}, {p['imposta_fasi']} }},  // {p['nome']}")
+                         f"{figure.index(figura)}, {imposta}, {p['imposta_fasi']}, {bx}, {by}, {'true' if borgo else 'false'} }},"
+                         f"  // {p['nome']}")
     out += [f"inline constexpr int FRASI_NPC = {len(frasi)};", "inline constexpr Battuta FRASE_NPC[FRASI_NPC] = {"] + frasi + ["};", ""]
     out += [f"inline constexpr int NPC = {len(npc)};", "inline constexpr Npc NPC_AMBIENTE[NPC] = {"] + righe_npc + ["};", ""]
     out += [f"inline constexpr int GUARDIE = {len(guardie)};", "inline constexpr Guardia GUARDIA[GUARDIE] = {"]
     out += [f"    {{ TipoGuardia::{g[0]}, {g[1]}, {g[2]}, {g[3]} }}," for g in guardie] + ["};", ""]
     out += ["// Le bandiere delle quest e degli indizi (64-127, GameState::quest), per nome."]
     out += [f"inline constexpr uint8_t {b} = {PRIMA_QUEST + i};" for i, b in enumerate(BANDIERE_QUEST)] + [""]
-    out += ["// Le figure degli NPC, 16x16 (4 tile in mappatura 1D) con la palette dei popolani: "
-            + ", ".join(FN.ORDINE) + ".", f"inline constexpr int FIGURE_NPC = {len(FN.ORDINE)};",
-            "inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][4 * 8] = {"]
-    for f in FN.ORDINE:
+    out += ["// Le figure degli NPC, 16x32 (8 tile in mappatura 1D) con la palette dei popolani: quelle dei",
+            "// mestieri (tools/figure_npc.py) e quelle degli amici (base e accessorio, dati/amici.json).",
+            f"inline constexpr int FIGURE_NPC = {len(figure)};",
+            "inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][8 * 8] = {"]
+    for f in figure:
         parole = FN.parole(f)
-        out.append("    {  // " + f)
-        out += ["        " + ", ".join(f"0x{v:08X}" for v in parole[k:k + 8]) + "," for k in range(0, 32, 8)]
+        out.append("    {")
+        out += ["        " + ", ".join(f"0x{v:08X}" for v in parole[k:k + 8]) + "," for k in range(0, 64, 8)]
         out.append("    },")
     out += ["};", ""]
     out += ["}", "", "#endif", ""]
