@@ -35,7 +35,7 @@ BANDIERE = ["PROLOGO_VISTO", "ULTIMATUM_RICEVUTO", "GIORGIO_NEL_GRUPPO", "CHIACC
             "CERI_RISVEGLIATI", "SPETTRI_VINTI", "VISIONE_BOTTACCIONE", "BOTTACCIONE_ENTRATI", "MIASMI_VISTI",
             "PIANO_DI_CORRADO", "CORRADO_INCONTRATO", "CONDOTTO_SALVO", "RIENTRO_PORTA_METAURO", "ATTO_I_COMPLETATO",
             "CRONACA_V1_FINITA", "CORRADO_SCONFITTO", "BORGO_DENTRO", "BORGO_FUORI", "ESULE_PRIGIONIERO",
-            "ESULE_LIBERATO", "GIUSTIZIA_OFFERTA"]
+            "ESULE_LIBERATO", "GIUSTIZIA_OFFERTA", "ALBA_CONFERMATA"]
 # Le bandiere delle quest, degli indizi e degli ascolti (intervallo 64-127): stanno in GameState::quest.
 BANDIERE_QUEST = ["INDIZIO_CARTA", "INDIZIO_ACQUA", "INDIZIO_ROCCIA", "RICCIARDO_ASCOLTATO", "RUFINO_ASCOLTATO", "PANE_DATO",
          "DONO_MATTEO", "INDIZIO_LUCIA", "INDIZIO_VENDITORE", "INDIZIO_FONTANIERE"]
@@ -53,12 +53,13 @@ LETTE_DAL_GIOCO = {
 # Quelle che il gioco non legge ancora: sono in docs/bandiere_da_fare.md, con cosa dovranno fare.
 DA_FARE = ["MIASMI_VISTI", "PIANO_DI_CORRADO", "CORRADO_INCONTRATO", "CERI_RISVEGLIATI"]
 
-# Dove avviene ogni scena (AreaId), dalla riga Luogo; None per le scene a schermo intero (prologo).
+# Dove avviene ogni scena (AreaId), dalla riga Luogo; None per le scene a schermo intero (il prologo, e la
+# vetrata di E-02, che il gioco recita subito dopo E-01 senza risalire alla Basilica).
 AREE = {"P-00": None, "P-01": None, "P-02": None, "A1-01": "PIAZZA_GRANDE", "A1-02": "VIA_DEI_CONSOLI", "A1-05b": "SANT_ANDREA",
         "A1-03": "SAN_MARTINO", "A1-04": "TEATRO_ROMANO", "A1-05": "PIAZZA_GRANDE", "A1-06": "DUOMO_DUCALE",
         "A1-07": "MONTE_INGINO", "A1-08": "BASILICA_INTERNO", "A1-09": "BASILICA_INTERNO", "B-01": "GOLA_STRISCIA",
         "B-02": "GOLA_MIASMI", "B-03": "GOLA_ARCO", "B-04": "CONDOTTO", "B-05": "SAN_MARTINO",
-        "E-01": "PIAZZA_GRANDE", "E-02": "BASILICA_INTERNO"}
+        "E-01": "PIAZZA_GRANDE", "E-02": None}
 # Le parole della riga Luogo che confermano l'area scelta (il test controlla che ci siano).
 PAROLE_LUOGO = {"PIAZZA_GRANDE": "Piazza Grande", "VIA_DEI_CONSOLI": "via dei Consoli", "SAN_MARTINO": "San Martino",
                 "TEATRO_ROMANO": "Teatro Romano", "DUOMO_DUCALE": "Duomo", "MONTE_INGINO": "Stradoni", "SANT_ANDREA": "Sant'Andrea",
@@ -113,6 +114,9 @@ AREE_NPC = {"Piazza Grande": "PIAZZA_GRANDE", "via dei Consoli": "VIA_DEI_CONSOL
             "Via dei Consoli": "VIA_DEI_CONSOLI", "Sant'Agostino (fuori Porta Romana)": "SANT_AGOSTINO"}
 
 RIGA_BATTUTA = re.compile(r"^- ([A-Z][A-Z' ]*?)(?: \(([a-z]+)\))?: (.+)$")
+# Le righe di battaglia ("- IN BATTAGLIA (evento): PARLANTE: testo", B-04): si dicono dentro lo scontro, non
+# nel dialogo della scena; il lettore le mette da parte (scena["in_battaglia"]) e non le recita.
+RIGA_BATTAGLIA = re.compile(r"^- IN BATTAGLIA \((.+?)\): ([A-Z][A-Z' ]*?)(?: \(([a-z]+)\))?: (.+)$")
 RIGA_NPC = re.compile(r"^- (ULTIMATUM|DIGIUNO|NOTTE)(?: \(se (non )?([A-Z_0-9]+)\))?: ([A-Z][A-Z' ]*?)(?: \(([a-z]+)\))?: (.+)$")
 
 
@@ -271,7 +275,7 @@ def leggi_scene(testi_file):
             m = re.match(r"^## ([A-Z0-9]+-\d+[a-z]?) · (.+)$", riga)
             if m:
                 attuale = {"codice": m.group(1), "titolo": m.group(2), "luogo": "", "richieste": [], "vietate": [],
-                           "imposta": [], "battute": [], "dove": f"{nome}:{n}"}
+                           "imposta": [], "battute": [], "in_battaglia": [], "dove": f"{nome}:{n}"}
                 varianti = Varianti(nome)
                 scene.append(attuale)
                 continue
@@ -293,6 +297,13 @@ def leggi_scene(testi_file):
                         raise ErroreStoria(f"{nome}:{n}: bandiere sconosciute nella condizione: {altre}")
                 elif chiave == "Imposta":
                     attuale["imposta"] = bandiere_in(valore)
+                continue
+            g = RIGA_BATTAGLIA.match(riga)
+            if g:
+                evento, chi, espressione, frase = g.groups()
+                if chi not in SENZA_NOME and chi not in PARLANTI:
+                    raise ErroreStoria(f"{nome}:{n}: parlante '{chi}' senza nome a schermo in PARLANTI")
+                attuale["in_battaglia"].append((evento, battuta(chi, espressione, frase, f"{nome}:{n}")))
                 continue
             b = RIGA_BATTUTA.match(riga)
             if b:

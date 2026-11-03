@@ -495,7 +495,16 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
 
     if(k >= 0)
     {
-        recita(k, &esplorazione, palette_testo);
+        // le scene a schermo intero che quella appena finita rende pronte partono subito, senza camminare:
+        // la vetrata di E-02 dopo la terza alba (E-01), come il prologo all'avvio
+        if(recita(k, &esplorazione, palette_testo))
+        {
+            for(int j = prossima_scena(g_game_state, NESSUNA_AREA); j >= 0; j = prossima_scena(g_game_state, NESSUNA_AREA))
+            {
+                recita(j, &esplorazione, palette_testo);
+            }
+        }
+
         svuota();       // la fase puo' essere cambiata: gli NPC si rifanno al prossimo frame
         return true;
     }
@@ -562,6 +571,13 @@ void prova_storia(const bn::sprite_palette_ptr& palette_testo)
                 ++visitate;
                 avanti = true;
             }
+        }
+
+        // con «Non ancora» in B-05 la conferma dell'alba la da' il console Guido
+        if(! avanti && risposta_di_un_npc(g_game_state))
+        {
+            BN_LOG("Risposta a un NPC");
+            avanti = true;
         }
     }
 

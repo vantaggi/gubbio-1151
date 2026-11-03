@@ -2,7 +2,7 @@
 
 Copione v2, 3 novembre 2026. Fonte: `storia/NPC_AMICI.md` (Bibbia della storia v2). Stesso formato di [03_npc_ambiente.md](03_npc_ambiente.md): vince la prima riga che vale, dall'alto; una riga `(se BANDIERA)` sta sopra quella della stessa fase senza condizione.
 
-**Nomi.** Nel gioco i nomi sono forme d'epoca dei soprannomi, riconoscibili solo a chi sa (tabella in `storia/NPC_AMICI.md`). **Genere e figura** li ho decisi io (Cioti, 3 nov 2026: «decidili tu»): gli amici sono uomini, le compagne donne, Nicoluccio un bambino. Sono modificabili: si cambia solo la figura o il nome.
+**Nomi.** Nel gioco i nomi sono forme d'epoca dei soprannomi, riconoscibili solo a chi sa (tabella in `storia/NPC_AMICI.md`). **Genere e figura** li ho decisi io (Cioti, 3 nov 2026: «decidili tu»): gli amici sono uomini, le compagne donne, Nicoluccio un bambino. Sono modificabili: si cambia solo la figura o il nome. Due nomi cambiati da Cioti (3 nov 2026): il medico è **Vanni** (da Giovanni) e il custode delle carte è **Renzo** (da Lorenzo).
 
 **Sant'Agostino.** Con `BORGO_DENTRO` gli NPC del borgo, nelle fasi DIGIUNO e NOTTE, stanno accampati in Sant'Andrea dietro Porta Romana; con `BORGO_FUORI` (anche se il giocatore non è passato da A1-05b) restano nel borgo. Andreuccio resta sempre fuori, sulla soglia.
 
@@ -12,16 +12,14 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 
 ## San Martino
 
-**Ciaccio**, possidente e arciere. Luogo: sulle mura sopra la postierla. Figura: soldato con l'arco lungo.
+**Ciaccio**, possidente e arciere. Luogo: sulle mura sopra la postierla. Figura: soldato con l'arco lungo. Con «Giustizia agli esuli» (D4) la sua battuta amara è in piazza, dentro E-01 (`02_bottaccione_epilogo.md`): dopo E-01 non si torna a girare la città.
 
-- NOTTE (se GIUSTIZIA_OFFERTA): CIACCIO: Giustizia agli esuli? E a me chi la rende, monsignore?
 - NOTTE: CIACCIO: Ho tirato tutta la notte. Domani si esce, vero, cavaliere?
 - DIGIUNO: CIACCIO: Mio nonno quelle terre le ha prese con la spada. Ora le perdo pregando.
 - ULTIMATUM: CIACCIO: Vedi quel fumo? È la mia vigna. Dammi dieci archi e ci vado.
 
 **Giuliana**, maestra di canto, moglie di Ciaccio. Luogo: sulla soglia della chiesa di San Martino. Figura: popolana col salterio.
 
-- NOTTE (se GIUSTIZIA_OFFERTA): GIULIANA: Ciaccio è arrabbiato. Io no: le terre si riprendono, le persone no.
 - NOTTE: GIULIANA: Flaviano ha la canzone nuova. Io le ho trovato le note. Domani la sentirete.
 - DIGIUNO: GIULIANA: I bambini cantano piano, come ha chiesto il vescovo. Piano, ma cantano.
 - ULTIMATUM: GIULIANA: Ciaccio vuole uscire con dieci archi. Io gli ho nascosto le frecce.
@@ -29,14 +27,14 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 **Flaviano**, cantore con la viella. Luogo: sul Ponte di San Martino. Figura: mercante con la viella.
 
 - NOTTE: FLAVIANO: Tre luci sul monte. Ecco la canzone nuova. Manca solo l'alba.
-- DIGIUNO: FLAVIANO: C'è una canzone di dieci anni fa, sui Valmarcola. Non la canto più.
+- DIGIUNO: FLAVIANO: C'è una canzone di undici anni fa, sui Valmarcola. Non la canto più.
 - ULTIMATUM: FLAVIANO: Undici stendardi e un monte solo: la rima è facile, il finale no.
 
-**Compagno**, medico, studioso di assedi. Luogo: casa del medico (edificio nuovo). Figura: anziano con la borsa del medico, senza barba bianca.
+**Vanni**, medico, studioso di assedi. Luogo: casa del medico (edificio nuovo). Figura: anziano con la borsa del medico, senza barba bianca.
 
-- NOTTE: COMPAGNO: Undici eserciti mangiano la piana in due settimane. Monaldo ha fretta.
-- DIGIUNO: COMPAGNO: Nel 1140 cacciammo i Valmarcola. Chi è cacciato prima o poi torna.
-- ULTIMATUM: COMPAGNO: Cento assedi ho studiato. Novanta finiscono con la fame, gli altri peggio.
+- NOTTE: VANNI: Undici eserciti mangiano la piana in due settimane. Monaldo ha fretta.
+- DIGIUNO: VANNI: Nel 1140 cacciammo i Valmarcola. Chi è cacciato prima o poi torna.
+- ULTIMATUM: VANNI: Cento assedi ho studiato. Novanta finiscono con la fame, gli altri peggio.
 
 **Masio il Romano**, gabelliere romano bloccato in città. Luogo: casotto del pedaggio a Porta Metauro, con Nello. Figura: mercante con la fascia gialla e rossa.
 
@@ -120,7 +118,7 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 **Padellino**, oste. Luogo: taverna del corso, verso Sant'Andrea (edificio nuovo). Figura: mercante col fiasco e il grembiule. Nota: le tre righe «se non INDIZIO_...» sono l'aiuto: dicono dove cercare l'indizio che manca.
 
 - NOTTE: PADELLINO: All'alba riapro. Il primo bicchiere lo offro io, chiunque vinca la piazza.
-- DIGIUNO (se non INDIZIO_CARTA): PADELLINO: Bubo cercava una carta e non la trovava. Bubo non perde mai niente.
+- DIGIUNO (se non INDIZIO_CARTA): PADELLINO: Renzo cercava una carta e non la trovava. Renzo non perde mai niente.
 - DIGIUNO (se non INDIZIO_ACQUA): PADELLINO: Giordano stamattina guardava la vasca come si guarda un malato.
 - DIGIUNO (se non INDIZIO_ROCCIA): PADELLINO: Giambono dice che certe pietre non reggono. Chiedetegli quali.
 - DIGIUNO: PADELLINO: Taverna chiusa, voci aperte. Dicono che al Bottaccione l'acqua parla strano.
@@ -137,15 +135,19 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 - DIGIUNO: CIOTTO: Niente pane, niente vino. Una partita a filetto, almeno?
 - ULTIMATUM: CIOTTO: Undici contro uno? In tre mosse la vinco, se le pedine stanno ferme.
 
-**Fazio**, maestro di congegni. Luogo: bottega dei conti e dei congegni. Figura: mercante con una grande chiave.
+**Fazio**, maestro di congegni e d'opera (l'argano di Porta Romana è suo), e suona la chiarina, la tromba lunga dei cortei. Luogo: bottega dei conti e dei congegni. Figura: mercante con una grande chiave. Entrando nella sua bottega si sente il suo segnale di chiarina (brano `fazio` dell'audio).
 
-- NOTTE: FAZIO: Ho unto i cardini. Se domani si apre, almeno non cigola.
+- NOTTE (se BORGO_FUORI): FAZIO: La bottega l'hanno rovesciata. Le serrature le ho salvate: senza, la porta non regge.
+- NOTTE: FAZIO: Ho unto i cardini e pulito la chiarina. All'alba, se serve, suono io il segnale.
 - DIGIUNO: FAZIO: La porta si apre e si richiude in un fiato. L'argano l'ho fatto io.
 - ULTIMATUM: FAZIO: Se tirate questa leva, la porta scende. Se non la tirate, no. Facile.
 
 **Lauretta**, maestra dei numeri, moglie di Fazio. Luogo: bottega di famiglia. Figura: popolana con la tavoletta dei conti.
 
+- NOTTE (se BORGO_FUORI): LAURETTA: Stanotte eravamo nella pieve, con Renzo e le carte. Nicoluccio ha dormito tutta la notte.
 - NOTTE: LAURETTA: Nicoluccio dorme sulle pedine di Ciotto. Le ha contate tutte prima di chiudere gli occhi.
+- DIGIUNO (se BORGO_DENTRO): LAURETTA: Sei giorni di grano, per tutti. Li ho contati tre volte: bastano, se nessuno ruba.
+- DIGIUNO (se BORGO_FUORI): LAURETTA: Sette giorni di grano, dentro. Per noi del borgo, quello che c'è nella madia.
 - DIGIUNO: LAURETTA: Ho rifatto il conto tre volte. Dentro: sei giorni di grano. Fuori: sette, e il borgo.
 - ULTIMATUM: LAURETTA: Settanta bocche nel borgo. Con il grano dei consoli, un giorno in meno per tutti.
 
@@ -155,20 +157,22 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 - DIGIUNO: NICOLUCCIO: Ciotto mi ha insegnato il filetto. Gli ho vinto tre volte. Quasi.
 - ULTIMATUM: NICOLUCCIO: Mamma dice che undici è più di dieci. Io lo sapevo già.
 
-**Bubo**, custode delle carte della pieve. Luogo: cella delle carte nella chiesa. Figura: frate senza tonsura, con un rotolo. Nota: la battuta del DIGIUNO imposta `INDIZIO_CARTA`.
+**Renzo**, custode delle carte della pieve. Luogo: cella delle carte nella chiesa. Figura: frate senza tonsura, con un rotolo. Nota: la battuta del DIGIUNO imposta `INDIZIO_CARTA`.
 
-- NOTTE: BUBO: Le carte le ho salvate tutte. Una sola manca, e lo sapete già quale.
-- DIGIUNO: BUBO: Manca il disegno dell'acquedotto. L'aveva chiesto il capitolo, e non torna.
-- ULTIMATUM: BUBO: Guarda: un gioco inciso dai romani. Mille anni e ancora si gioca.
+- NOTTE: RENZO: Le carte le ho salvate tutte. Una sola manca, e lo sapete già quale.
+- DIGIUNO: RENZO: Manca il disegno dell'acquedotto. L'aveva chiesto il capitolo, e non torna.
+- DIGIUNO: RENZO: Ho visto il sigillo dei consoli su una lettera in uscita. Non era per il papa.
+- ULTIMATUM: RENZO: Guarda: un gioco inciso dai romani. Mille anni e ancora si gioca.
 
-**Valeriana**, guardia di ronda del borgo, fidanzata di Bubo. Luogo: strada verso Porta Romana. Figura: popolana con lanterna e bastone.
+**Valeriana**, guardia di ronda del borgo, fidanzata di Renzo. Luogo: strada verso Porta Romana. Figura: popolana con lanterna e bastone.
 
 - NOTTE: VALERIANA: Stanotte un canonico ha preso la strada di San Girolamo. Verso il monte, da solo.
-- DIGIUNO: VALERIANA: Botteghe chiuse anche nel borgo. Bubo, quel rotolo lo leggi domani.
+- DIGIUNO: VALERIANA: Botteghe chiuse anche nel borgo. Renzo, quel rotolo lo leggi domani.
 - ULTIMATUM: VALERIANA: Bando dei consoli: chi ha un carro lo porta a Porta Romana. Subito.
 
 **Ragnetto**, lavorante della calcara. Luogo: la calcara (edificio nuovo). Figura: soldato senza elmo, braccia nude, trave in spalla.
 
+- NOTTE (se BORGO_FUORI): RAGNETTO: Il fuoco ha preso la calcara. La calce no: quella non brucia, è già bruciata.
 - NOTTE: RAGNETTO: Il vescovo nella calce, una volta. E ha perdonato. Io non ci riuscirei.
 - DIGIUNO: RAGNETTO: Mia nonna diceva che il fuoco del borgo fu un male che salvò. Non so cosa vuol dire.
 - ULTIMATUM: RAGNETTO: Datemi un'ora e questa trave sta sulle mura. Due, se ci metto la calce.

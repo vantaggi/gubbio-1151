@@ -38,6 +38,10 @@ Regia (solo con `INDIZIO_ROCCIA`): dove la striscia nera tocca il sentiero si ve
 
 - UBALDO (calmo): E qualcuna è vera. Camminate piano.
 
+Se `INDIZIO_ROCCIA`, al posto della battuta di Ubaldo:
+
+- UBALDO (calmo): Due che dicono la stessa cosa, di solito dicono il vero. Camminate piano.
+
 > Nota. La striscia è il livello scuro della parete del Bottaccione, quello della Sez. 22 (BG3). Le battute di Berto in città (Sez. 31B) la annunciano: se Berto non è stato ascoltato, la scena regge lo stesso.
 
 ---
@@ -54,7 +58,7 @@ Regia: nebbia verde bassa sull'acqua del Camignano. Vale solo se F6 tiene il per
 
 - ANTONIO (preoccupato): Quest'aria puzza di Cagli. Hanno versato veleno nel fosso.
 - UBALDO (calmo): Restate nel mio passo. Finché mi siete vicini, la benedizione vi copre.
-- SISTEMA: Nella nebbia verde si perdono HP. Restare vicini a Ubaldo li protegge.
+- SISTEMA: Nella nebbia verde si perdono PV. Restare vicini a Ubaldo li protegge.
 
 ---
 
@@ -64,7 +68,7 @@ Regia: nebbia verde bassa sull'acqua del Camignano. Vale solo se F6 tiene il per
 | :-- | :-- |
 | Luogo | Strada del Bottaccione, sotto un arco di contrafforte |
 | Condizione | il giocatore entra nella zona d'ascolto senza farsi vedere |
-| Imposta | `PIANO_DI_CORRADO` |
+| Imposta | `PIANO_DI_CORRADO`; `ESULE_PRIGIONIERO` oppure `ESULE_LIBERATO` (dilemma D2) |
 
 Regia: due Guerrieri della Roccia di Spoleto stanno di guardia vicino a un fuoco. Il gruppo è nascosto sotto l'arco. Se il giocatore si fa vedere prima, parte la battaglia e la scena si salta.
 
@@ -120,21 +124,26 @@ Regia: Corrado, il doppio di un uomo, batte il martello sulla pietra del condott
 - CORRADO: Allora morirai da cavaliere. Fa più rumore.
 - UBALDO (deciso): Corrado di Spoleto. Posa il martello e torna a casa con le tue gambe.
 - CORRADO: Questa corazza l'ha battuta il patto del Grifo, vescovo. Nessuna lama la apre.
+
+Se `RUFINO_ASCOLTATO`:
+
+- GIORGIO (deciso): Rufino dice che nessun ferro è stregato. Col calore si apre.
+
+Poi, per tutti:
+
 - ANTONIO (deciso): Le lame no. Il fuoco sì.
 
 ### Battute in battaglia
 
-Una per evento, la prima volta che succede. Gli eventi sono quelli della Sez. 26A e del piano IA dei boss.
+Una per evento, la prima volta che succede, dentro la battaglia e non nel dialogo della scena. Gli eventi sono quelli della Sez. 26A e del piano IA dei boss. Formato delle righe di battaglia: `- IN BATTAGLIA (evento): PARLANTE: testo` (README); `tools/genera_storia.py` le mette da parte e non le recita prima dello scontro.
 
-| Evento | Battuta |
-| :-- | :-- |
-| Turno 1, Scudo di Forgia | CORRADO: Forgia, rispondi! |
-| Turno 2, Martello d'Assedio su Giorgio | CORRADO: Il martello cerca il cavaliere! |
-| Primo colpo fisico respinto prima dell'ustione | ANTONIO (deciso): Giorgio, la lancia scivola! Prima scaldo io il ferro. |
-| Prima Ustione su Corrado | CORRADO: Le piastre... bruciano! |
-| Corrado in BREAK | CORRADO: Il ferro... non risponde... |
-| Un eroe cade | UBALDO (deciso): In piedi! Non qui, non stanotte! |
-| Corrado sotto metà HP | CORRADO: Bene! Finalmente si suda! |
+- IN BATTAGLIA (turno 1, Scudo di Forgia): CORRADO: Forgia, rispondi!
+- IN BATTAGLIA (turno 2, Martello d'Assedio su Giorgio): CORRADO: Il martello cerca il cavaliere!
+- IN BATTAGLIA (primo colpo fisico respinto prima dell'ustione): ANTONIO (deciso): Giorgio, la lancia scivola! Prima scaldo io il ferro.
+- IN BATTAGLIA (prima Ustione su Corrado): CORRADO: Le piastre... bruciano!
+- IN BATTAGLIA (Corrado in BREAK): CORRADO: Il ferro... non risponde...
+- IN BATTAGLIA (un eroe cade): UBALDO (deciso): In piedi! Non qui, non stanotte!
+- IN BATTAGLIA (Corrado sotto metà PV): CORRADO: Bene! Finalmente si suda!
 
 ### Dopo la vittoria
 
@@ -142,13 +151,13 @@ Regia: la corazza di Corrado fuma, le piastre colano come cera. Lui arretra fino
 
 - CORRADO: Il ferro... si piega?
 - CORRADO: Non è finita, vescovo. Spoleto ha altre forge, e Monaldo altri martelli.
-- CORRADO: E chiedete ai vostri esuli chi mi ha mostrato la strada.
+- CORRADO: La strada me l'ha data un esule. Il disegno, qualcuno che dorme dentro le mura.
 
 Regia: Corrado si lascia cadere nel vuoto. Sotto, un tonfo nell'acqua del Camignano. Silenzio. Poi solo il rumore della crepa.
 
 - GIORGIO (preoccupato): È caduto... L'ho lasciato andare.
 - UBALDO (calmo): No, Giorgio. Hai difeso l'acqua. Il resto non è tuo.
-- UBALDO (preoccupato): I nostri esuli... Dieci anni, e non li ho mai cercati.
+- UBALDO (preoccupato): I nostri esuli... Undici anni, e non li ho mai cercati.
 - ANTONIO (calmo): La crepa, piuttosto. Fatevi da parte.
 
 Regia: Antonio raccoglie il martello abbandonato, lo scalda tra le mani finché il ferro diventa rosso, e lo preme nella crepa. Il vapore sale. L'acqua smette di uscire.
@@ -159,7 +168,7 @@ Regia: Antonio raccoglie il martello abbandonato, lo scalda tra le mani finché 
 - SISTEMA: Il condotto è salvo.
 - OBIETTIVO: Rientra in città da Porta Metauro.
 
-> Nota v2. Se Q-SM01 è consegnata o c'è `RUFINO_ASCOLTATO`, Corrado entra in battaglia con uno scudo in meno: chi sa che il Patto è solo ferro a strati lo colpisce meglio.
+> Nota v2. Se Q-SM01 è consegnata o c'è `RUFINO_ASCOLTATO`, Corrado entra in battaglia con uno scudo in meno: chi sa che il Patto è solo ferro a strati lo colpisce meglio. Il copione legge `RUFINO_ASCOLTATO` nella battuta di Giorgio qui sopra; lo scudo in meno è del codice della battaglia (`docs/bandiere_da_fare.md`).
 
 > Nota. Corrado non muore: nella v1 è l'ultimo boss, ma la Sez. 11 (beat 6) lo rivuole in un duello al passo. Così resta disponibile per un aggiornamento.
 
@@ -192,15 +201,19 @@ Se `ESULE_PRIGIONIERO`, appena dentro:
 - CECCO: Lo tengo io alla postierla, monsignore. Nessuno lo tocca.
 
 - UBALDO (calmo): Manca poco all'alba. Se avete promesso qualcosa a qualcuno, è il momento di mantenerlo.
-- SISTEMA: Ora puoi girare la città. Quando sei pronto, raggiungi Piazza Grande.
-- OBIETTIVO: All'alba, raggiungi Piazza Grande.
-
-Regia: tempo libero. È qui che si consegnano le quest aperte. Entrando in Piazza Grande compare una conferma:
-
 - SISTEMA: L'alba sta per sorgere. Vuoi andare incontro all'araldo?
 - SCELTA: Sì, è ora / Non ancora
 
-«Non ancora» riporta il giocatore un passo indietro sul varco. «Sì» avvia E-01. Prima di E-01 il gioco propone di salvare.
+Se «Sì, è ora» (`ALBA_CONFERMATA`):
+
+- OBIETTIVO: All'alba, raggiungi Piazza Grande.
+
+Se «Non ancora»:
+
+- SISTEMA: Ora puoi girare la città. Quando sei pronto, parla con il console Guido in Piazza Grande.
+- OBIETTIVO: Quando sei pronto, parla con Guido in Piazza Grande.
+
+Regia: con «Non ancora» è tempo libero: è qui che si consegnano le quest aperte. E-01 parte solo con `ALBA_CONFERMATA`: la stessa domanda la rifà il console Guido in Piazza Grande, nella sua battuta della NOTTE (`03_npc_ambiente.md`). Prima di E-01 il gioco propone di salvare.
 
 ---
 
@@ -209,10 +222,10 @@ Regia: tempo libero. È qui che si consegnano le quest aperte. Entrando in Piazz
 | | |
 | :-- | :-- |
 | Luogo | Piazza Grande, alba |
-| Condizione | `RIENTRO_PORTA_METAURO` e conferma |
+| Condizione | `RIENTRO_PORTA_METAURO` e `ALBA_CONFERMATA` (la voce «Sì, è ora», in B-05 o dal console Guido) |
 | Imposta | `ATTO_I_COMPLETATO`; `GIUSTIZIA_OFFERTA` se il giocatore offre giustizia (D4) |
 
-Regia: luce bassa e rosata. Il popolo in piazza, stanco e affamato. L'araldo rientra a cavallo, con la stessa scorta del primo giorno.
+Regia: luce bassa e rosata. Il popolo in piazza, stanco e affamato; fra la folla, Ciaccio con l'arco in spalla. L'araldo rientra a cavallo, con la stessa scorta del primo giorno.
 
 - ARALDO: Le tre albe sono passate, vescovo. Le chiavi.
 
@@ -222,12 +235,13 @@ Il dilemma D4 sta qui, nella vista di gioco, prima che partano le bande della cu
 
 - SCELTA: Giustizia agli esuli / Le chiavi restano
 
-Se «Offri giustizia agli esuli» (`GIUSTIZIA_OFFERTA`):
+Se «Giustizia agli esuli» (`GIUSTIZIA_OFFERTA`):
 
 - UBALDO (calmo): Le chiavi no. Ma Gubbio offre giustizia a chi ha cacciato.
 - UBALDO (calmo): Tornino i Valmarcola, e un giudizio giusto decida delle terre contese.
 - ARALDO: Monaldo non vende la vittoria, vescovo. E non la compra con le scuse.
 - ARALDO: Allora Monaldo verrà a prenderle.
+- CIACCIO: Giustizia agli esuli? E a me chi la rende, monsignore?
 
 Se «Le chiavi restano»:
 
@@ -239,7 +253,7 @@ Poi, per tutti:
 
 - UBALDO (deciso): Che venga. Questa è la nostra risposta.
 
-Regia: Ubaldo alza il pastorale verso la torre. Sul Palazzo dei Consoli il drappo rosso col monte bianco si srotola davanti al grifo dell'araldo. Il Campanone suona a doppi, a lungo. Le note scendono per la valle. Il cavallo dell'araldo si impenna.
+Regia: Ubaldo alza il pastorale verso la torre. Sul Palazzo dei Consoli il drappo rosso col monte bianco si srotola davanti al grifo dell'araldo. Il Campanone suona a doppi, a lungo. Da San Pietro risponde un tamburo, poi le campane dell'abbazia. Le note scendono per la valle. Il cavallo dell'araldo si impenna.
 
 - GUIDO (deciso): Suonate! Che lo sentano fino a Perugia!
 - ARALDO: Avete scelto, eugubini. Ricordatevelo quando bruceranno le vostre case.
@@ -248,6 +262,7 @@ Regia: l'araldo esce al galoppo. Il Campanone continua.
 
 - GIORGIO (calmo): E adesso, padre?
 - UBALDO (calmo): Adesso cominciano, Giorgio. Ma ci hanno visti in piedi.
+
 Se `GIUSTIZIA_OFFERTA`:
 
 - ANTONIO (calmo): Hai aperto una porta, vescovo. Non è servito. Ma l'hanno vista.
@@ -268,11 +283,11 @@ Poi, per tutti:
 
 | | |
 | :-- | :-- |
-| Luogo | Basilica, la vetrata del prologo |
+| Luogo | a schermo intero, subito dopo E-01: la vetrata della Basilica, come in P-01 |
 | Condizione | `ATTO_I_COMPLETATO` |
 | Imposta | `CRONACA_V1_FINITA`, salvataggio di completamento |
 
-Regia: la stessa inquadratura di P-01. Un solo vetro ha preso colore e figure: un gigante di ferro sopra gli archi di un acquedotto, e sotto tre uomini con un cero ciascuno. Gli altri vetri restano chiari.
+Regia: non si risale alla Basilica: finita E-01 la scena parte da sola, a schermo intero come il prologo. La stessa inquadratura di P-01. Un solo vetro ha preso colore e figure: un gigante di ferro sopra gli archi di un acquedotto, e sotto tre uomini con un cero ciascuno. Gli altri vetri restano chiari.
 
 - NARRATORE: Così passò la terza alba, e Gubbio non aprì le porte.
 - NARRATORE: Un vetro ha preso il suo colore. Gli altri aspettano ancora la loro storia.

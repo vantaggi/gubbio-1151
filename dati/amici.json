@@ -4,7 +4,7 @@
   "CIACCIO":    {"nome": "Ciaccio", "base": "soldato", "accessorio": "arco_lungo", "ancora": "varco E"},
   "GIULIANA":   {"nome": "Giuliana", "base": "popolana", "accessorio": "salterio", "ancora": "san_domenico"},
   "FLAVIANO":   {"nome": "Flaviano", "base": "mercante", "accessorio": "viella", "ancora": "ponte_san_martino"},
-  "COMPAGNO":   {"nome": "Compagno", "base": "anziano_glabro", "accessorio": "borsa_medico", "ancora": "edificio casa_medico"},
+  "VANNI":      {"nome": "Vanni", "base": "anziano_glabro", "accessorio": "borsa_medico", "ancora": "edificio casa_medico"},
   "MASIO":      {"nome": "Masio il Romano", "base": "mercante", "accessorio": "fascia_gialla_rossa", "ancora": "porta_metauro"},
   "MONTANO":    {"nome": "Montano", "base": "mercante", "accessorio": "pinze_tavoletta", "ancora": "edificio banco_montano"},
   "RUFINO":     {"nome": "Mastro Rufino", "base": "mercante", "accessorio": "ruota", "ancora": "edificio bottega_carradore"},
@@ -21,7 +21,7 @@
   "FAZIO":      {"nome": "Fazio", "base": "mercante", "accessorio": "chiave", "ancora": "edificio bottega_conti", "borgo": true},
   "LAURETTA":   {"nome": "Lauretta", "base": "popolana", "accessorio": "tavoletta_conti", "ancora": "edificio bottega_conti", "borgo": true},
   "NICOLUCCIO": {"nome": "Nicoluccio", "base": "bambino", "accessorio": null, "ancora": "edificio bottega_conti", "borgo": true},
-  "BUBO":       {"nome": "Bubo", "base": "frate", "accessorio": "rotolo", "ancora": "sant_agostino", "borgo": true},
+  "RENZO":      {"nome": "Renzo", "base": "frate", "accessorio": "rotolo", "ancora": "sant_agostino", "borgo": true},
   "VALERIANA":  {"nome": "Valeriana", "base": "popolana", "accessorio": "lanterna_bastone", "ancora": "varco A", "borgo": true},
   "RAGNETTO":   {"nome": "Ragnetto", "base": "soldato_nudo", "accessorio": "trave", "ancora": "edificio calcara", "borgo": true},
   "ANDREUCCIO": {"nome": "Andreuccio", "base": "soldato", "accessorio": "scudo_monte", "ancora": "porta_romana"}

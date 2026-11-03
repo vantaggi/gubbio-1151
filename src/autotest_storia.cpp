@@ -69,6 +69,11 @@ namespace
                     avanti = true;
                 }
             }
+
+            if(! avanti)
+            {
+                avanti = risposta_di_un_npc(p);     // la conferma dell'alba, dal console Guido
+            }
         }
 
         return pos_a >= 0 && pos_b >= 0 && pos_a < pos_b ? 1 : 0;
