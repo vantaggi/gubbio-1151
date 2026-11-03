@@ -38,6 +38,116 @@ constexpr void accendi(GameState& p, uint64_t maschera)
     return (bandiere(p) >> int(b)) & 1;
 }
 
+// Una bandiera qualunque per indice: 0-63 la storia, 64-127 le quest e gli indizi (GameState::quest).
+[[nodiscard]] constexpr bool accesa(const GameState& p, int b)
+{
+    return b < 64 ? ((bandiere(p) >> b) & 1) : ((p.quest[(b - 64) / 8] >> ((b - 64) % 8)) & 1);
+}
+
+constexpr void accendi_una(GameState& p, int b)
+{
+    if(b == NESSUNA_BANDIERA)
+    {
+        return;
+    }
+
+    if(b < 64)
+    {
+        accendi(p, uint64_t(1) << b);
+    }
+    else
+    {
+        p.quest[(b - 64) / 8] = uint8_t(p.quest[(b - 64) / 8] | (1 << ((b - 64) % 8)));
+    }
+}
+
+// La guardia di una battuta vale? 'scelta' e' la voce scelta nell'ultimo menu della recita (-1 nessuno).
+[[nodiscard]] constexpr bool vale(const GameState& p, int guardia, int scelta)
+{
+    const Guardia& g = GUARDIA[guardia];
+
+    switch(g.tipo)
+    {
+        case TipoGuardia::SEMPRE:
+            return true;
+        case TipoGuardia::BANDIERA:
+        case TipoGuardia::VARIANTE_BANDIERA:
+            return accesa(p, int(g.a));
+        case TipoGuardia::NON_BANDIERA:
+        case TipoGuardia::VARIANTE_NON_BANDIERA:
+            return ! accesa(p, int(g.a));
+        case TipoGuardia::SCELTA:
+            return scelta == int(g.a);
+        case TipoGuardia::ALMENO_DUE:
+            return int(accesa(p, int(g.a))) + int(accesa(p, int(g.b))) + int(accesa(p, int(g.c))) >= 2;
+        case TipoGuardia::OGGETTO_E_NON_BANDIERA:
+            return p.oggetti[g.a] > 0 && ! accesa(p, int(g.b));
+    }
+
+    return false;
+}
+
+[[nodiscard]] constexpr bool variante(int guardia)
+{
+    TipoGuardia t = GUARDIA[guardia].tipo;
+    return t == TipoGuardia::VARIANTE_BANDIERA || t == TipoGuardia::VARIANTE_NON_BANDIERA;
+}
+
+// La voce di un NPC in una fase: la prima variante "(se BANDIERA)" che vale parla da sola (ritorna il suo
+// indice); se nessuna vale, -1 e parlano le altre righe della fase, in ordine.
+[[nodiscard]] constexpr int variante_che_vale(const GameState& p, const Battuta* tabella, int prima, int quante)
+{
+    for(int i = prima; i < prima + quante; ++i)
+    {
+        if(variante(tabella[i].guardia) && vale(p, tabella[i].guardia, -1))
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+// Una scelta fatta: accende la bandiera della voce e, per la prima voce, consuma l'oggetto.
+constexpr void scegli(GameState& p, const Battuta& b, int voce)
+{
+    accendi_una(p, b.accende[voce]);
+
+    if(voce == 0 && b.consuma >= 0 && p.oggetti[b.consuma] > 0)
+    {
+        --p.oggetti[b.consuma];
+    }
+}
+
+// Le scelte di una scena senza recitarla (il giro di tutta la storia): ogni menu prende la voce data.
+constexpr void scegli_tutto(GameState& p, int k, int voce, const Scena* tabella = SCENA)
+{
+    const Scena& s = tabella[k];
+    int scelta = -1;
+
+    for(int i = s.prima_battuta; i < s.prima_battuta + s.battute; ++i)
+    {
+        const Battuta& b = BATTUTA[i];
+
+        if(b.tipo == TipoBattuta::SCELTA && vale(p, b.guardia, scelta))
+        {
+            scelta = voce;
+            scegli(p, b, voce);
+        }
+    }
+}
+
+// Entrando in un'area: chi sale agli Stradoni durante il digiuno senza aver deciso del borgo l'ha
+// lasciato fuori (copione v2, A1-05b).
+constexpr void all_ingresso(GameState& p, int area)
+{
+    if(area == int(mondo::AreaId::MONTE_INGINO) && accesa(p, Bandiera::CITTA_IN_DIGIUNO) &&
+       ! accesa(p, Bandiera::BORGO_DENTRO) && ! accesa(p, Bandiera::BORGO_FUORI))
+    {
+        accendi(p, uint64_t(1) << int(Bandiera::BORGO_FUORI));
+    }
+}
+
 [[nodiscard]] constexpr bool fatta(const GameState& p, int scena)
 {
     return (p.scene_fatte[scena / 8] >> (scena % 8)) & 1;
@@ -130,9 +240,10 @@ inline constexpr int INCONTRO_DEL_TEATRO = 0;     // la Pattuglia Perugina che c
     return accesa(p, Bandiera::CITTA_IN_DIGIUNO) ? Fase::DIGIUNO : Fase::ULTIMATUM;
 }
 
-// Il giro di tutta la storia senza camminare: in ogni area (e a schermo intero) si gioca la prima scena
-// pronta, finche' non ne resta nessuna. Ritorna quante scene sono state visitate; 'p' e' lo stato finale.
-constexpr int gioca_tutta(GameState& p, const Scena* tabella = SCENA, int quante = SCENE)
+// Il giro di tutta la storia senza camminare: si gioca la prima scena pronta nell'ordine del copione
+// (ognuna nella sua area), finche' non ne resta nessuna. Ritorna quante scene sono state visitate; 'p' e'
+// lo stato finale. Ogni menu di scelta prende la voce 'voce'.
+constexpr int gioca_tutta(GameState& p, const Scena* tabella = SCENA, int quante = SCENE, int voce = 0)
 {
     int visitate = 0;
     bool avanti = true;
@@ -141,12 +252,15 @@ constexpr int gioca_tutta(GameState& p, const Scena* tabella = SCENA, int quante
     {
         avanti = false;
 
-        for(int area = NESSUNA_AREA; area < mondo::AREE_CONTEGGIO && ! avanti; ++area)
+        for(int k = 0; k < quante && ! avanti; ++k)
         {
-            int k = prossima_scena(p, area, tabella, quante);
-
-            if(k >= 0)
+            if(pronta(p, k, tabella[k].area, tabella))
             {
+                if(tabella == SCENA)
+                {
+                    scegli_tutto(p, k, voce, tabella);
+                }
+
                 chiudi_scena(p, k, tabella);
                 ++visitate;
                 avanti = true;

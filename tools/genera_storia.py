@@ -31,7 +31,13 @@ BANDIERE = ["PROLOGO_VISTO", "ULTIMATUM_RICEVUTO", "GIORGIO_NEL_GRUPPO", "CHIACC
             "ANTONIO_NEL_GRUPPO", "CITTA_IN_DIGIUNO", "PORTA_DEL_MONTE", "IMBOSCATA_STRADONI", "SPIA_CATTURATA",
             "CERI_RISVEGLIATI", "SPETTRI_VINTI", "VISIONE_BOTTACCIONE", "BOTTACCIONE_ENTRATI", "MIASMI_VISTI",
             "PIANO_DI_CORRADO", "CORRADO_INCONTRATO", "CONDOTTO_SALVO", "RIENTRO_PORTA_METAURO", "ATTO_I_COMPLETATO",
-            "CRONACA_V1_FINITA", "CORRADO_SCONFITTO"]
+            "CRONACA_V1_FINITA", "CORRADO_SCONFITTO", "BORGO_DENTRO", "BORGO_FUORI", "ESULE_PRIGIONIERO",
+            "ESULE_LIBERATO", "GIUSTIZIA_OFFERTA"]
+# Le bandiere delle quest, degli indizi e degli ascolti (intervallo 64-127): stanno in GameState::quest.
+BANDIERE_QUEST = ["INDIZIO_CARTA", "INDIZIO_ACQUA", "INDIZIO_ROCCIA", "RICCIARDO_ASCOLTATO", "RUFINO_ASCOLTATO", "PANE_DATO",
+         "DONO_MATTEO", "INDIZIO_LUCIA", "INDIZIO_VENDITORE", "INDIZIO_FONTANIERE"]
+PRIMA_QUEST = 64
+TUTTE = BANDIERE + [None] * (PRIMA_QUEST - len(BANDIERE)) + BANDIERE_QUEST
 
 # Le bandiere che nessuna scena legge (nelle condizioni) ma che legge il gioco, e dove.
 LETTE_DAL_GIOCO = {
@@ -45,14 +51,14 @@ LETTE_DAL_GIOCO = {
 DA_FARE = ["MIASMI_VISTI", "PIANO_DI_CORRADO", "CORRADO_INCONTRATO", "CERI_RISVEGLIATI"]
 
 # Dove avviene ogni scena (AreaId), dalla riga Luogo; None per le scene a schermo intero (prologo).
-AREE = {"P-00": None, "P-01": None, "P-02": None, "A1-01": "PIAZZA_GRANDE", "A1-02": "VIA_DEI_CONSOLI",
+AREE = {"P-00": None, "P-01": None, "P-02": None, "A1-01": "PIAZZA_GRANDE", "A1-02": "VIA_DEI_CONSOLI", "A1-05b": "SANT_ANDREA",
         "A1-03": "SAN_MARTINO", "A1-04": "TEATRO_ROMANO", "A1-05": "PIAZZA_GRANDE", "A1-06": "DUOMO_DUCALE",
         "A1-07": "MONTE_INGINO", "A1-08": "BASILICA_INTERNO", "A1-09": "BASILICA_INTERNO", "B-01": "GOLA_STRISCIA",
         "B-02": "GOLA_MIASMI", "B-03": "GOLA_ARCO", "B-04": "CONDOTTO", "B-05": "SAN_MARTINO",
         "E-01": "PIAZZA_GRANDE", "E-02": "BASILICA_INTERNO"}
 # Le parole della riga Luogo che confermano l'area scelta (il test controlla che ci siano).
 PAROLE_LUOGO = {"PIAZZA_GRANDE": "Piazza Grande", "VIA_DEI_CONSOLI": "via dei Consoli", "SAN_MARTINO": "San Martino",
-                "TEATRO_ROMANO": "Teatro Romano", "DUOMO_DUCALE": "Duomo", "MONTE_INGINO": "Stradoni",
+                "TEATRO_ROMANO": "Teatro Romano", "DUOMO_DUCALE": "Duomo", "MONTE_INGINO": "Stradoni", "SANT_ANDREA": "Sant'Andrea",
                 "BASILICA_INTERNO": "Basilica", "BOTTACCIONE": "Bottaccione", "GOLA_STRISCIA": "Bottaccione",
                 "GOLA_MIASMI": "Bottaccione", "GOLA_ARCO": "Bottaccione", "CONDOTTO": "Condotto"}
 
@@ -69,7 +75,7 @@ REGIA_DENTRO = -2           # la scena e' gia' recitata dalla cutscene della sce
 # C2 (le undici bandiere) entra prima che parli l'araldo, C2P (il pastorale) prima che risponda Ubaldo.
 # Le presentazioni a fermo immagine (C3) entrano prima che il personaggio parli la prima volta: Ubaldo
 # dopo il cartello della piazza, Giorgio, Antonio, Corrado.
-INSERTI = {"A1-01": {1: "C3U", 2: "C3G", 4: "C2", 7: "C2P"}, "A1-04": {1: "C3A"}, "B-04": {0: "C3C"}}
+INSERTI = {"A1-01": {1: "C3U", 2: "C3G", 4: "C2", 8: "C2P"}, "A1-04": {1: "C3A"}, "B-04": {0: "C3C"}}
 
 # Le battaglie delle scene (battaglia::INCONTRO). Quelle con un nemico sulla mappa partono toccandolo;
 # gli Spettri del Dubbio di A1-08 compaiono durante il rito: la scena parte entrando nella Basilica.
@@ -78,7 +84,8 @@ BATTAGLIE = {"A1-04": 0, "A1-07": 1, "B-04": 2, "A1-08": 3}
 PARLANTI = {"UBALDO": "Sant'Ubaldo", "GIORGIO": "Giorgio", "ANTONIO": "Antonio", "GUIDO": "Console Guido",
             "ARALDO": "Araldo di Perugia", "CORRADO": "Corrado di Spoleto", "CECCO": "Cecco il Balestriere",
             "GUERRIERO": "Guerriero di Spoleto", "SPIA": "Spia umbra", "SPETTRO": "Spettro del Dubbio",
-            "NELLO": "Nello", "FANTE": "Fante di Perugia", "CANONICO": "Canonico"}
+            "NELLO": "Nello", "ANDREUCCIO": "Andreuccio", "FAZIO": "Fazio", "LAURETTA": "Lauretta",
+            "FOLLA": "Folla", "RAGAZZO": "Ragazzo eugubino", "FANTE": "Fante di Perugia", "CANONICO": "Canonico"}
 SENZA_NOME = {"NARRATORE", "AREA", "SISTEMA", "OBIETTIVO", "SCELTA"}
 ESPRESSIONI = ["calmo", "preoccupato", "deciso"]
 TIPI = ["PERSONAGGIO", "NARRATORE", "AREA", "SISTEMA", "OBIETTIVO", "SCELTA"]
@@ -102,11 +109,149 @@ AREE_NPC = {"Piazza Grande": "PIAZZA_GRANDE", "via dei Consoli": "VIA_DEI_CONSOL
             "Monte Ingino": "MONTE_INGINO", "Basilica": "BASILICA", "Strada del Bottaccione": "BOTTACCIONE"}
 
 RIGA_BATTUTA = re.compile(r"^- ([A-Z][A-Z' ]*?)(?: \(([a-z]+)\))?: (.+)$")
-RIGA_NPC = re.compile(r"^- (ULTIMATUM|DIGIUNO|NOTTE): ([A-Z][A-Z' ]*?)(?: \(([a-z]+)\))?: (.+)$")
+RIGA_NPC = re.compile(r"^- (ULTIMATUM|DIGIUNO|NOTTE)(?: \(se (non )?([A-Z_0-9]+)\))?: ([A-Z][A-Z' ]*?)(?: \(([a-z]+)\))?: (.+)$")
 
 
 class ErroreStoria(Exception):
     pass
+
+
+# --- le varianti del copione v2 ------------------------------------------------------------------------
+# Ogni battuta ha una guardia: la recita il gioco solo se vale. Le guardie vengono dalle righe del copione
+# fra le battute: "Se «voce» (`BANDIERA`):" (il blocco della voce scelta nell'ultimo menu, che accende la
+# bandiera), "Se `BANDIERA`:" e "Altrimenti:", "Se `BANDIERA`, al posto della battuta di X:" (la battuta
+# prima vale senza la bandiera), "Se almeno due indizi:", "Poi, per tutti:"; negli NPC "Con «voce» ...".
+# Un blocco sono le battute subito dopo la sua riga, fino alla prima riga vuota.
+GUARDIE = ["SEMPRE", "BANDIERA", "NON_BANDIERA", "SCELTA", "ALMENO_DUE", "VARIANTE_BANDIERA",
+           "VARIANTE_NON_BANDIERA", "OGGETTO_E_NON_BANDIERA"]
+SEMPRE = ("SEMPRE", 0, 0, 0)
+INDIZI_DEL_CONDOTTO = ("INDIZIO_CARTA", "INDIZIO_ACQUA", "INDIZIO_ROCCIA")
+OGGETTO_CRESCIA = 0          # GameState::oggetti[0], la Crescia di Pasqua (battaglia_dati.h)
+NESSUNA = 255
+
+
+def indice(b):
+    return TUTTE.index(b)
+
+
+class Battuta:
+    """Una battuta del copione: si spacchetta come (chi, espressione, frase, dove), come nella v1, e porta
+    la guardia, le voci e gli effetti di una SCELTA."""
+
+    def __init__(self, chi, espressione, frase, dove, guardia=SEMPRE):
+        self.d = {"chi": chi, "espr": espressione or "calmo", "frase": frase.strip(), "dove": dove,
+                  "guardia": guardia, "voci": None, "accende": (NESSUNA, NESSUNA), "consuma": -1, "fase": None}
+
+    def __getitem__(self, k):
+        return tuple(self)[k] if isinstance(k, int) else self.d[k]
+
+    def __setitem__(self, k, v):
+        self.d[k] = v
+
+    def __iter__(self):
+        return iter((self.d["chi"], self.d["espr"], self.d["frase"], self.d["dove"]))
+
+    def __len__(self):
+        return 4
+
+
+def battuta(chi, espressione, frase, dove, guardia=SEMPRE):
+    return Battuta(chi, espressione, frase, dove, guardia)
+
+
+def id_voce(base, k):
+    return f"{base}_{'AB'[k]}"
+
+
+class Varianti:
+    """Lo stato del lettore delle varianti dentro una scena o un NPC."""
+
+    def __init__(self, dove):
+        self.dove = dove
+        self.guardia = SEMPRE
+        self.nel_blocco = 0
+        self.ultima_bandiera = None
+        self.scelta = None              # l'ultima battuta SCELTA
+        self.prossima_scelta = SEMPRE   # la guardia della prossima SCELTA (il D3 della popolana)
+
+    def voce(self, etichetta, n):
+        voci = self.scelta["voci"] if self.scelta else None
+        if not voci:
+            raise ErroreStoria(f"{self.dove}:{n}: blocco «{etichetta}» senza un menu SCELTA prima")
+        e = etichetta.lower()
+        for k, v in enumerate(voci):
+            if e in v.lower() or v.lower() in e:
+                return k
+        raise ErroreStoria(f"{self.dove}:{n}: «{etichetta}» non e' una voce di {voci}")
+
+    def riga(self, riga, n, battute):
+        """Legge una riga che non e' una battuta; ritorna True se era una riga di variante."""
+        r = riga.strip()
+        if not r:
+            if self.nel_blocco:
+                self.guardia, self.nel_blocco = SEMPRE, 0
+            return False
+        m = re.match(r"^(?:Se|Con) «(.+?)»(.*):$", r)
+        if m:
+            k = self.voce(m.group(1), n)
+            flag = re.findall(r"`([A-Z_0-9]+)`", m.group(2))
+            if flag:
+                self.scelta["accende"] = tuple(indice(flag[0]) if j == k else self.scelta["accende"][j] for j in (0, 1))
+            if "si toglie 1 Crescia" in m.group(2):
+                self.scelta["consuma"] = OGGETTO_CRESCIA
+            self.guardia, self.nel_blocco = ("SCELTA", k, 0, 0), 0
+            return True
+        if r == "Se almeno due indizi:":
+            self.guardia, self.nel_blocco = ("ALMENO_DUE",) + tuple(indice(b) for b in INDIZI_DEL_CONDOTTO), 0
+            return True
+        m = re.match(r"^Se `([A-Z_0-9]+)`(, al posto della battuta di \w+)?.*:$", r)
+        if m:
+            b = indice(m.group(1))
+            if m.group(2):
+                prima = battute[-1]
+                prima["guardia"] = ("NON_BANDIERA", b, 0, 0)
+            self.guardia, self.nel_blocco, self.ultima_bandiera = ("BANDIERA", b, 0, 0), 0, b
+            return True
+        if r == "Altrimenti:":
+            self.guardia, self.nel_blocco = ("NON_BANDIERA", self.ultima_bandiera, 0, 0), 0
+            return True
+        if r == "Poi, per tutti:":
+            self.guardia, self.nel_blocco = SEMPRE, 0
+            return True
+        m = re.search(r"almeno una Crescia di Pasqua e non c'è `([A-Z_0-9]+)`", r)
+        if m:
+            self.prossima_scelta = ("OGGETTO_E_NON_BANDIERA", OGGETTO_CRESCIA, indice(m.group(1)), 0)
+            return True
+        return False
+
+    def aggiungi(self, b, battute):
+        if b["chi"] == "SCELTA":
+            b["voci"] = tuple(v.strip() for v in b["frase"].split(" / "))
+            if len(b["voci"]) != 2:
+                raise ErroreStoria(f"{b['dove']}: una SCELTA ha due voci")
+            b["guardia"], self.prossima_scelta = self.prossima_scelta, SEMPRE
+            self.scelta = b
+        else:
+            b["guardia"] = self.guardia if b["guardia"] == SEMPRE else b["guardia"]
+        if self.guardia != SEMPRE:
+            self.nel_blocco += 1
+        battute.append(b)
+
+
+def togli_scelte_senza_blocchi(battute):
+    """Una SCELTA che nessun blocco segue (il «Sì, è ora / Non ancora» di B-05) non conta: non si recita."""
+    usate = set()
+    scelta = None
+    for b in battute:
+        if b["chi"] == "SCELTA":
+            scelta = id(b)
+        elif b["guardia"][0] == "SCELTA":
+            usate.add(scelta)
+    return [b for b in battute if b["chi"] != "SCELTA" or id(b) in usate]
+
+
+def bandiere_delle_scelte(battute):
+    return {TUTTE[a] for b in battute if b["chi"] == "SCELTA" for a in b["accende"] if a != NESSUNA}
 
 
 def bandiere_in(testo):
@@ -119,10 +264,11 @@ def leggi_scene(testi_file):
     for nome, testo in testi_file:
         attuale = None
         for n, riga in enumerate(testo.splitlines(), 1):
-            m = re.match(r"^## ([A-Z0-9]+-\d+) · (.+)$", riga)
+            m = re.match(r"^## ([A-Z0-9]+-\d+[a-z]?) · (.+)$", riga)
             if m:
                 attuale = {"codice": m.group(1), "titolo": m.group(2), "luogo": "", "richieste": [], "vietate": [],
                            "imposta": [], "battute": [], "dove": f"{nome}:{n}"}
+                varianti = Varianti(nome)
                 scene.append(attuale)
                 continue
             if attuale is None:
@@ -134,6 +280,8 @@ def leggi_scene(testi_file):
                     attuale["luogo"] = valore
                 elif chiave == "Condizione":
                     prima, _, dopo = valore.partition(" e non ")
+                    if " né " in valore:
+                        prima, _, dopo = valore.partition(" né ")
                     attuale["richieste"] = bandiere_in(prima)
                     attuale["vietate"] = bandiere_in(dopo)
                     altre = [b for b in re.findall(r"`([A-Z_0-9]+)`", valore) if b not in BANDIERE]
@@ -149,7 +297,13 @@ def leggi_scene(testi_file):
                     raise ErroreStoria(f"{nome}:{n}: espressione '{espressione}' sconosciuta")
                 if chi not in SENZA_NOME and chi not in PARLANTI:
                     raise ErroreStoria(f"{nome}:{n}: parlante '{chi}' senza nome a schermo in PARLANTI")
-                attuale["battute"].append((chi, espressione or "calmo", frase.strip(), f"{nome}:{n}"))
+                varianti.aggiungi(battuta(chi, espressione, frase, f"{nome}:{n}"), attuale["battute"])
+                continue
+            varianti.riga(riga, n, attuale["battute"])
+    for s in scene:
+        s["battute"] = togli_scelte_senza_blocchi(s["battute"])
+        scelte = bandiere_delle_scelte(s["battute"])
+        s["imposta"] = [b for b in s["imposta"] if b not in scelte]
     return scene
 
 
@@ -164,18 +318,42 @@ def leggi_npc(testo):
             continue
         m = re.match(r"^\*\*(.+?)\*\*", riga)
         if m and area:
-            attuale = {"area": area, "nome": m.group(1), "frasi": []}
+            attuale = {"area": area, "nome": m.group(1), "frasi": [], "imposta": None, "imposta_fasi": 0}
+            varianti = Varianti(f"{FILE_NPC} ({m.group(1)})")
+            fase_corrente = None
+            nota = re.search(r"(una qualunque sua battuta|la battuta del (ULTIMATUM|DIGIUNO|NOTTE)) imposta `([A-Z_0-9]+)`",
+                             riga)
+            if nota:
+                attuale["imposta"] = indice(nota.group(3))
+                attuale["imposta_fasi"] = 7 if nota.group(2) is None else 1 << FASI.index(nota.group(2))
             npc.append(attuale)
             continue
+        if attuale is None:
+            continue
         m = RIGA_NPC.match(riga)
-        if m and attuale is not None:
-            fase, chi, espressione, frase = m.groups()
-            attuale["frasi"].append((fase, chi, espressione or "calmo", frase.strip()))
+        if m:
+            fase, non, flag, chi, espressione, frase = m.groups()
+            b = battuta(chi, espressione, frase, f"{FILE_NPC} ({attuale['nome']})")
+            if flag:
+                b["guardia"] = ("VARIANTE_NON_BANDIERA" if non else "VARIANTE_BANDIERA", indice(flag), 0, 0)
+            fase_corrente = fase
+            b["fase"] = fase
+            varianti.guardia, varianti.nel_blocco = SEMPRE, 0
+            varianti.aggiungi(b, attuale["frasi"])
+            continue
+        b = RIGA_BATTUTA.match(riga)
+        if b and fase_corrente:
+            chi, espressione, frase = b.groups()
+            nuova = battuta(chi, espressione, frase, f"{FILE_NPC} ({attuale['nome']})")
+            nuova["fase"] = fase_corrente
+            varianti.aggiungi(nuova, attuale["frasi"])
+            continue
+        varianti.riga(riga, 0, attuale["frasi"])
     return [p for p in npc if p["frasi"]]
 
 
 def id_battuta(codice, k):
-    return "C_" + codice.replace("-", "_") + f"_{k:02d}"
+    return "C_" + codice.replace("-", "_").upper() + f"_{k:02d}"
 
 
 def id_parlante(chi):
@@ -202,11 +380,11 @@ def indice_regia(codice):
 
 
 def id_narratore(codice, k):
-    return "R_" + codice.replace("-", "_") + f"_{k:02d}"
+    return "R_" + codice.replace("-", "_").upper() + f"_{k:02d}"
 
 
 def id_titolo(codice):
-    return "SCENA_" + codice.replace("-", "_")
+    return "SCENA_" + codice.replace("-", "_").upper()
 
 
 def id_npc(i, k):
@@ -285,14 +463,21 @@ def testi_del_copione(scene, npc):
     for s in scene:
         righe.append(f"{id_titolo(s['codice']):26s}| DIALOGO | {s['titolo']}")
     for s in scene:
-        for k, (chi, _, frase, _) in enumerate(s["battute"]):
+        for k, b in enumerate(s["battute"]):
+            chi, _, frase, _ = b
+            if b["voci"]:
+                righe += [f"{id_voce(id_battuta(s['codice'], k), j):26s}| SCELTA  | {v}" for j, v in enumerate(b["voci"])]
+                continue
             righe.append(f"{id_battuta(s['codice'], k):26s}| DIALOGO | {frase}")
             # il narratore parla anche nelle bande delle cutscene: la stessa frase, al massimo 2 righe
             if chi == "NARRATORE":
                 righe.append(f"{id_narratore(s['codice'], k):26s}| NARRATORE | {frase}")
     for i, p in enumerate(npc):
-        for k, (_, _, _, frase) in enumerate(p["frasi"]):
-            righe.append(f"{id_npc(i, k):26s}| DIALOGO | {frase}")
+        for k, b in enumerate(p["frasi"]):
+            if b["voci"]:
+                righe += [f"{id_voce(id_npc(i, k), j):26s}| SCELTA  | {v}" for j, v in enumerate(b["voci"])]
+                continue
+            righe.append(f"{id_npc(i, k):26s}| DIALOGO | {b['frase']}")
     return "\n".join(r for r in righe if r is not None) + "\n"
 
 
@@ -313,22 +498,45 @@ def header(scene, npc, posti):
     out += [f"inline constexpr int SCENE = {len(scene)};", "inline constexpr int NESSUNA_AREA = -1;", "",
             "enum class TipoBattuta : uint8_t", "{"] + [f"    {t}," for t in TIPI] + ["};", "",
             "enum class Espressione : uint8_t", "{"] + [f"    {e.upper()}," for e in ESPRESSIONI] + ["};", "",
-            "struct Battuta", "{", "    testi::TestoId testo;", "    testi::TestoId parlante;     // per un PERSONAGGIO",
-            "    TipoBattuta tipo;", "    Espressione espressione;", "};", "",
+            "enum class TipoGuardia : uint8_t", "{"] + [f"    {g}," for g in GUARDIE] + ["};", "",
+            "// La guardia di una battuta: la si recita solo se vale (le varianti del copione v2). a, b, c sono",
+            "// bandiere (0-127), la voce scelta nell'ultimo menu (SCELTA) o l'oggetto (OGGETTO_E_NON_BANDIERA).",
+            "struct Guardia", "{", "    TipoGuardia tipo;", "    uint8_t a;", "    uint8_t b;", "    uint8_t c;", "};", "",
+            "inline constexpr uint8_t NESSUNA_BANDIERA = 255;", "",
+            "struct Battuta", "{", "    testi::TestoId testo;         // per una SCELTA: la prima voce",
+            "    testi::TestoId parlante;     // per un PERSONAGGIO; per una SCELTA: la seconda voce",
+            "    TipoBattuta tipo;", "    Espressione espressione;", "    uint8_t guardia;              // GUARDIA",
+            "    uint8_t accende[2];          // SCELTA: la bandiera che accende ogni voce, o NESSUNA_BANDIERA",
+            "    int8_t consuma;              // SCELTA: l'oggetto che la prima voce consuma, o -1", "};", "",
             "struct Scena", "{", "    const char* codice;", "    testi::TestoId titolo;",
             "    bool cutscene;", "    int8_t regia;                // la cutscene (regia::CUTSCENE_DATI), -2 dentro la precedente", "    int8_t area;                 // mondo::AreaId, o NESSUNA_AREA (a schermo intero)",
             "    uint64_t richieste;          // tutte accese", "    uint64_t vietate;            // nessuna accesa",
             "    uint64_t imposta;            // accese alla fine", "    int8_t segue;                // la scena che deve essere gia' fatta, o -1",
             "    int8_t battaglia;            // battaglia::INCONTRO, o -1", "    uint16_t prima_battuta;",
             "    uint16_t battute;", "};", ""]
+    guardie = [SEMPRE]
+
+    def riga_battuta(b, base, npc=False):
+        chi, espr, _, _ = b
+        if b["guardia"] not in guardie:
+            guardie.append(b["guardia"])
+        if b["voci"]:
+            testo, parlante = (f"testi::TestoId::{id_voce(base, j)}" for j in (0, 1))
+        else:
+            testo = f"testi::TestoId::{base}"
+            parlante = f"testi::TestoId::{id_parlante(chi)}" if chi in PARLANTI else testo
+        tipo = TIPI[tipo_di(chi)]
+        if npc and not b["voci"]:
+            tipo = "PERSONAGGIO" if chi in PARLANTI else "SISTEMA"
+        return (f"    {{ {testo}, {parlante}, TipoBattuta::{tipo}, Espressione::{espr.upper()}, "
+                f"{guardie.index(b['guardia'])}, {{ {b['accende'][0]}, {b['accende'][1]} }}, {b['consuma']} }},")
+
     battute = []
     righe_scene = []
     for s in scene:
         prima = len(battute)
-        for k, (chi, espr, _, _) in enumerate(s["battute"]):
-            parlante = f"testi::TestoId::{id_parlante(chi)}" if chi in PARLANTI else f"testi::TestoId::{id_battuta(s['codice'], k)}"
-            battute.append(f"    {{ testi::TestoId::{id_battuta(s['codice'], k)}, {parlante}, TipoBattuta::{TIPI[tipo_di(chi)]}, "
-                           f"Espressione::{espr.upper()} }},")
+        for k, b in enumerate(s["battute"]):
+            battute.append(riga_battuta(b, id_battuta(s["codice"], k)))
         area = f"int8_t(mondo::AreaId::{AREE[s['codice']]})" if AREE[s["codice"]] else "NESSUNA_AREA"
         segue = codici.index(SEGUE[s["codice"]]) if s["codice"] in SEGUE else -1
         righe_scene.append(f"    {{ \"{s['codice']}\", testi::TestoId::{id_titolo(s['codice'])}, "
@@ -352,25 +560,33 @@ def header(scene, npc, posti):
     out += ["enum class Fase : uint8_t", "{"] + [f"    {f}," for f in FASI] + ["};", "",
             "struct Npc", "{", "    int8_t area;", "    uint8_t tx;", "    uint8_t ty;",
             "    uint16_t prima_frase[3];     // per fase (ULTIMATUM, DIGIUNO, NOTTE); 0xFFFF: non c'e'",
-            "    uint8_t frasi[3];", "    uint8_t figura;               // FIGURA_NPC (tools/figure_npc.py)", "};", ""]
+            "    uint8_t frasi[3];", "    uint8_t figura;               // FIGURA_NPC (tools/figure_npc.py)",
+            "    uint8_t imposta;              // la bandiera che accende parlando, o NESSUNA_BANDIERA",
+            "    uint8_t imposta_fasi;         // in quali fasi (bit 0 ULTIMATUM, 1 DIGIUNO, 2 NOTTE)", "};", ""]
     frasi = []
     righe_npc = []
     for i, p in enumerate(npc):
         per_fase = {f: [] for f in FASI}
-        for k, (fase, chi, espr, _) in enumerate(p["frasi"]):
-            per_fase[fase].append((k, chi, espr))
+        for k, b in enumerate(p["frasi"]):
+            per_fase[b["fase"]].append((k, b))
         prime, conte = [], []
         for f in FASI:
-            prime.append(str(len(frasi)) if per_fase[f] else "0xFFFF")
-            conte.append(str(len(per_fase[f])))
-            for k, chi, espr in per_fase[f]:
-                parlante = f"testi::TestoId::{id_parlante(chi)}" if chi in PARLANTI else f"testi::TestoId::{id_npc(i, k)}"
-                tipo = "PERSONAGGIO" if chi in PARLANTI else "SISTEMA"
-                frasi.append(f"    {{ testi::TestoId::{id_npc(i, k)}, {parlante}, TipoBattuta::{tipo}, Espressione::{espr.upper()} }},")
+            # prima le varianti "(se BANDIERA)" (vince la prima che vale), poi il resto, in ordine
+            ordinate = sorted(per_fase[f], key=lambda kb: 0 if kb[1]["guardia"][0].startswith("VARIANTE") else 1)
+            prime.append(str(len(frasi)) if ordinate else "0xFFFF")
+            conte.append(str(len(ordinate)))
+            for k, b in ordinate:
+                frasi.append(riga_battuta(b, id_npc(i, k), npc=True))
         tx, ty = posti[i]
-        righe_npc.append(f"    {{ int8_t(mondo::AreaId::{p['area']}), {tx}, {ty}, {{ {', '.join(prime)} }}, {{ {', '.join(conte)} }}, {FN.ORDINE.index(FN.figura_di(p['nome']))} }},  // {p['nome']}")
+        imposta = p["imposta"] if p["imposta"] is not None else NESSUNA
+        righe_npc.append(f"    {{ int8_t(mondo::AreaId::{p['area']}), {tx}, {ty}, {{ {', '.join(prime)} }}, {{ {', '.join(conte)} }}, "
+                         f"{FN.ORDINE.index(FN.figura_di(p['nome']))}, {imposta}, {p['imposta_fasi']} }},  // {p['nome']}")
     out += [f"inline constexpr int FRASI_NPC = {len(frasi)};", "inline constexpr Battuta FRASE_NPC[FRASI_NPC] = {"] + frasi + ["};", ""]
     out += [f"inline constexpr int NPC = {len(npc)};", "inline constexpr Npc NPC_AMBIENTE[NPC] = {"] + righe_npc + ["};", ""]
+    out += [f"inline constexpr int GUARDIE = {len(guardie)};", "inline constexpr Guardia GUARDIA[GUARDIE] = {"]
+    out += [f"    {{ TipoGuardia::{g[0]}, {g[1]}, {g[2]}, {g[3]} }}," for g in guardie] + ["};", ""]
+    out += ["// Le bandiere delle quest e degli indizi (64-127, GameState::quest), per nome."]
+    out += [f"inline constexpr uint8_t {b} = {PRIMA_QUEST + i};" for i, b in enumerate(BANDIERE_QUEST)] + [""]
     out += ["// Le figure degli NPC, 16x16 (4 tile in mappatura 1D) con la palette dei popolani: "
             + ", ".join(FN.ORDINE) + ".", f"inline constexpr int FIGURE_NPC = {len(FN.ORDINE)};",
             "inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][4 * 8] = {"]

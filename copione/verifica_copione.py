@@ -1,4 +1,4 @@
-"""Verifica del copione: ogni battuta usa solo caratteri ammessi e sta in 3 righe del riquadro.
+"""Verifica del copione: ogni battuta usa solo caratteri ammessi e sta nelle righe del riquadro.
 
 Uso:  python3 verifica_copione.py            (dalla cartella copione/)
 
@@ -7,14 +7,17 @@ spazio). I glifi disegnati in stile/tavole_font.py si leggono da li'; per gli al
 stima prudente (maiuscole 5 px, minuscole 4, strette 1-3). La larghezza utile del testo e' quella
 del riquadro della scelta 9 con il medaglione del ritratto: 180 px. E' un controllo provvisorio:
 in F1 lo sostituisce il generatore di testi.h, che taglia sul font vero.
+
+v2 (3 novembre 2026): il riquadro del gioco ha 2 righe da 224 px; la verifica usa quella misura
+(tools/genera_storia.py del thread del gioco). I file in v1/ non vengono letti.
 """
 import os
 import re
 import sys
 
 QUI = os.path.dirname(os.path.abspath(__file__))
-LARGHEZZA_UTILE = 180
-RIGHE_MAX = 3
+LARGHEZZA_UTILE = 224
+RIGHE_MAX = 2
 
 AMMESSI = set(chr(c) for c in range(0x20, 0x7F)) | set("àèéìòùÀÈÉÌÒÙ«»")
 
@@ -25,6 +28,12 @@ PARLANTI = {
     "BERTO", "POPOLANA", "MERCIAIO", "TANO", "LAVANDAIA", "VENDITORE", "FRA' MATTEO",
     "LUCIA", "VECCHIO", "FRATE", "SENTINELLA",
     "RANIERO", "AGNESE", "FRA' BERNARDO", "GIACOMO", "SACRESTANO", "FERITO", "INFILTRATO", "MENDICANTE",
+    # v2: dilemmi e amici (05_npc_amici.md)
+    "RAGAZZO", "FOLLA",
+    "CIACCIO", "CIOTTO", "FAZIO", "FEBO", "RUFINO", "FLAVIANO", "GIAMBONO", "COMPAGNO",
+    "MASIO", "ANDREUCCIO", "GIORDANO", "GABRIONE", "BUBO", "RAGNETTO", "RICCIARDO",
+    "GIULIANA", "LAURETTA", "AURELIA", "VALERIANA", "LEONORA", "VALENZA", "NICOLUCCIO",
+    "PADELLINO",
 }
 ESPRESSIONI = {"calmo", "preoccupato", "deciso"}
 

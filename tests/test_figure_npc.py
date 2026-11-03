@@ -5,6 +5,7 @@ prende la figura dal mestiere scritto nel suo nome, e tutte e cinque si usano.
 """
 import importlib.util
 import os
+import re
 import sys
 import unittest
 
@@ -68,8 +69,8 @@ class FigureNpc(unittest.TestCase):
         self.assertIn(f"inline constexpr int FIGURE_NPC = {len(FN.ORDINE)};", h)
         for p in NPC:
             riga = next(r for r in h.splitlines() if r.endswith("// " + p["nome"]))
-            self.assertTrue(riga.rstrip().split("//")[0].rstrip().endswith(f", {FN.ORDINE.index(FN.figura_di(p['nome']))} }},"),
-                            p["nome"])
+            figura = re.search(r"\}, (\d+), \d+, \d+ \},\s*//", riga).group(1)
+            self.assertEqual(int(figura), FN.ORDINE.index(FN.figura_di(p["nome"])), p["nome"])
         parole = FN.parole("frate")
         self.assertIn(", ".join(f"0x{v:08X}" for v in parole[:8]), h)
 

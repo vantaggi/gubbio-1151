@@ -1,5 +1,5 @@
 // Autotest della storia a tempo di compilazione (include/storia_logica.h, include/storia.h generato
-// dal copione v1): il runner gira dalla prima scena ai titoli di coda senza camminare, visita ogni
+// dal copione v2): il runner gira dalla prima scena ai titoli di coda senza camminare, visita ogni
 // scena una volta sola e arriva a CRONACA_V1_FINITA. Se una scena resta fuori, la ROM non compila.
 // Negativa: una scena che chiede una bandiera che nessuno accende resta non visitata.
 
@@ -211,6 +211,129 @@ namespace
     static_assert(! agisce(0b001, battaglia::GIORGIO) && ! agisce(0b001, battaglia::ANTONIO) && agisce(0b001, battaglia::UBALDO),
                   "un Santo fuori dal gruppo ha agito");
     static_assert(agisce(0b111, battaglia::GIORGIO), "la negativa del gruppo non regge");
+
+    // Le guardie del copione v2, tutte quelle della tabella: con la bandiera accesa e spenta, con la
+    // voce giusta e quella sbagliata, con due indizi e con uno, con la Crescia e senza.
+    consteval bool guardie()
+    {
+        for(int i = 0; i < GUARDIE; ++i)
+        {
+            const Guardia& g = GUARDIA[i];
+            GameState vuoto = {};
+            GameState con = {};
+
+            switch(g.tipo)
+            {
+                case TipoGuardia::SEMPRE:
+                    if(! vale(vuoto, i, -1))
+                    {
+                        return false;
+                    }
+                    break;
+                case TipoGuardia::BANDIERA:
+                case TipoGuardia::VARIANTE_BANDIERA:
+                    accendi_una(con, g.a);
+                    if(! vale(con, i, -1) || vale(vuoto, i, -1))
+                    {
+                        return false;
+                    }
+                    break;
+                case TipoGuardia::NON_BANDIERA:
+                case TipoGuardia::VARIANTE_NON_BANDIERA:
+                    accendi_una(con, g.a);
+                    if(vale(con, i, -1) || ! vale(vuoto, i, -1))
+                    {
+                        return false;
+                    }
+                    break;
+                case TipoGuardia::SCELTA:
+                    if(! vale(vuoto, i, g.a) || vale(vuoto, i, 1 - g.a) || vale(vuoto, i, -1))
+                    {
+                        return false;
+                    }
+                    break;
+                case TipoGuardia::ALMENO_DUE:
+                    accendi_una(con, g.a);
+                    if(vale(con, i, -1))
+                    {
+                        return false;
+                    }
+                    accendi_una(con, g.c);
+                    if(! vale(con, i, -1))
+                    {
+                        return false;
+                    }
+                    break;
+                case TipoGuardia::OGGETTO_E_NON_BANDIERA:
+                    con.oggetti[g.a] = 1;
+                    if(! vale(con, i, -1) || vale(vuoto, i, -1))
+                    {
+                        return false;
+                    }
+                    accendi_una(con, g.b);
+                    if(vale(con, i, -1))
+                    {
+                        return false;
+                    }
+                    break;
+            }
+        }
+
+        return GUARDIE > 1;
+    }
+
+    static_assert(guardie(), "una guardia del copione v2 non fa quel che dice");
+
+    // Negativa: un solo indizio non basta per la conferma della visione (A1-09).
+    consteval bool guardie_guaste()
+    {
+        for(int i = 0; i < GUARDIE; ++i)
+        {
+            if(GUARDIA[i].tipo == TipoGuardia::ALMENO_DUE)
+            {
+                GameState p = {};
+                accendi_una(p, GUARDIA[i].b);
+                return vale(p, i, -1);
+            }
+        }
+
+        return true;
+    }
+
+    static_assert(! guardie_guaste(), "la negativa delle guardie non regge");
+
+    // Chi sale agli Stradoni durante il digiuno senza aver deciso del borgo l'ha lasciato fuori; chi ha
+    // deciso no, e altrove non succede niente.
+    consteval bool borgo_dimenticato()
+    {
+        GameState p = {};
+        accendi(p, uint64_t(1) << int(Bandiera::CITTA_IN_DIGIUNO));
+        GameState q = p;
+        GameState r = p;
+        all_ingresso(p, int(mondo::AreaId::MONTE_INGINO));
+        accendi(q, uint64_t(1) << int(Bandiera::BORGO_DENTRO));
+        all_ingresso(q, int(mondo::AreaId::MONTE_INGINO));
+        all_ingresso(r, int(mondo::AreaId::SAN_PIETRO));
+        return accesa(p, Bandiera::BORGO_FUORI) && ! accesa(q, Bandiera::BORGO_FUORI) && ! accesa(r, Bandiera::BORGO_FUORI);
+    }
+
+    static_assert(borgo_dimenticato(), "il borgo dimenticato non resta fuori");
+
+    // Tutta la storia con ogni menu sulla prima voce, poi sulla seconda: ogni scena una volta, e le
+    // bandiere dei dilemmi D1, D2 e D4 come le voci.
+    consteval bool scelte_di_tutta_la_storia(int voce)
+    {
+        GameState p = {};
+        int visitate = gioca_tutta(p, SCENA, SCENE, voce);
+        bool prima = voce == 0;
+        return visitate == SCENE && accesa(p, Bandiera::CRONACA_V1_FINITA) &&
+               accesa(p, Bandiera::BORGO_DENTRO) == prima && accesa(p, Bandiera::BORGO_FUORI) == ! prima &&
+               accesa(p, Bandiera::ESULE_PRIGIONIERO) == prima && accesa(p, Bandiera::ESULE_LIBERATO) == ! prima &&
+               accesa(p, Bandiera::GIUSTIZIA_OFFERTA) == prima;
+    }
+
+    static_assert(scelte_di_tutta_la_storia(0), "la storia con le prime voci");
+    static_assert(scelte_di_tutta_la_storia(1), "la storia con le seconde voci");
 }
 
 }

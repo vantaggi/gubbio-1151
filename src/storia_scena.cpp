@@ -39,7 +39,6 @@ namespace
     constexpr int DISTANZA_PAROLA = 14;     // pixel fra i piedi del giocatore e quelli dell'NPC per parlarci
 
     bool s_dialogo_fotografato = false;
-
     void attendi(int frame)
     {
         for(int f = 0; f < frame; ++f)
@@ -49,17 +48,88 @@ namespace
         }
     }
 
+    int s_voce_automatica = 0;              // la voce che prende ogni menu nelle prove senza tasti
+
+    // Il menu di una scelta nella vista di gioco: due voci, su e giu' per spostarsi, A per scegliere. La
+    // voce non scelta e' scritta in ombra.
+    int menu_scelta(const Battuta& b, const bn::sprite_palette_ptr& palette_testo, bool automatica)
+    {
+        if(automatica)
+        {
+            BN_LOG("Scelta ", s_voce_automatica);
+            return s_voce_automatica;
+        }
+
+        int voce = 0;
+        bool cambiata = true;
+        bn::optional<VistaTesto> voci[2];
+
+        while(true)
+        {
+            if(cambiata)
+            {
+                for(int k = 0; k < 2; ++k)
+                {
+                    voci[k].reset();
+                    voci[k].emplace(Contesto::SCELTA, 24, TESTO_Y + k * 14, k == voce ? INCHIOSTRO_CHIARO : 1,
+                                    palette_testo);
+                    voci[k]->mostra(k == 0 ? b.testo : b.parlante);
+                    voci[k]->rivela_tutto();
+                }
+
+                cambiata = false;
+            }
+
+            attendi(1);
+
+            if(bn::keypad::up_pressed() || bn::keypad::down_pressed())
+            {
+                voce = 1 - voce;
+                cambiata = true;
+            }
+            else if(bn::keypad::a_pressed())
+            {
+                BN_LOG("Scelta ", voce);
+                return voce;
+            }
+        }
+    }
+
     // Le battute a schermo: il nome di chi parla sopra, il testo a macchina da scrivere sotto, A per
     // completare e poi per andare avanti. Lo sfondo si scurisce, il testo resta chiaro.
     void recita_battute(const Battuta* tabella, int prima, int quante, const bn::sprite_palette_ptr& palette_testo,
-                        bool automatica)
+                        bool automatica, bool npc = false)
     {
         VistaTesto nome(Contesto::HUD, 8, NOME_Y, INCHIOSTRO_CHIARO, palette_testo);
         VistaTesto testo(Contesto::DIALOGO, 8, TESTO_Y, INCHIOSTRO_CHIARO, palette_testo);
+        int scelta = -1;
+
+        // un NPC: la prima variante "(se BANDIERA)" che vale parla da sola, se no le altre righe
+        int sola = npc ? variante_che_vale(g_game_state, tabella, prima, quante) : -1;
+
+        if(sola >= 0)
+        {
+            prima = sola;
+            quante = 1;
+        }
 
         for(int i = prima; i < prima + quante; ++i)
         {
             const Battuta& b = tabella[i];
+
+            if((sola < 0 && variante(b.guardia)) || (sola < 0 && ! vale(g_game_state, b.guardia, scelta)))
+            {
+                continue;
+            }
+
+            if(b.tipo == TipoBattuta::SCELTA)
+            {
+                nome.nascondi();
+                testo.nascondi();
+                scelta = menu_scelta(b, palette_testo, automatica);
+                scegli(g_game_state, b, scelta);
+                continue;
+            }
 
             if(b.tipo == TipoBattuta::PERSONAGGIO)
             {
@@ -334,6 +404,7 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
 
     if(int(e.area) != _area)
     {
+        all_ingresso(g_game_state, int(e.area));
         _prepara_npc(esplorazione);
     }
 
@@ -380,7 +451,13 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
             esplorazione.nascondi_etichetta();
             bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));
             attendi(1);
-            recita_battute(FRASE_NPC, GUBBIO_VOCE(n.prima_frase, fase), GUBBIO_VOCE(n.frasi, fase), palette_testo, false);
+            recita_battute(FRASE_NPC, GUBBIO_VOCE(n.prima_frase, fase), GUBBIO_VOCE(n.frasi, fase), palette_testo, false,
+                           true);
+
+            if((n.imposta_fasi >> fase) & 1)
+            {
+                accendi_una(g_game_state, n.imposta);
+            }
             bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
             attendi(1);
             return true;
@@ -392,29 +469,34 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
 
 void prova_storia(const bn::sprite_palette_ptr& palette_testo)
 {
-    progressione::partita_nuova(g_game_state);
-    Storia storia;
+    // due giri: nel primo ogni menu prende la prima voce, nel secondo la seconda
     int visitate = 0;
+    int mancanti = 0;
+
+    for(int giro = 0; giro < 2; ++giro)
+    {
+    g_game_state = GameState{};
+    progressione::partita_nuova(g_game_state);
+    s_voce_automatica = giro;
+    Storia storia;
+    BN_LOG("Giro ", giro);
     bool avanti = true;
+    visitate = 0;
 
     // lo stesso giro di storia::gioca_tutta, ma recitando ogni scena a schermo
     while(avanti)
     {
         avanti = false;
 
-        for(int area = NESSUNA_AREA; area < mondo::AREE_CONTEGGIO && ! avanti; ++area)
+        for(int k = 0; k < SCENE && ! avanti; ++k)
         {
-            int k = prossima_scena(g_game_state, area);
-
-            if(k >= 0 && storia.recita(k, nullptr, palette_testo, true))
+            if(pronta(g_game_state, k, GUBBIO_VOCE(SCENA, k).area) && storia.recita(k, nullptr, palette_testo, true))
             {
                 ++visitate;
                 avanti = true;
             }
         }
     }
-
-    int mancanti = 0;
 
     for(int k = 0; k < SCENE; ++k)
     {
@@ -423,6 +505,11 @@ void prova_storia(const bn::sprite_palette_ptr& palette_testo)
             BN_LOG("Scena NON visitata: ", GUBBIO_VOCE(SCENA, k).codice);
             ++mancanti;
         }
+    }
+
+    BN_LOG("Giro ", giro, ": ", visitate, " scene, borgo ", accesa(g_game_state, Bandiera::BORGO_DENTRO) ? "dentro" : "fuori",
+           ", esule ", accesa(g_game_state, Bandiera::ESULE_PRIGIONIERO) ? "prigioniero" : "liberato",
+           ", giustizia ", accesa(g_game_state, Bandiera::GIUSTIZIA_OFFERTA) ? "offerta" : "no");
     }
 
     BN_LOG("Istantanee finite");
