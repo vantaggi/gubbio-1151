@@ -347,6 +347,27 @@ def str_viella(seme):
                      vibrato=(0, 50, 3, 11))
 
 
+def str_chiarina(seme):
+    """Chiarina: la tromba lunga e dritta dei cortei eugubini (tamburi e chiarine). Ottone
+    brillante; nelle partiture suona solo le note armoniche di re (re la re fa# la re mi fa#)."""
+    freq, periodo = 16000, 41
+    f0 = freq / periodo
+    form = [(1300, 600, 1.0), (2900, 700, 0.5)]
+    parz = [(k, (0.6 / k ** 0.7 + _formanti(k * f0, form))) for k in range(1, 20)]
+    att = periodo * 10
+    t = np.arange(att, dtype=np.float64)
+    # l'attacco parte scuro (poche armoniche) e si apre: il "labbro" dell'ottone
+    scuro = _parziali(att, periodo, [(k, a) for k, a in parz if k <= 3])
+    chiaro = _parziali(att, periodo, parz)
+    w = np.minimum(1.0, t / att)
+    tono = (scuro * (1 - w) + chiaro * w) * np.minimum(1.0, t / (att * 0.3))
+    coda = _parziali(periodo * 4, periodo, parz)
+    dati = _a_8bit(np.concatenate([tono, coda]))
+    return Strumento("chiarina", dati, freq, f0, loop=(att, periodo * 4),
+                     inviluppo=[(0, 30), (0.04, 64), (0.15, 54), (0.25, 0)], sostegno=2,
+                     vibrato=(0, 80, 1, 9))
+
+
 def str_bordone(seme):
     freq, periodo = 8000, 62
     f0 = freq / periodo
@@ -457,6 +478,7 @@ def _crea_strumenti():
         "corno": str_corno(16),
         "bordone": str_bordone(17),
         "viella": str_viella(25),
+        "chiarina": str_chiarina(26),
         "campana": str_campana(18),
         "vento": str_vento(19),
         "goccia": str_goccia(20),

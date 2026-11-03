@@ -1,0 +1,45 @@
+# «La taverna di Padellino»: uno stornello, il canto a strofe brevi con cui a Gubbio ci si saluta e
+# ci si sfotte in corteo. Melodia originale in la dorico, 3/4, liuto, viella e flauto.
+titolo: Gubbio 1151 - La taverna
+bpm: 120
+battuta: 12
+canale melodia flauto 150
+canale viella viella 100
+canale liuto liuto 120
+canale tamburo tamburo 140
+canale sonagli sonagli 180
+
+def stornA: E4:4 A4:4 A4:4 | B4:4 C5:4 B4:4 | A4:4 G4:4 E4:4 | A4:12 |
+def stornA: C5:4 D5:4 E5:4 | D5:4 C5:4 B4:4 | C5:4 B4:4 G4:4 | A4:12 |
+def stornB: E5:6 D5:2 C5:4 | D5:6 C5:2 B4:4 | C5:4 B4:4 A4:4 | G4:8 E4:4 |
+def stornB: F#4:4 G4:4 A4:4 | B4:4 C5:4 D5:4 | E5:4 B4:4 G4:4 | A4:12 |
+def Am: A2:4 E3:4 A3:4
+def G: G2:4 D3:4 G3:4
+def Em: E2:4 B2:4 E3:4
+def D: D3:4 A3:4 D4:4
+def C: C3:4 G3:4 C4:4
+def accA: $Am | $G | $Am | $Am | $C | $G | $G | $Am |
+def accB: $Am | $G | $Am | $Em | $D | $G | $Em | $Am |
+def tamb: (X:4 x:4 x:4)*8
+def son: (r:4 x:4 x:4)*8
+
+ordine: *A B A2 B
+
+[A] 96
+melodia: !44 $stornA+12
+liuto: !40 $accA
+tamburo: !28 $tamb
+
+[B] 96
+melodia: !42 $stornB+12
+viella: !30 $stornB
+liuto: !40 $accB
+tamburo: !30 $tamb
+sonagli: !18 $son
+
+[A2] 96
+viella: !44 $stornA
+melodia: !24 A5:12 | G5:12 | A5:12 | E5:12 | E5:12 | D5:12 | D5:12 | E5:12 |
+liuto: !40 $accA
+tamburo: !28 $tamb
+sonagli: !16 $son
