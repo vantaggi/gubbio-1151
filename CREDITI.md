@@ -15,3 +15,10 @@ Grafica, font, testi, storia e regia sono originali e generati dal codice del re
 `tools/`): non hanno righe qui perche' non sono di terzi. Le foto di Wikimedia Commons consultate
 come riferimento non sono nel repository: il loro elenco, con autori e licenze, accompagna il rilascio
 (`rilascio/CREDITI_FOTO_RIFERIMENTO.md` nella cartella del progetto).
+
+## Musica ed effetti sonori
+
+Tutti originali, nessun campione di terzi: le partiture sono in `musica/*.brano` (melodie composte
+per il gioco, nessuna melodia esistente) e gli strumenti sono sintetizzati da `tools/genera_audio.py`.
+Licenza dei contenuti del progetto (CC BY-NC 4.0). La riproduzione nel gioco usa Maxmod, incluso in
+Butano (licenza in `butano/licenses/maxmod.txt`).

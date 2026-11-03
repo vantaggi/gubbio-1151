@@ -1,0 +1,24 @@
+# Fanfara di vittoria (una volta sola, poi silenzio).
+titolo: Gubbio 1151 - Vittoria
+bpm: 120
+battuta: 16
+anello: no
+canale canto ciaramella 140
+canale melodia flauto 170
+canale corno corno 100
+canale liuto liuto 90
+canale tamburo tamburo 128
+canale campana campana 128
+
+ordine: A F
+
+[A] 48
+canto: D5:3!50 D5:1 D5:2 A4:2 D5:4 E5:4 | F#5:4 E5:2 D5:2 E5:4 C5:4 | D5:16 |
+melodia: = canto +12 !28
+corno: D4:8!44 A3:8 | D4:8 C4:8 | D4:16 |
+liuto: !40 D3:1 A3:1 D4:1 F#4:5 D3:1 A3:1 D4:1 F#4:5 | D3:1 A3:1 D4:1 F#4:5 C3:1 G3:1 C4:1 E4:5 | D3:1 A3:1 D4:1 F#4:1 A4:12 |
+tamburo: !36 x:1 x:1 x:2 X:4 x:2 x:2 X:4 | (x:2)*8 | X:1 x:1 x:1 x:1 X:12 |
+campana: r:32 D4:16!50
+
+[F] 16
+canto: r:16

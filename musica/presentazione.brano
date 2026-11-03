@@ -1,0 +1,21 @@
+# Cartiglio delle presentazioni in controluce (C3): tre-quattro secondi.
+titolo: Gubbio 1151 - Presentazione
+bpm: 90
+battuta: 8
+anello: no
+durata_attesa: 3.5
+canale arpa arpa 150
+canale corno corno 110
+canale bordone bordone 128
+canale campana campana 128
+
+ordine: A F
+
+[A] 16
+arpa: D4:1!36 E4:1 F4:1 G4:1 A4:1 C5:1 D5:10
+corno: D3:16!38
+bordone: D3:16!26
+campana: D4:16!34
+
+[F] 8
+corno: r:8

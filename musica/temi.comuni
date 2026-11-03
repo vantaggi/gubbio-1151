@@ -1,0 +1,8 @@
+# Frasi condivise da tutti i brani. Il Tema di Gubbio (re dorico) e' il filo del gioco:
+# titolo, basilica, prologo, terza alba e titoli di coda lo citano.
+def tema1: D4:8 A4:4 G4:4 | F4:4 E4:2 D4:2 E4:8 | F4:4 G4:4 A4:4 C5:4 | D5:6 C5:2 A4:8 |
+def tema2: C5:4 B4:2 A4:2 G4:4 A4:4 | F4:6 G4:2 E4:8 | F4:4 E4:2 D4:2 C4:4 E4:4 | D4:16 |
+def acc1: D3:4 A3:4 D4:4 A3:4 | C3:4 G3:4 C4:4 G3:4 | F3:4 C4:4 F4:4 C4:4 | D3:4 A3:4 D4:4 A3:4 |
+def acc2: A2:4 E3:4 A3:4 E3:4 | C3:4 G3:4 C4:4 G3:4 | F3:4 C4:4 C3:4 G3:4 | D3:4 A3:4 D4:8 |
+def arp: (D4:2 A4:2 D5:2 A4:2)*2 | (C4:2 G4:2 C5:2 G4:2)*2 | (F4:2 C5:2 F5:2 C5:2)*2 | (D4:2 A4:2 D5:2 A4:2)*2 |
+def arp2: (A3:2 E4:2 A4:2 E4:2)*2 | (C4:2 G4:2 C5:2 G4:2)*2 | F4:2 C5:2 F5:2 C5:2 C4:2 G4:2 C5:2 G4:2 | D4:2 A4:2 D5:2 A4:2 D5:8 |

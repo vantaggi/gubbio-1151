@@ -1,0 +1,39 @@
+# Cutscene C2, le undici bandiere (16 s): marcia dell'esercito e fanfara dell'araldo. Il pastorale (C2P) ha il suo brano.
+titolo: Gubbio 1151 - Le undici bandiere
+bpm: 112
+battuta: 16
+durata_attesa: 16
+canale corno corno 100
+canale canto ciaramella 150
+canale tamburo tamburo 128
+canale cassa grancassa 128
+canale bordone bordone 128
+
+def marcia: A2:4 A2:2 A2:2 Bb2:4 A2:4 | G2:4 A2:4 Bb2:4 C3:4 | A2:4 A2:2 A2:2 Bb2:4 A2:4 | G2:8 A2:8 |
+def tamb: X:2 x:1 x:1 x:4 X:2 x:1 x:1 x:4
+def cassa: X:8 r:8
+
+ordine: ESERCITO MARCIA ARALDO CODA
+
+[ESERCITO] 16
+tamburo: !34 $tamb
+cassa: !44 $cassa
+bordone: A2:16!24
+
+[MARCIA] 32
+corno: !46 A2:4 A2:2 A2:2 Bb2:4 A2:4 | G2:4 A2:4 Bb2:4 C3:4 |
+tamburo: !36 ($tamb)*2
+cassa: !46 ($cassa)*2
+bordone: ~:32
+
+[ARALDO] 64
+canto: A4:2!50 A4:2 E5:4 D5:2 C5:2 Bb4:4 | A4:4 C5:4 Bb4:8 | A4:2 A4:2 E5:4 F5:4 E5:4 | D5:4 Bb4:4 A4:8 |
+corno: !40 $marcia
+tamburo: !36 ($tamb)*4
+cassa: !46 ($cassa)*4
+bordone: ~:64
+
+[CODA] 8
+corno: A2:8!40
+cassa: X:8!50
+bordone: ~:8

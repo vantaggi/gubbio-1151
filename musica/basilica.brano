@@ -1,0 +1,27 @@
+# Dentro la basilica di Sant'Ubaldo. Il Tema di Gubbio cantato come una lauda, con l'organum
+# a una quinta sotto e l'eco della navata.
+titolo: Gubbio 1151 - La basilica
+bpm: 60
+battuta: 16
+canale voci coro 100
+canale organum coro 156
+canale eco coro 210
+canale arpa arpa 128
+canale bordone bordone 128
+canale campana campana 128
+
+ordine: *A B
+
+[A] 128
+voci: !42 $tema1 $tema2
+organum: = voci -7 !30
+eco: = voci >2 !16
+bordone: D3:128!24
+campana: D5:128!18
+
+[B] 128
+voci: !30 D4:16 C4:16 F4:16 D4:16 | A3:16 C4:16 F3:8 C4:8 D4:16
+eco: = voci >3 !14
+arpa: !30 $arp $arp2
+bordone: ~:128
+campana: r:112 A5:16!16

@@ -1,0 +1,55 @@
+# Battaglia. La eolio, ciaramella sopra liuto e tamburi.
+titolo: Gubbio 1151 - Battaglia
+bpm: 150
+battuta: 16
+canale canto ciaramella 140
+canale liuto liuto 100
+canale corno corno 90
+canale bordone bordone 128
+canale tamburo tamburo 150
+canale cassa grancassa 128
+canale sonagli sonagli 190
+
+def leadA: A4:2 A4:2 C5:2 E5:2 D5:4 C5:4 | B4:2 C5:2 D5:4 B4:4 G4:4 | A4:2 A4:2 C5:2 E5:2 G5:4 F5:2 E5:2 | D5:8 E5:8 |
+def leadA: F5:4 E5:2 D5:2 C5:4 D5:4 | E5:4 D5:2 C5:2 B4:8 | C5:2 B4:2 A4:2 G4:2 B4:4 G#4:4 | A4:16 |
+def leadB: E5:4 E5:2 F5:2 E5:4 D5:4 | C5:4 C5:2 D5:2 C5:4 B4:4 | A4:4 B4:2 C5:2 D5:4 E5:4 | F5:8 E5:8 |
+def leadB: E5:4 E5:2 F5:2 G5:4 F5:4 | E5:4 D5:2 C5:2 D5:8 | C5:4 B4:4 A4:4 G#4:4 | A4:8 E4:8 |
+def Am: A3:2 E4:2 A4:2 E4:2
+def G: G3:2 D4:2 G4:2 D4:2
+def F: F3:2 C4:2 F4:2 C4:2
+def E: E3:2 B3:2 E4:2 B3:2
+def C: C4:2 G4:2 C5:2 G4:2
+def D: D3:2 A3:2 D4:2 A3:2
+def accA: $Am $Am | $G $G | $Am $Am | $D $E | $F $F | $C $E | $Am $E | $Am $Am |
+def accB: $Am $Am | $F $G | $Am $Am | $F $Am | $C $C | $Am $G | $F $E | $Am $Am |
+def bassoA: A2:16 | G2:16 | A2:16 | D2:8 E2:8 | F2:16 | C3:8 E2:8 | A2:8 E2:8 | A2:16 |
+def bassoB: A2:16 | F2:8 G2:8 | A2:16 | F2:8 A2:8 | C3:16 | A2:8 G2:8 | F2:8 E2:8 | A2:16 |
+def tamb: (X:2 x:1 x:1 x:2 x:2 X:2 x:1 x:1 x:2 x:2)*8
+def cassa: (X:8 x:8)*8
+def son: (r:4 x:4 r:4 x:4)*8
+
+ordine: I *A B
+
+[I] 32
+tamburo: !34 (x:1)*16 (X:2 x:2)*4
+cassa: X:16 X:8 X:8
+bordone: A2:32!28
+corno: A2:32!40
+
+[A] 128
+canto: !46 $leadA
+liuto: !36 $accA
+corno: !38 $bassoA
+bordone: ~:128
+tamburo: !36 $tamb
+cassa: !44 $cassa
+sonagli: !22 $son
+
+[B] 128
+canto: !48 $leadB
+liuto: !36 $accB
+corno: !40 $bassoB
+bordone: ~:128
+tamburo: !38 $tamb
+cassa: !46 $cassa
+sonagli: !24 $son

@@ -1,0 +1,54 @@
+# Esplorazione nei quartieri di giorno. Un saltarello in 6/8, sol misolidio: la citta' vive anche sotto assedio.
+titolo: Gubbio 1151 - I quartieri
+bpm: 150
+battuta: 12
+canale melodia flauto 150
+canale canto ciaramella 100
+canale liuto liuto 90
+canale bordone bordone 128
+canale tamburo tamburo 140
+canale sonagli sonagli 170
+
+def melA: G4:4 B4:2 D5:4 B4:2 | C5:4 A4:2 B4:4 G4:2 | A4:2 B4:2 C5:2 D5:4 C5:2 | B4:6 A4:6 |
+def melA: G4:4 B4:2 D5:4 E5:2 | F5:4 E5:2 D5:4 C5:2 | B4:2 C5:2 A4:2 B4:4 A4:2 | G4:12 |
+def melB: D5:6 E5:4 D5:2 | C5:4 B4:2 A4:6 | B4:6 C5:4 B4:2 | A4:4 G4:2 F4:6 |
+def melB: G4:4 A4:2 B4:4 C5:2 | D5:4 C5:2 B4:4 A4:2 | B4:2 A4:2 G4:2 A4:6 | G4:12 |
+def G: G2:4 D3:2 G3:4 D3:2
+def C: C3:4 G3:2 C4:4 G3:2
+def F: F2:4 C3:2 F3:4 C3:2
+def D: D3:4 A3:2 D4:4 A3:2
+def accA: $G | $C | $F | $G | $G | $F | $C | $G |
+def accB: $G | $F | $G | $F | $G | $D | $G | $G |
+def tamb: (X:4 x:2 x:4 x:2)*8
+def son: (r:6 x:6)*8
+# discanto lungo sopra melA nella ripresa
+def alto: D5:12 | E5:12 | F5:12 | D5:12 | D5:12 | C5:12 | D5:12 | B4:12 |
+
+ordine: *A B C D
+
+[A] 96
+melodia: !46 $melA
+liuto: !40 $accA
+bordone: G2:96!26
+tamburo: !36 $tamb
+sonagli: !22 $son
+
+[B] 96
+melodia: !44 $melB
+liuto: !40 $accB
+bordone: ~:96
+tamburo: !36 $tamb
+sonagli: !22 $son
+
+[C] 96
+canto: !40 $melA
+melodia: !26 $alto+12
+liuto: !40 $accA
+bordone: ~:96
+tamburo: !38 $tamb
+sonagli: !26 $son
+
+[D] 96
+liuto: !44 $melB-12
+bordone: ~:96
+tamburo: !24 (X:12)*8
