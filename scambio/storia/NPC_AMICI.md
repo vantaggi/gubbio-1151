@@ -31,6 +31,7 @@ I nomi si cambiano un po', in forme d'epoca, perché li riconosca solo chi sa. *
 | Valentina | Valenza | |
 | Nicolò | Nicoluccio | |
 | Padeletto | Padellino | |
+| Monta | Montano | il nome intero da cui viene il soprannome |
 
 Nota: i nomi degli amici sono al maschile e quelli delle compagne al femminile solo perché seguono i nomi che hai dato; se per qualcuno serve un nome diverso, si cambia solo una riga di questa tabella.
 
@@ -136,21 +137,23 @@ Licenza: il tavoliere con le pedine («abaco a gettoni») e i giochi di tavola e
 
 ### Fino
 
+Cambiato il 3 nov notte su richiesta di Cioti: oggi fa il motorista in F1, quindi nel 1151 lavora con i carri e le corse, non più con i mulini.
+
 | | |
 | :-- | :-- |
-| Mestiere nel 1151 | mastro carpentiere di mulini, argani e ruote |
-| Area e luogo | Piazza Quaranta Martiri, **mulino sul Camignano coperto** (nuovo edificio 2) |
-| Sullo schermo | figura mercante con **l'ascia da carpentiere** |
-| Come parla | da persona pratica, diffida dei miracoli, crede alle leve |
-| Vuole | che la ruota del mulino giri ancora, acqua permettendo |
-| Sa | che nessuna corazza è stregata: il ferro piegato a strati regge le lame (S5) |
+| Mestiere nel 1151 | mastro carradore: costruisce i carri, cerchia le ruote col ferro, prepara i carri per la corsa sulla piana |
+| Area e luogo | Piazza Quaranta Martiri, **bottega del carradore** (nuovo edificio 2, al posto del mulino) |
+| Sullo schermo | figura mercante con **una ruota cerchiata di ferro** |
+| Come parla | da persona pratica, diffida dei miracoli, crede agli assi e alle ruote; parla di velocità come altri parlano di santi |
+| Vuole | che finisca l'assedio per rifare la corsa dei carri |
+| Sa | che nessuna corazza è stregata: il ferro piegato a strati regge le lame, ma col calore si apre (S5); lo sa perché cerchia le ruote a caldo |
 | Entra in | indizio per Corrado: una battuta toglie a Corrado uno scudo (5.12) |
 
-Nelle battute degli altri si chiama «Mastro Rufino».
+Nelle battute degli altri si chiama «Mastro Rufino». Licenza dichiarata: una corsa dei carri nel 1151 a Gubbio non è documentata; è una festa nostra.
 
-- ULTIMATUM: RUFINO: Un trabucco? Datemi tre giorni e travi buone, e ve ne faccio due.
-- DIGIUNO: RUFINO: Nessun ferro è stregato, è solo piegato bene. Si apre col calore.
-- NOTTE: RUFINO: La ruota ha ripreso a girare. L'acqua è tornata: qualcuno ha lavorato.
+- ULTIMATUM: RUFINO: Undici eserciti e nemmeno un carro decente. Il mio arriva a Perugia prima di loro.
+- DIGIUNO: RUFINO: Da vent'anni cerchio le ruote col ferro. Nessun ferro è stregato: col calore si apre.
+- NOTTE: RUFINO: Finito l'assedio, si rifà la corsa dei carri giù per la piana. Il mio è già unto.
 
 ### Flavio
 
@@ -398,6 +401,24 @@ Barista che a Gubbio conoscono tutti, sul corso. Nel gioco la sua taverna sta su
 - DIGIUNO (aiuto, se manca `INDIZIO_ROCCIA`): PADELLINO: Giambono dice che certe pietre non reggono. Chiedetegli quali.
 - NOTTE: PADELLINO: All'alba riapro. Il primo bicchiere lo offro io, chiunque vinca la piazza.
 
+## Monta, il cavadenti tornato da Bergamo (aggiunto da Cioti, 3 nov notte)
+
+Dentista, fotografo e donnaiolo, eugubino che vive a Bergamo.
+
+| | |
+| :-- | :-- |
+| Mestiere nel 1151 | cavadenti (lavoro dei barbieri e dei cerusici) e ritrattista su tavoletta, al posto della fotografia |
+| Area e luogo | via dei Consoli, un banco all'aperto: **nessun edificio nuovo** |
+| Perché è in città | lavora a Bergamo (comune lombardo già nel 1151), è tornato per la madre ed è rimasto chiuso dentro dall'assedio |
+| Sullo schermo | figura mercante con le pinze alla cintura e una tavoletta dipinta |
+| Come parla | galante con tutte, mai volgare; scherza su di sé, non sugli altri |
+| Ruolo nella v1 | colore, una battuta per fase |
+| Rispetto | il lato da donnaiolo resta galanteria: nessuna battuta lo mette in ridicolo; consenso da chiedere come per gli altri |
+
+- ULTIMATUM: MONTANO: Torno da Bergamo per mia madre e trovo undici eserciti. Gubbio sa accogliere.
+- DIGIUNO: MONTANO: A Bergamo cavo denti da dieci anni. Qui li cavo gratis, finché dura l'assedio.
+- NOTTE: MONTANO: Stanotte ho ritratto le ragazze di guardia. Tutte più belle del Grifo, s'intende.
+
 ## Tabella area per area
 
 Tutti gli NPC, vecchi e nuovi. «Nuovo» = edificio da disegnare (6 su un massimo di 8, con la taverna di Padeletto).
@@ -405,11 +426,11 @@ Tutti gli NPC, vecchi e nuovi. «Nuovo» = edificio da disegnare (6 su un massim
 | Area | NPC del copione v1 | Amici | Luoghi di lavoro |
 | :-- | :-- | :-- | :-- |
 | Piazza Grande | Guido, Berto, popolana | — | — |
-| Via dei Consoli | merciaio | — | — |
+| Via dei Consoli | merciaio | Monta | banco all'aperto (nessun edificio) |
 | Largo del Bargello | Tano | — | — |
 | San Martino | Cecco, lavandaia, Raniero (Q-SM01), Nello (Porta Metauro) | Ciacci, Flavio, Cumpà, Massi, Giulia | mura (riuso), Ponte di San Martino (riuso), **casa del medico** (nuovo 1), casotto del pedaggio a Porta Metauro (riuso) |
 | Teatro Romano | — | — | — |
-| Piazza Quaranta Martiri | venditore delle Logge, Fra' Matteo, (mendicante di Q-SP01: sostituito da Giordy) | Fino, Giordy | **mulino** (nuovo 2), vasca del fontaniere (oggetto) |
+| Piazza Quaranta Martiri | venditore delle Logge, Fra' Matteo, (mendicante di Q-SP01: sostituito da Giordy) | Fino, Giordy | **bottega del carradore** (nuovo 2), vasca del fontaniere (oggetto) |
 | San Pietro | Lucia, Fra' Bernardo (Q-SP01) | Febbo, Giamma, Gabrielone, Ricca, Aurora, Eleonora, Valentina, Padeletto | campanile (riuso), mura (riuso), **spezieria e ospizio** (nuovo 3), chiostro (riuso), **taverna del corso** (nuovo 6) |
 | Via XX Settembre | vecchio sulla scalinata | — | — |
 | Sant'Andrea | sentinella di Porta Romana, Agnese (Q-SA01) | (con `BORGO_DENTRO`: Cioti, Fagia, Bubu, Ragno, Laura, Nicolò, Valeria accampati) | — |
@@ -417,7 +438,7 @@ Tutti gli NPC, vecchi e nuovi. «Nuovo» = edificio da disegnare (6 su un massim
 | Duomo e Ducale | canonico (Ilario) | — | — |
 | Monte, Basilica, Bottaccione | spia, Guerrieri, Corrado | — | — |
 
-Coppie con i PNG esistenti: Giamma **fa coppia e rivalità** con Cecco; Giamma e Giordy **affiancano** Berto (la roccia e l'acqua); Gabrielone **affianca** Agnese; Fino **affianca** Raniero (Raniero il ferro, Fino le macchine); Ricca e Febbo **affiancano** Fra' Bernardo; Massi **fa coppia** con Nello; Endriu **affianca** la sentinella di Porta Romana (lei dentro, Endriu fuori). **Una sola sostituzione**: Giordy prende il posto del mendicante come terzo indizio di Q-SP01 (GIALLO).
+Coppie con i PNG esistenti: Giamma **fa coppia e rivalità** con Cecco; Giamma e Giordy **affiancano** Berto (la roccia e l'acqua); Gabrielone **affianca** Agnese; Fino **affianca** Raniero (Raniero il ferro, Fino le ruote e i carri); Ricca e Febbo **affiancano** Fra' Bernardo; Massi **fa coppia** con Nello; Endriu **affianca** la sentinella di Porta Romana (lei dentro, Endriu fuori). **Una sola sostituzione**: Giordy prende il posto del mendicante come terzo indizio di Q-SP01 (GIALLO).
 
 ---
 
