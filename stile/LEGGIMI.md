@@ -8,7 +8,7 @@ decisioni; questa cartella le traduce in file che i generatori e il gioco leggon
 | 3 palette | `dati/palette.json` | `genera.py` da parametri (9 rampe, 42 colori, hue shift 10, notte) | `include/stile/palette.h` |
 | 8 font | `dati/font.json` | disegnato a mano come dati (94 glifi, cella 10, maiuscole 7 px) | `include/stile/font.h` |
 | 9 interfaccia | `dati/cornice.json` | `genera.py` (tile 8x8 4bpp, 9-slice, cartiglio, cursore, disposizione) | `include/stile/cornice.h` |
-| 10 ritratti | `dati/ritratti.json` | maschere di ruoli 32x32 per strato, 3 espressioni | `graphics/ritratto_*.bmp` |
+| 10 ritratti | `dati/ritratti.json` | maschere di ruoli 32x32 per strato, 3 espressioni; Giorgio, Antonio, Guido da `tools/pittore_ritratti.py` | `graphics/ritratto_*.bmp` |
 | 11 animazione | `dati/pose.json` | `genera.py` (scheletro 16x32, tempi in vblank) | `include/stile/pose.h` |
 | 12 titolo | `dati/logo.json` | capitali lombarde disegnate come dati | `graphics/logo*.bmp` |
 
