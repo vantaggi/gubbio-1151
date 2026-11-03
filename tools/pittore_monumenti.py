@@ -1264,3 +1264,185 @@ def banco_montano(w, h, info):
 
 PITTORI.update({"casa_medico": casa_medico, "bottega_carradore": bottega_carradore, "spezieria": spezieria,
                 "taverna": taverna, "bottega_conti": bottega_conti, "calcara": calcara, "banco_montano": banco_montano})
+
+
+# --- le botteghe leggibili (SV2b3): insegne grandi e oggetti davanti alla porta -------------------------
+# Nei fondali 1 tile = 8 px: i segni del mestiere di SV2b2 erano di 3-7 px e dalla vista di gioco le
+# botteghe sembravano case qualsiasi. Qui ogni bottega riceve un'insegna appesa di 14x12 px sul bordo
+# del tetto, con un'icona che si legge da lontano, e due o tre oggetti a misura di personaggio (8-12 px)
+# sulla facciata, accanto alla porta. tests/test_mondo.py (Botteghe) conta i pixel dei segni.
+SEGNI_MINIMI = 60          # pixel di insegna e oggetti che ogni bottega deve avere almeno
+
+
+def _insegna(t, x, y, icona):
+    """Il cartello appeso: staffa di ferro, tavola di legno incorniciata, l'icona dentro (10x8)."""
+    t.rett(x + 6, y, 2, 2, CONTORNO)
+    t.rett(x, y + 2, 14, 12, CONTORNO)
+    t.rett(x + 1, y + 3, 12, 10, LEGNO)
+    icona(t, x + 2, y + 4)
+    t.segni += 14 * 12
+
+
+def _icona_vaso(t, x, y):          # il medico: l'ampolla
+    t.rett(x + 4, y, 2, 3, PIETRA_LUCE)
+    _cerchio(t, x + 5, y + 5, 3, ACQUA)
+    t.punto(x + 4, y + 4, PIETRA_LUCE)
+
+
+def _icona_ruota(t, x, y):         # il carradore
+    _ruota(t, x + 5, y + 4, 4)
+
+
+def _icona_mortaio(t, x, y):       # la spezieria: mortaio e pestello
+    t.rett(x + 1, y + 4, 8, 4, PIETRA_LUCE)
+    t.rett(x + 2, y + 7, 6, 1, PIETRA)
+    t.rett(x + 6, y, 1, 5, LEGNO_SCURO)
+    t.rett(x + 5, y, 3, 1, LEGNO_SCURO)
+
+
+def _icona_frasca(t, x, y):        # la taverna: la frasca e il fiasco
+    _cerchio(t, x + 3, y + 3, 3, VERDE)
+    t.punto(x + 2, y + 2, VERDE_SCURO)
+    t.rett(x + 7, y + 2, 2, 2, PIETRA_LUCE)
+    t.rett(x + 6, y + 4, 4, 4, VERDE_SCURO)
+
+
+def _icona_abaco(t, x, y):         # i conti: l'abaco
+    t.rett(x, y, 10, 8, LEGNO_SCURO)
+    t.rett(x + 1, y + 1, 8, 6, LEGNO)
+    for r in range(3):
+        t.rett(x + 1, y + 2 + r * 2, 8, 1, PIETRA_SCURA)
+        for k in range(r % 2, 4, 1):
+            t.punto(x + 2 + k * 2 - r % 2, y + 2 + r * 2, COTTO_LUCE)
+
+
+def _icona_dente(t, x, y):         # Montano: il dente e la cornice
+    t.rett(x, y, 10, 8, COTTO_CHIARO)
+    t.rett(x + 3, y + 1, 4, 4, PIETRA_LUCE)
+    t.punto(x + 3, y + 5, PIETRA_LUCE)
+    t.punto(x + 6, y + 5, PIETRA_LUCE)
+    t.punto(x + 3, y + 6, PIETRA_LUCE)
+    t.punto(x + 6, y + 6, PIETRA_LUCE)
+
+
+def _botte(t, x, y):
+    t.rett(x, y, 8, 10, LEGNO)
+    t.rett(x, y + 2, 8, 1, LEGNO_SCURO)
+    t.rett(x, y + 7, 8, 1, LEGNO_SCURO)
+    t.rett(x + 3, y + 4, 2, 2, LEGNO_SCURO)
+    t.segni += 80
+
+
+def _vaso_erbe(t, x, y):
+    t.rett(x + 1, y + 4, 6, 6, COTTO_LUCE)
+    t.rett(x + 1, y + 4, 6, 1, COTTO_SCURO)
+    _cerchio(t, x + 4, y + 2, 2.5, VERDE)
+    t.segni += 50
+
+
+def _panca(t, x, y, w):
+    t.rett(x, y, w, 2, LEGNO)
+    t.rett(x + 1, y + 2, 1, 3, LEGNO_SCURO)
+    t.rett(x + w - 2, y + 2, 1, 3, LEGNO_SCURO)
+    t.segni += w * 2
+
+
+def _fumo(t, x, y):
+    for k, (dx, r) in enumerate(((0, 2.5), (2, 3), (-1, 3.5), (2, 4))):
+        _cerchio(t, x + dx, y - k * 5, r, PIETRA_LUCE if k % 2 else PIETRA_CHIARA)
+    t.segni += 120
+
+
+def _con_segni(pittore, icona, oggetti):
+    def disegna(w, h, info):
+        t = pittore(w, h, info)
+        t.segni = 0
+        x, y, fw, fh = _facciata(w, h, info["faccia"])
+        # l'insegna pende dal bordo del tetto, sopra la facciata e lontana dalla porta
+        if info["faccia"] == "basso":
+            _insegna(t, max(1, w * 8 - 18), max(0, y - 6), icona)
+        elif info["faccia"] == "sinistra":
+            _insegna(t, 1, max(0, h * 4 - 22), icona)
+        else:
+            _insegna(t, w * 8 - 15, max(0, h * 4 - 22), icona)
+        oggetti(t, w, h, info["faccia"], x, y, fw, fh)
+        t.elementi["insegna_grande"] += 1
+        t.contorno()
+        return t
+    disegna.__doc__ = pittore.__doc__
+    return disegna
+
+
+def _ogg_medico(t, w, h, faccia, x, y, fw, fh):
+    # la porta del medico e' di un altro colore (cotto chiaro), con la panca per chi aspetta
+    t.arco(w * 4 - 5, h * 8 - 14, 10, 14, COTTO_LUCE)
+    t.segni += 60
+    _panca(t, 3, h * 8 - 6, 12)
+
+
+def _ogg_carradore(t, w, h, faccia, x, y, fw, fh):
+    for k in range(3):
+        _ruota(t, x + 4, y + 12 + k * 12, 5)
+    t.segni += 3 * 40
+
+
+def _ogg_spezieria(t, w, h, faccia, x, y, fw, fh):
+    t.arco(x + fw // 2 - 14, h * 8 - 14, 10, 14, ACQUA_SCURA)
+    for k in range(3):
+        _vaso_erbe(t, x + 3 + k * 9, h * 8 - 10)
+
+
+def _ogg_taverna(t, w, h, faccia, x, y, fw, fh):
+    _botte(t, x + 2, h * 8 - 11)
+    _botte(t, x + 11, h * 8 - 11)
+    _panca(t, w * 8 - 16, h * 8 - 6, 14)
+
+
+def _ogg_conti(t, w, h, faccia, x, y, fw, fh):
+    # la bilancia appesa accanto alla porta
+    bx = x - 1 if faccia == "destra" else x + 1
+    t.rett(bx + 3, y + 8, 1, 8, CONTORNO)
+    t.rett(bx, y + 9, 7, 1, CONTORNO)
+    t.rett(bx, y + 10, 2, 2, PIETRA_LUCE)
+    t.rett(bx + 5, y + 10, 2, 2, PIETRA_LUCE)
+    _vaso_erbe(t, bx, h * 8 - 12)
+    t.segni += 30
+
+
+def _ogg_calcara(t, w, h, faccia, x, y, fw, fh):
+    _fumo(t, w * 4, h * 4 - 4)
+    for k in range(2):
+        t.rett(2 + k * 7, h * 8 - 8, 6, 6, PIETRA_LUCE)
+        t.rett(2 + k * 7, h * 8 - 8, 6, 1, PIETRA)
+    t.segni += 72
+
+
+def _ogg_montano(t, w, h, faccia, x, y, fw, fh):
+    # lo sgabello e la tavoletta dipinta grande appoggiata al banco
+    t.rett(w * 8 - 10, h * 8 - 6, 6, 2, LEGNO)
+    t.rett(w * 8 - 9, h * 8 - 4, 1, 3, LEGNO_SCURO)
+    t.rett(w * 8 - 6, h * 8 - 4, 1, 3, LEGNO_SCURO)
+    t.segni += 20
+
+
+BOTTEGHE = {"casa_medico": (_icona_vaso, _ogg_medico), "bottega_carradore": (_icona_ruota, _ogg_carradore),
+            "spezieria": (_icona_mortaio, _ogg_spezieria), "taverna": (_icona_frasca, _ogg_taverna),
+            "bottega_conti": (_icona_abaco, _ogg_conti), "calcara": (_icona_frasca, _ogg_calcara),
+            "banco_montano": (_icona_dente, _ogg_montano)}
+BOTTEGHE["calcara"] = (None, _ogg_calcara)
+BOTTEGHE_BASE = {m: PITTORI[m] for m in BOTTEGHE}     # i pittori di SV2b2, per le negative
+for _mid, (_icona, _ogg) in BOTTEGHE.items():
+    if _icona is None:
+        _base = PITTORI[_mid]
+
+        def _solo_oggetti(w, h, info, _base=_base, _ogg=_ogg):
+            t = _base(w, h, info)
+            t.segni = 0
+            x, y, fw, fh = _facciata(w, h, info["faccia"])
+            _ogg(t, w, h, info["faccia"], x, y, fw, fh)
+            t.elementi["insegna_grande"] += 1
+            t.contorno()
+            return t
+        PITTORI[_mid] = _solo_oggetti
+    else:
+        PITTORI[_mid] = _con_segni(PITTORI[_mid], _icona, _ogg)
