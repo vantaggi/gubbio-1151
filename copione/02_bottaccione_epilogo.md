@@ -8,7 +8,7 @@ Nella v1 il Bottaccione chiude l'Atto I invece di aprire l'Atto II, come deciso 
 | :-- | :-- | :-- | :-- |
 | B-01 | Strada del Bottaccione, alto | La striscia nera nella roccia | `BOTTACCIONE_ENTRATI` |
 | B-02 | Strada del Bottaccione | I miasmi di Cagli | `MIASMI_VISTI` |
-| B-03 | Strada del Bottaccione | Due soldati parlano troppo | `PIANO_DI_CORRADO` |
+| B-03 | Strada del Bottaccione | Due soldati parlano troppo; il ragazzo eugubino (dilemma D2) | `PIANO_DI_CORRADO`, `ESULE_PRIGIONIERO` o `ESULE_LIBERATO` |
 | B-04 | Il Condotto | Battaglia con Corrado di Spoleto | `CORRADO_SCONFITTO`, `CONDOTTO_SALVO` |
 | B-05 | Porta Metauro e San Martino | Rientro di notte, tempo libero | `RIENTRO_PORTA_METAURO` |
 | E-01 | Piazza Grande | La terza alba e la risposta del Campanone | `ATTO_I_COMPLETATO` |
@@ -29,6 +29,13 @@ Regia: la gola si stringe. Sulla parete calcarea corre una sottile striscia scur
 - ANTONIO (calmo): Guarda la roccia, ragazzo. Quella striscia nera.
 - ANTONIO (calmo): Berto il tagliapietre dice che lì la terra non dorme.
 - GIORGIO (calmo): Berto dice un sacco di cose.
+
+Se `INDIZIO_ROCCIA`, al posto della battuta di Giorgio:
+
+- GIORGIO (preoccupato): Giambono diceva lo stesso. Due che dicono la stessa cosa...
+
+Regia (solo con `INDIZIO_ROCCIA`): dove la striscia nera tocca il sentiero si vede un varco scavato nell'argilla, puntellato con travi nuove.
+
 - UBALDO (calmo): E qualcuna è vera. Camminate piano.
 
 > Nota. La striscia è il livello scuro della parete del Bottaccione, quello della Sez. 22 (BG3). Le battute di Berto in città (Sez. 31B) la annunciano: se Berto non è stato ascoltato, la scena regge lo stesso.
@@ -65,8 +72,35 @@ Regia: due Guerrieri della Roccia di Spoleto stanno di guardia vicino a un fuoco
 - GUERRIERO: E l'alchimista di Cagli?
 - GUERRIERO: Ha già versato il suo nel fosso. Gli eugubini berranno la morte, e ringrazieranno.
 - GUERRIERO: Io non bevo niente, quaggiù. Neanche l'acqua.
+- GUERRIERO: E la guida? Il signore di Valmarcola dice che conosce ogni pietra.
 - GIORGIO (deciso): Il Colosso... Corrado di Spoleto. È lui quello del martello.
 - UBALDO (calmo): Allora sappiamo chi cercare. E sappiamo che abbiamo tempo fino all'alba.
+
+Se `RICCIARDO_ASCOLTATO`:
+
+- UBALDO (preoccupato): E quel ragazzo parla come noi. Ricciardo l'avrebbe sentito subito.
+
+### Il ragazzo eugubino (dilemma D2)
+
+Regia: il gruppo esce dall'arco. Battaglia breve con i due Guerrieri. Alla fine il più giovane è a terra, ferito a una gamba; l'altro è fuggito verso il condotto. Se il giocatore si è fatto vedere prima e la scena di ascolto è saltata, questa parte si gioca lo stesso dopo la battaglia.
+
+- RAGAZZO: Non uccidetemi. Sono di San Martino, come voi. Ero servo dei Valmarcola.
+- GIORGIO (deciso): Un eugubino con Spoleto. Viene in città e risponde ai consoli.
+- ANTONIO (calmo): Oppure torna dai suoi con le parole del vescovo. Gli esuli ascoltano un esule.
+- SCELTA: Portalo in città / Lascialo andare
+
+Se «Portalo in città» (`ESULE_PRIGIONIERO`):
+
+- UBALDO (calmo): Verrai con noi. Nessuno ti toccherà finché cammino io.
+- RAGAZZO: Vi ringrazio. Ma in città mi vorranno appeso.
+
+Se «Lascialo andare» (`ESULE_LIBERATO`):
+
+- UBALDO (calmo): Va'. Di' al tuo signore che il vescovo di Gubbio vuole parlargli.
+- GIORGIO (preoccupato): Padre... ci tradirà un'altra volta.
+- UBALDO (calmo): Forse. Ma oggi no.
+
+Regia: con `ESULE_PRIGIONIERO` il ragazzo segue il gruppo zoppicando fino a Porta Metauro, senza combattere.
 
 ---
 
@@ -108,11 +142,13 @@ Regia: la corazza di Corrado fuma, le piastre colano come cera. Lui arretra fino
 
 - CORRADO: Il ferro... si piega?
 - CORRADO: Non è finita, vescovo. Spoleto ha altre forge, e Monaldo altri martelli.
+- CORRADO: E chiedete ai vostri esuli chi mi ha mostrato la strada.
 
 Regia: Corrado si lascia cadere nel vuoto. Sotto, un tonfo nell'acqua del Camignano. Silenzio. Poi solo il rumore della crepa.
 
 - GIORGIO (preoccupato): È caduto... L'ho lasciato andare.
 - UBALDO (calmo): No, Giorgio. Hai difeso l'acqua. Il resto non è tuo.
+- UBALDO (preoccupato): I nostri esuli... Dieci anni, e non li ho mai cercati.
 - ANTONIO (calmo): La crepa, piuttosto. Fatevi da parte.
 
 Regia: Antonio raccoglie il martello abbandonato, lo scalda tra le mani finché il ferro diventa rosso, e lo preme nella crepa. Il vapore sale. L'acqua smette di uscire.
@@ -122,6 +158,8 @@ Regia: Antonio raccoglie il martello abbandonato, lo scalda tra le mani finché 
 - ANTONIO (calmo): Ho tappato un buco. Non farne una predica.
 - SISTEMA: Il condotto è salvo.
 - OBIETTIVO: Rientra in città da Porta Metauro.
+
+> Nota v2. Se Q-SM01 è consegnata o c'è `RUFINO_ASCOLTATO`, Corrado entra in battaglia con uno scudo in meno: chi sa che il Patto è solo ferro a strati lo colpisce meglio.
 
 > Nota. Corrado non muore: nella v1 è l'ultimo boss, ma la Sez. 11 (beat 6) lo rivuole in un duello al passo. Così resta disponibile per un aggiornamento.
 
@@ -146,6 +184,13 @@ Regia: notte (palette notturna della scelta di stile 3). La porta è chiusa. Una
 Regia: la porta si apre. Si entra in San Martino.
 
 - AREA: San Martino. La notte prima della terza alba.
+
+Se `ESULE_PRIGIONIERO`, appena dentro:
+
+- FOLLA: Uno di loro! Con la gamba rotta! Alla corda, alla corda!
+- UBALDO (deciso): Lo giudicheranno i consoli, alla luce. Andate a dormire.
+- CECCO: Lo tengo io alla postierla, monsignore. Nessuno lo tocca.
+
 - UBALDO (calmo): Manca poco all'alba. Se avete promesso qualcosa a qualcuno, è il momento di mantenerlo.
 - SISTEMA: Ora puoi girare la città. Quando sei pronto, raggiungi Piazza Grande.
 - OBIETTIVO: All'alba, raggiungi Piazza Grande.
@@ -165,13 +210,33 @@ Regia: tempo libero. È qui che si consegnano le quest aperte. Entrando in Piazz
 | :-- | :-- |
 | Luogo | Piazza Grande, alba |
 | Condizione | `RIENTRO_PORTA_METAURO` e conferma |
-| Imposta | `ATTO_I_COMPLETATO` |
+| Imposta | `ATTO_I_COMPLETATO`; `GIUSTIZIA_OFFERTA` se il giocatore offre giustizia (D4) |
 
 Regia: luce bassa e rosata. Il popolo in piazza, stanco e affamato. L'araldo rientra a cavallo, con la stessa scorta del primo giorno.
 
 - ARALDO: Le tre albe sono passate, vescovo. Le chiavi.
-- UBALDO (calmo): Le chiavi restano dove sono.
+
+Regia: con `ESULE_LIBERATO`, nella scorta dell'araldo c'è il ragazzo del Bottaccione. Abbassa gli occhi quando incrocia quelli di Ubaldo.
+
+Il dilemma D4 sta qui, nella vista di gioco, prima che partano le bande della cutscene C4.
+
+- SCELTA: Giustizia agli esuli / Le chiavi restano
+
+Se «Offri giustizia agli esuli» (`GIUSTIZIA_OFFERTA`):
+
+- UBALDO (calmo): Le chiavi no. Ma Gubbio offre giustizia a chi ha cacciato.
+- UBALDO (calmo): Tornino i Valmarcola, e un giudizio giusto decida delle terre contese.
+- ARALDO: Monaldo non vende la vittoria, vescovo. E non la compra con le scuse.
 - ARALDO: Allora Monaldo verrà a prenderle.
+
+Se «Le chiavi restano»:
+
+- UBALDO (calmo): Le chiavi restano dove sono.
+- ARALDO: Allora Monaldo verrà a prenderle. Del resto, il vostro console scriveva altro.
+- GUIDO (preoccupato): Io... Non ora, araldo.
+
+Poi, per tutti:
+
 - UBALDO (deciso): Che venga. Questa è la nostra risposta.
 
 Regia: Ubaldo alza il pastorale verso la torre. Sul Palazzo dei Consoli il drappo rosso col monte bianco si srotola davanti al grifo dell'araldo. Il Campanone suona a doppi, a lungo. Le note scendono per la valle. Il cavallo dell'araldo si impenna.
@@ -183,6 +248,16 @@ Regia: l'araldo esce al galoppo. Il Campanone continua.
 
 - GIORGIO (calmo): E adesso, padre?
 - UBALDO (calmo): Adesso cominciano, Giorgio. Ma ci hanno visti in piedi.
+Se `GIUSTIZIA_OFFERTA`:
+
+- ANTONIO (calmo): Hai aperto una porta, vescovo. Non è servito. Ma l'hanno vista.
+
+Altrimenti:
+
+- ANTONIO (calmo): Anche tu hai chiuso una porta, stamattina. Ricordatelo.
+
+Poi, per tutti:
+
 - ANTONIO (calmo): Mi serve altra legna.
 - GIORGIO (calmo): Resti, allora?
 - ANTONIO (calmo): Resto finché c'è legna da bruciare. Qui, mi pare, ce ne sarà parecchia.

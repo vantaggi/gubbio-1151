@@ -10,7 +10,9 @@ Fasi:
 - **DIGIUNO**: da A1-05 alla partenza per il monte. Le strade sono più vuote.
 - **NOTTE**: da B-05 all'epilogo. Lanterne, voci basse, chi è sveglio aspetta l'alba.
 
-I datori di quest sono nel file delle quest, non qui.
+I datori di quest sono nel file delle quest, non qui. Gli amici di Cioti e le loro famiglie sono in [05_npc_amici.md](05_npc_amici.md).
+
+Varianti con bandiera (v2): una riga `- NOTTE (se BANDIERA): ...` vale solo con quella bandiera e sta sopra la riga della stessa fase senza condizione, che vale altrimenti.
 
 ---
 
@@ -18,6 +20,7 @@ I datori di quest sono nel file delle quest, non qui.
 
 **Il console Guido** (sotto il portone dei Consoli). Le sue battute di trama sono in A1-01, A1-05 ed E-01.
 
+- NOTTE (se BORGO_DENTRO): GUIDO (preoccupato): Settanta bocche in più. Ho rifatto i conti tre volte.
 - NOTTE: GUIDO (preoccupato): Non ho dormito, monsignore. Ho contato i fuochi nella piana. Sono di più.
 - DIGIUNO: GUIDO (calmo): La città tace, come avete chiesto. Non l'ho mai sentita così.
 
@@ -26,13 +29,28 @@ I datori di quest sono nel file delle quest, non qui.
 - NOTTE: BERTO: Siete scesi dal Bottaccione? E la roccia nera... l'avete vista? Ve l'avevo detto.
 - DIGIUNO: BERTO: Mio nonno ha scalpellato la pietra del Condotto nel Bottaccione.
 - DIGIUNO: BERTO: Diceva sempre: c'è una fessura dove la roccia diventa nera come la pece. Lì la terra non dorme.
-- DIGIUNO: BERTO: Fate attenzione, se scendete laggiù.
+- DIGIUNO: BERTO: Fate attenzione, se scendete laggiù. La crepa la conosceva solo chi l'ha costruita.
 - ULTIMATUM: BERTO: Undici stendardi. Io ne ho contati dodici, ma uno forse era un lenzuolo steso.
 
 **Popolana** (vicino al parapetto)
 
-- NOTTE: POPOLANA: Dicono che sul monte si sono accese tre luci. Le ho viste anch'io, giuro.
+- NOTTE (se PANE_DATO): POPOLANA: Dicono che sul monte si sono accese tre luci. Le ho viste anch'io, giuro.
+- NOTTE: POPOLANA: Tre luci sul monte, dicono. Il bambino non le ha viste: dormiva per la fame.
+- DIGIUNO (se PANE_DATO): POPOLANA: Dorme, finalmente. Dio vi renda il doppio, monsignore.
 - DIGIUNO: POPOLANA: Tre giorni senza pane. Li faccio, monsignore. Ma il bambino piange.
+
+Dilemma D3: dopo la battuta del DIGIUNO, se il gruppo ha almeno una Crescia di Pasqua e non c'è `PANE_DATO`:
+
+- SCELTA: Dalle una Crescia / Non ora
+
+Con «Dalle una Crescia» si toglie 1 Crescia di Pasqua e si imposta `PANE_DATO`:
+
+- GIORGIO (calmo): Per il bambino. Io ho già mangiato abbastanza per due.
+- SISTEMA: Hai dato 1 Crescia di Pasqua.
+
+Con «Non ora»:
+
+- ANTONIO (calmo): La fame di un giorno non uccide. Il Bottaccione sì.
 - ULTIMATUM: POPOLANA: Quel cavaliere col Grifo... ha guardato le nostre case come si guarda il bestiame.
 
 ---
@@ -41,8 +59,6 @@ I datori di quest sono nel file delle quest, non qui.
 
 **Merciaio** (davanti a una bottega chiusa)
 
-- NOTTE: MERCIAIO: Ho riaperto la finestra solo per vedere chi passava. Siete voi? Allora richiudo contento.
-- DIGIUNO: MERCIAIO: Bottega chiusa per ordine del vescovo. Ma se il cavaliere ha bisogno di un ago, bussate.
 - ULTIMATUM: MERCIAIO: Se arrivano i perugini, la prima cosa che rubano sono le stoffe. Le nascondo in cantina.
 
 ---
@@ -52,8 +68,7 @@ I datori di quest sono nel file delle quest, non qui.
 **Mastro Tano** (accanto alla Fontana dei Matti). La Patente da Matto è fuori dalla v1: Tano la promette e basta.
 
 - NOTTE: TANO: Ancora in giro? Solo i matti girano a quest'ora. Siete dei nostri, allora.
-- DIGIUNO: TANO: Fermati, cavaliere! Nessuno passa davanti al Bargello senza la follia sacra di chi ama questa terra.
-- DIGIUNO: TANO: Ma oggi la fontana digiuna pure lei. Torna quando la città sarà libera, e ti farò matto davvero.
+- DIGIUNO: TANO: Oggi la fontana digiuna pure lei. Torna a città libera, e ti farò matto davvero.
 - ULTIMATUM: TANO: L'acqua di questa fonte ha visto più assedi di me. E io ne ho visti tanti.
 
 ---
@@ -63,6 +78,7 @@ I datori di quest sono nel file delle quest, non qui.
 **Cecco il Balestriere** (alla postierla). Le battute di trama sono in A1-03.
 
 - NOTTE: CECCO: Da Porta Metauro? Allora la gola non è più loro. Dormirò un'ora, forse.
+- DIGIUNO (se INDIZIO_ROCCIA): CECCO: Quello di San Pietro dice che tira meglio di me? Bugia.
 - DIGIUNO: CECCO: Postierla chiusa, monsignore. Nemmeno il vento passa senza il mio permesso.
 
 **Lavandaia** (sul Camignano)
@@ -86,13 +102,13 @@ Fuori dalle mura. Dopo A1-04 restano solo nemici visibili e la quest delle forna
 **Venditore delle Logge dei Tiratori**. Se F5 prevede un negozio, è qui; altrimenti diventa un dono una tantum.
 
 - NOTTE: VENDITORE: Non dovrei vendere, col digiuno. Ma voi non digiunate, vero? Avvicinatevi.
+- DIGIUNO (se BORGO_DENTRO): VENDITORE: Il borgo mangia anche lui. Una crescia in meno per voi, mi spiace.
 - DIGIUNO: VENDITORE: Crescia, biscotti all'anice, un fiasco di rosso. Per chi combatte, il vescovo ha detto.
 - ULTIMATUM: VENDITORE: Comprate oggi, che domani non so se ci sarà ancora una loggia.
 
 **Fra' Matteo il Pescatore** (dona un Baccalà alla Ceraiola una sola volta: bandiera `DONO_MATTEO`)
 
-- DIGIUNO, prima volta: FRA' MATTEO: Il Camignano è torbido, ma le riserve del convento sono piene.
-- DIGIUNO, prima volta: FRA' MATTEO: Prendi questo baccalà con le prugne. Basta un boccone per tornare in fiato.
+- DIGIUNO, prima volta: FRA' MATTEO: Il Camignano è torbido, ma il convento ha riserve. Prendi questo baccalà.
 - SISTEMA: Ricevi Baccalà alla Ceraiola.
 - dopo il dono: FRA' MATTEO: Uno a testa, e già è troppo. Il resto è per i feriti.
 
@@ -113,6 +129,7 @@ Fuori dalle mura. Dopo A1-04 restano solo nemici visibili e la quest delle forna
 **Vecchio sulla scalinata**
 
 - NOTTE: VECCHIO: Ho sentito l'acqua tornare nelle fontane. A una certa età si sente tutto.
+- DIGIUNO: VECCHIO: Dieci anni fa le torri dei Valmarcola. Ora tornano, lo sento nelle ossa.
 - DIGIUNO: VECCHIO: Questa salita la faccio da settant'anni. I perugini la troveranno più ripida di me.
 - ULTIMATUM: VECCHIO: Ubaldo! Ti ricordi quando eri chierico e ti addormentavi ai vespri?
 - ULTIMATUM: UBALDO (calmo): Me lo ricordo. Mi svegliavi tu, con un calcio.
@@ -123,6 +140,7 @@ Fuori dalle mura. Dopo A1-04 restano solo nemici visibili e la quest delle forna
 
 **Frate agostiniano**
 
+- NOTTE (se BORGO_FUORI): FRATE: Hanno bruciato tre case del borgo. Il convento no. Non so se ringraziare.
 - NOTTE: FRATE: Preghiamo a turno, tutta la notte. Il mio turno è finito, ma resto sveglio.
 - DIGIUNO: FRATE: La chiesa è aperta a chi vuole pregare in silenzio. Il silenzio è l'unica cosa che non manca.
 - ULTIMATUM: FRATE: Le mura di qui sono le più basse. Lo sanno anche loro, temo.

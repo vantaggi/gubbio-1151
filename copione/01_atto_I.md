@@ -11,10 +11,11 @@ Il filo dell'atto, in una riga per scena:
 | A1-03 | San Martino | Cecco alla postierla: come si rompono gli scudi | `POSTIERLA_APERTA` |
 | A1-04 | Teatro Romano | Prima battaglia; Antonio salvato e convinto | `ANTONIO_NEL_GRUPPO` |
 | A1-05 | Piazza Grande | La città si chiude; tempo libero per le quest | `CITTA_IN_DIGIUNO` |
+| A1-05b | Sant'Agostino, fuori Porta Romana | Il borgo chiede di entrare (dilemma D1) | `BORGO_DENTRO` o `BORGO_FUORI` |
 | A1-06 | Duomo e Ducale | Congedo dalla città | `PORTA_DEL_MONTE` |
 | A1-07 | Stradoni del Monte | Salita, imboscata, la spia | `SPIA_CATTURATA` |
 | A1-08 | Basilica | Il rito: risveglio dei Ceri e Spettri del Dubbio | `CERI_RISVEGLIATI` |
-| A1-09 | Basilica | La visione del Bottaccione | `VISIONE_BOTTACCIONE` |
+| A1-09 | Basilica | Gli indizi e la visione del Bottaccione | `VISIONE_BOTTACCIONE` |
 
 Il seguito (dungeon, Corrado, epilogo) è in [02_bottaccione_epilogo.md](02_bottaccione_epilogo.md).
 
@@ -40,6 +41,7 @@ Regia: tamburi lontani. Un cavaliere entra in piazza: sul petto e sul drappo del
 - ARALDO: Popolo di Gubbio! Parla Monaldo, signore di Perugia e delle undici città.
 - ARALDO: Aprite le porte e consegnate le chiavi del Cassero.
 - ARALDO: Avete tre albe. Alla terza, se le porte saranno ancora chiuse, non resterà pietra su pietra.
+- ARALDO: E Monaldo parla anche per chi avete cacciato dalle vostre torri.
 
 Regia: il colpo del pastorale sulla pietra interrompe i tamburi. Silenzio.
 
@@ -121,8 +123,8 @@ Regia: Antonio, curvo sotto una fascina, è circondato da tre Fanti di Perugia. 
 
 Regia: transizione di battaglia. Durante lo scontro compaiono le battute di tutorial, una alla volta, al primo turno utile.
 
-- SISTEMA: Scegli Attacca e poi il bersaglio.
-- SISTEMA: Ogni colpo giusto toglie uno scudo. A zero scudi il nemico va in BREAK e perde il turno.
+- SISTEMA: Scegli Attacca e poi il bersaglio. Ogni colpo giusto toglie uno scudo.
+- SISTEMA: A zero scudi il nemico va in BREAK e perde il turno.
 - SISTEMA: Antonio combatte con voi, ma per ora non ascolta ordini.
 
 Dopo la vittoria:
@@ -158,14 +160,50 @@ Regia: la postierla si chiude alle spalle del gruppo con un tonfo (si sente anch
 - UBALDO (deciso): Gente di Gubbio! Per tre giorni le botteghe tacciano e le tavole restino vuote.
 - UBALDO (deciso): Non per paura. Perché chi digiuna insieme impara a resistere insieme.
 - UBALDO (calmo): Io salgo al monte con questi due. Pregate per noi, e noi pregheremo per voi.
+- GUIDO (preoccupato): E il borgo di Sant'Agostino, monsignore? Sta fuori da Porta Romana.
+- UBALDO (preoccupato): Il borgo... Passerò da Porta Romana prima di salire.
 - GIORGIO (preoccupato): Padre, se tutti digiunano... noi cosa mangiamo per la strada?
 - UBALDO (calmo): Il digiuno è per chi prega. Chi combatte, mangi.
 - ANTONIO (calmo): Finalmente una regola che capisco.
+- SISTEMA: Ubaldo digiuna: fino al ritorno in città non può usare il cibo.
 - GUIDO (calmo): La strada del monte passa dal Duomo. Che Dio vi accompagni.
 - SISTEMA: Prima di salire puoi girare la città.
 - OBIETTIVO: Sali al Monte Ingino passando dal Duomo.
 
 Regia: da qui i Quartieri sono aperti e i datori di quest parlano. Il gioco non spinge: l'obiettivo resta in alto finché il giocatore non entra negli Stradoni.
+
+---
+
+## A1-05b · Il borgo fuori Porta Romana (dilemma D1)
+
+| | |
+| :-- | :-- |
+| Luogo | Sant'Andrea, a Porta Romana; davanti, il borgo di Sant'Agostino |
+| Condizione | `CITTA_IN_DIGIUNO`, né `BORGO_DENTRO` né `BORGO_FUORI` |
+| Imposta | `BORGO_DENTRO` oppure `BORGO_FUORI` |
+
+Regia: la porta è socchiusa. Fuori, la gente del borgo con fagotti e carretti. Andreuccio, il miliziano, tiene la soglia; accanto, Fazio con la mano sull'argano e Lauretta con la tavoletta dei conti. Se il giocatore entra negli Stradoni senza essere passato di qui, vale `BORGO_FUORI`: è l'errore di Ubaldo per dimenticanza.
+
+- ANDREUCCIO: Settanta bocche fuori dalla porta, monsignore. Le facciamo entrare o no?
+- LAURETTA: Ho fatto il conto. Con il borgo dentro, il grano dura un giorno in meno per tutti.
+- FAZIO: L'argano l'ho fatto io. Si apre e si richiude in un fiato, ma va deciso adesso.
+- GIORGIO (deciso): Restino fuori. Li difende la milizia, e al ritorno li difendo io.
+- ANTONIO (calmo): Io ci ho vissuto vent'anni, fuori da una porta. Non lo consiglio.
+- SCELTA: Apri al borgo / Tieni chiusa la porta
+
+Se «Apri al borgo» (`BORGO_DENTRO`):
+
+- UBALDO (deciso): Aprite. Nessuno resta fuori, stanotte. Il grano lo divideremo.
+- ANDREUCCIO: Dentro, svelti! Lauretta, conta tu. Io resto fuori per ultimo.
+- SISTEMA: Il borgo è dentro le mura. Il venditore delle Logge avrà meno da vendere.
+
+Se «Tieni chiusa la porta» (`BORGO_FUORI`):
+
+- UBALDO (preoccupato): Restate nel borgo. La milizia vi guarda, e Dio con lei.
+- LAURETTA: Allora sette giorni di grano, dentro. E per noi, quello che c'è.
+- ANTONIO (calmo): Sette giorni. Te li ricorderò, vescovo.
+
+Regia: la porta si chiude. Da qui le battute degli NPC del borgo cambiano con la bandiera (vedi `05_npc_amici.md`).
 
 ---
 
@@ -283,8 +321,7 @@ Regia: i ceri tremano. Dalle ombre delle colonne escono tre figure senza volto. 
 
 Regia: battaglia contro gli Spettri del Dubbio. Battute di tutorial al primo turno utile:
 
-- SISTEMA: Proteggersi a vicenda dà Fervore. Le abilità dei Ceri lo spendono.
-- SISTEMA: Con Bastione Azzurro Giorgio para i colpi per gli altri.
+- SISTEMA: Proteggersi a vicenda dà Fervore. Con Bastione Azzurro Giorgio para per gli altri.
 - SISTEMA: Gli Spettri temono la Fede: usa Giudizio della Verga.
 
 Dopo la vittoria, ognuno risponde al proprio spettro mentre svanisce:
@@ -304,6 +341,14 @@ Dopo la vittoria, ognuno risponde al proprio spettro mentre svanisce:
 | Condizione | `SPETTRI_VINTI` |
 | Imposta | `VISIONE_BOTTACCIONE`, varco verso la Strada del Bottaccione aperto |
 
+Regia: prima del vetro, gli indizi. Se il giocatore ha almeno due bandiere fra `INDIZIO_CARTA` (Bubo), `INDIZIO_ACQUA` (Giordano) e `INDIZIO_ROCCIA` (Giambono), parte questo scambio; altrimenti si passa subito alla visione.
+
+Se almeno due indizi:
+
+- UBALDO (preoccupato): La carta che manca, l'acqua che cala, la pietra che non regge...
+- ANTONIO (deciso): E la spia che rideva della nostra acqua. È il condotto, Ubaldo.
+- UBALDO (calmo): Allora il vetro ci dirà soltanto quando.
+
 Regia: uno dei vetri chiari si scurisce e mostra un'immagine che si muove: uomini in ferro salgono una gola stretta dietro il monte, verso gli archi di un acquedotto. Uno di loro, enorme, porta un martello.
 
 - UBALDO (preoccupato): Il Bottaccione... Salgono dalla gola, dietro il monte.
@@ -315,3 +360,5 @@ Regia: uno dei vetri chiari si scurisce e mostra un'immagine che si muove: uomin
 - UBALDO (calmo): Il digiuno non finisce perché scendiamo. Lo portiamo con noi.
 - SISTEMA: La spia resta legata in sacrestia. Puoi salvare davanti all'altare.
 - OBIETTIVO: Scendi per la Strada del Bottaccione, dietro il monte.
+
+> Nota v2. Decisione n. 3 del README riaperta e approvata da Cioti (3 nov 2026): per chi indaga in città la vetrata conferma il piano invece di rivelarlo; per chi non indaga funziona come prima.

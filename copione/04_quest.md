@@ -22,8 +22,8 @@ Regole comuni:
 
 ### Proposta (stato NON INIZIATA)
 
-- RANIERO: Le mie fornaci sono spente, ragazzo. Le truppe di Spoleto hanno bloccato il ferro del Monte Calvo al passo.
-- RANIERO: E quello che avevo già colato me l'hanno preso. L'hanno ammucchiato nelle fornaci basse, al Teatro Romano.
+- RANIERO: Fornaci spente, ragazzo. Spoleto ha bloccato al passo il ferro del Monte Calvo.
+- RANIERO: E il ferro già colato l'hanno ammucchiato nelle fornaci basse del Teatro Romano.
 - RANIERO: Riportami tre blocchi, e ti dico come si fa a bucare una corazza di Spoleto.
 - GIORGIO (deciso): Tre blocchi. Fatto.
 - RANIERO: Pesano, cavaliere. Non è come dire «fatto».
@@ -51,7 +51,7 @@ Dopo `CITTA_IN_DIGIUNO` la postierla di San Martino è chiusa. Se Q-SM01 è atti
 
 - RANIERO: Tre blocchi. E li hai portati tu, non i muli. Ti ho giudicato male, ragazzo.
 - RANIERO: Ascolta. Il ferro di Spoleto è battuto a freddo, a strati. Contro la lama regge come un muro.
-- RANIERO: Ma col fuoco gli strati si aprono come le pagine di un libro bagnato. Ricordatelo, se incontri uno grosso.
+- RANIERO: Ma col fuoco gli strati si aprono come un libro bagnato. Ricordalo, coi grossi.
 - ANTONIO (calmo): Col fuoco. Sento che questa la ricorderò io.
 - RANIERO: E per la strada, prendete queste. Mia moglie le ha fatte prima che il vescovo vietasse tutto.
 - SISTEMA: Ricevi 3 Crescia di Pasqua al Formaggio.
@@ -64,6 +64,8 @@ Regia: la fornace di Raniero si riaccende. Da qui la sua battuta cambia.
 - NOTTE: RANIERO: Ho riacceso la fornace. Lavoro di notte, per non rompere il digiuno con il rumore di giorno.
 - DIGIUNO: RANIERO: Le fornaci tornano a fumare. È il fumo più bello che si veda in città.
 
+> Nota v2. Con Q-SM01 consegnata (o con `RUFINO_ASCOLTATO`), in B-04 Corrado entra con uno scudo in meno: il ferro di Raniero torna alle fornaci della città e non alle sue corazze.
+
 > Nota. La consegna anticipa la meccanica di Corrado (immune al taglio finché non è ustionato, Sez. 26A) e la battuta di Antonio in B-04 («Le lame no. Il fuoco sì»). Se la quest non è fatta, B-04 regge lo stesso.
 
 ---
@@ -74,8 +76,9 @@ Regia: la fornace di Raniero si riaccende. Da qui la sua battuta cambia.
 
 ### Proposta
 
-- AGNESE: Gli alchimisti di Cagli stanno versando veleno nel fosso. I feriti di Porta Romana hanno le labbra viola.
+- AGNESE: Cagli versa veleno nel fosso. I feriti di Porta Romana hanno le labbra viola.
 - AGNESE: Le bende non bastano. Mi serve l'elleboro, quello che cresce solo sulle rocce umide del Bottaccione.
+- AGNESE: Gabrione dice che è veratro. Lui lo riconosce, io lo curo.
 - AGNESE: Quattro radici. Senza, non supereranno la notte.
 - UBALDO (preoccupato): Il Bottaccione è dietro il monte, Agnese. Dentro le loro linee.
 - AGNESE: Lo so, monsignore. Per questo lo chiedo a voi e non a mio figlio.
@@ -121,7 +124,7 @@ Se la consegna avviene dopo `CONDOTTO_SALVO`, una battuta in più:
 ### Proposta
 
 - FRA' BERNARDO: Hanno profanato l'altare, Vescovo Ubaldo! Ci hanno rubato la Rosa d'Argento.
-- FRA' BERNARDO: Con quella benediciamo i miliziani prima della guardia notturna. Senza, gli uomini tremano davanti al Grifo.
+- FRA' BERNARDO: Con quella benediciamo le guardie della notte. Senza, tremano davanti al Grifo.
 - UBALDO (calmo): Chi è entrato, Bernardo?
 - FRA' BERNARDO: Un pellegrino, diceva. Parlava come noi, ma pregava male. Ha preso la Rosa ed è sparito.
 - UBALDO (deciso): Se è ancora in città, lo troveremo. Le porte sono chiuse anche per lui.
@@ -129,7 +132,7 @@ Se la consegna avviene dopo `CONDOTTO_SALVO`, una battuta in più:
 
 ### Gli indizi
 
-Tre NPC già presenti hanno una battuta in più finché la quest è attiva. L'ordine è libero. Ogni indizio imposta la sua bandiera (`INDIZIO_LUCIA`, `INDIZIO_VENDITORE`, `INDIZIO_MENDICANTE`).
+Tre NPC già presenti hanno una battuta in più finché la quest è attiva. L'ordine è libero. Ogni indizio imposta la sua bandiera (`INDIZIO_LUCIA`, `INDIZIO_VENDITORE`, `INDIZIO_FONTANIERE`). Nella v2 il mendicante della v1 è sostituito da Giordano il fontaniere (vedi [05_npc_amici.md](05_npc_amici.md)).
 
 **Lucia la Tessitrice** (San Pietro):
 
@@ -138,13 +141,13 @@ Tre NPC già presenti hanno una battuta in più finché la quest è attiva. L'or
 
 **Venditore delle Logge** (Piazza Quaranta Martiri):
 
-- VENDITORE: Uno straniero mi ha comprato del pane ieri. Ha pagato con monete di Perugia, e mi ha detto di stare zitto.
+- VENDITORE: Ieri uno straniero ha pagato il pane con monete di Perugia. Mi ha detto di tacere.
 - VENDITORE: Io sto zitto. Con voi, però, no.
 
-**Mendicante** (Piazza Quaranta Martiri, sotto le Logge; compare solo con la quest attiva):
+**Giordano il fontaniere** (Piazza Quaranta Martiri, alla vasca vicino alle Logge):
 
-- MENDICANTE: Sotto le Logge dorme uno che non chiede mai l'elemosina. Strano mendicante, no?
-- MENDICANTE: Di notte si alza e guarda verso il monte, come se aspettasse qualcuno.
+- GIORDANO: Sotto le Logge dorme uno che non beve mai alla mia vasca. Strano, con questa sete.
+- GIORDANO: Di notte si alza e guarda verso il monte, come se aspettasse qualcuno.
 
 Con i tre indizi, sotto le Logge compare l'infiltrato:
 
@@ -156,18 +159,21 @@ Regia: un uomo avvolto in un mantello da pellegrino, la mano sotto il mantello. 
 
 - INFILTRATO: Il vescovo in persona. Dovevo immaginarlo: in questa città ficcate il naso dappertutto.
 - GIORGIO (deciso): Ridacci la Rosa.
-- INFILTRATO: Questa? Monaldo la vuole sul suo altare, a Perugia. Venite a prenderla.
+- INFILTRATO: Questa città mi ha cacciato una volta. Monaldo la Rosa la rivuole indietro.
 
 Dopo la vittoria:
 
 - INFILTRATO: Tenetevela, la vostra rosa. Tanto all'alba non ci sarà più nessuno da benedire.
 - UBALDO (calmo): All'alba vedremo. Intanto ci sarà qualcuno a pregare per te.
+- UBALDO (preoccupato): Parli come noi.
+- INFILTRATO: Ero dei Valmarcola. Lo sono ancora.
 - SISTEMA: Hai ripreso la Rosa d'Argento. Riportala a Fra' Bernardo.
 
 ### Consegna
 
 - FRA' BERNARDO: La Rosa! Integra, grazie al cielo. E grazie a voi, che col cielo avete buoni rapporti.
 - FRA' BERNARDO: Stanotte i miliziani avranno la loro benedizione. E voi la mia, che vale meno ma è di cuore.
+- FRA' BERNARDO: Sapete che la Rosa ce la donò Perugia? Altri tempi. Altri vescovi.
 - FRA' BERNARDO: Prendete questa crescia sotto la cenere. Chi la mangia, si rialza anche quando è caduto.
 - SISTEMA: Ricevi 1 Crescia sotto la Cenere.
 - SISTEMA: San Pietro ti è grato.

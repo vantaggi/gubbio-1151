@@ -46,7 +46,7 @@ Regia: un vetro si oscura, la camera ci entra dentro e la scena diventa la mappa
 
 Regia: l'inchiostro nero si allarga sulla pergamena. A ogni battuta del narratore si piantano alcuni stendardi sui valichi, con il nome della città sotto. L'ultimo, più grande, è quello di Perugia: rosso scuro, con il grifo bianco coronato d'oro. Gubbio resta al centro: un piccolo drappo rosso con il monte bianco a cinque cime. Grifo bianco contro monte bianco, entrambi su rosso: è il confronto visivo di tutto il gioco (vedi `simboli/CENSIMENTO_SIMBOLI.md`).
 
-- NARRATORE: Nel maggio del 1151, l'invidia e la sete di dominio spezzarono la pace dei colli.
+- NARRATORE: Nel 1151, vecchi torti e nuove ambizioni spezzarono la pace dei colli.
 - NARRATORE: Spoleto e Foligno. Assisi, Spello e Bettona. Todi e Cagli.
 - NARRATORE: Nocera, Gualdo Tadino e Fossato. E sopra tutte, Perugia.
 - NARRATORE: Undici città confederate cinsero d'assedio la roccaforte di Gubbio.
@@ -55,5 +55,7 @@ Regia: l'inchiostro nero si allarga sulla pergamena. A ogni battuta del narrator
 - NARRATORE: Sorse il fuoco della Fede.
 
 Regia: dissolvenza sul loggiato di Palazzo dei Consoli. Si passa ad A1-01.
+
+> Nota v2 (3 nov 2026). La prima riga non dice più «l'invidia e la sete di dominio»: la coalizione ha delle ragioni, e una è un torto di Gubbio (Bibbia della storia v2, `storia/BIBBIA_STORIA.md`). Via anche «maggio»: la data è solo tradizionale. La riga vive nella cutscene C1.
 
 > Nota. L'elenco delle undici città è quello della Sez. 3 del GDD (Perugia, Spoleto, Cagli, Foligno, Todi, Nocera, Gualdo Tadino, Fossato, Assisi, Bettona, Spello). Le fonti storiche non concordano tutte sull'elenco: va bene per il gioco, ma è da segnare nel registro delle fonti come scelta.
