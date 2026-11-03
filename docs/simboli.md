@@ -58,6 +58,8 @@ entra nessun pixel da foto. Le scelte di design sono mie; a Cioti chiedo solo ci
 | Brocche «Mastro Giorgio» (8C) | Brocca di lustro oro e rubino all'alzata | Le brocche non sono nelle pagine di ceri.it; Mastro Giorgio è del Cinquecento | Anacronismo: si toglie il nome di Mastro Giorgio |
 | Colori dei Ceri (8C, 9) | Gialla, azzurra e nera, calzoni bianchi, fazzoletto rosso | Uguale | Corretto |
 
+I colori sono giusti come divise della festa, ma nel gioco non si usano (vedi sotto). Le correzioni al GDD sono in `docs/errata_gdd.md`.
+
 ## Il problema del 1151
 
 Il gioco è ambientato nel 1151. Tre di questi simboli in quell'anno non esistevano ancora:
@@ -71,7 +73,8 @@ Il gioco è ambientato nel 1151. Tre di questi simboli in quell'anno non esistev
    Cioti (1 nov 2026)**: nel gioco non si usano, nemmeno come codice dell'interfaccia. I tre eroi si
    riconoscono dalle vesti e dagli attributi dei ritratti (mitra, armatura e lancia, saio e fuoco).
    La battuta di Lucia nel copione («Giallo per il vescovo, azzurro per il cavaliere, nero per
-   l'eremita») va tolta o riscritta.
+   l'eremita») è stata tolta (1 nov 2026); nel copione v2 Lucia cuce «uno stendardo nuovo: rosso, col
+   monte bianco».
 3. **Tavole Eugubine.** Nel 1151 sono sepolte e dimenticate (ritrovamento tradizionale nel 1444). Possono
    comparire solo come un reperto che qualcuno trova. Il GDD le mette nel post-game, fuori dalla v1:
    restano lì.
@@ -155,11 +158,15 @@ grifo bianco di Perugia contro il monte bianco di Gubbio, entrambi su rosso, è 
 3. Nocera senza figura e Assisi col leone d'oro su verde finché non si trova una blasonatura.
 4. La battuta di Lucia sui colori dei Ceri era già stata tolta dal copione (`01_atto_I.md`, nota del 1 nov).
 
-Note per il copione (non le ho cambiate io, sono di un altro lavoro):
-- `00_prologo.md`: l'ultimo stendardo è «più grande e purpureo, il Grifo di Perugia». Lo stemma di
-  Perugia è rosso, non porpora: meglio «rosso, col grifo d'argento».
-- `03_npc_ambiente.md`, Lucia: «cucirò uno stendardo con i vostri tre ceri». Nel 1151 i Ceri non
-  esistono; si può tenere solo se «ceri» vuol dire candele.
+Note per il copione (non le ho cambiate io, sono di un altro lavoro). **Entrambe applicate** nel
+copione (verificato il 3 nov 2026):
+- ~~`00_prologo.md`: l'ultimo stendardo è «più grande e purpureo, il Grifo di Perugia».~~ Ora è
+  «rosso scuro, con il grifo bianco coronato d'oro».
+- ~~`03_npc_ambiente.md`, Lucia: «cucirò uno stendardo con i vostri tre ceri».~~ Ora cuce uno
+  stendardo «rosso, col monte bianco».
+
+Le stesse correzioni valgono per il GDD del prototipo (Sez. 7, 8B, 8C, 9, 31, 32, 34): sono raccolte
+in `docs/errata_gdd.md`, perché il GDD non è in questo ramo e non si riscrive.
 
 ## Domande per Cioti
 

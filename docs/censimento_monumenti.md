@@ -37,7 +37,8 @@ Il Pretorio guarda a ovest e si vede da dietro (deciso da Cioti).
 - Rivedere le decisioni qui sopra e quelle in "Decisioni prese in autonomia" (misure: vince OSM).
 - Fronte del Consoli: 33 m (GDD) o 40 m (OSM)? Si chiude contando le campate su una foto frontale.
 - Nove monumenti non hanno foto libere: si disegnano in procedurale (elenco più sotto).
-- `docs/mappa_del_mondo.md` va corretto nella nuova storia: Porta Metauro al posto di Porta di Santa Lucia.
+- ~~`docs/mappa_del_mondo.md` va corretto nella nuova storia: Porta Metauro al posto di Porta di Santa Lucia.~~
+  **FATTO** (F2, 1 nov 2026; verificato il 3 nov 2026 con le correzioni R5): il contratto del mondo dice Porta Metauro e nessun nome in gioco usa più «Santa Lucia».
 
 ## Cosa c'è in questa cartella
 
@@ -101,7 +102,8 @@ Nessuna fonte consultata dice verso dove guarda una facciata: l'orientamento arr
 
 1. ~~Porta di Santa Lucia~~ **RISOLTO (Cioti, 1 nov 2026): è Porta Metauro** (o di Santa Croce, l'unica
    con le ante di legno originali). Nel censimento la voce è `porta_metauro`. `docs/mappa_del_mondo.md`
-   e i nomi in gioco dicono ancora "Porta di Santa Lucia": vanno corretti nella nuova storia.
+   e i nomi in gioco sono stati corretti nella nuova storia (3 nov 2026: nessuna «Porta di Santa Lucia»
+   resta in `mondo/`, `include/`, `src/`, `regia/`, `testi/`).
 2. ~~San Martino~~ **RISOLTO (Cioti, 1 nov 2026): l'edificio di riferimento è la chiesa di San Domenico.**
 3. ~~Sant'Andrea~~ **RISOLTO (Cioti, 1 nov 2026): la chiesa di riferimento è San Marziale (in origine Sant'Andrea).**
 4. ~~Via dei Consoli e via XX Settembre~~ **RISOLTO (Cioti, 1 nov 2026):** su via dei Consoli si riconoscono il
