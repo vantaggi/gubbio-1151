@@ -1,0 +1,18 @@
+# «Il segnale di Fazio» (una volta sola, ~4 s). Fazio nel gioco e' il maestro di congegni; l'amico
+# vero suona la chiarina negli sbandieratori di Gubbio. Il segnale usa solo le note armoniche della
+# chiarina (re la fa# re'): torna dentro «Le bandiere». Da suonare entrando nella sua bottega.
+titolo: Il segnale di Fazio
+bpm: 110
+battuta: 16
+anello: no
+canale chiarina chiarina 128
+canale tamburo tamburo 128
+
+ordine: A F
+
+[A] 32
+chiarina: D4:2!50 D4:1 D4:1 A4:4 F#4:2 A4:2 D5:4 | A4:2 D5:2 F#5:4 E5:2 D5:2 D5:4 |
+tamburo: !40 x:1 x:1 x:2 X:4 x:4 X:4 | x:2 x:2 x:4 x:2 x:2 X:4 |
+
+[F] 8
+chiarina: r:8

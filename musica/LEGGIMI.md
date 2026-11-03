@@ -19,9 +19,13 @@ alternativa si apre `audio/*.xm` con OpenMPT o direttamente in mGBA dentro la RO
 - **Modi medievali** invece di maggiore e minore: dorico per Gubbio, misolidio per la vita dei
   quartieri e la salita, eolio per la battaglia, frigio per il Bottaccione e Corrado.
 - **Strumenti dell'Umbria del XII secolo, sintetizzati**: liuto, arpa, flauto dolce, ciaramella,
-  viella, coro, corno, bordone (ghironda/cornamusa), campane, tamburo, grancassa, sonagli, incudine.
+  viella, chiarina (la tromba lunga dei cortei eugubini, solo note armoniche), coro, corno, bordone (ghironda/cornamusa), campane, tamburo, grancassa, sonagli, incudine.
 - **Forme del tempo**: saltarello in 6/8 per la città, lauda per la basilica, ballata in 3/4 per la
   canzone di Flaviano. Nessun Inno dei Ceri (regola delle cutscene).
+- **La tradizione della città, senza copiarla**: tamburi e chiarine dei cortei, stornelli, laude.
+  Le melodie esistenti non si citano: «O lume della fede» (inno di Sant'Ubaldo, registrato nel 1956,
+  autore non trovato) entra solo se se ne accerta il pubblico dominio, e comunque è dei Ceri, che
+  nel gioco stanno solo dentro la basilica.
 - **Cutscene a misura**: i brani di C1-C4 durano quanto la regia (il test lo controlla).
 
 ## Brani
@@ -43,6 +47,9 @@ alternativa si apre `audio/*.xm` con OpenMPT o direttamente in mGBA dentro la RO
 | `undici_bandiere` | cutscene C2 | 16 s | (sì) |
 | `pastorale` | cutscene C2P | 2,7 s | no |
 | `terza_alba` | cutscene C4, poi riparte dal Tema per i titoli | 27 s | sì, dal Tema |
+| `bandiere` | tamburi e chiarine come nei cortei di sbandieratori e balestrieri: Piazza Grande in festa, epilogo | 39 s | sì |
+| `fazio` | il segnale di chiarina di Fazio (l'amico vero è trombettiere negli sbandieratori): entrando nella sua bottega | 5,5 s | no |
+| `taverna` | stornello per la taverna di Padellino | 48 s | sì |
 | `canzone_di_flaviano` | titoli di coda: «la canzone nuova» promessa da Flaviano e Giuliana | 58 s | sì |
 
 ## Effetti (`bn::sound_items::`)
