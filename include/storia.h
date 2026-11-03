@@ -552,26 +552,26 @@ inline constexpr Npc NPC_AMBIENTE[NPC] = {
     { int8_t(mondo::AreaId::SAN_MARTINO), 123, 32, { 48, 49, 50 }, { 1, 1, 2 }, 5, 255, 0, 0, 0, false },  // Ciaccio
     { int8_t(mondo::AreaId::SAN_MARTINO), 15, 58, { 52, 53, 54 }, { 1, 1, 2 }, 6, 255, 0, 0, 0, false },  // Giuliana
     { int8_t(mondo::AreaId::SAN_MARTINO), 42, 32, { 56, 57, 58 }, { 1, 1, 1 }, 7, 255, 0, 0, 0, false },  // Flaviano
-    { int8_t(mondo::AreaId::SAN_MARTINO), 36, 33, { 59, 60, 61 }, { 1, 1, 1 }, 8, 255, 0, 0, 0, false },  // Compagno
+    { int8_t(mondo::AreaId::SAN_MARTINO), 64, 32, { 59, 60, 61 }, { 1, 1, 1 }, 8, 255, 0, 0, 0, false },  // Compagno
     { int8_t(mondo::AreaId::SAN_MARTINO), 75, 32, { 62, 63, 64 }, { 1, 1, 1 }, 9, 255, 0, 0, 0, false },  // Masio il Romano
-    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 10, 28, { 65, 66, 67 }, { 1, 1, 1 }, 10, 255, 0, 0, 0, false },  // Montano
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 61, 54, { 68, 69, 70 }, { 1, 1, 1 }, 11, 68, 2, 0, 0, false },  // Mastro Rufino
+    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 7, 52, { 65, 66, 67 }, { 1, 1, 1 }, 10, 255, 0, 0, 0, false },  // Montano
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 42, 58, { 68, 69, 70 }, { 1, 1, 1 }, 11, 68, 2, 0, 0, false },  // Mastro Rufino
     { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 102, 71, { 71, 72, 73 }, { 1, 1, 1 }, 12, 65, 2, 0, 0, false },  // Giordano
     { int8_t(mondo::AreaId::SAN_PIETRO), 31, 30, { 74, 75, 76 }, { 1, 1, 1 }, 13, 255, 0, 0, 0, false },  // Febo
     { int8_t(mondo::AreaId::SAN_PIETRO), 26, 19, { 77, 78, 79 }, { 1, 1, 1 }, 14, 66, 2, 0, 0, false },  // Giambono
-    { int8_t(mondo::AreaId::SAN_PIETRO), 29, 19, { 80, 81, 82 }, { 1, 1, 1 }, 15, 255, 0, 0, 0, false },  // Gabrione
+    { int8_t(mondo::AreaId::SAN_PIETRO), 10, 11, { 80, 81, 82 }, { 1, 1, 1 }, 15, 255, 0, 0, 0, false },  // Gabrione
     { int8_t(mondo::AreaId::SAN_PIETRO), 29, 33, { 83, 84, 85 }, { 1, 1, 1 }, 16, 67, 7, 0, 0, false },  // Ricciardo
     { int8_t(mondo::AreaId::SAN_PIETRO), 28, 27, { 86, 87, 88 }, { 1, 1, 1 }, 17, 255, 0, 0, 0, false },  // Aurelia
-    { int8_t(mondo::AreaId::SAN_PIETRO), 23, 22, { 89, 90, 91 }, { 1, 1, 1 }, 18, 255, 0, 0, 0, false },  // Leonora
-    { int8_t(mondo::AreaId::SAN_PIETRO), 29, 22, { 92, 93, 94 }, { 1, 1, 2 }, 19, 255, 0, 0, 0, false },  // Valenza
-    { int8_t(mondo::AreaId::SAN_PIETRO), 23, 25, { 96, 97, 101 }, { 1, 4, 1 }, 20, 255, 0, 0, 0, false },  // Padellino
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 32, 24, { 102, 103, 104 }, { 1, 1, 2 }, 21, 255, 0, 4, 25, true },  // Ciotto
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 32, 27, { 106, 107, 108 }, { 1, 1, 1 }, 22, 255, 0, 11, 25, true },  // Fazio
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 29, 22, { 109, 110, 111 }, { 1, 1, 1 }, 23, 255, 0, 14, 25, true },  // Lauretta
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 32, 21, { 112, 113, 114 }, { 1, 1, 1 }, 24, 255, 0, 17, 25, true },  // Nicoluccio
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 41, 30, { 115, 116, 117 }, { 1, 1, 1 }, 25, 64, 2, 20, 25, true },  // Bubo
+    { int8_t(mondo::AreaId::SAN_PIETRO), 29, 19, { 89, 90, 91 }, { 1, 1, 1 }, 18, 255, 0, 0, 0, false },  // Leonora
+    { int8_t(mondo::AreaId::SAN_PIETRO), 13, 11, { 92, 93, 94 }, { 1, 1, 2 }, 19, 255, 0, 0, 0, false },  // Valenza
+    { int8_t(mondo::AreaId::SAN_PIETRO), 27, 11, { 96, 97, 101 }, { 1, 4, 1 }, 20, 255, 0, 0, 0, false },  // Padellino
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 41, 30, { 102, 103, 104 }, { 1, 1, 2 }, 21, 255, 0, 4, 25, true },  // Ciotto
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 41, 33, { 106, 107, 108 }, { 1, 1, 1 }, 22, 255, 0, 11, 25, true },  // Fazio
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 41, 36, { 109, 110, 111 }, { 1, 1, 1 }, 23, 255, 0, 14, 25, true },  // Lauretta
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 32, 27, { 112, 113, 114 }, { 1, 1, 1 }, 24, 255, 0, 17, 25, true },  // Nicoluccio
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 35, 27, { 115, 116, 117 }, { 1, 1, 1 }, 25, 64, 2, 20, 25, true },  // Bubo
     { int8_t(mondo::AreaId::SANT_AGOSTINO), 54, 28, { 118, 119, 120 }, { 1, 1, 1 }, 26, 255, 0, 23, 25, true },  // Valeriana
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 35, 21, { 121, 122, 123 }, { 1, 1, 1 }, 27, 255, 0, 26, 25, true },  // Ragnetto
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 43, 27, { 121, 122, 123 }, { 1, 1, 1 }, 27, 255, 0, 26, 25, true },  // Ragnetto
     { int8_t(mondo::AreaId::SANT_AGOSTINO), 39, 18, { 124, 125, 126 }, { 1, 1, 2 }, 28, 255, 0, 0, 0, false },  // Andreuccio
 };
 
