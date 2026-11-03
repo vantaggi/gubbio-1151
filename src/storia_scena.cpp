@@ -49,20 +49,44 @@ namespace
     }
 
     int s_voce_automatica = 0;              // la voce che prende ogni menu nelle prove senza tasti
+    int s_scelte_fotografate = 0;           // le istantanee dei menu nelle prove
 
-    // Il menu di una scelta nella vista di gioco: due voci, su e giu' per spostarsi, A per scegliere. La
-    // voce non scelta e' scritta in ombra.
-    int menu_scelta(const Battuta& b, const bn::sprite_palette_ptr& palette_testo, bool automatica)
+    constexpr int MENU_X = 32;                  // le voci dentro il riquadro del dialogo (y 104-160)
+    constexpr int MENU_Y = 120;
+    constexpr int MENU_PASSO = 16;
+
+    // Il cursore del menu: un triangolo pieno verso destra, nell'inchiostro chiaro del testo.
+    bn::sprite_ptr crea_cursore(const bn::sprite_palette_ptr& palette_testo)
     {
-        if(automatica)
+        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(1, bn::bpp_mode::BPP_4);
+        bn::span<bn::tile> vram = *tiles.vram();
+
+        for(int r = 0; r < 8; ++r)
         {
-            BN_LOG("Scelta ", s_voce_automatica);
-            return s_voce_automatica;
+            uint32_t riga = 0;
+            int largo = r < 4 ? r + 1 : 7 - r;
+
+            for(int x = 1; x <= largo && r < 7; ++x)
+            {
+                riga |= uint32_t(INCHIOSTRO_CHIARO) << (4 * x);
+            }
+
+            vram[0].data[r] = riga;
         }
 
+        return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(8, 8), bn::move(tiles), palette_testo);
+    }
+
+    // Il menu di una scelta nella vista di gioco, sullo sfondo scurito come nei dialoghi: due voci, su e
+    // giu' per spostarsi, A per scegliere. La voce col cursore e' chiara, l'altra in ombra.
+    int menu_scelta(const Battuta& b, const bn::sprite_palette_ptr& palette_testo, bool automatica)
+    {
         int voce = 0;
         bool cambiata = true;
         bn::optional<VistaTesto> voci[2];
+        int attesa = 0;
+        bn::sprite_ptr cursore = crea_cursore(palette_testo);
+        bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));     // come nei dialoghi: lo sfondo scuro
 
         while(true)
         {
@@ -71,16 +95,35 @@ namespace
                 for(int k = 0; k < 2; ++k)
                 {
                     voci[k].reset();
-                    voci[k].emplace(Contesto::SCELTA, 24, TESTO_Y + k * 14, k == voce ? INCHIOSTRO_CHIARO : 1,
+                    voci[k].emplace(Contesto::SCELTA, MENU_X, MENU_Y + k * MENU_PASSO, k == voce ? INCHIOSTRO_CHIARO : 1,
                                     palette_testo);
                     voci[k]->mostra(k == 0 ? b.testo : b.parlante);
                     voci[k]->rivela_tutto();
                 }
 
+                // le coordinate degli sprite partono dal centro dello schermo
+                cursore.set_position(MENU_X - 12 - 120 + 4, MENU_Y + voce * MENU_PASSO - 80 + 4);
+
                 cambiata = false;
             }
 
             attendi(1);
+
+            if(automatica)
+            {
+                // la prova: un secondo col menu aperto e il cursore sulla prima voce, l'istantanea, poi la voce
+                if(++attesa == 60)
+                {
+                    BN_LOG("Istantanea scelta_", s_scelte_fotografate++);
+                }
+                else if(attesa == 80)
+                {
+                    BN_LOG("Scelta ", s_voce_automatica);
+                    return s_voce_automatica;
+                }
+
+                continue;
+            }
 
             if(bn::keypad::up_pressed() || bn::keypad::down_pressed())
             {
@@ -197,13 +240,15 @@ namespace
         return bn::sprite_palette_ptr::create(bn::sprite_palette_item(bn::span<const bn::color>(c), bn::bpp_mode::BPP_4));
     }
 
-    // Un NPC con la figura del suo mestiere (FIGURA_NPC) e i colori dei popolani.
+    constexpr int ALTEZZA_NPC = 30;      // lo sprite e' 16x32: i piedi due pixel sopra il bordo in basso
+
+    // Un NPC con la sua figura (FIGURA_NPC, 16x32) e i colori dei popolani.
     bn::sprite_ptr crea_npc(const bn::sprite_palette_ptr& palette, int figura)
     {
-        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(4, bn::bpp_mode::BPP_4);
+        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(8, bn::bpp_mode::BPP_4);
         bn::span<bn::tile> vram = *tiles.vram();
 
-        for(int t = 0; t < 4; ++t)
+        for(int t = 0; t < 8; ++t)
         {
             for(int r = 0; r < 8; ++r)
             {
@@ -211,7 +256,26 @@ namespace
             }
         }
 
-        return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 16), bn::move(tiles), palette);
+        return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 32), bn::move(tiles), palette);
+    }
+
+    // Dove sta un NPC adesso: quelli del borgo, con BORGO_DENTRO, nel digiuno e nella notte stanno
+    // accampati in Sant'Andrea, dietro Porta Romana.
+    struct Posto
+    {
+        int area;
+        int tx;
+        int ty;
+    };
+
+    Posto posto(const Npc& n)
+    {
+        if(n.del_borgo && accesa(g_game_state, Bandiera::BORGO_DENTRO) && fase_npc(g_game_state) != Fase::ULTIMATUM)
+        {
+            return { int(mondo::AreaId::SANT_ANDREA), n.tx_borgo, n.ty_borgo };
+        }
+
+        return { n.area, n.tx, n.ty };
     }
 }
 
@@ -388,10 +452,12 @@ void Storia::_prepara_npc(const Esplorazione& esplorazione)
     {
         const Npc& n = GUBBIO_VOCE(NPC_AMBIENTE, i);
 
-        if(n.area == _area && GUBBIO_VOCE(n.frasi, fase) > 0)
+        Posto qui = posto(n);
+
+        if(qui.area == _area && GUBBIO_VOCE(n.frasi, fase) > 0)
         {
             bn::sprite_ptr sprite = crea_npc(palette, n.figura);
-            esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(n.tx), mondo::piedi_y(n.ty), 14);
+            esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(qui.tx), mondo::piedi_y(qui.ty), ALTEZZA_NPC);
             _npc.push_back(bn::move(sprite));
             _indici.push_back(i);
         }
@@ -442,8 +508,9 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     for(int j = 0; j < _indici.size(); ++j)
     {
         const Npc& n = GUBBIO_VOCE(NPC_AMBIENTE, _indici[j]);
-        int dx = e.x - mondo::piedi_x(n.tx);
-        int dy = e.y - mondo::piedi_y(n.ty);
+        Posto qui = posto(n);
+        int dx = e.x - mondo::piedi_x(qui.tx);
+        int dy = e.y - mondo::piedi_y(qui.ty);
 
         if(dx > -DISTANZA_PAROLA && dx < DISTANZA_PAROLA && dy > -DISTANZA_PAROLA && dy < DISTANZA_PAROLA)
         {
@@ -527,17 +594,18 @@ void prova_storia(const bn::sprite_palette_ptr& palette_testo)
 namespace gubbio
 {
 
-void prova_figure_npc(Esplorazione& esplorazione)
+void prova_figure_npc(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo)
 {
     esplorazione.entra(mondo::AreaId::PIAZZA_GRANDE, 0);
     bn::sprite_palette_ptr palette = palette_npc();
     bn::vector<bn::sprite_ptr, FIGURE_NPC> figure;
     const mondo::Esploratore& e = esplorazione.esploratore();
 
+    // tutte le figure in file da dieci davanti al giocatore
     for(int f = 0; f < FIGURE_NPC; ++f)
     {
         bn::sprite_ptr sprite = crea_npc(palette, f);
-        esplorazione.colloca_sulla_mappa(sprite, e.x + (f - 2) * 20, e.y - 24, 14);
+        esplorazione.colloca_sulla_mappa(sprite, e.x + (f % 10) * 22 - 99, e.y - 44 + (f / 10) * 34, ALTEZZA_NPC);
         figure.push_back(bn::move(sprite));
     }
 
@@ -553,6 +621,18 @@ void prova_figure_npc(Esplorazione& esplorazione)
     {
         esplorazione.aggiorna();
         bn::core::update();
+    }
+
+    // il menu del dilemma della popolana (D3), come lo vede chi le parla col pane in tasca
+    figure.clear();
+
+    for(int i = 0; i < FRASI_NPC; ++i)
+    {
+        if(GUBBIO_VOCE(FRASE_NPC, i).tipo == TipoBattuta::SCELTA)
+        {
+            menu_scelta(GUBBIO_VOCE(FRASE_NPC, i), palette_testo, true);
+            break;
+        }
     }
 
     BN_LOG("Istantanee finite");

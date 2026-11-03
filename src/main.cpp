@@ -118,7 +118,7 @@ int main()
 
     if(GUBBIO_AVVIO == 11)
     {
-        gubbio::prova_figure_npc(esplorazione);
+        gubbio::prova_figure_npc(esplorazione, palette);
     }
 
     if(GUBBIO_AVVIO == 7)
