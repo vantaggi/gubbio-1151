@@ -197,9 +197,13 @@ class Mondo(unittest.TestCase):
             G.genera(sorgenti, PALETTE)
 
     def test_tracciati_e_spazi_aperti_calpestabili(self):
-        """Via dei Consoli e' un tracciato, il ponte di San Martino uno spazio aperto: niente blocchi."""
-        _, posati, _ = area_finale("via_dei_consoli")
-        self.assertEqual(posati, {})
+        """Via dei Consoli e' un tracciato, il ponte di San Martino uno spazio aperto: niente blocchi. In via
+        dei Consoli c'e' solo il banco di Montano (storia v2), addossato alle case e non sulla via."""
+        a, posati, _ = area_finale("via_dei_consoli")
+        self.assertEqual(set(posati), {"banco_montano"})
+        x0, y0, w, h = posati["banco_montano"]
+        sorgente = next(G.leggi_area(n, t) for n, t in G.sorgenti_del_repo() if n.endswith("via_dei_consoli.area"))
+        self.assertTrue(all(sorgente["griglia"][y][x] == "#" for y in range(y0, y0 + h) for x in range(x0, x0 + w)))
         _, posati, _ = area_finale("san_martino")
         self.assertNotIn("ponte_san_martino", posati)
 

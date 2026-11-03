@@ -24,6 +24,34 @@
       "ruolo": "sfondo",
       "tipo": "senza_misura"
     },
+    "banco_montano": {
+      "nome": "Banco di Montano",
+      "area": "VIA_DEI_CONSOLI",
+      "ruolo": "storia_v2",
+      "tipo": "edificio",
+      "misure_m": [
+        6.0,
+        3.0
+      ],
+      "misure_tile": [
+        4,
+        2
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 0,
+      "asse_lungo_schermo": "orizzontale",
+      "facciata_bussola": 90,
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
+      "dall_ancora_m": [
+        -8.2,
+        36.9
+      ],
+      "dall_ancora_tile": [
+        -5,
+        25
+      ]
+    },
     "bargello": {
       "nome": "Palazzo del Bargello",
       "area": "LARGO_BARGELLO",
@@ -77,6 +105,90 @@
         0
       ]
     },
+    "bottega_carradore": {
+      "nome": "Bottega del carradore",
+      "area": "PIAZZA_QUARANTA_MARTIRI",
+      "ruolo": "storia_v2",
+      "tipo": "edificio",
+      "misure_m": [
+        15.0,
+        9.0
+      ],
+      "misure_tile": [
+        10,
+        6
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 0,
+      "asse_lungo_schermo": "orizzontale",
+      "facciata_bussola": 180,
+      "facciata_lato_schermo": "sinistra",
+      "facciata_vista": "fianco sinistro",
+      "dall_ancora_m": [
+        -32.1,
+        60.0
+      ],
+      "dall_ancora_tile": [
+        -21,
+        40
+      ]
+    },
+    "bottega_conti": {
+      "nome": "Bottega dei conti e dei congegni",
+      "area": "SANT_AGOSTINO",
+      "ruolo": "storia_v2",
+      "tipo": "edificio",
+      "misure_m": [
+        12.0,
+        7.5
+      ],
+      "misure_tile": [
+        8,
+        5
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 0,
+      "asse_lungo_schermo": "orizzontale",
+      "facciata_bussola": 0,
+      "facciata_lato_schermo": "destra",
+      "facciata_vista": "fianco destro",
+      "dall_ancora_m": [
+        32.9,
+        -8.2
+      ],
+      "dall_ancora_tile": [
+        22,
+        -5
+      ]
+    },
+    "calcara": {
+      "nome": "Calcara",
+      "area": "SANT_AGOSTINO",
+      "ruolo": "storia_v2",
+      "tipo": "edificio",
+      "misure_m": [
+        7.5,
+        7.5
+      ],
+      "misure_tile": [
+        5,
+        5
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 0,
+      "asse_lungo_schermo": "orizzontale",
+      "facciata_bussola": 90,
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
+      "dall_ancora_m": [
+        47.3,
+        -24.7
+      ],
+      "dall_ancora_tile": [
+        32,
+        -16
+      ]
+    },
     "canonici": {
       "nome": "Palazzo dei Canonici (Museo diocesano) e giardini pensili",
       "area": "DUOMO_DUCALE",
@@ -114,6 +226,34 @@
       "dall_ancora_tile": [
         135,
         66
+      ]
+    },
+    "casa_medico": {
+      "nome": "Casa del medico",
+      "area": "SAN_MARTINO",
+      "ruolo": "storia_v2",
+      "tipo": "edificio",
+      "misure_m": [
+        12.0,
+        9.0
+      ],
+      "misure_tile": [
+        8,
+        6
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 0,
+      "asse_lungo_schermo": "orizzontale",
+      "facciata_bussola": 90,
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
+      "dall_ancora_m": [
+        69.5,
+        -11.1
+      ],
+      "dall_ancora_tile": [
+        46,
+        -7
       ]
     },
     "case_consoli": {
@@ -672,6 +812,62 @@
       "dall_ancora_tile": [
         -44,
         -15
+      ]
+    },
+    "spezieria": {
+      "nome": "Spezieria e ospizio",
+      "area": "SAN_PIETRO",
+      "ruolo": "storia_v2",
+      "tipo": "edificio",
+      "misure_m": [
+        13.5,
+        9.0
+      ],
+      "misure_tile": [
+        9,
+        6
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 0,
+      "asse_lungo_schermo": "orizzontale",
+      "facciata_bussola": 90,
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
+      "dall_ancora_m": [
+        -20.6,
+        -30.8
+      ],
+      "dall_ancora_tile": [
+        -14,
+        -21
+      ]
+    },
+    "taverna": {
+      "nome": "Taverna del corso",
+      "area": "SAN_PIETRO",
+      "ruolo": "storia_v2",
+      "tipo": "edificio",
+      "misure_m": [
+        10.5,
+        7.5
+      ],
+      "misure_tile": [
+        7,
+        5
+      ],
+      "fonte_misure": "osm",
+      "asse_lungo_bussola": 0,
+      "asse_lungo_schermo": "orizzontale",
+      "facciata_bussola": 90,
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
+      "dall_ancora_m": [
+        14.3,
+        -30.8
+      ],
+      "dall_ancora_tile": [
+        10,
+        -21
       ]
     },
     "teatro_romano": {

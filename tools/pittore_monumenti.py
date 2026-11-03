@@ -1099,3 +1099,168 @@ def cipresso(fondo=VERDE):
                 t.punto(x, y, CONTORNO)
     t.elementi["cipresso"] += 1
     return t
+
+
+# --- gli edifici della storia v2 (le schede degli amici, copione/05_npc_amici.md) ----------------------
+def _cerchio(t, cx, cy, r, c, pieno=True):
+    for y in range(int(cy - r) - 1, int(cy + r) + 2):
+        for x in range(int(cx - r) - 1, int(cx + r) + 2):
+            d = ((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2) ** 0.5
+            if (d <= r if pieno else abs(d - r) < 0.7):
+                t.punto(x, y, c)
+
+
+def _facciata(w, h, faccia):
+    """Il rettangolo (x, y, larghezza, altezza) in pixel della facciata che si vede."""
+    fh = max(2, min(h - 2, h // 3))
+    if faccia == "basso":
+        return 0, (h - fh) * 8, w * 8, fh * 8
+    if faccia == "destra":
+        return w * 8 - 8, 0, 8, h * 8
+    return 0, 0, 8, h * 8
+
+
+def _ruota(t, cx, cy, r):
+    _cerchio(t, cx, cy, r, LEGNO_SCURO, pieno=False)
+    for dx, dy in ((0, 1), (1, 0), (1, 1), (1, -1)):
+        for k in range(-r + 1, r):
+            t.punto(cx + dx * k, cy + dy * k, LEGNO)
+    t.punto(cx, cy, CONTORNO)
+
+
+def casa_medico(w, h, info):
+    """La casa del medico a San Martino: una casa di pietra col portone e, accanto, l'insegna col vaso
+    delle urine, il segno del medico medievale."""
+    t = generico("casa_medico", "Casa del medico", w, h, info["faccia"], 1)
+    x, y, fw, fh = _facciata(w, h, info["faccia"])
+    sx, sy = x + fw // 2 + 8, y + 3
+    t.rett(sx - 1, sy, 9, 1, LEGNO_SCURO)
+    t.rett(sx, sy + 1, 7, 7, LEGNO)
+    _cerchio(t, sx + 3.5, sy + 5, 2, ACQUA)
+    t.rett(sx + 3, sy + 1, 1, 2, ACQUA)
+    t.elementi["insegna"] += 1
+    t.contorno()
+    return t
+
+
+def bottega_carradore(w, h, info):
+    """La bottega del carradore a Quaranta Martiri: il portone largo da cui escono i carri, le ruote
+    cerchiate di ferro appoggiate al muro, il carro."""
+    t = generico("bottega_carradore", "Bottega del carradore", w, h, info["faccia"], 3)
+    x, y, fw, fh = _facciata(w, h, info["faccia"])
+    if fw > fh:
+        t.rett(x + fw // 2 - 8, y + fh - 14, 16, 14, LEGNO_SCURO)
+        for k, cx in enumerate((x + 6, x + fw - 7)):
+            _ruota(t, cx, y + fh - 6, 4)
+    else:
+        t.rett(x + 1, y + fh // 2 - 8, 6, 16, LEGNO_SCURO)
+        for cy in (y + 6, y + fh - 7):
+            _ruota(t, x + 4, cy, 3)
+    # il carro sul tetto del cortile: il pianale e due ruote
+    t.rett(8, 6, 18, 5, LEGNO)
+    t.rett(8, 6, 18, 1, LEGNO_SCURO)
+    _ruota(t, 11, 13, 3)
+    _ruota(t, 23, 13, 3)
+    t.elementi["ruote"] += 1
+    t.contorno()
+    return t
+
+
+def spezieria(w, h, info):
+    """La spezieria con l'ospizio a San Pietro: la vetrina coi vasi colorati sugli scaffali e, a destra,
+    il portico ad archi dell'ospizio dove si curano i malati."""
+    t = generico("spezieria", "Spezieria e ospizio", w, h, info["faccia"], 2)
+    x, y, fw, fh = _facciata(w, h, info["faccia"])
+    vx, vy = x + 4, y + 3
+    t.rett(vx, vy, fw // 2 - 8, 10, LEGNO_SCURO)
+    for r in range(2):
+        t.rett(vx, vy + 4 + r * 5, fw // 2 - 8, 1, LEGNO)
+        for k in range(vx + 1, vx + fw // 2 - 9, 3):
+            t.punto(k, vy + 3 + r * 5, (ACQUA, COTTO_LUCE, VERDE, PIETRA_LUCE)[(k + r) % 4])
+            t.punto(k, vy + 2 + r * 5, (ACQUA, COTTO_LUCE, VERDE, PIETRA_LUCE)[(k + r) % 4])
+    for k in range(2):
+        t.arco(x + fw // 2 + 4 + k * 12, y + fh - 14, 10, 14, CONTORNO)
+    t.elementi["vasi"] += 1
+    t.elementi["portico"] += 1
+    t.contorno()
+    return t
+
+
+def taverna(w, h, info):
+    """La taverna del corso a San Pietro, di Padellino: la frasca verde appesa sopra la porta (il segno
+    dell'osteria) e la botte accanto."""
+    t = generico("taverna", "Taverna del corso", w, h, info["faccia"], 4)
+    x, y, fw, fh = _facciata(w, h, info["faccia"])
+    fx, fy = x + fw // 2 + 7, y + 2
+    t.rett(fx, fy, 1, 3, LEGNO_SCURO)
+    _cerchio(t, fx + 0.5, fy + 6, 3, VERDE)
+    _cerchio(t, fx - 1, fy + 5, 1.5, VERDE_SCURO)
+    _cerchio(t, x + 7, y + fh - 5, 4, LEGNO)
+    t.rett(x + 3, y + fh - 6, 9, 1, LEGNO_SCURO)
+    t.rett(x + 3, y + fh - 3, 9, 1, LEGNO_SCURO)
+    t.elementi["frasca"] += 1
+    t.contorno()
+    return t
+
+
+def bottega_conti(w, h, info):
+    """La bottega dei conti e dei congegni a Sant'Agostino, di Fazio e Lauretta: la porta e l'insegna con
+    la ruota dentata di un congegno."""
+    t = generico("bottega_conti", "Bottega dei conti e dei congegni", w, h, info["faccia"], 5)
+    x, y, fw, fh = _facciata(w, h, info["faccia"])
+    cx, cy = (x + fw // 2, y + 6) if fw > fh else (x + 4, y + fh // 2 - 14)
+    _cerchio(t, cx, cy, 3.2, PIETRA_LUCE)
+    for dx, dy in ((0, -4), (0, 4), (-4, 0), (4, 0), (3, 3), (-3, -3), (3, -3), (-3, 3)):
+        t.punto(cx + dx, cy + dy, PIETRA_LUCE)
+    t.punto(cx, cy, CONTORNO)
+    t.elementi["congegno"] += 1
+    t.contorno()
+    return t
+
+
+def calcara(w, h, info):
+    """La calcara fuori Porta Romana, di Ragnetto: il forno tondo di pietre a secco dove si cuoce il
+    calcare, la bocca accesa in basso e il fumo chiaro dalla cima."""
+    t = Tela(w, h)
+    cx, cy, r = w * 4, h * 4 + 2, min(w, h) * 4 - 2
+    _cerchio(t, cx, cy, r, PIETRA)
+    for y in range(int(cy - r), int(cy + r)):
+        for x in range(int(cx - r), int(cx + r)):
+            if t.px[y][x] == PIETRA and (x // 3 + y // 2) % 4 == 0:
+                t.punto(x, y, PIETRA_SCURA)
+            elif t.px[y][x] == PIETRA and x < cx - 2 and y < cy - 2 and (x + y) % 5 == 0:
+                t.punto(x, y, PIETRA_CHIARA)
+    _cerchio(t, cx, cy - r // 3, r // 3, CONTORNO)
+    for k in range(5):
+        t.punto(cx - 2 + k, cy - r // 3 - 3 - k, PIETRA_LUCE)
+    t.arco(cx - 4, cy + r - 9, 8, 9, COTTO_LUCE)
+    t.rett(cx - 2, cy + r - 5, 4, 4, COTTO_CHIARO)
+    t.elementi["bocca"] += 1
+    t.contorno()
+    return t
+
+
+def banco_montano(w, h, info):
+    """Il banco di Montano sotto le case di via dei Consoli: la tenda a strisce, il tavolo con le pinze del
+    cavadenti e una tavoletta dipinta."""
+    t = Tela(w, h)
+    for x in range(w * 8):
+        for y in range(6):
+            t.punto(x, y, COTTO_CHIARO if (x // 4) % 2 else PIETRA_LUCE)
+    for x in range(0, w * 8, 4):
+        t.punto(x, 6, COTTO_SCURO)
+    t.rett(1, 6, 1, h * 8 - 6, LEGNO_SCURO)
+    t.rett(w * 8 - 2, 6, 1, h * 8 - 6, LEGNO_SCURO)
+    t.rett(2, 10, w * 8 - 4, 4, LEGNO)
+    t.rett(5, 8, 7, 5, PIETRA_LUCE)
+    t.rett(6, 9, 5, 3, ACQUA)
+    t.punto(8, 10, VERDE)
+    t.rett(18, 9, 4, 1, PIETRA_SCURA)
+    t.punto(21, 8, PIETRA_SCURA)
+    t.elementi["tenda"] += 1
+    t.contorno()
+    return t
+
+
+PITTORI.update({"casa_medico": casa_medico, "bottega_carradore": bottega_carradore, "spezieria": spezieria,
+                "taverna": taverna, "bottega_conti": bottega_conti, "calcara": calcara, "banco_montano": banco_montano})
