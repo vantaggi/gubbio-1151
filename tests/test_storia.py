@@ -27,27 +27,26 @@ QUEST_MD = open(os.path.join(RADICE, "copione", "04_quest.md"), encoding="utf-8"
 
 
 def giro(scene):
-    """Il gemello Python di storia::gioca_tutta: l'ordine delle scene visitate."""
+    """Il gemello Python di storia::gioca_tutta: l'ordine delle scene visitate (la prima pronta nell'ordine
+    del copione; ogni menu prende la prima voce)."""
     accese, fatte, ordine = set(), set(), []
     avanti = True
     while avanti:
         avanti = False
-        for area in [None] + AREE_ID:
-            for s in scene:
-                c = s["codice"]
-                if c in fatte or GS.AREE[c] != area:
-                    continue
-                if not set(s["richieste"]) <= accese or set(s["vietate"]) & accese:
-                    continue
-                if c in GS.SEGUE and GS.SEGUE[c] not in fatte:
-                    continue
-                accese |= set(s["imposta"])
-                fatte.add(c)
-                ordine.append(c)
-                avanti = True
-                break
-            if avanti:
-                break
+        for s in scene:
+            c = s["codice"]
+            if c in fatte:
+                continue
+            if not set(s["richieste"]) <= accese or set(s["vietate"]) & accese:
+                continue
+            if c in GS.SEGUE and GS.SEGUE[c] not in fatte:
+                continue
+            accese |= set(s["imposta"]) | {GS.TUTTE[b["accende"][0]] for b in s["battute"]
+                                          if b["voci"] and b["accende"][0] != GS.NESSUNA}
+            fatte.add(c)
+            ordine.append(c)
+            avanti = True
+            break
     return ordine, accese
 
 
@@ -80,7 +79,7 @@ def quest_non_completabili(quest, scene):
 
 
 def scene_del_log(log):
-    return sorted(re.findall(r"^Scena ([A-Z0-9]+-\d+)$", log, re.M))
+    return sorted(re.findall(r"^Scena ([A-Z0-9]+-\d+[a-z]?)$", log.split("Giro 1\n")[0], re.M))
 
 
 class GeneratoAggiornato(unittest.TestCase):
@@ -94,8 +93,7 @@ class GeneratoAggiornato(unittest.TestCase):
 
     def test_negativa_battuta_cambiata(self):
         scene = copy.deepcopy(SCENE)
-        chi, espr, frase, dove = scene[3]["battute"][0]
-        scene[3]["battute"][0] = (chi, espr, frase + " Anzi no.", dove)
+        scene[3]["battute"][0]["frase"] = scene[3]["battute"][0]["frase"] + " Anzi no."
         with open(GS.USCITA_TESTI, encoding="utf-8") as f:
             self.assertNotEqual(f.read(), GS.testi_del_copione(scene, NPC))
 
@@ -103,8 +101,8 @@ class GeneratoAggiornato(unittest.TestCase):
 class Tabelle(unittest.TestCase):
 
     def test_le_scene_del_copione(self):
-        self.assertEqual(len(SCENE), 19)
-        self.assertEqual(sum(len(s["battute"]) for s in SCENE), 181)
+        self.assertEqual(len(SCENE), 20)
+        self.assertEqual(sum(len(s["battute"]) for s in SCENE), 223)
         self.assertEqual(len(NPC), 13)
 
     def test_ogni_bandiera_scritta_e_letta(self):
@@ -159,7 +157,7 @@ class Tabelle(unittest.TestCase):
     def test_npc_per_fase(self):
         for p in NPC:
             self.assertTrue(p["frasi"], p["nome"])
-            self.assertTrue(all(f in GS.FASI for f, _, _, _ in p["frasi"]))
+            self.assertTrue(all(b["fase"] in GS.FASI for b in p["frasi"]))
         storia_h = open(GS.USCITA_H, encoding="utf-8").read()
         self.assertIn("inline constexpr int NPC = 13;", storia_h)
 
@@ -167,7 +165,14 @@ class Tabelle(unittest.TestCase):
         """La ROM GUBBIO_AVVIO=8 ha recitato ogni scena, dalla prima ai titoli di coda (log in tests/dati)."""
         log = open(os.path.join(RADICE, "tests", "dati", "storia_mgba.txt"), encoding="utf-8").read()
         self.assertEqual(scene_del_log(log), sorted(s["codice"] for s in SCENE))
-        self.assertIn("Storia: 19 scene visitate su 19, 0 mancanti, titoli di coda raggiunti", log)
+        self.assertIn("Storia: 20 scene visitate su 20, 0 mancanti, titoli di coda raggiunti", log)
+        # due giri: ogni menu prende la prima voce, poi la seconda; ogni scena in tutti e due
+        primo, secondo = log.split("Giro 1\n")
+        self.assertEqual(sorted(re.findall(r"^Scena (\S+)$", secondo, re.M)), sorted(s["codice"] for s in SCENE))
+        self.assertIn("Giro 0: 20 scene, borgo dentro, esule prigioniero, giustizia offerta", primo)
+        self.assertIn("Giro 1: 20 scene, borgo fuori, esule liberato, giustizia no", secondo)
+        self.assertEqual(primo.count("Scelta 0"), 3)
+        self.assertEqual(secondo.count("Scelta 1"), 3)
         self.assertIn("Cutscene C1 finita", log)
         self.assertIn("Cutscene P-02 dentro la precedente", log)
         self.assertIn("Cutscene C4 finita", log)
@@ -204,11 +209,11 @@ class Inserti(unittest.TestCase):
         return next(s for s in SCENE if s["codice"] == codice)["battute"][k][0]
 
     def test_c2_prima_dell_araldo_e_c2p_prima_di_ubaldo(self):
-        self.assertEqual({k: c for k, c in GS.INSERTI["A1-01"].items() if c.startswith("C2")}, {4: "C2", 7: "C2P"})
+        self.assertEqual({k: c for k, c in GS.INSERTI["A1-01"].items() if c.startswith("C2")}, {4: "C2", 8: "C2P"})
         self.assertEqual(self.parlante("A1-01", 4), "ARALDO")
         self.assertNotEqual(self.parlante("A1-01", 3), "ARALDO")
-        self.assertEqual(self.parlante("A1-01", 7), "UBALDO")
-        self.assertEqual(self.parlante("A1-01", 6), "ARALDO")
+        self.assertEqual(self.parlante("A1-01", 8), "UBALDO")
+        self.assertEqual(self.parlante("A1-01", 7), "ARALDO")
         h = open(os.path.join(RADICE, "include", "storia.h"), encoding="utf-8").read()
         prima = sum(len(s["battute"]) for s in SCENE[:[s["codice"] for s in SCENE].index("A1-01")])
         self.assertIn(f"{{ {prima + 4}, {GS.codici_regia().index('C2')} }},", h)

@@ -110,8 +110,9 @@ class Gola(unittest.TestCase):
         self.assertTrue(in_ordine([GS.AREE[c] for c in SCENE_DELLA_GOLA]))
         self.assertEqual([GS.SEGUE[c] for c in SCENE_DELLA_GOLA[1:]], SCENE_DELLA_GOLA[:-1])
         log = open(os.path.join(RADICE, "tests", "dati", "storia_mgba.txt"), encoding="utf-8").read()
-        visti = [c for c in re.findall(r"^Scena (\S+)$", log, re.M) if c in SCENE_DELLA_GOLA]
-        self.assertEqual(visti, SCENE_DELLA_GOLA)
+        for giro in log.split("Giro 1\n"):            # i due giri della prova (le due voci di ogni scelta)
+            visti = [c for c in re.findall(r"^Scena (\S+)$", giro, re.M) if c in SCENE_DELLA_GOLA]
+            self.assertEqual(visti, SCENE_DELLA_GOLA)
 
     def test_negativa_scene_scambiate(self):
         self.assertFalse(in_ordine(["GOLA_STRISCIA", "GOLA_ARCO", "GOLA_MIASMI", "CONDOTTO"]))

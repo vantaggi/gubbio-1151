@@ -29,7 +29,7 @@ STATO_H = open(os.path.join(RADICE, "include", "game_state.h"), encoding="utf-8"
 PAYLOAD_BYTE = 256
 RECORD = 276
 SLOT, BANCHE = 2, 2
-VERSIONE = 2
+VERSIONE = 3
 MAGIC = b"G115"
 OFF_MAGIC, OFF_CONTATORE, OFF_TEMPO, OFF_VERSIONE, OFF_PAYLOAD_BYTE, OFF_PAYLOAD, OFF_CHECKSUM = 0, 4, 8, 12, 14, 16, 272
 STATO = 64                  # sizeof(GameState)
@@ -110,6 +110,29 @@ class Formato(unittest.TestCase):
 
     def test_negativa_misura_diversa(self):
         self.assertNotIn(f"sizeof(SaveData) == {RECORD + 4}", HEADER)
+
+
+class VecchiSalvataggi(unittest.TestCase):
+    """Un .sav della versione 2 (prima delle bandiere delle quest, tests/dati/salvataggio_v2.sav) si
+    rifiuta pulito: le banche portano il magic ma un'altra versione, nessuna si carica."""
+
+    def setUp(self):
+        with open(os.path.join(RADICE, "tests", "dati", "salvataggio_v2.sav"), "rb") as f:
+            self.dati = f.read()
+
+    def test_versione_2_rifiutata(self):
+        for slot in range(SLOT):
+            a, b = banche(self.dati, slot)
+            if a[:4] == MAGIC or b[:4] == MAGIC:
+                self.assertIn(2, {struct.unpack_from("<H", r, OFF_VERSIONE)[0] for r in (a, b) if r[:4] == MAGIC})
+                self.assertIsNone(banca_da_caricare(a, b), slot)
+
+    def test_negativa_la_stessa_banca_con_la_versione_nuova_si_carica(self):
+        a, b = banche(self.dati, 0)
+        r = bytearray(a)
+        struct.pack_into("<H", r, OFF_VERSIONE, VERSIONE)
+        struct.pack_into("<I", r, OFF_CHECKSUM, zlib.crc32(bytes(r[:OFF_CHECKSUM])) & 0xFFFFFFFF)
+        self.assertEqual(banca_da_caricare(bytes(r), b), 0)
 
 
 class SavDiMgba(unittest.TestCase):

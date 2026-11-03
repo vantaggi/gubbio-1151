@@ -43,6 +43,8 @@ CONTESTI = {
     "HUD": (96, 1),
     # la voce del narratore nelle bande nere delle cutscene (24 px): al massimo 2 righe da 224 px
     "NARRATORE": (224, 2),
+    # una voce di un menu di scelta nella vista di gioco (copione: 100 px)
+    "SCELTA": (100, 1),
 }
 
 assert all(l <= LARGHEZZA_SPRITE * SPRITE_PER_RIGA for l, _ in CONTESTI.values())
@@ -56,7 +58,8 @@ class ErroreTesti(Exception):
 # alla vecchia maniera delle tastiere: nel gioco si usano le lettere accentate vere. L'apostrofo
 # dell'elisione ("Sant'Ubaldo", "dell'armatura") e' seguito da una lettera e resta; "po'" e' giusto.
 APOSTROFO_PER_ACCENTO = re.compile(r"\w*[aeiouAEIOU]'(?![^\W\d_])")
-ELISIONI_GIUSTE = {"po'"}
+# Gli imperativi tronchi ("Va'", "Di'", "Fa'", "Sta'", "Da'") si scrivono con l'apostrofo.
+ELISIONI_GIUSTE = {"po'", "va'", "di'", "fa'", "sta'", "da'"}
 
 
 def leggi_voci(nome, dati):
