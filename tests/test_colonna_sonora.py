@@ -70,7 +70,7 @@ class ColonnaSonora(unittest.TestCase):
     def test_ogni_area_ha_un_brano_in_ogni_fase(self):
         brani = set(self.audio[0])
         self.assertEqual(sorted(self.dati["aree"]), sorted(self.gioco["aree"]))
-        self.assertEqual(len(self.gioco["aree"]), 19)
+        self.assertEqual(len(self.gioco["aree"]), 25)   # le 19 di prima e i 6 interni esplorabili
         for area, riga in self.dati["aree"].items():
             self.assertEqual(len(riga), len(GC.FASI), area)
             for b in riga:
@@ -182,32 +182,35 @@ class ColonnaSonora(unittest.TestCase):
         self.rifiuta(self.testo.replace("duello     2  corrado", "duello     9  corrado"), dice="duello 9")
 
     # --- luoghi: la taverna e il segnale di Fazio --------------------------------------------------------
-    def test_il_segnale_di_fazio_davanti_alla_sua_bottega(self):
+    def test_il_segnale_di_fazio_entrando_in_bottega(self):
+        """Con gli interni (pezzo INT) il segnale suona entrando nella bottega dei conti: l'area intera."""
         h = self.genera()
         m = re.search(r"\{ (\d+), (\d+), (\d+), (\d+), (\d+), Brano::FAZIO, Modo::SEGNALE, (\d+) \}", h)
         self.assertIsNotNone(m)
         area, x0, y0, x1, y1, npc = map(int, m.groups())
-        self.assertEqual(self.gioco["aree"][area], "SANT_AGOSTINO")
-        self.assertEqual(self.gioco["npc"][npc], ("Fazio", "SANT_AGOSTINO"))
-        portoni = self.luoghi[("SANT_AGOSTINO", "bottega_conti")][0]
-        self.assertTrue(portoni)
-        for x, y in portoni:
-            self.assertTrue(x0 <= x <= x1 and y0 <= y <= y1)
-        # il rettangolo e' stretto: la bottega, non mezza area
-        self.assertLessEqual((x1 - x0 + 1) * (y1 - y0 + 1), 64)
+        self.assertEqual(self.gioco["aree"][area], "BOTTEGA_CONTI_INTERNO")
+        self.assertEqual(self.gioco["npc"][npc], ("Fazio", "BOTTEGA_CONTI_INTERNO"))
+        _, w, hh = self.luoghi[("BOTTEGA_CONTI_INTERNO", "*")]
+        self.assertEqual((x0, y0, x1, y1), (0, 0, w - 1, hh - 1))
+
+    def test_la_taverna_suona_dentro_la_taverna(self):
+        h = self.genera()
+        m = re.search(r"\{ (\d+), (\d+), (\d+), (\d+), (\d+), Brano::TAVERNA, Modo::FONDO, (-?\d+) \}", h)
+        self.assertIsNotNone(m)
+        self.assertEqual(self.gioco["aree"][int(m.group(1))], "TAVERNA_INTERNO")
 
     def test_negativa_luogo_su_un_edificio_di_un_altra_area(self):
-        testo = self.testo.replace("luogo fazio    SANT_AGOSTINO  bottega_conti", "luogo fazio    SAN_PIETRO  bottega_conti")
+        testo = self.testo.replace("luogo fazio    BOTTEGA_CONTI_INTERNO  *", "luogo fazio    SAN_PIETRO  bottega_conti")
         luoghi = dict(self.luoghi)
         self.rifiuta(testo, luoghi=luoghi, dice="SAN_PIETRO non ha l'edificio bottega_conti")
 
     def test_negativa_amico_in_un_altra_area(self):
-        testo = self.testo.replace("2  fazio    segnale  FAZIO", "2  fazio    segnale  PADELLINO")
-        self.rifiuta(testo, dice="Padellino non sta in SANT_AGOSTINO")
+        testo = self.testo.replace("0  fazio    segnale  FAZIO", "0  fazio    segnale  PADELLINO")
+        self.rifiuta(testo, dice="Padellino non sta in BOTTEGA_CONTI_INTERNO")
 
     def test_negativa_segnale_uguale_al_brano_dell_area(self):
-        testo = self.testo.replace("luogo fazio    SANT_AGOSTINO  bottega_conti  2  fazio    segnale",
-                                   "luogo fazio    SANT_AGOSTINO  bottega_conti  2  citta    segnale")
+        testo = self.testo.replace("luogo fazio    BOTTEGA_CONTI_INTERNO  *  0  fazio    segnale",
+                                   "luogo fazio    BOTTEGA_CONTI_INTERNO  *  0  citta    segnale")
         self.rifiuta(testo, dice="stesso brano dell'area")
 
     def test_negativa_riga_sconosciuta(self):

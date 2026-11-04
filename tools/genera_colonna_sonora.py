@@ -95,6 +95,10 @@ def luoghi_del_mondo(richiesti):
             continue
         G.prepara_area(a, mondo)
         for area, mid in richiesti:
+            if area == a["id"].upper() and mid == "*":
+                # l'area intera (gli interni esplorabili: si e' nel luogo appena entrati)
+                out[(area, mid)] = ([(0, 0), (a["larghezza"] - 1, a["altezza"] - 1)], a["larghezza"], a["altezza"])
+                continue
             if area != a["id"].upper() or mid not in a.get("edifici", {}):
                 continue
             x0, y0, w, h = a["edifici"][mid]
