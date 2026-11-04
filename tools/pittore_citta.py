@@ -1397,7 +1397,8 @@ def accendi_portale(q, x0, x1, ybase, cerca=48):
     def vano(c):
         return c == NERO or c[0] in (L, N) and c[1] <= 1 or c == ("neutri", 0)
     semi = []
-    for yb in range(ybase - 1, ybase - 13, -1):           # il fondo del vano puo' stare sopra un gradino
+    fondo = ybase
+    for yb in range(ybase - 1, ybase - 21, -1):           # il fondo del vano puo' stare in cima ai gradini (Basilica: 16 px)
         semi = [(xx, yb) for xx in range(x0, x1) if vano(q.px[yb][xx])]
         if len(semi) >= 4:
             ybase = yb + 1
@@ -1425,6 +1426,10 @@ def accendi_portale(q, x0, x1, ybase, cerca=48):
         elif dx - xx in (0, 1) and v < (ybase - top) * 0.7:
             c = (L, 0) if dx - xx == 0 else (L, 1)
         q.px[yy][xx] = c
+    # fra il portale e le celle del varco ci sono i gradini: si continuano quelli di fianco, senza riquadri
+    for yy in range(ybase + 1, fondo + 1):
+        for xx in range(x0, x1):
+            q.px[yy][xx] = q.px[yy][x0 - 3]
     q.rett(sx, ybase, larga, 1, (P, 3))
     _lanterna(q, dx + 1, top + 3)
     q.conta("ingresso")
