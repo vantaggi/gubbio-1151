@@ -89,8 +89,10 @@ bandiera dalla parte sbagliata.
   gamba saltava a un altro punto del ciclo, e partendo da fermi il primo passo si vedeva dopo 6 vblank. Ora
   `mondo::avanza_camminata` (con `static_assert`) per Ubaldo e i compagni: continua dal fotogramma in cui era, e
   il primo passo e' subito.
-- **Proposte (grafica nuova: passano dal custode visivo):** polvere ai piedi quando si corre, scintille al colpo
-  forte in battaglia.
+- **Proposte (grafica nuova: passano dal custode visivo):** polvere ai piedi quando si corre (ok di massima del
+  custode: piccola, P2/P3 del suolo, solo selciato e ghiaia; fatta sul ramo claude/project-thread-2tvd34, a904d4a,
+  in attesa della scelta dei toni: sul lastrico P2/P3 si confonde con le fughe), scintille al colpo forte in
+  battaglia.
 
 ## Loop 4: mappe esterne e rendering
 
@@ -100,8 +102,10 @@ bandiera dalla parte sbagliata.
   anche a chi le passava davanti piu' in basso; gli NPC della storia e i nemici avevano z 0 fisso. Ora un solo
   ordine dai piedi per tutti, `Esplorazione::z_sulla_mappa(y)`, messo da `colloca_sulla_mappa`; a pari y Ubaldo
   davanti, poi Giorgio e Antonio. HUD e riquadri restano sopra per priorita' di BG.
-- **Proposte:** un secondo BG di primo piano per archi e tetti che coprono il giocatore (oggi il primo piano
-  e' solo la fascia alta del fondale), gradiente del cielo in H-Blank sui panorami. Grafica nuova: custode visivo.
+- **Proposte (risposta del custode visivo):** BG di primo piano per archi e tetti sopra il giocatore: si', ma solo
+  dove c'e' un layer libero e per pochi punti (porte delle mura, archi che si attraversano), con prova nel banco su
+  un arco vero e la regola I3 del dialogo intatta. Gradiente del cielo in H-Blank: no per ora (mappa vista
+  dall'alto, senza cielo).
 
 ## Loop 5: interni, transizioni e scene
 
