@@ -4,6 +4,7 @@
 #include "bn_keypad.h"
 #include "bn_log.h"
 #include "bn_memory.h"
+#include "bn_optional.h"
 #include "bn_sprite_tiles.h"
 #include "bn_sprites.h"
 
@@ -76,9 +77,11 @@ namespace
         }
     };
 
-    // ~96 KB: il navigatore tiene tre tabelle da LATO_MAX x LATO_MAX celle. Sta in EWRAM, inizializzato a
-    // tempo di compilazione (constinit), non sullo stack.
-    constinit BN_DATA_EWRAM mondo::AutotestMondo<OsservatoreGba> g_camminata;
+    // ~96 KB: il navigatore tiene tre tabelle da LATO_MAX x LATO_MAX celle. Sta in EWRAM, non sullo stack, e
+    // nella parte azzerata (BSS): si costruisce solo quando la camminata parte. Prima era nella EWRAM
+    // inizializzata, cioe' anche 96 KB di ROM copiati in EWRAM a ogni accensione, anche nel gioco vero
+    // (Loop 8 della revisione).
+    BN_DATA_EWRAM_BSS bn::optional<mondo::AutotestMondo<OsservatoreGba>> g_camminata;
 }
 
 void camminata_automatica(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette)
@@ -87,7 +90,8 @@ void camminata_automatica(Esplorazione& esplorazione, const bn::sprite_palette_p
     osservatore.esplorazione = &esplorazione;
     esplorazione.entra(mondo::AreaId::PIAZZA_GRANDE, 0);
 
-    mondo::EsitoMondo esito = g_camminata.esegui(osservatore);
+    g_camminata.emplace();
+    mondo::EsitoMondo esito = g_camminata->esegui(osservatore);
     esplorazione.nascondi_etichetta();
     const Picchi& p = osservatore.picchi;
     BN_LOG("Camminata: ", esito.archi, " archi, ", esito.pixel, " pixel, errore ", int(esito.errore),

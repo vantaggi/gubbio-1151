@@ -104,5 +104,20 @@ if [ -n "$PROPRIETA_DINAMICA" ]; then
     exit 1
 fi
 
+# --- Memoria ----------------------------------------------------------------------------------------
+# La EWRAM inizializzata (.ewram) si copia dalla ROM a ogni accensione e occupa ROM: solo dati piccoli con un
+# valore iniziale (la battaglia). Le tabelle grandi stanno nella parte azzerata (BN_DATA_EWRAM_BSS, .sbss).
+# Prima della revisione a loop (Loop 8) il navigatore della camminata automatica ci teneva 96 KB.
+EWRAM_INIZIALIZZATA_MAX=16384
+SIZE="${NM%nm}size"
+EWRAM_INIZIALIZZATA="$("$SIZE" -A "$ELF" | awk '$1 == ".ewram" {print $2}')"
+
+if [ -n "$EWRAM_INIZIALIZZATA" ] && [ "$EWRAM_INIZIALIZZATA" -gt "$EWRAM_INIZIALIZZATA_MAX" ]; then
+    echo "[zero-heap] FALLITO: .ewram inizializzata di $EWRAM_INIZIALIZZATA byte (massimo $EWRAM_INIZIALIZZATA_MAX):" >&2
+    echo "[zero-heap] le tabelle grandi vanno in BN_DATA_EWRAM_BSS (bn::optional se serve un costruttore)." >&2
+    exit 1
+fi
+echo "[zero-heap] OK: EWRAM inizializzata ${EWRAM_INIZIALIZZATA:-0} byte (massimo $EWRAM_INIZIALIZZATA_MAX)"
+
 echo "[zero-heap] OK: nessuna allocazione dinamica ne' virgola mobile in software in $ELF"
 exit 0
