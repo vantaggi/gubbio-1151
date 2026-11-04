@@ -126,7 +126,7 @@ C_A1_04_01                | DIALOGO | La vostra tenda stava sopra la mia legna. 
 C_A1_04_02                | DIALOGO | Prendetelo!
 C_A1_04_03                | DIALOGO | Giù le mani dall'eremita!
 C_A1_04_04                | DIALOGO | Scegli Attacca e poi il bersaglio. Ogni colpo giusto toglie uno scudo.
-C_A1_04_05                | DIALOGO | A zero scudi il nemico va in BREAK e perde il turno.
+C_A1_04_05                | DIALOGO | A zero scudi il nemico barcolla e perde il turno.
 C_A1_04_06                | DIALOGO | Antonio combatte con voi, ma per ora non ascolta ordini.
 C_A1_04_07                | DIALOGO | Ce la facevo da solo.
 C_A1_04_08                | DIALOGO | Erano tre contro uno, eremita!
@@ -171,7 +171,7 @@ C_A1_06_00                | DIALOGO | Monsignore, il capitolo pregherà con voi.
 C_A1_06_01                | DIALOGO | Lassù il sentiero è lungo, e dicono che nei boschi ci siano occhi che non sono di Gubbio.
 C_A1_06_02                | DIALOGO | Allora vuol dire che ci stanno guardando salire. Bene: che vedano.
 C_A1_06_03                | DIALOGO | Da qui la città non si vede più. Salva prima di partire.
-C_A1_07_00                | DIALOGO | Due chilometri di sterrato. E il vescovo ha le gambe di un mulo.
+C_A1_07_00                | DIALOGO | Quasi due miglia di ghiaia. E il vescovo ha le gambe di un mulo.
 C_A1_07_01                | DIALOGO | E il mulo ti sente.
 C_A1_07_02                | DIALOGO | Così lassù ci arriviamo a notte, padre!
 C_A1_07_03                | DIALOGO | Ci arriviamo quando ci arriviamo. Il monte non scappa.
@@ -330,15 +330,15 @@ NPC_02_00                 | DIALOGO | Dicono che sul monte si sono accese tre lu
 NPC_02_01                 | DIALOGO | Tre luci sul monte, dicono. Il bambino non le ha viste: dormiva per la fame.
 NPC_02_02                 | DIALOGO | Dorme, finalmente. Dio vi renda il doppio, monsignore.
 NPC_02_03                 | DIALOGO | Tre giorni senza pane. Li faccio, monsignore. Ma il bambino piange.
-NPC_02_04_A               | SCELTA  | Dalle una Crescia
+NPC_02_04_A               | SCELTA  | Dalle una fetta
 NPC_02_04_B               | SCELTA  | Non ora
 NPC_02_05                 | DIALOGO | Per il bambino. Io ho mangiato stamattina, mi basta.
-NPC_02_06                 | DIALOGO | Hai dato 1 Crescia di Pasqua.
+NPC_02_06                 | DIALOGO | Hai dato una fetta di Crescia di Pasqua.
 NPC_02_07                 | DIALOGO | La fame di un giorno non uccide. Lassù ci servirà tutto quello che abbiamo.
 NPC_02_08                 | DIALOGO | Quel cavaliere col Grifo... ha guardato le nostre case come si guarda il bestiame.
 NPC_03_00                 | DIALOGO | Se arrivano i perugini, la prima cosa che rubano sono le stoffe. Le nascondo in cantina.
 NPC_04_00                 | DIALOGO | Ancora in giro? Solo i matti girano a quest'ora. Siete dei nostri, allora.
-NPC_04_01                 | DIALOGO | Oggi la fontana digiuna pure lei. Torna a città libera, e ti farò matto davvero.
+NPC_04_01                 | DIALOGO | Oggi la fontana digiuna pure lei. Torna quando la città sarà libera, e ti farò matto davvero.
 NPC_04_02                 | DIALOGO | L'acqua di questa fonte ha visto più assedi di me. E io ne ho visti tanti.
 NPC_05_00                 | DIALOGO | Il ragazzo l'avete lasciato andare? Speriamo che sappia la strada di casa.
 NPC_05_01                 | DIALOGO | Da Porta Metauro? Allora la gola non è più loro. Dormirò un'ora, forse.
@@ -393,13 +393,13 @@ NPC_19_02                 | DIALOGO | Torno da Bergamo per mia madre e trovo und
 NPC_20_00                 | DIALOGO | Finito l'assedio, si rifà la corsa dei carri giù per la piana. Il mio è già unto.
 NPC_20_01                 | DIALOGO | Da vent'anni cerchio le ruote col ferro. Nessun ferro è stregato: col calore si apre.
 NPC_20_02                 | DIALOGO | Undici eserciti e nemmeno un carro decente. Il mio arriva a Perugia prima di loro.
-NPC_21_00                 | DIALOGO | È tornata su. Tre spanne. Non so chi siate, ma vi offro da bere.
+NPC_21_00                 | DIALOGO | È tornata su. Due spanne, giuste. Non so chi siate, ma vi offro da bere.
 NPC_21_01                 | DIALOGO | Stanotte la vasca è calata di due spanne. Il condotto ha una ferita.
 NPC_21_02                 | DIALOGO | Quest'acqua viene dal Bottaccione, tre miglia di pietra. Dolce come il latte.
 NPC_22_00                 | DIALOGO | All'alba, se il Campanone chiama, San Pietro risponde. Parola.
 NPC_22_01                 | DIALOGO | Campane mute per tre giorni. Le dita mi tremano da sole.
 NPC_22_02                 | DIALOGO | Senti i tamburi? Tre colpi e una pausa: sono di Foligno.
-NPC_23_00                 | DIALOGO | Il frate dice che il concilio vieta la balestra. Tiro ai perugini, pregano male.
+NPC_23_00                 | DIALOGO | Il frate dice che il concilio vieta la balestra. Tiro ai perugini: pregano male.
 NPC_23_01                 | DIALOGO | La pietra nera della gola si sbriciola come pane secco. Lì scava chiunque.
 NPC_23_02                 | DIALOGO | Cecco dice che tira meglio lui. Cecco dice tante cose.
 NPC_24_00                 | DIALOGO | Ho ritratto chi passava stanotte. Uno aveva l'abito da canonico.
@@ -442,7 +442,7 @@ NPC_33_00                 | DIALOGO | Ho visto tre luci sul monte. Le ho contate
 NPC_33_01                 | DIALOGO | Ciotto mi ha insegnato il filetto. Gli ho vinto tre volte. Quasi.
 NPC_33_02                 | DIALOGO | Mamma dice che undici è più di dieci. Io lo sapevo già.
 NPC_34_00                 | DIALOGO | Le carte le ho salvate tutte. Una sola manca, e lo sapete già quale.
-NPC_34_01                 | DIALOGO | Manca il disegno dell'acquedotto. L'aveva chiesto il capitolo, e non torna.
+NPC_34_01                 | DIALOGO | Manca il disegno del condotto. L'aveva chiesto il capitolo, e non torna.
 NPC_34_02                 | DIALOGO | Ho visto il sigillo dei consoli su una lettera in uscita. Non era per il papa.
 NPC_34_03                 | DIALOGO | Guarda: un gioco inciso dai romani. Mille anni e ancora si gioca.
 NPC_35_00                 | DIALOGO | Stanotte un canonico ha preso la strada di San Girolamo. Verso il monte, da solo.
@@ -537,7 +537,7 @@ QST_SM01_09               | DIALOGO | Ma col fuoco gli strati si aprono come un 
 QST_SM01_10               | DIALOGO | Col fuoco. Sento che questa la ricorderò io.
 QST_SM01_11               | DIALOGO | E per la strada, prendete queste.
 QST_SM01_12               | DIALOGO | Mia moglie le ha fatte stamattina. Col digiuno, chissà quando ne rifà.
-QST_SM01_13               | DIALOGO | Ricevi 3 Crescia di Pasqua.
+QST_SM01_13               | DIALOGO | Ricevi 3 fette di Crescia di Pasqua.
 QST_SM01_14               | DIALOGO | San Martino ti è grato.
 QST_SM01_15               | DIALOGO | Hai preso un blocco di ferro. Ancora 2.
 QST_SM01_16               | DIALOGO | Hai preso un blocco di ferro. Ancora 1.
@@ -558,7 +558,7 @@ QST_SA01_08               | DIALOGO | Quattro radici di elleboro, monsignore. Su
 QST_SA01_09               | DIALOGO | Quattro radici! E sono ancora umide. Siete scesi davvero laggiù.
 QST_SA01_10               | DIALOGO | Non me lo dite, cosa c'era. Me lo racconterete quando sarà finita.
 QST_SA01_11               | DIALOGO | Prendete questi biscotti all'anice. Tolgono il veleno dal sangue, e la paura dallo stomaco.
-QST_SA01_12               | DIALOGO | Ricevi 3 Biscotti all'Anice.
+QST_SA01_12               | DIALOGO | Ricevi 3 Biscotti all'anice.
 QST_SA01_13               | DIALOGO | Sant'Andrea ti è grato.
 QST_SA01_14               | DIALOGO | E l'acqua stanotte è tornata chiara. Questo, monsignore, non l'ha fatto l'elleboro.
 QST_SA01_15               | DIALOGO | Hai raccolto una radice di elleboro.
@@ -567,18 +567,18 @@ QST_SA01_17               | DIALOGO | Prendiamolo. In città qualcuno saprà che
 QST_SA01_18               | DIALOGO | Le radici bollono già. Stanotte i feriti dormiranno, se Dio vuole.
 QST_SA01_19               | DIALOGO | Agnese dice che ho sputato veleno verde. Io dico che ho sputato Cagli.
 QST_SA01_20               | DIALOGO | Dormono. Tutti e sei. Domani si alzano, se Dio vuole e se l'alba è nostra.
-QST_SP01_00               | DIALOGO | Hanno profanato l'altare, Vescovo Ubaldo! Ci hanno rubato la Rosa d'Argento.
+QST_SP01_00               | DIALOGO | Hanno profanato l'altare, vescovo Ubaldo! Ci hanno rubato la Rosa d'Argento.
 QST_SP01_01               | DIALOGO | Con quella benediciamo le guardie della notte. Senza, tremano davanti al Grifo.
 QST_SP01_02               | DIALOGO | Chi è entrato, Bernardo?
 QST_SP01_03               | DIALOGO | Un pellegrino, diceva. Parlava come noi, ma pregava male. Ha preso la Rosa ed è sparito.
 QST_SP01_04               | DIALOGO | Se è ancora in città, lo troveremo. Le porte sono chiuse anche per lui.
 QST_SP01_05               | DIALOGO | Trova chi ha rubato la Rosa d'Argento. Chiedi in giro.
-QST_SP01_06               | DIALOGO | La Rosa, Vescovo Ubaldo. Chiedete in giro: qualcuno avrà visto quel pellegrino.
+QST_SP01_06               | DIALOGO | La Rosa, vescovo Ubaldo. Chiedete in giro: qualcuno avrà visto quel pellegrino.
 QST_SP01_07               | DIALOGO | La Rosa! Integra, grazie al cielo. E grazie a voi, che col cielo avete buoni rapporti.
 QST_SP01_08               | DIALOGO | Stanotte i miliziani avranno la loro benedizione. E voi la mia, che vale meno ma è di cuore.
 QST_SP01_09               | DIALOGO | Sapete che la Rosa ce la donò Perugia? Altri tempi. Altri vescovi.
 QST_SP01_10               | DIALOGO | Prendete questa crescia sotto la cenere. Chi la mangia, si rialza anche quando è caduto.
-QST_SP01_11               | DIALOGO | Ricevi 1 Crescia sotto la Cenere.
+QST_SP01_11               | DIALOGO | Ricevi una Crescia sotto la cenere.
 QST_SP01_12               | DIALOGO | San Pietro ti è grato.
 QST_SP01_13               | DIALOGO | La Rosa è tornata sull'altare. Il pellegrino, spero, in una cella.
 QST_SP01_14               | DIALOGO | Ho benedetto le guardie una per una. Nessuna ha tremato.
@@ -592,7 +592,7 @@ QST_SP01_21               | DIALOGO | Sotto le Logge dei Tiratori c'è qualcuno 
 QST_SP01_22               | DIALOGO | Il vescovo in persona. Dovevo immaginarlo: in questa città ficcate il naso dappertutto.
 QST_SP01_23               | DIALOGO | Ridacci la Rosa.
 QST_SP01_24               | DIALOGO | Questa città mi ha cacciato una volta. Monaldo la Rosa la rivuole indietro.
-QST_SP01_25               | DIALOGO | Tenetevela, la vostra rosa. Tanto all'alba non ci sarà più nessuno da benedire.
+QST_SP01_25               | DIALOGO | Tenetevela, la vostra Rosa. Tanto all'alba non ci sarà più nessuno da benedire.
 QST_SP01_26               | DIALOGO | All'alba vedremo. Intanto ci sarà qualcuno a pregare per te.
 QST_SP01_27               | DIALOGO | Parli come noi.
 QST_SP01_28               | DIALOGO | Ero dei Valmarcola. Lo sono ancora.
