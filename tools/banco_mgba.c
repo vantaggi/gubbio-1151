@@ -4,6 +4,7 @@
 //   tieni TASTI N        tiene premuti i TASTI (A,B,SELECT,START,DESTRA,SINISTRA,SU,GIU,R,L uniti da +) per N frame
 //   premi TASTI          un tocco: 2 frame premuti, 8 rilasciati
 //   foto NOME            salva NOME.ppm (240x160)
+//   tieni_foto TASTI N K NOME  tiene i TASTI per N frame e fa una foto ogni K: NOME_000.ppm ...
 //   foto_ogni K N NOME   N frame, una foto ogni K: NOME_000.ppm ...
 //   finche TESTO M       avanza fino a quando il log del gioco contiene TESTO (al massimo M frame)
 //   foto_al_log TESTO NOME M  come finche, poi una foto
@@ -109,6 +110,18 @@ int main(int argc, char** argv)
         else if(!strcmp(cmd, "tieni")) corri(tasti(a), atoi(b));
         else if(!strcmp(cmd, "premi")) { corri(tasti(a), 2); corri(0, 8); }
         else if(!strcmp(cmd, "foto")) foto(a);
+        else if(!strcmp(cmd, "tieni_foto"))
+        {
+            char d[512] = "";
+            sscanf(riga, "%*s %*s %*s %*s %511s", d);
+            int k = atoi(c), tot = atoi(b);
+            char p[600];
+            for(int i = 0; i < tot; ++i)
+            {
+                corri(tasti(a), 1);
+                if(i % k == 0) { snprintf(p, sizeof p, "%s_%03d", d, i / k); foto(p); }
+            }
+        }
         else if(!strcmp(cmd, "foto_ogni"))
         {
             int k = atoi(a), tot = atoi(b);
