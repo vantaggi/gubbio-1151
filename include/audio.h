@@ -20,6 +20,9 @@ namespace gubbio::audio
 void accendi(bool acceso);
 [[nodiscard]] bool acceso();
 
+// I volumi delle opzioni (MOP), in tacche da 0 a opzioni::TACCHE: si applicano subito, anche al brano che suona.
+void volumi(int musica, int effetti);
+
 // Un brano: torna da capo se la partitura lo vuole (colonna::IN_ANELLO). Non riparte se sta gia' suonando.
 void brano(colonna::Brano b);
 

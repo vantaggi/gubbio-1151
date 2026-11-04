@@ -7,6 +7,7 @@
 #include "audio.h"
 #include "esplorazione.h"
 #include "game_state.h"
+#include "opzioni.h"
 #include "scena_battaglia.h"
 #include "scontri_mappa.h"
 #include "regia_scena.h"
@@ -38,6 +39,9 @@ constexpr bool COL_TITOLO = GUBBIO_AVVIO == 0 || GUBBIO_AVVIO == 15;
 int main()
 {
     bn::core::init();
+    // le opzioni (MOP) valgono da subito, anche nel titolo
+    gubbio::opzioni::carica();
+    gubbio::opzioni::applica();
     bn::core::update();
 
     // ritorno al titolo con A+B+Select+Start (MAI): si riparte coi tasti ancora premuti, e Select tenuto
@@ -236,7 +240,7 @@ int main()
 
         int dx = bn::keypad::left_held() ? -1 : (bn::keypad::right_held() ? 1 : 0);
         int dy = bn::keypad::up_held() ? -1 : (bn::keypad::down_held() ? 1 : 0);
-        esplorazione.muovi(dx, dy, bn::keypad::b_held() ? 2 : 1);
+        esplorazione.muovi(dx, dy, gubbio::opzioni::passi(gubbio::opzioni::g_opzioni, bn::keypad::b_held()));
         esplorazione.aggiorna();
         // la musica dell'area, della fase e del luogo (include/colonna_sonora.h); non riparte se e' la stessa
         const gubbio::mondo::Esploratore& qui = esplorazione.esploratore();

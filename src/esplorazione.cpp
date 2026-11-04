@@ -20,6 +20,7 @@
 
 #include "aiuti.h"
 #include "game_state.h"
+#include "opzioni.h"
 
 namespace gubbio
 {
@@ -664,8 +665,9 @@ void Esplorazione::_aggiorna_aiuti()
         _freccia.reset();
     }
 
-    // il cartello del varco vicino: compare a CELLE_CARTELLO celle, sparisce allontanandosi
-    int varco = _dissolvenza ? -1 : aiuti::varco_vicino(_e);
+    // il cartello del varco vicino: compare a CELLE_CARTELLO celle, sparisce allontanandosi (se le opzioni lo
+    // vogliono, MOP)
+    int varco = _dissolvenza || ! opzioni::g_opzioni.cartelli ? -1 : aiuti::varco_vicino(_e);
 
     if(varco == _varco_cartello)
     {

@@ -219,7 +219,8 @@ namespace
     // le pagine gia' costruite; le altre arrivano coi loro pezzi (MMA, MBI, MOP)
     constexpr bool pagina_pronta(int p)
     {
-        return p == PAGINA_SALVA || p == PAGINA_DIARIO || p == PAGINA_BISACCIA || p == PAGINA_COMPAGNI;
+        return p == PAGINA_SALVA || p == PAGINA_DIARIO || p == PAGINA_BISACCIA || p == PAGINA_COMPAGNI ||
+               p == PAGINA_OPZIONI;
     }
 
     // ------------------------------------------------------------------ la pausa (mockup 01)
@@ -393,6 +394,9 @@ namespace
 
             case PAGINA_COMPAGNI:
                 return pagina_compagni(palette, istantanea);
+
+            case PAGINA_OPZIONI:
+                return pagina_opzioni(palette, istantanea);
 
             default:
                 return Esito::INDIETRO;

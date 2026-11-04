@@ -108,3 +108,20 @@ COMP_RESISTENZA           | HUD     | Resistenza
 COMP_VELOCITA             | HUD     | Velocità
 COMP_ABILITA              | HUD     | Abilità
 COMP_AIUTO                | AREA    | Su e giù: altro compagno
+# MOP: le opzioni (mockup 07), per tutti e due gli slot
+OPZ_TESTO                 | HUD     | Testo
+OPZ_LENTO                 | HUD     | Lento
+OPZ_NORMALE               | HUD     | Normale
+OPZ_SUBITO                | HUD     | Subito
+OPZ_MUSICA                | HUD     | Musica
+OPZ_EFFETTI               | HUD     | Effetti
+OPZ_CORRERE               | HUD     | Correre
+OPZ_TIENI_B               | HUD     | Tieni B
+OPZ_SEMPRE                | HUD     | Sempre
+OPZ_SCHERMO               | HUD     | Schermo
+OPZ_PIU_CHIARO            | HUD     | Più chiaro
+OPZ_CARTELLI              | HUD     | Cartelli
+OPZ_SI                    | HUD     | Sì
+OPZ_NO                    | HUD     | No
+OPZ_NOTA                  | AREA    | Valgono per tutti e due gli slot.
+OPZ_AIUTO                 | AREA    | Destra e sinistra: cambia

@@ -5,6 +5,7 @@
 #include "bn_optional.h"
 
 #include "audio_logica.h"
+#include "opzioni.h"
 #include "tabella.h"
 
 namespace gubbio::audio
@@ -20,6 +21,13 @@ namespace
     // Lo stato del suono: pochi byte statici, nessuna allocazione (il mixer di maxmod ha i suoi
     // buffer statici dentro Butano).
     bool s_acceso = true;
+    int s_musica = opzioni::TACCHE_NORMALI;     // le tacche delle opzioni
+    int s_effetti = opzioni::TACCHE_NORMALI;
+
+    [[nodiscard]] bn::fixed scala(bn::fixed normale, int tacche)
+    {
+        return bn::fixed(opzioni::volume_percento((normale * 100).round_integer(), tacche)) / 100;
+    }
     int s_brano = colonna::NESSUNO;     // l'ultimo brano fatto partire
     int s_luogo = -1;                    // il luogo col segnale in cui si e', per suonarlo una volta
     int s_area = -1;                     // dove si e' camminato l'ultima volta: l'area e la cella
@@ -34,7 +42,7 @@ namespace
     void parti(int b)
     {
         bool anello = GUBBIO_VOCE(colonna::IN_ANELLO, b);
-        GUBBIO_VOCE(colonna::MUSICA, b).play(anello ? VOLUME_MUSICA : VOLUME_JINGLE, anello);
+        GUBBIO_VOCE(colonna::MUSICA, b).play(scala(anello ? VOLUME_MUSICA : VOLUME_JINGLE, s_musica), anello);
         s_brano = b;
     }
 }
@@ -49,6 +57,17 @@ void accendi(bool acceso)
     }
 
     s_brano = colonna::NESSUNO;
+}
+
+void volumi(int musica, int effetti)
+{
+    s_musica = musica;
+    s_effetti = effetti;
+
+    if(s_brano >= 0 && bn::music::playing())
+    {
+        bn::music::set_volume(scala(GUBBIO_VOCE(colonna::IN_ANELLO, s_brano) ? VOLUME_MUSICA : VOLUME_JINGLE, s_musica));
+    }
 }
 
 bool acceso()
@@ -156,7 +175,7 @@ void effetto(colonna::Effetto e)
 {
     if(s_acceso)
     {
-        GUBBIO_VOCE(colonna::SUONO, int(e)).play(VOLUME_EFFETTI);
+        GUBBIO_VOCE(colonna::SUONO, int(e)).play(scala(VOLUME_EFFETTI, s_effetti));
     }
 }
 

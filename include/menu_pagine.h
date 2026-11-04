@@ -124,6 +124,7 @@ private:
 [[nodiscard]] Esito pagina_diario(const bn::sprite_palette_ptr& palette, bool istantanea);
 [[nodiscard]] Esito pagina_bisaccia(const bn::sprite_palette_ptr& palette, bool istantanea);
 [[nodiscard]] Esito pagina_compagni(const bn::sprite_palette_ptr& palette, bool istantanea);
+[[nodiscard]] Esito pagina_opzioni(const bn::sprite_palette_ptr& palette, bool istantanea);
 
 }
 
