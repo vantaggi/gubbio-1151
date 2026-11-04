@@ -62,7 +62,7 @@ namespace
     // in comune), e i PV in cifre a destra delle barre, alla loro altezza.
     constexpr int TARGA_PV_DY = -4;
     constexpr int TARGA_FERVORE_DY = 1;
-    constexpr int TARGA_CIFRE_X = 120 + -100 + 17;      // subito a destra delle barre
+    constexpr int TARGA_CIFRE_X = 120 + -100 + 19;      // subito a destra delle barre
     constexpr int TARGA_CIFRE_DY = -11;                 // le cifre (righe 2-8 del glifo) accanto alla barra dei PV
     constexpr int PANNELLO_Y = 104;                     // il pannello dei comandi nello sfondo (genera_battaglia.py)
     constexpr int FRAME_ESITO = 150;

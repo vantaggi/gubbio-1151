@@ -8,6 +8,7 @@ Cutscene P-02 dentro la precedente
 Scena A1-01
 Cutscene C3U
 Cutscene C3U finita
+Istantanea storia_dialogo
 Cutscene C3G
 Cutscene C3G finita
 Cutscene C2
@@ -22,27 +23,42 @@ Cutscene C3A finita
 Battaglia 0 data per vinta
 Scena A1-05
 Scena A1-05b
+Istantanea scelta_0
 Scelta 0
 Scena A1-06
 Scena A1-07
+Cutscene C7S
+Cutscene C7S finita
 Battaglia 1 data per vinta
 Scena A1-08
+Cutscene C5
+Cutscene C5 finita
 Battaglia 3 data per vinta
 Scena A1-09
+Cutscene C6
+Cutscene C6 finita
 Scena B-01
+Cutscene C7B
+Cutscene C7B finita
 Scena B-02
 Scena B-03
+Battaglia 4 data per vinta
+Istantanea scelta_1
 Scelta 0
 Scena B-04
 Cutscene C3C
 Cutscene C3C finita
 Battaglia 2 data per vinta
 Scena B-05
+Istantanea scelta_2
+Scelta 0
 Scena E-01
+Istantanea scelta_3
 Scelta 0
 Scena E-02
 Cutscene C4
 Cutscene C4 finita
+Titoli di coda
 Giro 0: 20 scene, borgo dentro, esule prigioniero, giustizia offerta
 Giro 1
 Scena P-00
@@ -68,26 +84,43 @@ Cutscene C3A finita
 Battaglia 0 data per vinta
 Scena A1-05
 Scena A1-05b
+Istantanea scelta_4
 Scelta 1
 Scena A1-06
 Scena A1-07
+Cutscene C7S
+Cutscene C7S finita
 Battaglia 1 data per vinta
 Scena A1-08
+Cutscene C5
+Cutscene C5 finita
 Battaglia 3 data per vinta
 Scena A1-09
+Cutscene C6
+Cutscene C6 finita
 Scena B-01
+Cutscene C7B
+Cutscene C7B finita
 Scena B-02
 Scena B-03
+Battaglia 4 data per vinta
+Istantanea scelta_5
 Scelta 1
 Scena B-04
 Cutscene C3C
 Cutscene C3C finita
 Battaglia 2 data per vinta
 Scena B-05
+Istantanea scelta_6
+Scelta 1
+Risposta a un NPC
 Scena E-01
+Istantanea scelta_7
 Scelta 1
 Scena E-02
 Cutscene C4
 Cutscene C4 finita
+Titoli di coda
 Giro 1: 20 scene, borgo fuori, esule liberato, giustizia no
+Istantanee finite
 Storia: 20 scene visitate su 20, 0 mancanti, titoli di coda raggiunti

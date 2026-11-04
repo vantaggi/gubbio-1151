@@ -104,23 +104,30 @@ namespace
         return out;
     }
 
-    bn::sprite_ptr crea_giocatore()
-    {
-        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(4, bn::bpp_mode::BPP_4);
-        bn::span<bn::tile> vram = *tiles.vram();
+    // Il giocatore (tools/sagome_mappa.py): 16x32, 8 tile a fotogramma, 8 fotogrammi per direzione.
+    constexpr int TILE_PER_FOTOGRAMMA = 8;
 
-        for(int t = 0; t < 4; ++t)
+    void scrivi_fotogramma(bn::sprite_tiles_ptr& tiles, int direzione, int fotogramma)
+    {
+        bn::span<bn::tile> vram = *tiles.vram();
+        int primo = (direzione * mondo::GIOCATORE_FOTOGRAMMI + fotogramma) * TILE_PER_FOTOGRAMMA;
+
+        for(int t = 0; t < TILE_PER_FOTOGRAMMA; ++t)
         {
             for(int r = 0; r < 8; ++r)
             {
-                vram[t].data[r] = GUBBIO_VOCE(mondo::TILE_GIOCATORE, t * 8 + r);
+                vram[t].data[r] = GUBBIO_VOCE(mondo::TILE_GIOCATORE, (primo + t) * 8 + r);
             }
         }
+    }
 
+    bn::sprite_ptr crea_giocatore()
+    {
+        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(TILE_PER_FOTOGRAMMA, bn::bpp_mode::BPP_4);
+        scrivi_fotogramma(tiles, 0, mondo::GIOCATORE_RIPOSO);
         bn::sprite_palette_ptr palette = bn::sprite_palette_ptr::create(
             bn::sprite_palette_item(bn::span<const bn::color>(COLORI_GIOCATORE.colori), bn::bpp_mode::BPP_4));
-        return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(bn::sprite_shape::SQUARE, bn::sprite_size::NORMAL),
-                                      bn::move(tiles), bn::move(palette));
+        return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 32), bn::move(tiles), bn::move(palette));
     }
 
     constexpr int limita(int v, int minimo, int massimo)
@@ -179,7 +186,9 @@ void Esplorazione::sospendi()
 
 void Esplorazione::ricompari()
 {
-    _carica_fondale();
+    // dopo una battaglia o una cutscene si resta nella stessa area: il cartiglio col nome non riappare,
+    // se no resterebbe a meta' (la sola iniziale) sotto il dialogo che segue, che non fa avanzare l'etichetta
+    _carica_fondale(false);
     _giocatore.set_visible(true);
 }
 
@@ -189,7 +198,7 @@ void Esplorazione::colloca_sulla_mappa(bn::sprite_ptr& sprite, int x, int y, int
     sprite.set_position(x - _mezza_larghezza_mappa, y - altezza / 2 - _mezza_altezza_mappa);
 }
 
-void Esplorazione::_carica_fondale()
+void Esplorazione::_carica_fondale(bool etichetta)
 {
     // Le celle sono gia' in ROM (include/mondo.h): Butano le copia in VRAM, o per una big map ne
     // carica solo la parte vicina allo schermo, e aggiunge da se' gli scostamenti di tile e palette.
@@ -213,7 +222,11 @@ void Esplorazione::_carica_fondale()
     _mezza_altezza_mappa = lati.height() * mondo::TILE_PX / 2;
     _fondale = bn::regular_bg_ptr::create(0, 0, bn::regular_bg_map_ptr::create(voce, *_tiles, _palette));
     _fondale->set_camera(_camera);
-    _mostra_etichetta(a.etichetta);
+    if(etichetta)
+    {
+        _mostra_etichetta(a.etichetta);
+    }
+
     aggiorna();
 }
 
@@ -277,10 +290,46 @@ void Esplorazione::muovi(int dx, int dy, int passi)
         }
     }
 
-    if(dx)
+    // la direzione della figura: di lato se ci si muove in orizzontale, se no di fronte o di schiena
+    if(dx || dy)
     {
-        _giocatore.set_horizontal_flip(dx < 0);
+        _direzione = dx > 0 ? DESTRA : (dx < 0 ? SINISTRA : (dy > 0 ? GIU : SU));
+        _mosso = true;
+        _corre = passi > 1;
     }
+}
+
+void Esplorazione::_anima_giocatore()
+{
+    // camminata (A6): 6 fotogrammi da 6 vblank, 4 se si corre; da fermi il respiro (A5), 2 x 30 vblank
+    int fotogramma;
+
+    if(_mosso)
+    {
+        ++_passo;
+        int vblank = _corre ? mondo::GIOCATORE_VBLANK_CORSA : mondo::GIOCATORE_VBLANK_PASSO;
+        fotogramma = (_passo / vblank) % mondo::GIOCATORE_CAMMINATA;
+        _fermo = 0;
+    }
+    else
+    {
+        _passo = 0;
+        ++_fermo;
+        fotogramma = (_fermo / mondo::GIOCATORE_VBLANK_RESPIRO) % 2 ? mondo::GIOCATORE_RESPIRO : mondo::GIOCATORE_RIPOSO;
+    }
+
+    int direzione = _direzione == SINISTRA ? DESTRA : _direzione;
+    int chiave = direzione * mondo::GIOCATORE_FOTOGRAMMI + fotogramma;
+
+    if(chiave != _mostrato)
+    {
+        _mostrato = chiave;
+        bn::sprite_tiles_ptr tiles = _giocatore.tiles();
+        scrivi_fotogramma(tiles, direzione, fotogramma);
+    }
+
+    _giocatore.set_horizontal_flip(_direzione == SINISTRA);
+    _mosso = false;
 }
 
 void Esplorazione::sincronizza(mondo::Evento evento)
@@ -342,8 +391,9 @@ void Esplorazione::aggiorna()
              limita(_e.y, ALTEZZA_SCHERMO / 2, altezza - ALTEZZA_SCHERMO / 2);
     _camera.set_position(cx - _mezza_larghezza_mappa, cy - _mezza_altezza_mappa);
 
-    // Lo sprite 16x16 ha i piedi sull'ultima riga.
-    _giocatore.set_position(_e.x - _mezza_larghezza_mappa, _e.y - 7 - _mezza_altezza_mappa);
+    // Lo sprite 16x32 ha i piedi sull'ultima riga (31): il centro sta 15 pixel sopra.
+    _giocatore.set_position(_e.x - _mezza_larghezza_mappa, _e.y - 15 - _mezza_altezza_mappa);
+    _anima_giocatore();
 
     if(_attesa_etichetta > 0)
     {

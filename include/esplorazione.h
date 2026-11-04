@@ -98,11 +98,20 @@ private:
     bool _urto_al_varco = false;
     bool _notte = false;
     int _attesa_etichetta = 0;
+    // la figura del giocatore (tools/sagome_mappa.py): direzione, passo, respiro
+    enum Direzione { GIU, SU, DESTRA, SINISTRA };
+    int _direzione = GIU;
+    int _passo = 0;
+    int _fermo = 0;
+    int _mostrato = -1;
+    bool _mosso = false;
+    bool _corre = false;
 
-    void _carica_fondale();
+    void _carica_fondale(bool etichetta = true);
     void _mostra_etichetta(testi::TestoId id);
     void _mostra_cartiglio(bool visibile);
     void _dopo_evento(mondo::Evento evento);
+    void _anima_giocatore();
 };
 
 }

@@ -1210,28 +1210,10 @@ def tetto_della_casa(x, y):
     return "TETTO"
 
 
-# Lo sprite del giocatore, 16x16: segnaposto procedurale finche' non arrivano le pose.
-PALETTE_GIOCATORE = [("neutri", 0), ("neutri", 0), ("pelle", 1), ("pelle", 2),
-                     ("vermiglio comunale", 1), ("vermiglio comunale", 2), ("legno e cuoio", 1),
-                     ("legno e cuoio", 2)] + [("neutri", 0)] * 8
-GIOCATORE = [
-    "......1111......",
-    ".....177771.....",
-    "....17777771....",
-    "....13333331....",
-    "....13133131....",
-    "....13333331....",
-    ".....133331.....",
-    "....15555551....",
-    "...1544444451...",
-    "...1544444451...",
-    "...1544444451...",
-    "....14444441....",
-    ".....166661.....",
-    ".....16..61.....",
-    ".....16..61.....",
-    ".....11..11.....",
-]
+# Lo sprite del giocatore: Ubaldo 16x32 in quattro direzioni (tools/sagome_mappa.py, giro 5 del loop grafico).
+import sagome_mappa as SM  # noqa: E402
+
+PALETTE_GIOCATORE = SM.PALETTE
 
 
 # --- Lettura e controlli ----------------------------------------------------------------------
@@ -2954,13 +2936,24 @@ def scrivi_header(aree, grafo, palette_stile):
             out.append("    { { " + ", ".join(f"0x{v:08X}" for v in pezzo[k:k + 8]) + " } },")
     out += ["};", ""]
 
-    pixel = [[int(c, 16) if c != "." else 0 for c in riga] for riga in GIOCATORE]
     tiles = []
-    for ty in range(2):
-        for tx in range(2):
-            tiles += parole_tile([riga[tx * 8:tx * 8 + 8] for riga in pixel[ty * 8:ty * 8 + 8]])
-    out += ["// Il giocatore, 16x16 (4 tile in mappatura 1D): segnaposto finche' non arrivano le pose.",
-            "inline constexpr uint32_t TILE_GIOCATORE[4 * 8] = {",
+    for griglia in SM.fotogrammi():
+        for ty in range(4):
+            for tx in range(2):
+                tiles += parole_tile([riga[tx * 8:tx * 8 + 8] for riga in griglia[ty * 8:ty * 8 + 8]])
+    fot = len(SM.DIREZIONI) * SM.FOTOGRAMMI
+    out += ["// Il giocatore (tools/sagome_mappa.py): Ubaldo 16x32 (8 tile in mappatura 1D a fotogramma), le",
+            "// direzioni giu', su, destra (sinistra = destra specchiata), 8 fotogrammi l'una: 6 di camminata, riposo,",
+            "// respiro. L'ombra sotto i piedi e' nel disegno.",
+            f"inline constexpr int GIOCATORE_DIREZIONI = {len(SM.DIREZIONI)};",
+            f"inline constexpr int GIOCATORE_FOTOGRAMMI = {SM.FOTOGRAMMI};",
+            f"inline constexpr int GIOCATORE_CAMMINATA = {SM.CAMMINATA};",
+            f"inline constexpr int GIOCATORE_RIPOSO = {SM.RIPOSO};",
+            f"inline constexpr int GIOCATORE_RESPIRO = {SM.RESPIRO};",
+            f"inline constexpr int GIOCATORE_VBLANK_PASSO = {SM.VBLANK_PASSO};",
+            f"inline constexpr int GIOCATORE_VBLANK_CORSA = {SM.VBLANK_CORSA};",
+            f"inline constexpr int GIOCATORE_VBLANK_RESPIRO = {SM.VBLANK_RESPIRO};",
+            f"inline constexpr uint32_t TILE_GIOCATORE[{fot} * 8 * 8] = {{",
             a_blocchi(tiles, 8, lambda v: f"0x{v:08X}"), "};", "",
             "inline constexpr uint16_t PALETTE_GIOCATORE[16] = {",
             a_blocchi([colore(r) for r in PALETTE_GIOCATORE], 8, lambda v: f"0x{v:04X}"),
