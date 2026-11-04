@@ -11,6 +11,7 @@
 #include "bn_sram.h"
 #include "bn_vector.h"
 
+#include "aiuti.h"
 #include "esplorazione.h"
 #include "game_state.h"
 #include "save_data.h"
@@ -30,6 +31,29 @@ namespace
 
     // il record vuoto della prova del salvataggio: in EWRAM, non sullo stack
     BN_DATA_EWRAM_BSS salvataggio::SaveData s_vuota;
+
+    // MAI: lo stato di ogni slot valido, per l'anteprima del titolo
+    BN_DATA_EWRAM_BSS GameState s_anteprima[salvataggio::SLOT];
+
+    TestoId testo_della_fase(aiuti::FaseCronaca f)
+    {
+        constexpr TestoId FASI[4] = { TestoId::FASE_ULTIMATUM, TestoId::FASE_DIGIUNO, TestoId::FASE_NOTTE,
+                                      TestoId::FASE_DOPO_L_ALBA };
+        return FASI[int(f)];
+    }
+
+    TestoId testo_dell_area(const GameState& p)
+    {
+        int a = p.area < mondo::AREE_CONTEGGIO ? p.area : 0;
+        return mondo::area(mondo::AreaId(a)).etichetta;
+    }
+
+    // L'anteprima di uno slot sotto la voce «Continua» (mockup 10): area e livelli, fase e tempo di gioco.
+    constexpr int ANTEPRIMA_X = 24;
+    constexpr int ANTEPRIMA_Y = 110;
+    constexpr int ANTEPRIMA_PASSO = 12;
+    constexpr int ANTEPRIMA_LIV_X = 140;
+    constexpr int ANTEPRIMA_NUMERI_X = 158;
 
     void attendi(int frame)
     {
@@ -81,6 +105,23 @@ int titolo(const bn::sprite_palette_ptr& palette_testo, bool istantanea)
     VistaTesto aiuto(Contesto::DIALOGO, 8, 140, INCHIOSTRO_CHIARO, palette_testo);
     constexpr TestoId VOCI[3] = { TestoId::TITOLO_NUOVA, TestoId::TITOLO_SLOT_1, TestoId::TITOLO_SLOT_2 };
     StatoSlot stati[2] = { salvataggio::stato(0), salvataggio::stato(1) };
+    VistaTesto anteprima_area(Contesto::AREA, ANTEPRIMA_X, ANTEPRIMA_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto anteprima_fase(Contesto::AREA, ANTEPRIMA_X, ANTEPRIMA_Y + ANTEPRIMA_PASSO, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto anteprima_liv(Contesto::HUD, ANTEPRIMA_LIV_X, ANTEPRIMA_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaNumero livelli(ANTEPRIMA_NUMERI_X, ANTEPRIMA_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaNumero tempo(ANTEPRIMA_NUMERI_X, ANTEPRIMA_Y + ANTEPRIMA_PASSO, INCHIOSTRO_CHIARO, palette_testo);
+
+    for(int k = 0; k < salvataggio::SLOT; ++k)
+    {
+        if(stati[k] == StatoSlot::VALIDO && salvataggio::carica(k, s_anteprima[k]))
+        {
+            storia::dopo_il_caricamento(s_anteprima[k]);
+        }
+        else if(stati[k] == StatoSlot::VALIDO)
+        {
+            stati[k] = StatoSlot::CORROTTO;
+        }
+    }
 
     // si parte da "Continua" se c'e' un salvataggio valido, se no da "Nuova partita"
     int scelta = stati[0] == StatoSlot::VALIDO ? 1 : (stati[1] == StatoSlot::VALIDO ? 2 : 0);
@@ -92,7 +133,9 @@ int titolo(const bn::sprite_palette_ptr& palette_testo, bool istantanea)
         voce.mostra(VOCI[scelta]);
         voce.rivela_tutto();
 
-        if(scelta > 0 && stati[scelta - 1] != StatoSlot::VALIDO)
+        bool anteprima = scelta > 0 && stati[scelta - 1] == StatoSlot::VALIDO;
+
+        if(scelta > 0 && ! anteprima)
         {
             nota.mostra(testo_dello_stato(stati[scelta - 1]));
             nota.rivela_tutto();
@@ -100,6 +143,29 @@ int titolo(const bn::sprite_palette_ptr& palette_testo, bool istantanea)
         else
         {
             nota.nascondi();
+        }
+
+        if(anteprima)
+        {
+            const GameState& p = s_anteprima[scelta - 1];
+            anteprima_area.mostra(testo_dell_area(p));
+            anteprima_area.rivela_tutto();
+            anteprima_fase.mostra(testo_della_fase(aiuti::fase_della_cronaca(p)));
+            anteprima_fase.rivela_tutto();
+            anteprima_liv.mostra(TestoId::TITOLO_LIVELLI);
+            anteprima_liv.rivela_tutto();
+            livelli.mostra_livelli(p.livello[0], p.livello[1], p.livello[2]);
+            livelli.colloca(ANTEPRIMA_NUMERI_X, ANTEPRIMA_Y);
+            tempo.mostra_tempo(int(p.tempo_frames / 60));
+            tempo.colloca(ANTEPRIMA_NUMERI_X, ANTEPRIMA_Y + ANTEPRIMA_PASSO);
+        }
+        else
+        {
+            anteprima_area.nascondi();
+            anteprima_fase.nascondi();
+            anteprima_liv.nascondi();
+            livelli.nascondi();
+            tempo.nascondi();
         }
 
         if(istantanea)
@@ -144,6 +210,65 @@ void annota_posizione(const Esplorazione& esplorazione)
     g_game_state.area = uint8_t(e.area);
     g_game_state.x = int16_t(e.x);
     g_game_state.y = int16_t(e.y);
+}
+
+void dove_eravamo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo, bool istantanea)
+{
+    // «Dove eravamo» (MAI, mockup 08): dopo «Continua», una volta, sullo sfondo scurito come nei dialoghi
+    constexpr int X = 8;
+    constexpr int TITOLO_Y = 92;
+    constexpr int LUOGO_Y = 106;
+    constexpr int FASE_X = 120;
+    constexpr int OBIETTIVO_Y = 120;
+    constexpr int CONTI_Y = 144;
+    constexpr int INCARICHI_N_X = 80;
+    constexpr int TEMPO_X = 160;
+    constexpr int TEMPO_N_X = 192;
+    const GameState& p = g_game_state;
+    esplorazione.nascondi_etichetta();
+    bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.65));
+    VistaTesto titolo_r(Contesto::HUD, X, TITOLO_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto luogo(Contesto::AREA, X, LUOGO_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto fase(Contesto::AREA, FASE_X, LUOGO_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto obiettivo(Contesto::DIALOGO, X, OBIETTIVO_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto incarichi(Contesto::HUD, X, CONTI_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaNumero incarichi_n(INCARICHI_N_X, CONTI_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto tempo(Contesto::HUD, TEMPO_X, CONTI_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaNumero tempo_n(TEMPO_N_X, CONTI_Y, INCHIOSTRO_CHIARO, palette_testo);
+    titolo_r.mostra(TestoId::DOVE_ERAVAMO);
+    luogo.mostra(testo_dell_area(p));
+    fase.mostra(testo_della_fase(aiuti::fase_della_cronaca(p)));
+    obiettivo.mostra(storia::area_dell_obiettivo(p) >= 0 ? storia::OBIETTIVO[p.obiettivo].testo : TestoId::PROMEMORIA_NESSUNO);
+    incarichi.mostra(TestoId::DOVE_ERAVAMO_INCARICHI);
+    tempo.mostra(TestoId::DOVE_ERAVAMO_TEMPO);
+
+    for(VistaTesto* v : { &titolo_r, &luogo, &fase, &obiettivo, &incarichi, &tempo })
+    {
+        v->rivela_tutto();
+    }
+
+    incarichi_n.mostra(aiuti::incarichi_aperti(p));
+    incarichi_n.colloca(INCARICHI_N_X, CONTI_Y);
+    tempo_n.mostra_tempo(int(p.tempo_frames / 60));
+    tempo_n.colloca(TEMPO_N_X, CONTI_Y);
+    attendi(1);
+
+    if(istantanea)
+    {
+        attendi(30);
+        BN_LOG("Istantanea dove_eravamo");
+        attendi(30);
+    }
+    else
+    {
+        while(! bn::keypad::a_pressed() && ! bn::keypad::b_pressed() && ! bn::keypad::start_pressed())
+        {
+            attendi(1);
+        }
+    }
+
+    bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
+    attendi(1);
 }
 
 void pausa(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo, bool istantanea)

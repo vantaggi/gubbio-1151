@@ -7,7 +7,14 @@
 // ricavare l'obiettivo dalle scene fatte (un salvataggio v3) da' lo stesso obiettivo della recita; entrare in
 // un'area la segna vista. Negative: una battuta che non e' OBIETTIVO, una riga d'incarico, un'area fuori dal
 // mondo non cambiano nulla.
+//
+// MAI: gli aiuti senza il menu di pausa nuovo (include/aiuti.h). La strada piu' breve fra le aree (ogni passo
+// accorcia la strada di uno, da ogni area a ogni altra), il varco verso la meta, la freccia, i cartelli (uno per
+// ogni varco del mondo), il tempo "h:mm" e i livelli dell'anteprima, la fase e gli incarichi aperti, il Riprova
+// solo per il duello con Corrado. Ogni prova ha la sua negativa.
 
+#include "aiuti.h"
+#include "formatta.h"
 #include "progressione.h"
 #include "storia_logica.h"
 
@@ -351,6 +358,306 @@ namespace
     }
 
     static_assert(aree_viste_entrando(), "entrare in un'area non la segna vista, o si segna un'area che non c'e'");
+
+    // === MAI ==================================================================================================
+    using namespace aiuti;
+
+    consteval int scena_di(const char* codice)
+    {
+        for(int k = 0; k < SCENE; ++k)
+        {
+            int i = 0;
+
+            while(codice[i] && SCENA[k].codice[i] == codice[i])
+            {
+                ++i;
+            }
+
+            if(! codice[i] && ! SCENA[k].codice[i])
+            {
+                return k;
+            }
+        }
+
+        return -1;
+    }
+
+    // --- Il tempo e i livelli dell'anteprima ---------------------------------------------------------------
+    static_assert(autotest_formatta_tempo() == 101 * 60 + 1, "formatta_tempo sbaglia un minuto fra 0 e 101 ore");
+
+    consteval bool tempo_come(int secondi, const char* atteso)
+    {
+        char t[TEMPO_CARATTERI_MAX + 1] = {};
+        int n = formatta_tempo(secondi, t);
+
+        for(int i = 0; i <= n; ++i)
+        {
+            if(t[i] != atteso[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    static_assert(tempo_come(6120, "1:42") && tempo_come(0, "0:00") && tempo_come(36000, "10:00") &&
+                  tempo_come(400000, "99:59") && tempo_come(-5, "0:00") && ! tempo_come(6120, "1:41"),
+                  "il tempo dell'anteprima non e' h:mm");
+
+    consteval bool livelli_come(int a, int b, int c, const char* atteso)
+    {
+        char t[LIVELLI_CARATTERI + 1] = {};
+        formatta_livelli(a, b, c, t);
+
+        for(int i = 0; i <= LIVELLI_CARATTERI; ++i)
+        {
+            if(t[i] != atteso[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    static_assert(livelli_come(4, 4, 3, "4 4 3") && livelli_come(0, 12, 8, "1 9 8") && ! livelli_come(4, 4, 3, "4 4 4"),
+                  "i livelli dell'anteprima non sono «4 4 3»");
+
+    // --- La strada piu' breve: da ogni area a ogni altra, ogni passo la accorcia di uno ----------------------
+    consteval bool vicine(int a, int b)
+    {
+        const mondo::Area& x = mondo::area(mondo::AreaId(a));
+
+        for(int v = 0; v < x.varchi; ++v)
+        {
+            if(x.varco[v].destinazione == b)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    consteval bool strade_piu_brevi()
+    {
+        for(int a = 0; a < mondo::AREE_CONTEGGIO; ++a)
+        {
+            for(int b = 0; b < mondo::AREE_CONTEGGIO; ++b)
+            {
+                int n = passi_fino_a(a, b);
+                int p = prossima_area(a, b);
+
+                if(n < 0 || (a == b) != (n == 0) || (a == b) != (p < 0))
+                {
+                    return false;
+                }
+
+                if(a != b && (! vicine(a, p) || passi_fino_a(p, b) != n - 1))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    static_assert(strade_piu_brevi(), "la strada del promemoria non e' la piu' breve, o un'area non si raggiunge");
+    static_assert(passi_fino_a(int(mondo::AreaId::PIAZZA_GRANDE), int(mondo::AreaId::TEATRO_ROMANO)) == 3 &&
+                  passi_fino_a(int(mondo::AreaId::PIAZZA_GRANDE), int(mondo::AreaId::CONDOTTO)) >= 6 &&
+                  prossima_area(int(mondo::AreaId::PIAZZA_GRANDE), -1) == -1 &&
+                  prossima_area(int(mondo::AreaId::PIAZZA_GRANDE), mondo::AREE_CONTEGGIO) == -1,
+                  "la strada da Piazza Grande al Teatro non e' di tre varchi, o una meta fuori dal mondo ha una strada");
+
+    // Ogni varco del mondo ha celle (il centro dove punta la freccia) e, se porta a un'area, il suo cartello.
+    consteval bool varchi_con_centro_e_cartello()
+    {
+        for(int a = 0; a < mondo::AREE_CONTEGGIO; ++a)
+        {
+            const mondo::Area& x = mondo::area(mondo::AreaId(a));
+
+            for(int v = 0; v < x.varchi; ++v)
+            {
+                Punto c = centro_del_varco(x, v);
+
+                if(c.x < 0 || c.y < 0 || c.x >= x.larghezza * mondo::TILE_PX || c.y >= x.altezza * mondo::TILE_PX)
+                {
+                    return false;
+                }
+
+                if(x.varco[v].destinazione >= 0 && cartello(a, x.varco[v].destinazione) < 0)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    static_assert(varchi_con_centro_e_cartello(), "un varco senza celle o senza cartello");
+    static_assert(cartello(int(mondo::AreaId::PIAZZA_GRANDE), int(mondo::AreaId::TEATRO_ROMANO)) < 0 &&
+                  centro_del_varco(mondo::area(mondo::AreaId::PIAZZA_GRANDE), mondo::VARCHI_MAX).x < 0,
+                  "un cartello fra aree che non si toccano, o un centro per un varco che non c'e'");
+
+    // Il varco verso la meta porta alla prossima area della strada; nella meta stessa non c'e' freccia.
+    consteval bool varco_giusto()
+    {
+        mondo::Esploratore e;
+        mondo::colloca(e, mondo::AreaId::PIAZZA_GRANDE, 0);
+        int meta = int(mondo::AreaId::TEATRO_ROMANO);
+        int v = varco_verso_la_meta(e, meta);
+        bool qui = varco_verso_la_meta(e, int(mondo::AreaId::PIAZZA_GRANDE)) == -1;
+        return v >= 0 && mondo::area(e.area).varco[v].destinazione == prossima_area(int(e.area), meta) && qui;
+    }
+
+    static_assert(varco_giusto(), "il promemoria punta a un varco che non porta verso la meta");
+
+    // Due varchi verso la stessa area (nel mondo di oggi non succede): vince il piu' vicino al giocatore, a
+    // parita' il primo. Un'area finta di 8 x 1 celle: varco 0 a sinistra, varco 1 a destra, varco 2 altrove.
+    inline constexpr uint8_t GRIGLIA_FINTA[8] = { mondo::PRIMO_VARCO, 0, 0, 0, 0, 0, 0, mondo::PRIMO_VARCO + 1 };
+
+    consteval mondo::Area area_finta()
+    {
+        mondo::Area a {};
+        a.griglia = GRIGLIA_FINTA;
+        a.larghezza = 8;
+        a.altezza = 1;
+        a.varchi = 3;
+        a.varco[0].destinazione = 5;
+        a.varco[1].destinazione = 5;
+        a.varco[2].destinazione = 6;
+        return a;
+    }
+
+    static_assert(varco_piu_vicino(area_finta(), 5, 6, 4) == 0 && varco_piu_vicino(area_finta(), 5, 60, 4) == 1 &&
+                  varco_piu_vicino(area_finta(), 5, 32, 4) == 0 && varco_piu_vicino(area_finta(), 6, 6, 4) == -1 &&
+                  varco_piu_vicino(area_finta(), 7, 6, 4) == -1,
+                  "fra due varchi verso la stessa area il promemoria non sceglie il piu' vicino");
+
+    // La freccia: verso l'asse piu' lungo; sempre dentro lo schermo e sotto la fascia del promemoria.
+    static_assert(verso_di(10, 3) == Verso::DESTRA && verso_di(-10, 3) == Verso::SINISTRA && verso_di(2, 9) == Verso::GIU &&
+                  verso_di(2, -9) == Verso::SU && verso_di(0, 0) == Verso::DESTRA, "la freccia punta dalla parte sbagliata");
+    static_assert(posto_della_freccia(-500, -500).x == MARGINE_FRECCIA && posto_della_freccia(-500, -500).y == FASCIA_PROMEMORIA &&
+                  posto_della_freccia(900, 900).x == SCHERMO_L - MARGINE_FRECCIA - LATO_FRECCIA &&
+                  posto_della_freccia(900, 900).y == SCHERMO_A - MARGINE_FRECCIA - LATO_FRECCIA &&
+                  posto_della_freccia(120, 80).x == 112 && posto_della_freccia(120, 80).y == 72,
+                  "la freccia esce dallo schermo o non sta sul varco quando il varco si vede");
+
+    static_assert(CELLE_CARTELLO == 3, "il cartello compare a 3 celle dal varco (menu/PROPOSTA.md sez. 3.8)");
+
+    // --- I cartelli: vicino a un varco (entro 3 celle) si', sopra il varco o lontano no -----------------------
+    consteval bool cartello_vicino_al_varco()
+    {
+        const mondo::Area& a = mondo::area(mondo::AreaId::PIAZZA_GRANDE);
+        bool vicino = false;
+        bool sopra = false;
+        bool lontano = false;
+
+        for(int ty = 0; ty < a.altezza; ++ty)
+        {
+            for(int tx = 0; tx < a.larghezza; ++tx)
+            {
+                int c = mondo::cella(a, tx, ty);
+
+                if(mondo::solida(c))
+                {
+                    continue;
+                }
+
+                mondo::Esploratore e;
+                e.area = mondo::AreaId::PIAZZA_GRANDE;
+                e.x = mondo::piedi_x(tx);
+                e.y = mondo::piedi_y(ty);
+                int v = varco_vicino(e);
+                int d = 99;     // la distanza dal varco piu' vicino, contata qui a parte
+
+                for(int dy = -4; dy <= 4; ++dy)
+                {
+                    for(int dx = -4; dx <= 4; ++dx)
+                    {
+                        int m = (dx < 0 ? -dx : dx) > (dy < 0 ? -dy : dy) ? (dx < 0 ? -dx : dx) : (dy < 0 ? -dy : dy);
+                        d = mondo::varco(mondo::cella(a, tx + dx, ty + dy)) && m < d ? m : d;
+                    }
+                }
+
+                if(mondo::varco(c))
+                {
+                    sopra = true;
+
+                    if(v >= 0)
+                    {
+                        return false;
+                    }
+                }
+                else if(d <= 3)     // 3 celle: menu/PROPOSTA.md sez. 3.8, non la costante del gioco
+                {
+                    vicino = true;
+
+                    if(v < 0)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    lontano = true;
+
+                    if(v >= 0)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return vicino && sopra && lontano;
+    }
+
+    static_assert(cartello_vicino_al_varco(), "il cartello compare lontano dal varco, o non compare vicino");
+
+    // --- La fase, gli incarichi aperti -------------------------------------------------------------------
+    consteval bool fasi_e_incarichi()
+    {
+        GameState p = partita();
+        bool inizio = fase_della_cronaca(p) == FaseCronaca::ULTIMATUM && incarichi_aperti(p) == 0;
+        p.quest[(QUEST_V1[0].consegnata - 64) / 8] = 0;
+        accendi_una(p, QUEST_GIOCO[0].presa);
+        bool una = incarichi_aperti(p) == 1;
+        accendi_una(p, QUEST_V1[0].consegnata);
+        bool nessuna = incarichi_aperti(p) == 0;
+        GameState fine = partita();
+        gioca_tutta(fine);
+        return inizio && una && nessuna && fase_della_cronaca(fine) == FaseCronaca::DOPO_L_ALBA;
+    }
+
+    static_assert(fasi_e_incarichi(), "la fase della cronaca o il conto degli incarichi aperti sbaglia");
+
+    // --- La sconfitta: il Riprova solo nel duello con Corrado ------------------------------------------------
+    static_assert(riprova_dopo_la_sconfitta(scena_di("B-04")) && ! riprova_dopo_la_sconfitta(scena_di("A1-04")) &&
+                  ! riprova_dopo_la_sconfitta(scena_di("B-03")) && ! riprova_dopo_la_sconfitta(-1),
+                  "il Riprova vale per una scena che non e' il duello con Corrado, o non vale per il duello");
+
+    consteval int riprove()
+    {
+        int n = 0;
+
+        for(int k = 0; k < SCENE; ++k)
+        {
+            n += riprova_dopo_la_sconfitta(k) ? 1 : 0;
+        }
+
+        return n;
+    }
+
+    static_assert(riprove() == 1, "il Riprova vale per piu' di una scena");
+    static_assert(ritirata_della_scena(scena_di("B-03")) == Ritirata::ARCO &&
+                  ritirata_della_scena(scena_di("A1-08")) == Ritirata::SUBITO &&
+                  ritirata_della_scena(scena_di("A1-04")) == Ritirata::INGRESSO &&
+                  ritirata_della_scena(scena_di("A1-07")) == Ritirata::INGRESSO,
+                  "la riga dopo la sconfitta non dice dove si e' stati riportati");
 }
 
 }

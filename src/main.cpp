@@ -31,6 +31,16 @@ int main()
     bn::core::init();
     bn::core::update();
 
+    // ritorno al titolo con A+B+Select+Start (MAI): si riparte coi tasti ancora premuti, e Select tenuto
+    // all'avvio vorrebbe dire la camminata automatica. Si aspetta che li lascino tutti.
+    if(bn::keypad::a_held() && bn::keypad::b_held() && bn::keypad::select_held() && bn::keypad::start_held())
+    {
+        while(bn::keypad::a_held() || bn::keypad::b_held() || bn::keypad::select_held() || bn::keypad::start_held())
+        {
+            bn::core::update();
+        }
+    }
+
     gubbio::g_game_state.frames = 0;
     bn::sprite_palette_ptr palette = gubbio::crea_palette_testo();
 
@@ -98,6 +108,12 @@ int main()
         gubbio::storia::dopo_il_caricamento(gubbio::g_game_state);
         esplorazione.riprendi(gubbio::mondo::AreaId(gubbio::g_game_state.area), gubbio::g_game_state.x,
                               gubbio::g_game_state.y);
+
+        // «Dove eravamo» (MAI): una volta, dopo Continua
+        if(GUBBIO_AVVIO == 0)
+        {
+            gubbio::dove_eravamo(esplorazione, palette);
+        }
     }
     else
     {
@@ -158,14 +174,28 @@ int main()
     gubbio::Storia storia;
     gubbio::ScontriSullaMappa scontri(GUBBIO_AVVIO == 0 ? &storia : nullptr);
 
+    // gli aiuti (MAI: cartelli ai varchi, promemoria di Select) solo nel gioco vero
+    esplorazione.attiva_aiuti(GUBBIO_AVVIO == 0);
+
     while(true)
     {
         ++gubbio::g_game_state.frames;
         ++gubbio::g_game_state.tempo_frames;
 
+        // A+B+Select+Start: si torna al titolo (la convenzione dei giochi GBA), prima della pausa e del promemoria
+        if(bn::keypad::a_held() && bn::keypad::b_held() && bn::keypad::select_held() && bn::keypad::start_held())
+        {
+            bn::core::reset();
+        }
+
         if(bn::keypad::start_pressed() && ! esplorazione.in_dissolvenza())
         {
             gubbio::pausa(esplorazione, palette);
+        }
+
+        if(bn::keypad::select_pressed() && GUBBIO_AVVIO == 0)
+        {
+            esplorazione.promemoria();
         }
 
         int dx = bn::keypad::left_held() ? -1 : (bn::keypad::right_held() ? 1 : 0);

@@ -55,10 +55,14 @@ public:
     VistaNumero(int x, int y, int inchiostro, const bn::sprite_palette_ptr& palette, int contorno = -1);
 
     void mostra(int valore);
+    void mostra_tempo(int secondi);             // "h:mm" (formatta_tempo)
+    void mostra_livelli(int a, int b, int c);   // "4 4 3" (formatta_livelli)
     void colloca(int x, int y);     // angolo in alto a sinistra, in pixel dello schermo
     void nascondi();
 
 private:
+    void _scrivi(const char* caratteri, int n);
+
     int _inchiostro;
     int _contorno;
     bn::sprite_tiles_ptr _tiles;

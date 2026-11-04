@@ -4,6 +4,7 @@
 #include "bn_bg_palettes.h"
 #include "bn_color.h"
 #include "bn_fixed.h"
+#include "bn_log.h"
 #include "bn_regular_bg_map_item.h"
 #include "bn_regular_bg_tiles_item.h"
 #include "bn_regular_bg_map_ptr.h"
@@ -15,6 +16,9 @@
 #include "bn_sprite_tiles_item.h"
 #include "bn_sprite_tiles_ptr.h"
 #include "bn_tile.h"
+
+#include "aiuti.h"
+#include "game_state.h"
 
 namespace gubbio
 {
@@ -104,6 +108,70 @@ namespace
     {
         return v < minimo ? minimo : (v > massimo ? massimo : v);
     }
+
+    // MAI: dove stanno gli aiuti. Il promemoria in alto (due righe del dialogo), il cartello in basso a sinistra.
+    constexpr int PROMEMORIA_X = 8;
+    constexpr int PROMEMORIA_Y = 6;
+    constexpr int CARTELLO_TESTO_X = 16;
+    constexpr int CARTELLO_TESTO_Y = 128;
+    constexpr int CARTELLO_OLTRE_Y = 140;
+
+    // La freccia del promemoria, 16x16 nella palette del testo: un triangolo chiaro col bordo scuro, verso
+    // destra, giu', sinistra o su (aiuti::Verso). Quattro tile in mappatura 1D: alto-sinistra, alto-destra,
+    // basso-sinistra, basso-destra.
+    // Il pixel (x, y) del quadrato 16x16 e' dentro la freccia? Verso destra: un triangolo con la base sulla
+    // colonna 2 (righe 1-14) e la punta sulla colonna 14; gli altri versi lo ruotano.
+    constexpr bool dentro_la_freccia(aiuti::Verso verso, int x, int y)
+    {
+        if(x < 0 || y < 0 || x > 15 || y > 15)
+        {
+            return false;
+        }
+
+        int u = verso == aiuti::Verso::DESTRA ? x : (verso == aiuti::Verso::SINISTRA ? 15 - x :
+                (verso == aiuti::Verso::GIU ? y : 15 - y));
+        int v = verso == aiuti::Verso::DESTRA || verso == aiuti::Verso::SINISTRA ? y : x;
+        int distanza = v < 8 ? 7 - v : v - 8;           // dalla mezzeria, 0..7
+        return u >= 2 && distanza <= 6 && u <= 14 - distanza * 12 / 7;
+    }
+
+    static_assert(dentro_la_freccia(aiuti::Verso::DESTRA, 14, 7) && ! dentro_la_freccia(aiuti::Verso::DESTRA, 14, 1) &&
+                  dentro_la_freccia(aiuti::Verso::SU, 7, 1) && ! dentro_la_freccia(aiuti::Verso::SU, 7, 14) &&
+                  dentro_la_freccia(aiuti::Verso::SINISTRA, 1, 8) && dentro_la_freccia(aiuti::Verso::GIU, 8, 14),
+                  "la freccia non punta dove dice");
+
+    bn::sprite_ptr crea_freccia(const bn::sprite_palette_ptr& palette, aiuti::Verso verso)
+    {
+        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(4, bn::bpp_mode::BPP_4);
+        bn::span<bn::tile> vram = *tiles.vram();
+
+        for(bn::tile& t : vram)
+        {
+            for(uint32_t& r : t.data)
+            {
+                r = 0;
+            }
+        }
+
+        for(int y = 0; y < 16; ++y)
+        {
+            for(int x = 0; x < 16; ++x)
+            {
+                if(! dentro_la_freccia(verso, x, y))
+                {
+                    continue;
+                }
+
+                // il bordo: un pixel dentro con un vicino fuori
+                bool bordo = ! dentro_la_freccia(verso, x - 1, y) || ! dentro_la_freccia(verso, x + 1, y) ||
+                             ! dentro_la_freccia(verso, x, y - 1) || ! dentro_la_freccia(verso, x, y + 1);
+                int tile = (y / 8) * 2 + (x / 8);
+                vram[tile].data[y % 8] |= uint32_t(bordo ? 1 : 2) << (4 * (x % 8));
+            }
+        }
+
+        return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 16), bn::move(tiles), palette);
+    }
 }
 
 Esplorazione::Esplorazione(const bn::sprite_palette_ptr& palette_testo) :
@@ -113,7 +181,14 @@ Esplorazione::Esplorazione(const bn::sprite_palette_ptr& palette_testo) :
     _giocatore(crea_giocatore()),
     _cartiglio(crea_cartiglio()),
     _ombra(testo::Contesto::AREA, 25, 9, INCHIOSTRO_OMBRA, palette_testo),
-    _etichetta(testo::Contesto::AREA, 24, 8, INCHIOSTRO_ETICHETTA, palette_testo)
+    _etichetta(testo::Contesto::AREA, 24, 8, INCHIOSTRO_ETICHETTA, palette_testo),
+    _palette_testo(palette_testo),
+    _promemoria_ombra(testo::Contesto::DIALOGO, PROMEMORIA_X + 1, PROMEMORIA_Y + 1, INCHIOSTRO_OMBRA, palette_testo),
+    _promemoria(testo::Contesto::DIALOGO, PROMEMORIA_X, PROMEMORIA_Y, INCHIOSTRO_ETICHETTA, palette_testo),
+    _cartello_ombra(testo::Contesto::AREA, CARTELLO_TESTO_X + 1, CARTELLO_TESTO_Y + 1, INCHIOSTRO_OMBRA, palette_testo),
+    _cartello(testo::Contesto::AREA, CARTELLO_TESTO_X, CARTELLO_TESTO_Y, INCHIOSTRO_ETICHETTA, palette_testo),
+    _oltre_ombra(testo::Contesto::AREA, CARTELLO_TESTO_X + 1, CARTELLO_OLTRE_Y + 1, INCHIOSTRO_OMBRA, palette_testo),
+    _oltre(testo::Contesto::AREA, CARTELLO_TESTO_X, CARTELLO_OLTRE_Y, INCHIOSTRO_ETICHETTA, palette_testo)
 {
     _giocatore.set_camera(_camera);
 }
@@ -313,6 +388,8 @@ void Esplorazione::aggiorna()
     // Lo sprite 16x16 ha i piedi sull'ultima riga.
     _giocatore.set_position(_e.x - _mezza_larghezza_mappa, _e.y - 7 - _mezza_altezza_mappa);
 
+    _aggiorna_aiuti();
+
     if(_attesa_etichetta > 0)
     {
         _ombra.avanza();
@@ -333,6 +410,122 @@ void Esplorazione::nascondi_etichetta()
     _ombra.nascondi();
     _etichetta.nascondi();
     _mostra_cartiglio(false);
+    _nascondi_aiuti();
+}
+
+int Esplorazione::schermo_x(int x) const
+{
+    return x - _camera.x().right_shift_integer() - _mezza_larghezza_mappa + LARGHEZZA_SCHERMO / 2;
+}
+
+int Esplorazione::schermo_y(int y) const
+{
+    return y - _camera.y().right_shift_integer() - _mezza_altezza_mappa + ALTEZZA_SCHERMO / 2;
+}
+
+void Esplorazione::_nascondi_aiuti()
+{
+    _attesa_promemoria = 0;
+    _promemoria_ombra.nascondi();
+    _promemoria.nascondi();
+    _freccia.reset();
+    _varco_cartello = -1;
+    _cartello_ombra.nascondi();
+    _cartello.nascondi();
+    _oltre_ombra.nascondi();
+    _oltre.nascondi();
+}
+
+void Esplorazione::promemoria()
+{
+    if(! _aiuti || _dissolvenza)
+    {
+        return;
+    }
+
+    // l'etichetta d'area sta nella stessa fascia in alto: lascia il posto
+    _attesa_etichetta = 0;
+    _ombra.nascondi();
+    _etichetta.nascondi();
+    _mostra_cartiglio(false);
+
+    int meta = storia::area_dell_obiettivo(g_game_state);
+    testi::TestoId testo = meta >= 0 ? storia::OBIETTIVO[g_game_state.obiettivo].testo : testi::TestoId::PROMEMORIA_NESSUNO;
+    _promemoria_ombra.mostra(testo);
+    _promemoria_ombra.rivela_tutto();
+    _promemoria.mostra(testo);
+    _promemoria.rivela_tutto();
+    _attesa_promemoria = aiuti::FRAME_PROMEMORIA;
+    _freccia.reset();
+
+    int varco = meta >= 0 ? aiuti::varco_verso_la_meta(_e, meta) : -1;
+
+    if(varco >= 0)
+    {
+        aiuti::Punto c = aiuti::centro_del_varco(mondo::area(_e.area), varco);
+        aiuti::Punto p = aiuti::posto_della_freccia(schermo_x(c.x), schermo_y(c.y));
+        _freccia = crea_freccia(_palette_testo, aiuti::verso_di(c.x - _e.x, c.y - _e.y));
+        _freccia->set_position(p.x + aiuti::LATO_FRECCIA / 2 - LARGHEZZA_SCHERMO / 2,
+                               p.y + aiuti::LATO_FRECCIA / 2 - ALTEZZA_SCHERMO / 2);
+        _freccia->set_bg_priority(0);
+    }
+
+    BN_LOG("Promemoria: obiettivo ", int(g_game_state.obiettivo), " meta ", meta, " varco ", varco);
+}
+
+void Esplorazione::_aggiorna_aiuti()
+{
+    if(! _aiuti)
+    {
+        return;
+    }
+
+    if(_attesa_promemoria > 0 && --_attesa_promemoria == 0)
+    {
+        _promemoria_ombra.nascondi();
+        _promemoria.nascondi();
+        _freccia.reset();
+    }
+
+    // il cartello del varco vicino: compare a CELLE_CARTELLO celle, sparisce allontanandosi
+    int varco = _dissolvenza ? -1 : aiuti::varco_vicino(_e);
+
+    if(varco == _varco_cartello)
+    {
+        return;
+    }
+
+    _varco_cartello = varco;
+
+    if(varco < 0)
+    {
+        _cartello_ombra.nascondi();
+        _cartello.nascondi();
+        _oltre_ombra.nascondi();
+        _oltre.nascondi();
+        return;
+    }
+
+    const mondo::Varco& v = mondo::varco_di(mondo::area(_e.area), varco);
+    testi::TestoId dove = v.destinazione >= 0 ? mondo::area(mondo::AreaId(v.destinazione)).etichetta : v.etichetta;
+    _cartello_ombra.mostra(dove);
+    _cartello_ombra.rivela_tutto();
+    _cartello.mostra(dove);
+    _cartello.rivela_tutto();
+    int k = aiuti::cartello(int(_e.area), v.destinazione);
+
+    if(k >= 0)
+    {
+        _oltre_ombra.mostra(cartelli::CARTELLO[k].oltre);
+        _oltre_ombra.rivela_tutto();
+        _oltre.mostra(cartelli::CARTELLO[k].oltre);
+        _oltre.rivela_tutto();
+    }
+    else
+    {
+        _oltre_ombra.nascondi();
+        _oltre.nascondi();
+    }
 }
 
 }

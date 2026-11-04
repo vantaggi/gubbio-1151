@@ -202,10 +202,29 @@ VistaNumero::VistaNumero(int x, int y, int inchiostro, const bn::sprite_palette_
 
 void VistaNumero::mostra(int valore)
 {
-    constexpr int L = testi::LARGHEZZA_SPRITE;
-    constexpr int A = 16;
     char cifre[FORMATTA_CARATTERI_MAX + 1] = {};
     int n = formatta_intero(valore, cifre);
+    _scrivi(cifre, n);
+}
+
+void VistaNumero::mostra_tempo(int secondi)
+{
+    char caratteri[TEMPO_CARATTERI_MAX + 1] = {};
+    int n = formatta_tempo(secondi, caratteri);
+    _scrivi(caratteri, n);
+}
+
+void VistaNumero::mostra_livelli(int a, int b, int c)
+{
+    char caratteri[LIVELLI_CARATTERI + 1] = {};
+    int n = formatta_livelli(a, b, c, caratteri);
+    _scrivi(caratteri, n);
+}
+
+void VistaNumero::_scrivi(const char* caratteri, int n)
+{
+    constexpr int L = testi::LARGHEZZA_SPRITE;
+    constexpr int A = 16;
     int x = _contorno >= 0 ? 1 : 0;     // col contorno, un pixel di margine a sinistra
     bool acceso[A][L] = {};
 
@@ -213,8 +232,8 @@ void VistaNumero::mostra(int valore)
 
     for(int i = 0; i < n; ++i)
     {
-        const stile::Glifo* g = stile::trova_glifo(char32_t(cifre[i]));
-        BN_ASSERT(g, "VistaNumero: cifra senza glifo ", int(cifre[i]));
+        const stile::Glifo* g = stile::trova_glifo(char32_t(caratteri[i]));
+        BN_ASSERT(g, "VistaNumero: carattere senza glifo ", int(caratteri[i]));
 
         testo::per_ogni_pixel(*g, x, [&](int px, int py) {
             if(px >= 0 && px < L && py >= 0 && py < A)
