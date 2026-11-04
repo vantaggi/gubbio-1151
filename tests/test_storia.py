@@ -61,7 +61,7 @@ def scritte_non_lette(scene, lette_dal_gioco):
 def codice_che_legge():
     """Il codice che legge le bandiere: la logica della storia, la scena, e le tabelle delle quest di storia.h
     (QUEST_V1; e, per le quest giocabili, QUEST_GIOCO, RACCOLTA e INDIZIO; per la gola, FORZIERE; per F10,
-    GUARDIA_FORNACE e BATTAGLIA_A_META)."""
+    GUARDIA_FORNACE e BATTAGLIA_A_META; per gli interni, DONO)."""
     codice = "".join(open(os.path.join(RADICE, p), encoding="utf-8").read()
                      for p in ("include/storia_logica.h", "src/storia_scena.cpp"))
     storia_h = open(GS.USCITA_H, encoding="utf-8").read()
@@ -70,7 +70,8 @@ def codice_che_legge():
                r"inline constexpr Raccolta RACCOLTA\[RACCOLTE\] = \{.*?\n\};",
                r"inline constexpr Indizio INDIZIO\[INDIZI\] = \{.*?\n\};",
                r"inline constexpr Forziere FORZIERE\[FORZIERI\] = \{.*?\n\};",
-               r"inline constexpr GuardiaFornace GUARDIA_FORNACE\[GUARDIE_FORNACE\] = \{.*?\n\};"]
+               r"inline constexpr GuardiaFornace GUARDIA_FORNACE\[GUARDIE_FORNACE\] = \{.*?\n\};",
+               r"inline constexpr Dono DONO\[DONI\] = \{.*?\n\};"]
     return codice + "".join(re.search(r, storia_h, re.S).group(0) for r in tabelle)
 
 
@@ -210,7 +211,7 @@ class Tabelle(unittest.TestCase):
     def test_le_scene_del_copione(self):
         self.assertEqual(len(SCENE), 20)
         self.assertEqual(sum(len(s["battute"]) for s in SCENE), 234)       # MTUT: le 4 righe dei comandi in A1-01; B-01: obiettivo della gola
-        self.assertEqual(len(NPC), 14 + 26 + 21)            # NPC d'ambiente (con Fra' Matteo), amici (con Milia e Michelino), mestieri (VIVA)
+        self.assertEqual(len(NPC), 14 + 26 + 25)            # NPC d'ambiente (con Fra' Matteo), amici (con Milia e Michelino), mestieri (VIVA, INTC)
 
     def test_ogni_bandiera_scritta_e_letta(self):
         """Letta da una scena, dal gioco (LETTE_DAL_GIOCO, ognuna col suo punto nel codice) o in elenco

@@ -15,12 +15,16 @@
   "Il Macellaio":            {"figura": "macellaio", "ancora": "santa_maria_laici"},
   "La Fornaia":              {"figura": "fornaia", "ancora": "taverna"},
   "Il Calzolaio":            {"figura": "calzolaio", "ancora": "varco A"},
-  "Il Notaio del Comune":    {"figura": "notaio", "ancora": "varco B"},
+  "Il Notaio del Comune":    {"figura": "notaio", "ancora": "posto 12 14"},
   "L'Ortolana":              {"figura": "ortolana", "ancora": "sant_agostino"},
   "Il Carbonaio":            {"figura": "carbonaio", "ancora": "calcara"},
   "Il Carpentiere":          {"figura": "carpentiere", "ancora": "varco E"},
   "Il Frecciaio":            {"figura": "frecciaio", "ancora": "santa_maria_nuova"},
   "Il Campanaro":            {"figura": "campanaro", "ancora": "varco B"},
-  "Il Viandante":            {"figura": "viandante", "ancora": "varco A"}
+  "Il Viandante":            {"figura": "viandante", "ancora": "varco A"},
+  "La Guardia della sala":   {"figura": "fante", "ancora": "posto 28 8"},
+  "L'Avventore":             {"figura": "anziano", "ancora": "posto 4 12"},
+  "Il Ricoverato dell'ospizio":{"figura": "anziano_glabro", "ancora": "posto 24 14"},
+  "Il Garzone del carradore":{"figura": "ragazzo", "ancora": "posto 10 16"}
  }
 }

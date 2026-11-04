@@ -55,7 +55,9 @@ BANDIERE_QUEST = ["INDIZIO_CARTA", "INDIZIO_ACQUA", "INDIZIO_ROCCIA", "RICCIARDO
          "FORZIERE_CRESCIA", "FORZIERE_BISCOTTI",
          # F10, i nemici che mancavano: la battaglia breve di B-03 vinta (90), le tre guardie delle fornaci di
          # Q-SM01 battute (91-93). Ogni scontro si gioca una volta sola; il salvataggio resta v3
-         "GUERRIERI_VINTI", "GUARDIA_FORNACE_1", "GUARDIA_FORNACE_2", "GUARDIA_FORNACE_3"]
+         "GUERRIERI_VINTI", "GUARDIA_FORNACE_1", "GUARDIA_FORNACE_2", "GUARDIA_FORNACE_3",
+         # INTC, gli interni: i due doni (Padellino, Valenza), dati una volta sola (94-95)
+         "DONO_PADELLINO", "DONO_VALENZA"]
 PRIMA_QUEST = 64
 TUTTE = BANDIERE + [None] * (PRIMA_QUEST - len(BANDIERE)) + BANDIERE_QUEST
 
@@ -91,6 +93,8 @@ LETTE_DAL_GIOCO = {
                           "le battute di B-04 dette una volta",
     "FORZIERE_CRESCIA": "storia::forziere_chiuso(): il forziere dello slargo della striscia nera, preso una volta",
     "FORZIERE_BISCOTTI": "storia::forziere_chiuso(): il forziere dello slargo dell'arco, preso una volta",
+    "DONO_PADELLINO": "storia::dono_dell_npc(): la Crescia di Padellino, data una volta",
+    "DONO_VALENZA": "storia::dono_dell_npc(): i Biscotti di Valenza, dati una volta",
     # F10, i nemici che mancavano (storia_logica.h, GUARDIA_FORNACE di storia.h)
     "GUERRIERI_VINTI": "storia::guerrieri_da_battere(): la battaglia breve di B-03 si gioca una volta sola",
     "GUARDIA_FORNACE_1": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
@@ -237,6 +241,13 @@ FORZIERI = [
      "quanti": 3, "testo": "FORZIERE_BISCOTTI"},
 ]
 
+# I doni degli interni (INTC, interni/COPIONE_INTERNI.md sez. 4): dopo le sue battute, una volta sola, l'amico da'
+# l'oggetto (fino al massimo che se ne porta) e dice il testo; la bandiera resta accesa.
+DONI = [
+    {"npc": "Padellino", "bandiera": "DONO_PADELLINO", "oggetto": "CRESCIA", "quanti": 1, "testo": "DONO_PADELLINO"},
+    {"npc": "Valenza", "bandiera": "DONO_VALENZA", "oggetto": "BISCOTTI", "quanti": 2, "testo": "DONO_VALENZA"},
+]
+
 AREE_NPC = {"Piazza Grande": "PIAZZA_GRANDE", "via dei Consoli": "VIA_DEI_CONSOLI",
             "Largo del Bargello": "LARGO_BARGELLO", "San Martino": "SAN_MARTINO", "Teatro Romano": "TEATRO_ROMANO",
             "via XX Settembre": "VIA_XX_SETTEMBRE", "Duomo e Palazzo Ducale": "DUOMO_DUCALE",
@@ -247,7 +258,7 @@ AREE_NPC = {"Piazza Grande": "PIAZZA_GRANDE", "via dei Consoli": "VIA_DEI_CONSOL
             # gli interni esplorabili (pezzo INTC): chi ci lavora sta dentro
             "Taverna del corso": "TAVERNA_INTERNO", "Spezieria e ospizio": "SPEZIERIA_INTERNO",
             "Bottega dei conti e dei congegni": "BOTTEGA_CONTI_INTERNO", "Bottega del carradore": "CARRADORE_INTERNO",
-            "Casa del medico": "CASA_MEDICO_INTERNO"}
+            "Casa del medico": "CASA_MEDICO_INTERNO", "Sala dei Consoli": "SALA_CONSOLI"}
 
 RIGA_BATTUTA = re.compile(r"^- ([A-Z][A-Z' ]*?)(?: \(([a-z]+)\))?: (.+)$")
 # Le righe di battaglia ("- IN BATTAGLIA (evento): PARLANTE: testo", B-04): si dicono dentro lo scontro, non
@@ -1241,6 +1252,7 @@ def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None,
     out += blocco_quest
     out += parte_gola(codici, posti_raccolte, figure) if posti_raccolte else []
     out += parte_fornaci(posti_guardie) if posti_guardie else []
+    out += parte_interni(npc, posti)
     out += ["// Le figure della gente (pezzo VIVA, tools/figure_popolo.py): 16x32, 8 tile in mappatura 1D, con la",
             "// palette della gente (PALETTE_POPOLO). Per ognuna quattro pose: riposo e respiro di fronte (STANDARD A5),",
             "// riposo di schiena e di lato (A7, chi parla si gira; la sinistra e' il lato specchiato).",
@@ -1393,6 +1405,32 @@ def parte_gola(codici, posti_raccolte, figure):
             f"inline constexpr int FIGURA_FORZIERE_APERTO = {FN.ORDINE_RACCOLTE.index('forziere_aperto')};",
             "// La fiamma sopra i ceri dell'altare, con i Ceri risvegliati (CERO_ALTARE di storia_logica.h).",
             f"inline constexpr int FIGURA_FIAMMA_CERO = {FN.ORDINE_RACCOLTE.index('fiamma_cero')};", ""]
+
+
+def parte_interni(npc, posti):
+    """Le righe di storia.h degli interni (INTC): le cose da esaminare (tools/pittore_interni.py) e i doni."""
+    import pittore_interni as PI  # noqa: E402
+    nomi = [p["nome"] for p in npc]
+    evita = {}
+    for p, (xy, borgo) in zip(npc, posti):
+        evita.setdefault(p["area"], []).append(xy)
+    doni = []
+    for d in DONI:
+        if d["npc"] not in nomi:
+            raise ErroreStoria(f"dono {d['bandiera']}: {d['npc']} non e' fra gli NPC")
+        doni.append(f"    {{ {nomi.index(d['npc'])}, {d['bandiera']}, {OGGETTI.index(d['oggetto'])}, {d['quanti']}, "
+                    f"testi::TestoId::{d['testo']} }},  // {d['npc']}: {d['quanti']} {d['oggetto']}")
+    cose = [f"    {{ int8_t(mondo::AreaId::{aid.upper()}), {tx}, {ty}, testi::TestoId::{testo} }},  // {nome}"
+            for aid, nome, tx, ty, testo in PI.cose_di_gioco(evita)]
+    return ["// --- Gli interni (INTC) ----------------------------------------------------------------------------",
+            "// Le cose da esaminare: a portata di parola dalla cella (tx, ty) il fumetto, e con A il testo di sistema.",
+            "struct Cosa", "{", "    int8_t area;                  // mondo::AreaId", "    uint8_t tx;", "    uint8_t ty;",
+            "    testi::TestoId testo;", "};", "",
+            f"inline constexpr int COSE = {len(cose)};", "inline constexpr Cosa COSA[COSE] = {"] + cose + ["};", "",
+            "// I doni: dopo le battute dell'NPC (indice in NPC_AMBIENTE), una volta sola, l'oggetto e il testo.",
+            "struct Dono", "{", "    int8_t npc;", "    uint8_t bandiera;", "    uint8_t oggetto;", "    uint8_t quanti;",
+            "    testi::TestoId testo;", "};", "",
+            f"inline constexpr int DONI = {len(doni)};", "inline constexpr Dono DONO[DONI] = {"] + doni + ["};", ""]
 
 
 def parte_fornaci(posti_guardie):

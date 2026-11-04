@@ -63,6 +63,9 @@ ACCESE_DAL_GIOCO = {"BORGO_FUORI": "storia::all_ingresso(): salire agli Stradoni
                     "CORRADO_INCONTRATO": "storia::all_incontro(): quando parte il duello di B-04, prima della battaglia",
                     "FORZIERE_CRESCIA": "storia::apri_forziere(): il forziere dello slargo della striscia nera",
                     "FORZIERE_BISCOTTI": "storia::apri_forziere(): il forziere dello slargo dell'arco",
+                    # INTB, gli interni: i doni dati una volta, dopo le battute di chi li fa
+                    "DONO_PADELLINO": "storia::dai_dono(): la Crescia di Padellino, nella taverna",
+                    "DONO_VALENZA": "storia::dai_dono(): i Biscotti di Valenza, nella spezieria",
                     # F10, i nemici che mancavano: la battaglia breve di B-03 vinta, le guardie delle fornaci battute
                     "GUERRIERI_VINTI": "storia::vinta_a_meta(): i Guerrieri della Roccia di B-03 battuti, a meta' scena",
                     "GUARDIA_FORNACE_1": "storia::batti_la_guardia(): la guardia della prima fornace battuta",

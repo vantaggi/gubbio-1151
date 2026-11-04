@@ -35,7 +35,7 @@ class Nomi(unittest.TestCase):
     def test_ogni_mestiere_del_copione_ha_figura_e_posto(self):
         nel_copione = {p["nome"] for p in TUTTI if p.get("mestiere")}
         self.assertEqual(nel_copione, set(MESTIERI))
-        self.assertEqual(len(nel_copione), 21)
+        self.assertEqual(len(nel_copione), 25)    # 21 di VIVA, piu' i 4 degli interni (INTC)
         for nome, m in MESTIERI.items():
             self.assertIn(m["figura"], FP.COSTUMI, nome)
 

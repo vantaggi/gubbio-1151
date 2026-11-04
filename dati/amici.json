@@ -19,7 +19,7 @@
   "PADELLINO":  {"nome": "Padellino", "base": "mercante", "accessorio": "fiasco_grembiule", "ancora": "posto 24 10"},
   "CIOTTO":     {"nome": "Ciotto", "base": "mercante", "accessorio": "tavoliere", "ancora": "posto 22 15", "borgo": true},
   "FAZIO":      {"nome": "Fazio", "base": "mercante", "accessorio": "chiave", "ancora": "posto 24 11", "borgo": true},
-  "LAURETTA":   {"nome": "Lauretta", "base": "popolana", "accessorio": "tavoletta_conti", "ancora": "posto 8 9", "borgo": true},
+  "LAURETTA":   {"nome": "Lauretta", "base": "popolana", "accessorio": "tavoletta_conti", "ancora": "posto 7 14", "borgo": true},
   "NICOLUCCIO": {"nome": "Nicoluccio", "base": "bambino", "accessorio": null, "ancora": "posto 10 13", "borgo": true},
   "RENZO":      {"nome": "Renzo", "base": "frate", "accessorio": "rotolo", "ancora": "sant_agostino", "borgo": true},
   "VALERIANA":  {"nome": "Valeriana", "base": "popolana", "accessorio": "lanterna_bastone", "ancora": "varco A", "borgo": true},

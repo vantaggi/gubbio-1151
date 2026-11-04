@@ -799,6 +799,7 @@ void Storia::_prepara_npc(const Esplorazione& esplorazione)
 {
     svuota();
     _area = int(esplorazione.esploratore().area);
+    _caricata = int(esplorazione.area_caricata());
     int fase = int(fase_npc(g_game_state));
     bn::sprite_palette_ptr palette = palette_npc();        // gli oggetti (raccolte, forzieri, fiamme)
     bn::sprite_palette_ptr gente = palette_popolo();       // le persone (VIVA)
@@ -1108,7 +1109,8 @@ void Storia::anima_la_gente(const Esplorazione& esplorazione)
 {
     const mondo::Esploratore& e = esplorazione.esploratore();
 
-    if(int(e.area) != _area)
+    // anche quando, a meta' dissolvenza, arriva il fondale nuovo: le persone si rimettono sui suoi lati
+    if(int(e.area) != _area || int(esplorazione.area_caricata()) != _caricata)
     {
         _prepara_npc(esplorazione);
     }
@@ -1125,6 +1127,10 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     {
         all_ingresso(g_game_state, int(e.area));
         _prepara_npc(esplorazione);
+    }
+    else if(int(esplorazione.area_caricata()) != _caricata)
+    {
+        _prepara_npc(esplorazione);     // il fondale nuovo e' arrivato a meta' dissolvenza (gli interni sono piu' piccoli)
     }
 
     // la notte (dal rientro da Porta Metauro): anche i fondali con le rampe notte, come la gente (pezzo EDI)
@@ -1267,6 +1273,16 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         }
     }
 
+    // nessuno a portata: una cosa da esaminare negli interni (INTC) accende lo stesso fumetto
+    int cosa = a_portata ? -1 : cosa_a_portata(int(e.area), e.x, e.y);
+
+    if(cosa >= 0)
+    {
+        const Cosa& c = GUBBIO_VOCE(COSA, cosa);
+        esplorazione.segnala(mondo::piedi_x(c.tx), mondo::piedi_y(c.ty), ALTEZZA_PERSONA);
+        a_portata = true;
+    }
+
     // nessuno a portata: il cartello del varco, se e' a portata, accende lo stesso fumetto (STANDARD I2)
     if(! a_portata && ! esplorazione.segnala_cartello())
     {
@@ -1276,6 +1292,13 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     if(! bn::keypad::a_pressed())
     {
         return false;
+    }
+
+    if(cosa >= 0)
+    {
+        BN_LOG("Cosa ", cosa);
+        di_sistema(GUBBIO_VOCE(COSA, cosa).testo, &esplorazione, palette_testo);
+        return true;
     }
 
     for(int j = 0; j < _indici.size(); ++j)
@@ -1329,6 +1352,19 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
                 }
 
                 svuota();   // l'infiltrato puo' essere comparso
+            }
+
+            // INTB: chi ha un dono lo da' la prima volta, dopo le sue battute
+            int dono = dono_dell_npc(g_game_state, indice);
+
+            if(dono >= 0 && dai_dono(g_game_state, dono))
+            {
+                BN_LOG("Dono ", dono);
+                audio::suona(colonna::Suono::RACCOLTA);
+                testi::TestoId id = GUBBIO_VOCE(DONO, dono).testo;
+                const Battuta b = { id, id, TipoBattuta::SISTEMA, Espressione::CALMO, 0,
+                                    { NESSUNA_BANDIERA, NESSUNA_BANDIERA }, -1 };
+                recita_battute(&b, 0, 1, palette_testo, false);
             }
 
             // MNEG: dopo le battute e l'indizio, la bottega del Venditore
