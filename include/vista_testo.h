@@ -96,12 +96,12 @@ struct TileRiquadro
 
     if(bordo_y)
     {
-        return { stile::LATO_ORIZZONTALE[(cx - 1) % 3], false, false };
+        return { GUBBIO_VOCE(stile::LATO_ORIZZONTALE, (cx - 1) % 3), false, false };
     }
 
     if(bordo_x)
     {
-        return { stile::LATO_VERTICALE[(cy - 1) % 3], false, false };
+        return { GUBBIO_VOCE(stile::LATO_VERTICALE, (cy - 1) % 3), false, false };
     }
 
     return { stile::TILE_CENTRO, false, false };

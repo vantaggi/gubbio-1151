@@ -328,8 +328,12 @@ void Riquadri::_cella(int tx, int ty, TileRiquadro t)
         return;
     }
 
+    // La radice del vecchio bug della cornice: le celle scritte a mano in VRAM vogliono l'indice ASSOLUTO del
+    // tile, cioe' quello nel blocco piu' tiles_offset(). Il blocco dei riquadri sta all'inizio della VRAM solo se
+    // e' il primo fondo creato (la schermata di prova, la storia); in battaglia viene dopo il fondale, e senza
+    // l'offset la cornice prendeva i tile del fondale.
     bn::regular_bg_map_cell_info info;
-    info.set_tile_index(t.tile);
+    info.set_tile_index(t.tile + _mappa.tiles_offset());
     info.set_horizontal_flip(t.hflip);
     info.set_vertical_flip(t.vflip);
     info.set_palette_id(_mappa.palette().id());
