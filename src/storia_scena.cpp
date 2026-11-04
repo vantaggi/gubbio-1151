@@ -1333,11 +1333,13 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         return true;
     }
 
-    // il fumetto coi tre puntini (STANDARD I2) sopra la prima persona a portata di parola: e' la stessa
-    // che risponde ad A qui sotto.
-    bool a_portata = false;
+    // il fumetto coi tre puntini (STANDARD I2) sopra la persona a portata di parola che risponde ad A qui sotto:
+    // fra quelle a portata la piu' vicina, e chi sta alle spalle di Ubaldo conta come piu' lontano (Loop 6: prima
+    // rispondeva la prima dell'elenco, anche quella dietro, se due erano vicine)
+    int scelta = -1;
+    int migliore = 0;
 
-    for(int j = 0; j < _indici.size() && ! a_portata; ++j)
+    for(int j = 0; j < _indici.size(); ++j)
     {
         Posto qui = posto_di(_indici[j]);
         int dx = e.x - mondo::piedi_x(qui.tx);
@@ -1345,9 +1347,24 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
 
         if(dx > -DISTANZA_PAROLA && dx < DISTANZA_PAROLA && dy > -DISTANZA_PAROLA && dy < DISTANZA_PAROLA)
         {
-            esplorazione.segnala(mondo::piedi_x(qui.tx), mondo::piedi_y(qui.ty), ALTEZZA_PERSONA);
-            a_portata = true;
+            // dx, dy vanno dall'NPC a Ubaldo: davanti a lui l'NPC sta dove guarda, cioe' -dx, -dy concordi
+            bool alle_spalle = dx * esplorazione.guarda_x() + dy * esplorazione.guarda_y() > 0;
+            int punti = (dx < 0 ? -dx : dx) + (dy < 0 ? -dy : dy) + (alle_spalle ? 2 * DISTANZA_PAROLA : 0);
+
+            if(scelta < 0 || punti < migliore)
+            {
+                scelta = j;
+                migliore = punti;
+            }
         }
+    }
+
+    bool a_portata = scelta >= 0;
+
+    if(a_portata)
+    {
+        Posto qui = posto_di(_indici[scelta]);
+        esplorazione.segnala(mondo::piedi_x(qui.tx), mondo::piedi_y(qui.ty), ALTEZZA_PERSONA);
     }
 
     // nessuno a portata: una cosa da esaminare negli interni (INTC) accende lo stesso fumetto
@@ -1378,82 +1395,80 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         return true;
     }
 
-    for(int j = 0; j < _indici.size(); ++j)
+    if(scelta >= 0)
     {
+        const int j = scelta;
         int indice = _indici[j];
         Posto qui = posto_di(indice);
         int dx = e.x - mondo::piedi_x(qui.tx);
         int dy = e.y - mondo::piedi_y(qui.ty);
 
-        if(dx > -DISTANZA_PAROLA && dx < DISTANZA_PAROLA && dy > -DISTANZA_PAROLA && dy < DISTANZA_PAROLA)
+        _gira_verso(j, dx, dy);
+        dialogo_inizio(&esplorazione);
+
+        if(indice == NPC + QUEST)
         {
-            _gira_verso(j, dx, dy);
-            dialogo_inizio(&esplorazione);
-
-            if(indice == NPC + QUEST)
-            {
-                _affronta_l_infiltrato(esplorazione, palette_testo);
-                dialogo_fine();
-                svuota();
-                return true;
-            }
-
-            if(indice >= NPC)
-            {
-                _parla_col_datore(indice - NPC, palette_testo);
-                dialogo_fine();
-                svuota();   // il datore puo' essere passato al dopo
-                return true;
-            }
-
-            const Npc& n = GUBBIO_VOCE(NPC_AMBIENTE, indice);
-            int fase = int(fase_npc(g_game_state));
-            recita_battute(FRASE_NPC, GUBBIO_VOCE(n.prima_frase, fase), GUBBIO_VOCE(n.frasi, fase), palette_testo, false,
-                           true);
-
-            if((n.imposta_fasi >> fase) & 1)
-            {
-                accendi_una(g_game_state, n.imposta);
-            }
-
-            // Q-SP01: dopo le sue battute (Giordano ha gia' acceso INDIZIO_ACQUA), l'indizio; col terzo, l'infiltrato
-            int quale = indizio_dell_npc(g_game_state, indice);
-
-            if(quale >= 0)
-            {
-                recita_righe(GUBBIO_VOCE(INDIZIO, quale).righe, palette_testo);
-
-                if(trova_indizio(g_game_state, quale))
-                {
-                    recita_righe(INDIZI_COMPLETI, palette_testo);
-                }
-
-                svuota();   // l'infiltrato puo' essere comparso
-            }
-
-            // INTB: chi ha un dono lo da' la prima volta, dopo le sue battute
-            int dono = dono_dell_npc(g_game_state, indice);
-
-            if(dono >= 0 && dai_dono(g_game_state, dono))
-            {
-                BN_LOG("Dono ", dono);
-                audio::suona(colonna::Suono::RACCOLTA);
-                testi::TestoId id = GUBBIO_VOCE(DONO, dono).testo;
-                const Battuta b = { id, id, TipoBattuta::SISTEMA, Espressione::CALMO, 0,
-                                    { NESSUNA_BANDIERA, NESSUNA_BANDIERA }, -1 };
-                recita_battute(&b, 0, 1, palette_testo, false);
-            }
-
-            // MNEG: dopo le battute e l'indizio, la bottega del Venditore
-            if(indice == negozio::NPC_VENDITORE)
-            {
-                attendi(1);
-                menu::bottega(s_dialogo_in_alto, false);
-            }
-
+            _affronta_l_infiltrato(esplorazione, palette_testo);
             dialogo_fine();
+            svuota();
             return true;
         }
+
+        if(indice >= NPC)
+        {
+            _parla_col_datore(indice - NPC, palette_testo);
+            dialogo_fine();
+            svuota();   // il datore puo' essere passato al dopo
+            return true;
+        }
+
+        const Npc& n = GUBBIO_VOCE(NPC_AMBIENTE, indice);
+        int fase = int(fase_npc(g_game_state));
+        recita_battute(FRASE_NPC, GUBBIO_VOCE(n.prima_frase, fase), GUBBIO_VOCE(n.frasi, fase), palette_testo, false,
+                       true);
+
+        if((n.imposta_fasi >> fase) & 1)
+        {
+            accendi_una(g_game_state, n.imposta);
+        }
+
+        // Q-SP01: dopo le sue battute (Giordano ha gia' acceso INDIZIO_ACQUA), l'indizio; col terzo, l'infiltrato
+        int quale = indizio_dell_npc(g_game_state, indice);
+
+        if(quale >= 0)
+        {
+            recita_righe(GUBBIO_VOCE(INDIZIO, quale).righe, palette_testo);
+
+            if(trova_indizio(g_game_state, quale))
+            {
+                recita_righe(INDIZI_COMPLETI, palette_testo);
+            }
+
+            svuota();   // l'infiltrato puo' essere comparso
+        }
+
+        // INTB: chi ha un dono lo da' la prima volta, dopo le sue battute
+        int dono = dono_dell_npc(g_game_state, indice);
+
+        if(dono >= 0 && dai_dono(g_game_state, dono))
+        {
+            BN_LOG("Dono ", dono);
+            audio::suona(colonna::Suono::RACCOLTA);
+            testi::TestoId id = GUBBIO_VOCE(DONO, dono).testo;
+            const Battuta b = { id, id, TipoBattuta::SISTEMA, Espressione::CALMO, 0,
+                                { NESSUNA_BANDIERA, NESSUNA_BANDIERA }, -1 };
+            recita_battute(&b, 0, 1, palette_testo, false);
+        }
+
+        // MNEG: dopo le battute e l'indizio, la bottega del Venditore
+        if(indice == negozio::NPC_VENDITORE)
+        {
+            attendi(1);
+            menu::bottega(s_dialogo_in_alto, false);
+        }
+
+        dialogo_fine();
+        return true;
     }
 
     return false;

@@ -55,6 +55,17 @@ public:
     // L'ordine di tutti gli sprite della mappa (STANDARD: chi sta piu' in basso sullo schermo sta davanti), uno
     // solo per la fila, gli NPC, la gente e i nemici: z minore = davanti. Quattro z per riga di pixel, cosi' a pari
     // y Ubaldo (-2) e i compagni (-1, 0) stanno davanti agli altri. y fino a 128 celle = 1024 px: z da -96 a 4000.
+    // Dove guarda il giocatore: (-1, 0), (1, 0), (0, -1) o (0, 1). Per scegliere con chi parlare.
+    [[nodiscard]] int guarda_x() const
+    {
+        return _direzione == DESTRA ? 1 : (_direzione == SINISTRA ? -1 : 0);
+    }
+
+    [[nodiscard]] int guarda_y() const
+    {
+        return _direzione == GIU ? 1 : (_direzione == SU ? -1 : 0);
+    }
+
     [[nodiscard]] static constexpr int z_sulla_mappa(int y)
     {
         return 4 * (1000 - y);
