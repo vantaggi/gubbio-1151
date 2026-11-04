@@ -100,3 +100,19 @@ def chioma(t, cx, cy, rx, ry, luce, base, ombra):
                 t.punto(x, y, luce if not dentro(x, y, 1, 1) else ombra if not dentro(x, y, -1, -1) else base)
             elif dentro(x, y, 1, 1):
                 t.punto(x, y, ombra)
+
+
+def luce_ai_pannelli(t, piombo, piu_chiaro, piu_scuro=None):
+    """La luce sui pezzi di vetro (L1, alla maniera della grisaglia): dentro ogni pezzo il filo che tocca
+    il piombo in alto o a sinistra prende il tono piu' chiaro (piu_chiaro: {colore: colore}); con
+    piu_scuro, quello che lo tocca in basso o a destra prende il tono piu' scuro. Da chiamare dopo piombi()."""
+    px = [riga[:] for riga in t.px]
+    for y in range(1, min(QUADRO, t.h) - 1):
+        for x in range(1, t.w - 1):
+            c = px[y][x]
+            if not c or c == piombo:
+                continue
+            if (px[y - 1][x] == piombo or px[y][x - 1] == piombo) and c in piu_chiaro:
+                t.px[y][x] = piu_chiaro[c]
+            elif piu_scuro and (px[y + 1][x] == piombo or px[y][x + 1] == piombo) and c in piu_scuro:
+                t.px[y][x] = piu_scuro[c]
