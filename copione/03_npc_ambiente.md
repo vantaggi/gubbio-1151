@@ -54,12 +54,12 @@ Con «Sì, è ora» (`ALBA_CONFERMATA`):
 
 Dilemma D3: dopo la battuta del DIGIUNO, se il gruppo ha almeno una Crescia di Pasqua e non c'è `PANE_DATO`:
 
-- SCELTA: Dalle una Crescia / Non ora
+- SCELTA: Dalle una fetta / Non ora
 
-Con «Dalle una Crescia» si toglie 1 Crescia di Pasqua e si imposta `PANE_DATO`:
+Con «Dalle una fetta» si toglie 1 Crescia di Pasqua e si imposta `PANE_DATO`:
 
 - GIORGIO (calmo): Per il bambino. Io ho mangiato stamattina, mi basta.
-- SISTEMA: Hai dato 1 Crescia di Pasqua.
+- SISTEMA: Hai dato una fetta di Crescia di Pasqua.
 
 Con «Non ora»:
 
@@ -82,7 +82,7 @@ Con «Non ora»:
 **Mastro Tano** (accanto alla Fontana dei Matti). La Patente da Matto è fuori dalla v1: Tano la promette e basta.
 
 - NOTTE: TANO: Ancora in giro? Solo i matti girano a quest'ora. Siete dei nostri, allora.
-- DIGIUNO: TANO: Oggi la fontana digiuna pure lei. Torna a città libera, e ti farò matto davvero.
+- DIGIUNO: TANO: Oggi la fontana digiuna pure lei. Torna quando la città sarà libera, e ti farò matto davvero.
 - ULTIMATUM: TANO: L'acqua di questa fonte ha visto più assedi di me. E io ne ho visti tanti.
 
 ---

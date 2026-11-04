@@ -91,7 +91,7 @@ NEMICI = [
 ]
 NEMICI_MAX = 6
 INCONTRO = [[0, 0, 1], [3, 3, 3], [2], [4, 4], [5, 5], [5], [6, 3, 3]]
-NOMI_INCONTRI = ["Pattuglia Perugina", "Imboscata agli Stradoni", "Duello con Corrado", "Il rito della Basilica",
+NOMI_INCONTRI = ["Pattuglia perugina", "Imboscata agli Stradoni", "Duello con Corrado", "Il rito della Basilica",
                  "Guerrieri della Roccia", "Guardia della fornace", "L'infiltrato delle Logge"]
 
 (HIT, SHIELD_BREAK, BARRIER_ABSORB, GUARD_REDIRECT, FERVOR_GAIN, BURN_TICK, DEFEAT, BARRIER_UP, GUARD_UP,

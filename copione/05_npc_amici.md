@@ -64,7 +64,7 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 
 **Giordano**, fontaniere. Luogo: vasca del fontaniere. Figura: anziano con secchio e corda, senza barba bianca. Nota: la battuta del DIGIUNO imposta `INDIZIO_ACQUA`; è anche il terzo indizio di Q-SP01.
 
-- NOTTE: GIORDANO: È tornata su. Tre spanne. Non so chi siate, ma vi offro da bere.
+- NOTTE: GIORDANO: È tornata su. Due spanne, giuste. Non so chi siate, ma vi offro da bere.
 - DIGIUNO: GIORDANO: Stanotte la vasca è calata di due spanne. Il condotto ha una ferita.
 - ULTIMATUM: GIORDANO: Quest'acqua viene dal Bottaccione, tre miglia di pietra. Dolce come il latte.
 
@@ -80,7 +80,7 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 
 **Giambono**, cavatore e balestriere. Luogo: sulle mura di San Pietro. Figura: soldato con la balestra. Nota: la battuta del DIGIUNO imposta `INDIZIO_ROCCIA`.
 
-- NOTTE: GIAMBONO: Il frate dice che il concilio vieta la balestra. Tiro ai perugini, pregano male.
+- NOTTE: GIAMBONO: Il frate dice che il concilio vieta la balestra. Tiro ai perugini: pregano male.
 - DIGIUNO: GIAMBONO: La pietra nera della gola si sbriciola come pane secco. Lì scava chiunque.
 - ULTIMATUM: GIAMBONO: Cecco dice che tira meglio lui. Cecco dice tante cose.
 
@@ -160,7 +160,7 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 **Renzo**, custode delle carte della pieve. Luogo: cella delle carte nella chiesa. Figura: frate senza tonsura, con un rotolo. Nota: la battuta del DIGIUNO imposta `INDIZIO_CARTA`.
 
 - NOTTE: RENZO: Le carte le ho salvate tutte. Una sola manca, e lo sapete già quale.
-- DIGIUNO: RENZO: Manca il disegno dell'acquedotto. L'aveva chiesto il capitolo, e non torna.
+- DIGIUNO: RENZO: Manca il disegno del condotto. L'aveva chiesto il capitolo, e non torna.
 - DIGIUNO: RENZO: Ho visto il sigillo dei consoli su una lettera in uscita. Non era per il papa.
 - ULTIMATUM: RENZO: Guarda: un gioco inciso dai romani. Mille anni e ancora si gioca.
 
