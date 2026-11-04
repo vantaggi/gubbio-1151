@@ -47,7 +47,10 @@ BANDIERE_QUEST = ["INDIZIO_CARTA", "INDIZIO_ACQUA", "INDIZIO_ROCCIA", "RICCIARDO
          "Q_SM01_PRESA", "Q_SA01_PRESA", "Q_SP01_PRESA", "FERRO_1", "FERRO_2", "FERRO_3",
          "ELLEBORO_1", "ELLEBORO_2", "ELLEBORO_3", "ELLEBORO_4", "ROSA_RIPRESA",
          # T2, la gola: i due forzieri negli slarghi, presi una volta (88-89)
-         "FORZIERE_CRESCIA", "FORZIERE_BISCOTTI"]
+         "FORZIERE_CRESCIA", "FORZIERE_BISCOTTI",
+         # F10, i nemici che mancavano: la battaglia breve di B-03 vinta (90), le tre guardie delle fornaci di
+         # Q-SM01 battute (91-93). Ogni scontro si gioca una volta sola; il salvataggio resta v3
+         "GUERRIERI_VINTI", "GUARDIA_FORNACE_1", "GUARDIA_FORNACE_2", "GUARDIA_FORNACE_3"]
 PRIMA_QUEST = 64
 TUTTE = BANDIERE + [None] * (PRIMA_QUEST - len(BANDIERE)) + BANDIERE_QUEST
 
@@ -83,6 +86,11 @@ LETTE_DAL_GIOCO = {
                           "le battute di B-04 dette una volta",
     "FORZIERE_CRESCIA": "storia::forziere_chiuso(): il forziere dello slargo della striscia nera, preso una volta",
     "FORZIERE_BISCOTTI": "storia::forziere_chiuso(): il forziere dello slargo dell'arco, preso una volta",
+    # F10, i nemici che mancavano (storia_logica.h, GUARDIA_FORNACE di storia.h)
+    "GUERRIERI_VINTI": "storia::guerrieri_da_battere(): la battaglia breve di B-03 si gioca una volta sola",
+    "GUARDIA_FORNACE_1": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
+    "GUARDIA_FORNACE_2": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
+    "GUARDIA_FORNACE_3": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
 }
 
 # Quelle che il gioco non legge ancora: sono in docs/bandiere_da_fare.md, con cosa dovranno fare.
@@ -118,7 +126,13 @@ INSERTI = {"A1-01": {1: "C3U", 2: "C3G", 4: "C2", 8: "C2P"}, "A1-04": {1: "C3A"}
 
 # Le battaglie delle scene (battaglia::INCONTRO). Quelle con un nemico sulla mappa partono toccandolo;
 # gli Spettri del Dubbio di A1-08 compaiono durante il rito: la scena parte entrando nella Basilica.
-BATTAGLIE = {"A1-04": 0, "A1-07": 1, "B-04": 2, "A1-08": 3}
+BATTAGLIE = {"A1-04": 0, "A1-07": 1, "B-04": 2, "A1-08": 3, "B-03": 4}
+# Le battaglie a meta' scena: prima della battuta k (nell'ordine della scena) si combatte, poi la scena va avanti.
+# In B-03 i Guerrieri della Roccia si battono dopo l'ascolto, prima del ragazzo eugubino (la regia del dilemma D2:
+# «il gruppo esce dall'arco. Battaglia breve con i due Guerrieri»). Le altre scene combattono alla fine.
+BATTAGLIA_A_META = {"B-03": 8}
+# La bandiera (64-127) che una battaglia a meta' scena accende quando e' vinta: non si rigioca.
+VINTA_A_META = {"B-03": "GUERRIERI_VINTI"}
 
 PARLANTI = {"UBALDO": "Sant'Ubaldo", "GIORGIO": "Giorgio", "ANTONIO": "Antonio", "GUIDO": "Console Guido",
             "ARALDO": "Araldo di Perugia", "CORRADO": "Corrado di Spoleto", "CECCO": "Cecco il Balestriere",
@@ -174,9 +188,17 @@ RACCOLTE = [
 AREE_DELLE_RACCOLTE = {"Q-SM01": {"TEATRO_ROMANO"},
                        "Q-SA01": {"BOTTACCIONE", "GOLA_STRISCIA", "GOLA_MIASMI", "GOLA_ARCO"}}
 # L'infiltrato di Q-SP01: sotto le Logge dei Tiratori, con il mantello e il bastone del pellegrino; la battaglia
-# e' quella delle tre spie umbre degli Stradoni (battaglia::INCONTRO 1: nella v1 non c'e' un nemico «infiltrato»).
+# e' la sua (F10, battaglia::INCONTRO 6): l'infiltrato e due spie umbre, come dice il copione.
 INFILTRATO = {"area": "PIAZZA_QUARANTA_MARTIRI", "ancora": "loggia_tiratori", "figura": ("mercante", "lanterna_bastone"),
-              "incontro": 1}
+              "incontro": 6}
+# F10: le guardie delle fornaci di Q-SM01, una per blocco di ferro («ognuna guardata da un Guerriero della Roccia
+# visibile sulla mappa. Battuto il guerriero, il blocco si raccoglie toccando la fornace»). Ogni guardia sta a due
+# celle dal suo blocco, dalla parte dello spawn 0 (chi arriva la incontra prima del ferro); la battaglia e' la
+# guardia della fornace (battaglia::INCONTRO 5); vinta, la bandiera della guardia si accende e il blocco si prende.
+GUARDIE_FORNACE = [{"raccolta": "FERRO_1", "bandiera": "GUARDIA_FORNACE_1"},
+                   {"raccolta": "FERRO_2", "bandiera": "GUARDIA_FORNACE_2"},
+                   {"raccolta": "FERRO_3", "bandiera": "GUARDIA_FORNACE_3"}]
+INCONTRO_FORNACE = 5
 
 # --- T2, la gola del Bottaccione ------------------------------------------------------------------------------
 # Le scene che partono su una cella dell'area invece che entrando: B-02 sulla prima nebbia dei miasmi («primo
@@ -987,6 +1009,23 @@ def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None)
             "struct Inserto", "{", "    uint16_t battuta;", "    int8_t regia;", "};", "",
             f"inline constexpr int INSERTI = {len(inserti)};",
             "inline constexpr Inserto INSERTO[INSERTI > 0 ? INSERTI : 1] = {"] + (inserti or ["    { 0xFFFF, -1 },"]) + ["};", ""]
+    a_meta = []
+    for s in scene:
+        if s["codice"] not in BATTAGLIA_A_META:
+            continue
+        k = BATTAGLIA_A_META[s["codice"]]
+        if s["codice"] not in BATTAGLIE or not 0 < k < len(s["battute"]):
+            raise ValueError(f"battaglia a meta' di {s['codice']}:{k}: scena senza battaglia o battuta che non c'e'")
+        prima = sum(len(t["battute"]) for t in scene[:scene.index(s)])
+        a_meta.append(f"    {{ {codici.index(s['codice'])}, {prima + k}, {TUTTE.index(VINTA_A_META[s['codice']])} }},  "
+                      f"// {s['codice']} prima della battuta {k}")
+    out += ["// Le battaglie a meta' scena: la battaglia della scena si combatte prima della battuta (indice in BATTUTA),",
+            "// non alla fine; vinta, accende la bandiera (64-127) e non si rigioca. B-03: dopo l'ascolto, prima del ragazzo.",
+            "struct BattagliaAMeta", "{", "    int8_t scena;                 // indice in SCENA", "    uint16_t battuta;",
+            "    uint8_t vinta;", "};", "",
+            f"inline constexpr int BATTAGLIE_A_META = {len(a_meta)};",
+            "inline constexpr BattagliaAMeta BATTAGLIA_A_META[BATTAGLIE_A_META > 0 ? BATTAGLIE_A_META : 1] = {"] + (
+                a_meta or ["    { -1, 0xFFFF, 255 },"]) + ["};", ""]
     # NPC
     out += ["enum class Fase : uint8_t", "{"] + [f"    {f}," for f in FASI] + ["};", "",
             "struct Npc", "{", "    int8_t area;", "    uint8_t tx;", "    uint8_t ty;",

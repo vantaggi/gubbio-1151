@@ -106,11 +106,14 @@ namespace
         { G::SPRITE_CORRADO, G::TILE_PER_POSA_CORRADO, G::LATO_CORRADO },
         { G::SPRITE_SPIA, G::TILE_PER_POSA_SPIA, G::LATO_SPIA },
         { G::SPRITE_SPETTRO, G::TILE_PER_POSA_SPETTRO, G::LATO_SPETTRO },
+        { G::SPRITE_GUERRIERO, G::TILE_PER_POSA_GUERRIERO, G::LATO_GUERRIERO },
+        { G::SPRITE_INFILTRATO, G::TILE_PER_POSA_INFILTRATO, G::LATO_INFILTRATO },
     };
 
     constexpr TestoId NOMI_SANTI[EROI] = { TestoId::BATT_UBALDO, TestoId::BATT_GIORGIO, TestoId::BATT_ANTONIO };
     constexpr TestoId NOMI_INCONTRI[INCONTRI] = {
-        TestoId::BATT_PATTUGLIA, TestoId::BATT_IMBOSCATA, TestoId::BATT_DUELLO, TestoId::BATT_RITO };
+        TestoId::BATT_PATTUGLIA, TestoId::BATT_IMBOSCATA, TestoId::BATT_DUELLO, TestoId::BATT_RITO,
+        TestoId::BATT_GUERRIERI, TestoId::BATT_FORNACE, TestoId::BATT_INFILTRATO };
 
     bn::sprite_palette_ptr crea_palette(const Colori& c)
     {
