@@ -191,8 +191,8 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 **Milia**, miniatrice del capitolo dei canonici, sorella di Ciotto e di Michelino (Milena, sorella di Cioti, studia storia dell'arte: aggiunta da Cioti il 4 nov 2026). Luogo: davanti alla casa dei canonici, dove c'è lo scrittoio. Figura: bassa, mora, capelli lunghi, la tavoletta e il pennello; porta le «pietre da leggere», due lenti di berillo che le ha molato il fratello (gli occhiali veri arriveranno un secolo dopo: qui sono un'invenzione di Michelino, scelta di gioco).
 
 - NOTTE: MILIA: Nell'angolo del foglio ho dipinto il monte con tre lumi. Piccoli, ma chi guarda li vede.
-- DIGIUNO: MILIA: Queste lenti me le ha molate Michelino da due pietre di berillo. Ci vedo fino al pelo del pennello.
-- ULTIMATUM: MILIA: Disegno ogni chiesa della città, pietra per pietra. Se bruciano, qualcuno saprà com'erano.
+- DIGIUNO: MILIA: Queste lenti le ha molate Michelino da due berilli. Ci vedo fino al pelo del pennello.
+- ULTIMATUM: MILIA: Disegno ogni chiesa, pietra per pietra. Se bruciano, qualcuno saprà com'erano.
 
 ---
 
@@ -202,4 +202,4 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 
 - NOTTE: MICHELINO: Un giorno farò un uomo di legno che cammina da solo. Stanotte mi basta che giri la ruota.
 - DIGIUNO: MICHELINO: Sulla mia ruota ho inciso tre triangoli d'oro. Saggezza, forza e coraggio, diceva la nonna.
-- ULTIMATUM: MICHELINO: Ogni dente di questa ruota l'ho disegnato io, di notte. Ciotto dice che conto male. Lui conta i denari.
+- ULTIMATUM: MICHELINO: Ogni dente di questa ruota l'ho disegnato io. Ciotto dice che conto male: lui conta i denari.

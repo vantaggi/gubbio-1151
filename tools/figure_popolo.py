@@ -134,11 +134,20 @@ def _busto(f, s, c, direzione):
     cx, cy = s.collo
     bx, by = s.bacino
     mezzo = (2.6 if direzione == "destra" else 3.8) + c.largo
+    if direzione == "destra":
+        cx += 1                     # il busto di lato e' inclinato di un pixel in avanti (revisione, 4 nov)
     if c.lunga:
         orlo = max(s.piede_a[1], s.piede_b[1]) - 1.5
         largo_orlo = (3.6 if direzione == "destra" else 4.8) + c.largo
-        punti = [(cx - mezzo, cy), (cx + mezzo, cy), (bx + mezzo, by), (bx + largo_orlo, orlo),
-                 (bx - largo_orlo, orlo), (bx - mezzo, by)]
+        if direzione == "destra":
+            # di lato la veste lunga segue il passo: l'orlo va dal piede dietro a quello davanti
+            avanti = max(s.piede_a[0], s.piede_b[0]) + 1.5
+            dietro = min(s.piede_a[0], s.piede_b[0]) - 1.5
+            punti = [(cx - mezzo, cy), (cx + mezzo, cy), (bx + mezzo, by), (max(avanti, bx + 3), orlo),
+                     (min(dietro, bx - 3), orlo), (bx - mezzo, by)]
+        else:
+            punti = [(cx - mezzo, cy), (cx + mezzo, cy), (bx + mezzo, by), (bx + largo_orlo, orlo),
+                     (bx - largo_orlo, orlo), (bx - mezzo, by)]
     else:
         orlo = by + 3.5 * s.scala
         largo_orlo = mezzo + 1
@@ -168,7 +177,7 @@ def _testa(f, s, c, direzione):
     mat, stile = c.capelli
     # i capelli e i copricapi: dettagli piatti sopra la testa, a meno che non siano un pezzo (velo, cappuccio)
     if stile in ("velo", "cappuccio"):
-        punti = [(tx - r - 1, ty + 4), (tx - r - 0.8, ty - 1.5), (tx - 1.5, ty - r - 1.2), (tx + 1.5, ty - r - 1.2),
+        punti = [(tx - r - 1, ty + 4), (tx - r - 0.8, ty - 1.5), (tx - 1.5, ty - r - 0.5), (tx + 1.5, ty - r - 0.5),
                  (tx + r + 0.8, ty - 1.5), (tx + r + 1, ty + 4)]
         f.parte_nuova(stile, mat).poligono(punti)
         if direzione != "su":
@@ -202,14 +211,42 @@ def _testa(f, s, c, direzione):
         if stile == "berretto":
             f.dettaglio_rett(tx - r - 0.5, ty - 1.5, 2 * r + 1, 1, (mat, 0))
     if c.barba and direzione != "su":
-        x0 = tx - 2 if direzione == "giu" else tx - 0.5
-        f.dettaglio_rett(x0, ty + 1.5, 4 if direzione == "giu" else 3, 2, (c.barba, 1))
-        f.dettaglio_rett(x0 + 1, ty + 3.5, 2, 1, (c.barba, 0))
+        # la barba parte sotto la bocca (revisione del custode visivo, 4 nov): fra naso e barba resta una riga di
+        # pelle, con la bocca di un pixel nel tono d'ombra della pelle; poi il mento e la punta
+        if direzione == "giu":
+            f.dettaglio(tx - 0.3, ty + 2, ("pelle", 0))
+            f.dettaglio_rett(tx - 2, ty + 3, 4, 1, (c.barba, 1))
+            f.dettaglio_rett(tx - 1, ty + 4, 2, 1, (c.barba, 0))
+        else:
+            f.dettaglio(tx + 2, ty + 2, ("pelle", 0))
+            f.dettaglio_rett(tx, ty + 3, 3, 1, (c.barba, 1))
+            f.dettaglio(tx + 1, ty + 4, (c.barba, 0))
     if direzione == "giu":
         f.dettaglio(tx - 1.5, ty + 0.4, "occhio")
         f.dettaglio(tx + 1.0, ty + 0.4, "occhio")
     elif direzione == "destra":
         f.dettaglio(tx + 1.3, ty + 0.4, "occhio")
+
+
+_BASI = {t[1] for t in MATERIALI.values()}
+LUCI = {t[2]: t[1] for t in MATERIALI.values() if t[2] != t[1] and t[2] not in _BASI}   # luce -> base
+
+
+def senza_orfani(px):
+    """P3: un pixel di luce che non tocca (negli 8 vicini) nessun altro pixel del suo tono torna al tono base del
+    materiale: la luce corre continua lungo il bordo o non c'e'. Occhi e contorno non si toccano."""
+    out = [r[:] for r in px]
+    h, w = len(px), len(px[0])
+    for y in range(h):
+        for x in range(w):
+            v = px[y][x]
+            if v not in LUCI:
+                continue
+            vicini = [px[y + j][x + i] for j in (-1, 0, 1) for i in (-1, 0, 1)
+                      if (i or j) and 0 <= x + i < w and 0 <= y + j < h]
+            if v not in vicini:
+                out[y][x] = LUCI[v]
+    return out
 
 
 def figura(c, direzione="giu", animazione="riposo", fotogramma=0):
@@ -247,7 +284,7 @@ def figura(c, direzione="giu", animazione="riposo", fotogramma=0):
         _braccio(f, s, c, spalla_a, s.mano_a)
     if c.accessorio and not getattr(c.accessorio, "dietro", False):
         c.accessorio(f, s, direzione)
-    out = [riga[:LATO_W] for riga in f.pixel()[:LATO_H]]
+    out = senza_orfani([riga[:LATO_W] for riga in f.pixel()[:LATO_H]])
     # l'ombra portata sotto i piedi (L4): un'ellisse 10x3 al centro dei piedi, dietro alla figura
     ox = (s.piede_a[0] + s.piede_b[0]) / 2
     for y in (LATO_H - 2, LATO_H - 1):
@@ -734,11 +771,11 @@ COSTUMI = {
     "carpentiere": POPOLANO.con(veste="biondo", capelli=("cuoio", "corti"), accessorio=ascia),
     "frecciaio": POPOLANO.con(veste="verde", capelli=("biondo", "corti"), accessorio=fascio_frecce),
     "campanaro": FRATE.con(veste="lana", capelli=("lana", "cappuccio"), accessorio=corda_campana),
-    "pellegrino": POPOLANO.con(veste="cuoio", lunga=True, mantello="lana", capelli=("cuoio", "corti"),
+    "viandante": POPOLANO.con(veste="cuoio", lunga=True, mantello="lana", capelli=("cuoio", "corti"),
                                barba="cuoio", accessorio=bordone),
     # i fratelli di Ciotto (copione/05_npc_amici.md): Milia, bassa e mora, coi capelli lunghi e le sue lenti;
     # Michelino col berretto verde e l'ingranaggio
-    "milia": POPOLANA.con(veste="verde", grembiule=None, capelli=("scuro", "lunghi"), giu=2,
+    "milia": POPOLANA.con(veste="verde", grembiule=None, capelli=("scuro", "lunghi"), giu=3,
                           accessorio=con_occhiali_e_tavola),
     "michelino": POPOLANO.con(veste="lana", capelli=("verde", "berretto"), cintura=("cuoio", 0), accessorio=ingranaggio),
     # i passanti (src/folla.cpp): camminano in tre direzioni

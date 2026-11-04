@@ -167,8 +167,8 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 - DIGIUNO: CAMPANARO: La campana tace. Il silenzio della città suona più forte di lei.
 - ULTIMATUM: CAMPANARO: Se arrivano, suono a martello: tre colpi, poi tre, poi tre. Ricordatevelo.
 
-**Il Pellegrino**
+**Il Viandante**
 
-- NOTTE: PELLEGRINO: Quando apriranno le porte riprenderò la strada. Ma racconterò di questa città.
-- DIGIUNO: PELLEGRINO: Digiuno anch'io. Per un pellegrino è il pane di ogni giorno.
-- ULTIMATUM: PELLEGRINO: Andavo a Roma e mi hanno chiuso dentro Gubbio. Il Signore ha i suoi piani.
+- NOTTE: VIANDANTE: Quando apriranno le porte riprenderò la strada. Ma racconterò di questa città.
+- DIGIUNO: VIANDANTE: Digiuno anch'io. Per chi è in cammino è il pane di ogni giorno.
+- ULTIMATUM: VIANDANTE: Andavo a Roma e mi hanno chiuso dentro Gubbio. Il Signore ha i suoi piani.

@@ -638,6 +638,7 @@ void Storia::svuota()
     _figura.clear();
     _posa.clear();
     _parla = -1;
+    _folla.svuota();
     _raccolte.clear();
     _gola.clear();
     _area = -1;
@@ -650,6 +651,7 @@ void Storia::_prepara_npc(const Esplorazione& esplorazione)
     int fase = int(fase_npc(g_game_state));
     bn::sprite_palette_ptr palette = palette_npc();        // gli oggetti (raccolte, forzieri, fiamme)
     bn::sprite_palette_ptr gente = palette_popolo();       // le persone (VIVA)
+    _folla.prepara(_area, fase, esplorazione, gente);
 
     for(int i = 0; i < NPC; ++i)
     {
@@ -897,6 +899,19 @@ void Storia::_gira_verso(int j, int dx, int dy)
     _parla = j;
 }
 
+void Storia::anima_la_gente(const Esplorazione& esplorazione)
+{
+    const mondo::Esploratore& e = esplorazione.esploratore();
+
+    if(int(e.area) != _area)
+    {
+        _prepara_npc(esplorazione);
+    }
+
+    _anima_npc();
+    _folla.aggiorna(esplorazione, e.x, e.y, int(g_game_state.frames));
+}
+
 bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo)
 {
     const mondo::Esploratore& e = esplorazione.esploratore();
@@ -908,6 +923,7 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     }
 
     _anima_npc();
+    _folla.aggiorna(esplorazione, e.x, e.y, int(g_game_state.frames));
 
     // l'uscita del Condotto chiusa durante il duello (T2): si urta come un muro, e lo si dice
     esplorazione.chiudi_varco(varco_chiuso(g_game_state, int(e.area)));
@@ -1068,13 +1084,13 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
             }
 
             // Q-SP01: dopo le sue battute (Giordano ha gia' acceso INDIZIO_ACQUA), l'indizio; col terzo, l'infiltrato
-            int k = indizio_dell_npc(g_game_state, indice);
+            int quale = indizio_dell_npc(g_game_state, indice);
 
-            if(k >= 0)
+            if(quale >= 0)
             {
-                recita_righe(GUBBIO_VOCE(INDIZIO, k).righe, palette_testo);
+                recita_righe(GUBBIO_VOCE(INDIZIO, quale).righe, palette_testo);
 
-                if(trova_indizio(g_game_state, k))
+                if(trova_indizio(g_game_state, quale))
                 {
                     recita_righe(INDIZI_COMPLETI, palette_testo);
                 }
@@ -1253,6 +1269,58 @@ void prova_prologo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& pal
            ", gruppo ", int(gruppo(g_game_state, 1)), ", Pattuglia sulla mappa dopo ",
            scontro_attivo(g_game_state, INCONTRO_DEL_TEATRO) ? "ANCORA" : "sparita");
     BN_LOG("Istantanee finite");
+}
+
+
+void prova_folla(Esplorazione& esplorazione)
+{
+    constexpr mondo::AreaId AREE[] = {
+        mondo::AreaId::PIAZZA_GRANDE, mondo::AreaId::VIA_DEI_CONSOLI, mondo::AreaId::LARGO_BARGELLO,
+        mondo::AreaId::SAN_MARTINO, mondo::AreaId::PIAZZA_QUARANTA_MARTIRI, mondo::AreaId::SAN_PIETRO,
+        mondo::AreaId::VIA_XX_SETTEMBRE, mondo::AreaId::SANT_AGOSTINO, mondo::AreaId::SANT_ANDREA,
+        mondo::AreaId::DUOMO_DUCALE,
+    };
+    constexpr const char* FASI[] = { "ultimatum", "digiuno", "notte" };
+
+    for(int fase = 0; fase < 3; ++fase)
+    {
+        if(fase == 1)
+        {
+            accendi_una(g_game_state, int(Bandiera::CITTA_IN_DIGIUNO));
+        }
+
+        if(fase == 2)
+        {
+            accendi_una(g_game_state, int(Bandiera::RIENTRO_PORTA_METAURO));
+        }
+
+        for(mondo::AreaId area : AREE)
+        {
+            Storia gente;
+            esplorazione.entra(area, 0);
+
+            for(int f = 0; f < 200; ++f)
+            {
+                ++g_game_state.frames;
+                esplorazione.aggiorna();
+                gente.anima_la_gente(esplorazione);
+
+                if(f == 100 || f == 180)
+                {
+                    BN_LOG("Istantanea folla_", int(area), "_", FASI[fase], "_", f == 100 ? 1 : 2);
+                }
+
+                bn::core::update();
+            }
+        }
+    }
+
+    BN_LOG("Istantanee finite");
+
+    while(true)
+    {
+        bn::core::update();
+    }
 }
 
 }

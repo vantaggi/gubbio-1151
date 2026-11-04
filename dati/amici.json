@@ -25,7 +25,7 @@
   "VALERIANA":  {"nome": "Valeriana", "base": "popolana", "accessorio": "lanterna_bastone", "ancora": "varco A", "borgo": true},
   "RAGNETTO":   {"nome": "Ragnetto", "base": "soldato_nudo", "accessorio": "trave", "ancora": "edificio calcara", "borgo": true},
   "ANDREUCCIO": {"nome": "Andreuccio", "base": "soldato", "accessorio": "scudo_monte", "ancora": "porta_romana"},
-  "MILIA":      {"nome": "Milia", "base": "popolana", "accessorio": "libro", "ancora": "canonici", "figura": "milia"},
+  "MILIA":      {"nome": "Milia", "base": "popolana", "accessorio": "libro", "ancora": "duomo", "figura": "milia"},
   "MICHELINO":  {"nome": "Michelino", "base": "mercante", "accessorio": "chiave", "ancora": "santa_maria_nuova", "figura": "michelino"}
  }
 }

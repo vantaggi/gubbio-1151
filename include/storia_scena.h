@@ -5,6 +5,8 @@
 #include "bn_sprite_ptr.h"
 #include "bn_vector.h"
 
+#include "folla_vista.h"
+
 #include "storia.h"
 #include "storia_logica.h"
 
@@ -30,6 +32,9 @@ public:
     // pronta nell'area, fa parlare l'NPC davanti al giocatore se si preme A. True se ha recitato.
     bool aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
 
+    // Solo la gente (prova_folla): rifa' NPC e folla se l'area e' cambiata, poi respiro e passi. Niente scene.
+    void anima_la_gente(const Esplorazione& esplorazione);
+
     // Recita una scena: battute, eventuale battaglia; ritorna true se la scena e' finita (e le sue
     // bandiere accese). Con automatica=true non aspetta tasti; la battaglia la gioca il pilota (con le
     // istantanee) se battaglia_col_pilota, se no la da' per vinta (la prova GUBBIO_AVVIO=8).
@@ -52,7 +57,8 @@ private:
     bn::vector<int, PERSONE_MAX> _indici;
     bn::vector<uint8_t, PERSONE_MAX> _figura;     // la figura di ogni persona (FIGURA_NPC)
     bn::vector<uint8_t, PERSONE_MAX> _posa;       // la posa caricata (POSA_RIPOSO ... POSA_LATO)
-    int _parla = -1;                              // chi si e' girato per parlare: torna a posto al frame dopo
+    int _parla = -1;
+    Folla _folla;                                 // chi passa per le strade e gli animali (VIVA)                              // chi si e' girato per parlare: torna a posto al frame dopo
     bn::vector<bn::sprite_ptr, storia::RACCOLTE> _raccolte;
     // la gola (T2): i soldati di B-03 e i forzieri (chiusi o aperti); le guardie delle fornaci e le fiamme dei
     // ceri della Basilica (F10)
@@ -81,6 +87,10 @@ void prova_prologo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& pal
 // GUBBIO_AVVIO=11: le cinque figure degli NPC (FIGURA_NPC) in fila in Piazza Grande accanto al
 // giocatore, per l'istantanea "figure_npc".
 [[noreturn]] void prova_figure_npc(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
+
+// GUBBIO_AVVIO=12: la citta' viva (VIVA): per ogni area della citta' e ogni fase (ultimatum, digiuno, notte) gli
+// NPC e la folla senza scene, due istantanee a distanza di 80 frame ("Istantanea folla_<area>_<fase>_<n>").
+[[noreturn]] void prova_folla(Esplorazione& esplorazione);
 
 }
 

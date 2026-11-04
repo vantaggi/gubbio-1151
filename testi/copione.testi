@@ -457,11 +457,11 @@ NPC_37_01                 | DIALOGO | Hanno bruciato tre case. Ne abbiamo salvat
 NPC_37_02                 | DIALOGO | Porta Romana è mia finché c'è luce. Poi è di Dio, e un po' anche mia.
 NPC_37_03                 | DIALOGO | Le mura qui sono basse. Il borgo è ancora più basso, monsignore.
 NPC_38_00                 | DIALOGO | Nell'angolo del foglio ho dipinto il monte con tre lumi. Piccoli, ma chi guarda li vede.
-NPC_38_01                 | DIALOGO | Queste lenti me le ha molate Michelino da due pietre di berillo. Ci vedo fino al pelo del pennello.
-NPC_38_02                 | DIALOGO | Disegno ogni chiesa della città, pietra per pietra. Se bruciano, qualcuno saprà com'erano.
+NPC_38_01                 | DIALOGO | Queste lenti le ha molate Michelino da due berilli. Ci vedo fino al pelo del pennello.
+NPC_38_02                 | DIALOGO | Disegno ogni chiesa, pietra per pietra. Se bruciano, qualcuno saprà com'erano.
 NPC_39_00                 | DIALOGO | Un giorno farò un uomo di legno che cammina da solo. Stanotte mi basta che giri la ruota.
 NPC_39_01                 | DIALOGO | Sulla mia ruota ho inciso tre triangoli d'oro. Saggezza, forza e coraggio, diceva la nonna.
-NPC_39_02                 | DIALOGO | Ogni dente di questa ruota l'ho disegnato io, di notte. Ciotto dice che conto male. Lui conta i denari.
+NPC_39_02                 | DIALOGO | Ogni dente di questa ruota l'ho disegnato io. Ciotto dice che conto male: lui conta i denari.
 NPC_40_00                 | DIALOGO | Stanotte non ho niente da gridare. È la prima volta in vent'anni.
 NPC_40_01                 | DIALOGO | Udite... ma piano. Il vescovo ha chiesto silenzio, e io grido sottovoce.
 NPC_40_02                 | DIALOGO | Udite! Per ordine dei consoli, chi ha un'arma la porti in piazza entro il vespro!
@@ -522,7 +522,7 @@ NPC_59_00                 | DIALOGO | All'alba suono a festa o a martello. Speri
 NPC_59_01                 | DIALOGO | La campana tace. Il silenzio della città suona più forte di lei.
 NPC_59_02                 | DIALOGO | Se arrivano, suono a martello: tre colpi, poi tre, poi tre. Ricordatevelo.
 NPC_60_00                 | DIALOGO | Quando apriranno le porte riprenderò la strada. Ma racconterò di questa città.
-NPC_60_01                 | DIALOGO | Digiuno anch'io. Per un pellegrino è il pane di ogni giorno.
+NPC_60_01                 | DIALOGO | Digiuno anch'io. Per chi è in cammino è il pane di ogni giorno.
 NPC_60_02                 | DIALOGO | Andavo a Roma e mi hanno chiuso dentro Gubbio. Il Signore ha i suoi piani.
 QST_SM01_00               | DIALOGO | Fornaci spente, ragazzo. Spoleto ha bloccato al passo il ferro del Monte Calvo.
 QST_SM01_01               | DIALOGO | E il ferro già colato l'hanno ammucchiato nelle fornaci basse del Teatro Romano.
