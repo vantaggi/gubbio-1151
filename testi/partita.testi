@@ -17,5 +17,5 @@ PAUSA_NON_SALVATO         | DIALOGO | Il salvataggio non è riuscito.
 STORIA_FINE               | DIALOGO | Fine della prima cronaca. La cronaca continua...
 # T2, la gola del Bottaccione: i forzieri negli slarghi e l'uscita del Condotto chiusa durante il duello
 FORZIERE_CRESCIA          | DIALOGO | Un forziere fra i sassi. Ricevi 2 Crescia di Pasqua.
-FORZIERE_BISCOTTI         | DIALOGO | Un forziere fra i sassi. Ricevi 3 Biscotti all'Anice di Sant'Ubaldo.
+FORZIERE_BISCOTTI         | DIALOGO | Un forziere fra i sassi. Ricevi 3 Biscotti all'Anice.
 CONDOTTO_CHIUSO           | DIALOGO | Corrado vi sbarra il ritorno. Da qui si esce solo battendolo.

@@ -41,7 +41,7 @@ PARLANTE_RICCIARDO        | HUD     | Ricciardo
 PARLANTE_RUFINO           | HUD     | Mastro Rufino
 PARLANTE_SPETTRO          | HUD     | Spettro del Dubbio
 PARLANTE_SPIA             | HUD     | Spia umbra
-PARLANTE_UBALDO           | HUD     | Sant'Ubaldo
+PARLANTE_UBALDO           | HUD     | Ubaldo
 PARLANTE_VALENZA          | HUD     | Valenza
 PARLANTE_VALERIANA        | HUD     | Valeriana
 PARLANTE_VANNI            | HUD     | Vanni
@@ -201,7 +201,7 @@ C_A1_08_11                | DIALOGO | Il Cero dell'elmo si accende sopra Giorgio
 C_A1_08_12                | DIALOGO | Il Cero della fiamma si accende sopra Antonio. Il suo fuoco si alza fino alle volte.
 C_A1_08_13                | DIALOGO | Padre... cos'è questo peso? Non è l'armatura.
 C_A1_08_14                | DIALOGO | È la città, Giorgio. Adesso la porti anche tu.
-C_A1_08_15                | DIALOGO | Nuove abilità: Giudizio della Verga, Bastione Azzurro, Fuoco di Sant'Antonio.
+C_A1_08_15                | DIALOGO | Nuove abilità: Giudizio della Verga, Bastione Azzurro, Fuoco di Antonio.
 C_A1_08_16                | DIALOGO | Nessuno canterà il tuo nome, cavaliere. Morirai su un sentiero, senza gloria.
 C_A1_08_17                | DIALOGO | Li salvi, eremita, e domani ti chiuderanno di nuovo la porta.
 C_A1_08_18                | DIALOGO | Hai ordinato la fame a una città intera. Quanti bambini piangono stanotte, vescovo?
@@ -488,7 +488,7 @@ QST_SA01_08               | DIALOGO | Quattro radici di elleboro, monsignore. Su
 QST_SA01_09               | DIALOGO | Quattro radici! E sono ancora umide. Siete scesi davvero laggiù.
 QST_SA01_10               | DIALOGO | Non me lo dite, cosa c'era. Me lo racconterete quando sarà finita.
 QST_SA01_11               | DIALOGO | Prendete questi biscotti all'anice. Tolgono il veleno dal sangue, e la paura dallo stomaco.
-QST_SA01_12               | DIALOGO | Ricevi 3 Biscotti all'Anice di Sant'Ubaldo.
+QST_SA01_12               | DIALOGO | Ricevi 3 Biscotti all'Anice.
 QST_SA01_13               | DIALOGO | Sant'Andrea ti è grato.
 QST_SA01_14               | DIALOGO | E l'acqua stanotte è tornata chiara. Questo, monsignore, non l'ha fatto l'elleboro.
 QST_SA01_15               | DIALOGO | Hai raccolto una radice di elleboro.

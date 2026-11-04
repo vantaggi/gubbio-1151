@@ -147,7 +147,7 @@ BATTAGLIA_A_META = {"B-03": 8}
 # La bandiera (64-127) che una battaglia a meta' scena accende quando e' vinta: non si rigioca.
 VINTA_A_META = {"B-03": "GUERRIERI_VINTI"}
 
-PARLANTI = {"UBALDO": "Sant'Ubaldo", "GIORGIO": "Giorgio", "ANTONIO": "Antonio", "GUIDO": "Console Guido",
+PARLANTI = {"UBALDO": "Ubaldo", "GIORGIO": "Giorgio", "ANTONIO": "Antonio", "GUIDO": "Console Guido",
             "ARALDO": "Araldo di Perugia", "CORRADO": "Corrado di Spoleto", "CECCO": "Cecco il Balestriere",
             "GUERRIERO": "Guerriero di Spoleto", "SPIA": "Spia umbra", "SPETTRO": "Spettro del Dubbio",
             "NELLO": "Nello", "ANDREUCCIO": "Andreuccio", "FAZIO": "Fazio", "LAURETTA": "Lauretta",

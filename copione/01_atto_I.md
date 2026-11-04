@@ -310,7 +310,7 @@ Regia: tre pilastri di legno e luce si alzano dall'altare, ruotano e si ergono. 
 - SISTEMA: Il Cero della fiamma si accende sopra Antonio. Il suo fuoco si alza fino alle volte.
 - GIORGIO (preoccupato): Padre... cos'è questo peso? Non è l'armatura.
 - UBALDO (calmo): È la città, Giorgio. Adesso la porti anche tu.
-- SISTEMA: Nuove abilità: Giudizio della Verga, Bastione Azzurro, Fuoco di Sant'Antonio.
+- SISTEMA: Nuove abilità: Giudizio della Verga, Bastione Azzurro, Fuoco di Antonio.
 
 > Decisione di Cioti (1 novembre 2026). Colori delle camicie (giallo, azzurro, nero), fazzoletti rossi e corporazioni (muratori, merciai, contadini) sono della Festa dei Ceri di oggi e dei ceraioli, non dei personaggi: nel copione non compaiono. I tre si riconoscono dagli attributi: Ubaldo dalla mitra e dalla verga, Giorgio da armatura e lancia, Antonio dal saio e dal fuoco.
 

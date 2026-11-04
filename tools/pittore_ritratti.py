@@ -293,7 +293,7 @@ def schermo(A, rt, p, nome, e, frase):
             if c is not None:
                 img.putpixel((dia["ritratto"][0] + xx, dia["ritratto"][1] + 1 + yy), S.rgb_di(c))
     cn = C["disposizione"]["cartiglio_nome"]
-    etichetta = {"Ubaldo": "Sant'Ubaldo", "Guido": "Console Guido"}.get(nome, nome)
+    etichetta = {"Guido": "Console Guido"}.get(nome, nome)
     larghezza = sum(len(A.F["glifi"][ch][0]) + A.F["spaziatura"] for ch in S.normalizza(A.F, etichetta))
     A.cartiglio(img, cn["x"], cn["y"] - 4, max(5, (larghezza + 12 + 7) // 8))
     A.testo(img, cn["x"] + 6, cn["y"] + 1, etichetta, A.rgb(C["colori"][2]))

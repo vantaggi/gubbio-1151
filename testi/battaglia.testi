@@ -1,15 +1,15 @@
 # I testi della scena di battaglia (F4, parte 2): nomi, comandi, scritte, esiti e il menu di prova
 # degli scontri (GUBBIO_AVVIO=4). Formato come testi/prova.testi.
 
-BATT_UBALDO               | DIALOGO | Sant'Ubaldo
-BATT_GIORGIO              | DIALOGO | San Giorgio
-BATT_ANTONIO              | DIALOGO | Sant'Antonio
+BATT_UBALDO               | DIALOGO | Ubaldo
+BATT_GIORGIO              | DIALOGO | Giorgio
+BATT_ANTONIO              | DIALOGO | Antonio
 BATT_ATTACCO              | DIALOGO | Attacco
 BATT_MURO                 | DIALOGO | Muro della Fede
 BATT_GIUDIZIO             | DIALOGO | Giudizio della Verga
 BATT_FENDENTE             | DIALOGO | Fendente del Drago
 BATT_BASTIONE             | DIALOGO | Bastione Azzurro
-BATT_FUOCO                | DIALOGO | Fuoco di Sant'Antonio
+BATT_FUOCO                | DIALOGO | Fuoco di Antonio
 BATT_CARICA               | DIALOGO | Carica la Suprema
 BATT_SUPREMA              | DIALOGO | Scatena la Suprema
 BATT_IMMUNE               | HUD     | IMMUNE
@@ -26,8 +26,8 @@ BATT_FORNACE              | DIALOGO | Guardia della fornace
 BATT_INFILTRATO           | DIALOGO | L'infiltrato delle Logge
 BATT_SCEGLI               | DIALOGO | Su e giù per scegliere, A per confermare.
 BATT_BERSAGLIO            | DIALOGO | Su e giù per il bersaglio, A conferma, B torna.
-BATT_SALE_UBALDO          | DIALOGO | Sant'Ubaldo sale di livello!
-BATT_SALE_GIORGIO         | DIALOGO | San Giorgio sale di livello!
-BATT_SALE_ANTONIO         | DIALOGO | Sant'Antonio sale di livello!
+BATT_SALE_UBALDO          | DIALOGO | Ubaldo sale di livello!
+BATT_SALE_GIORGIO         | DIALOGO | Giorgio sale di livello!
+BATT_SALE_ANTONIO         | DIALOGO | Antonio sale di livello!
 BATT_CRESCIA              | DIALOGO | Crescia di Pasqua
 BATT_BISCOTTI             | DIALOGO | Biscotti all'Anice
