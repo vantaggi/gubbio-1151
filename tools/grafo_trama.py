@@ -61,7 +61,12 @@ ACCESE_DAL_GIOCO = {"BORGO_FUORI": "storia::all_ingresso(): salire agli Stradoni
                     # T2, la gola: l'incontro con Corrado acceso quando il duello parte (anche se si perde), i forzieri
                     "CORRADO_INCONTRATO": "storia::all_incontro(): quando parte il duello di B-04, prima della battaglia",
                     "FORZIERE_CRESCIA": "storia::apri_forziere(): il forziere dello slargo della striscia nera",
-                    "FORZIERE_BISCOTTI": "storia::apri_forziere(): il forziere dello slargo dell'arco"}
+                    "FORZIERE_BISCOTTI": "storia::apri_forziere(): il forziere dello slargo dell'arco",
+                    # F10, i nemici che mancavano: la battaglia breve di B-03 vinta, le guardie delle fornaci battute
+                    "GUERRIERI_VINTI": "storia::vinta_a_meta(): i Guerrieri della Roccia di B-03 battuti, a meta' scena",
+                    "GUARDIA_FORNACE_1": "storia::batti_la_guardia(): la guardia della prima fornace battuta",
+                    "GUARDIA_FORNACE_2": "storia::batti_la_guardia(): la guardia della seconda fornace battuta",
+                    "GUARDIA_FORNACE_3": "storia::batti_la_guardia(): la guardia della terza fornace battuta"}
 
 
 def problema(gravita, codice, dove, testo, proposta=""):

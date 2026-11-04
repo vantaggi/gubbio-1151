@@ -21,8 +21,14 @@ import battaglia_mirror as M  # noqa: E402
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROGRESSIONE = os.path.join(RADICE, "include", "progressione.h")
-ORDINE_STORIA = [0, 1, 3, 2]          # Pattuglia, Imboscata, Spettri, Corrado (indici di INCONTRO)
+ORDINE_STORIA = [0, 1, 3, 4, 2]       # Pattuglia, Imboscata, Spettri, Guerrieri di B-03, Corrado (indici di INCONTRO)
 QUEST = 3
+# Le battaglie facoltative (F10): le tre guardie delle fornaci di Q-SM01 e l'infiltrato di Q-SP01. Con le quest
+# si contano tutte, e all'inizio: il caso peggiore per il livello con cui si arriva agli scontri della storia.
+FACOLTATIVI = [5, 5, 5, 6]
+# Il livello piu' basso con cui si puo' affrontare una facoltativa: le fornaci si raggiungono dall'ultimatum
+# (livello 1), l'infiltrato dal digiuno, dopo la Pattuglia (livello 3).
+LIVELLO_FACOLTATIVI = {5: 1, 6: 3}
 
 
 def leggi_tabella(nome, testo=None):
@@ -48,6 +54,8 @@ def livelli_lungo_la_storia(esperienza_nemico=None, con_quest=False):
     xp_nemico = esperienza_nemico or leggi_tabella("ESPERIENZA_NEMICO")
     soglie = leggi_tabella("ESPERIENZA_PER_LIVELLO")
     xp, livelli = (ESPERIENZA_QUEST * QUEST if con_quest else 0), {}
+    if con_quest:
+        xp += sum(xp_nemico[n] for i in FACOLTATIVI for n in M.INCONTRO[i])
     for i in ORDINE_STORIA:
         livelli[i] = livello(xp, soglie)
         xp += sum(xp_nemico[n] for n in M.INCONTRO[i])
@@ -122,6 +130,13 @@ def main():
                 v, r = misura(i, livelli[i], "medio", scudo_meno=1)
                 riga.append(f"medio scudo-1 {v}% r{r}")
             print("  " + " | ".join(riga))
+    print("facoltative, al livello piu' basso")
+    for i, liv in LIVELLO_FACOLTATIVI.items():
+        riga = [f"{M.NOMI_INCONTRI[i]:26} liv {liv}"]
+        for p in ("forte", "medio", "debole"):
+            v, r = misura(i, liv, p)
+            riga.append(f"{p} {v:3}% r{r}")
+        print("  " + " | ".join(riga))
     return 0
 
 
