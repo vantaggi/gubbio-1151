@@ -10,7 +10,8 @@ NPC ascoltato o no) e da li' trova:
 
   ERRORE  scena mai raggiungibile; vicolo cieco (uno stato da cui i titoli di coda non si raggiungono
           piu'); bandiera letta ma che niente accende; battuta che nessun percorso recita; bandiera
-          scritta male; condizione del copione che il lettore non capisce.
+          scritta male; condizione del copione che il lettore non capisce; riga OBIETTIVO senza area
+          meta o con una meta che non si raggiunge (MOB).
   AVVISO  battuta che si sente solo dopo i titoli di coda; bandiera accesa che nessuno legge; scelta
           che non pesa dopo la sua scena; bandiera promessa nel testo che il gioco non vede.
   NOTA    cose da sapere (quest descritte ma non ancora nel motore, bandiere che legge solo il codice).
@@ -119,6 +120,7 @@ def carica_v1(cartella):
     GS.COPIONE = cartella
     try:
         scene, npc = GS.leggi_copione()
+        quest = GS.leggi_le_quest() if os.path.exists(os.path.join(cartella, GS.FILE_QUEST)) else {}
     finally:
         GS.COPIONE = vecchia
     testi = {}
@@ -136,7 +138,7 @@ def carica_v1(cartella):
         for k, b in enumerate(p["frasi"]):
             b["id"] = f"{p['nome']}#{k}"
             b["dove"] = riga_di(testi, b["frase"]) or b["dove"]
-    return {"scene": scene, "npc": npc, "testi": testi}
+    return {"scene": scene, "npc": npc, "testi": testi, "quest": quest}
 
 
 def riga_di(testi, frase):
@@ -604,6 +606,53 @@ def controlla_v1(m, e):
     # 8. regola dei nomi (Cioti, 4 nov 2026): i luoghi tengono San/Sant', i tre protagonisti no; «Sant'Ubaldo»,
     # «San Giorgio», «Sant'Antonio» come persone solo nella Basilica (A1-08, A1-09, area della Basilica) e nell'epilogo (E-01, E-02).
     pr += controlla_nomi(m)
+    # 9. gli obiettivi (MOB, menu/PROPOSTA.md sez. 5): ogni riga OBIETTIVO ha un'area meta, e la meta si raggiunge
+    # camminando dall'area dove l'obiettivo si riceve (la scena, o per un incarico l'area del datore)
+    pr += controlla_obiettivi(m)
+    return pr
+
+
+def archi_del_mondo():
+    """I varchi fra le aree (mondo/grafo.json), come coppie: si percorrono nei due versi."""
+    with open(os.path.join(RADICE, "mondo", "grafo.json"), encoding="utf-8") as f:
+        return [(a["da"], a["a"]) for a in json.load(f)["archi"]]
+
+
+def meta_raggiungibile(da, a, archi):
+    """La meta 'a' si raggiunge da 'da' passando per i varchi?"""
+    vicine = {}
+    for x, y in archi:
+        vicine.setdefault(x, set()).add(y)
+        vicine.setdefault(y, set()).add(x)
+    viste, coda = {da}, deque([da])
+    while coda:
+        x = coda.popleft()
+        if x == a:
+            return True
+        for y in vicine.get(x, ()):
+            if y not in viste:
+                viste.add(y)
+                coda.append(y)
+    return False
+
+
+def controlla_obiettivi(m, archi=None):
+    pr = []
+    try:
+        righe = GS.obiettivi(m["scene"], m.get("quest") or {})
+    except GS.ErroreStoria as x:
+        return [problema(ERRORE, "OBIETTIVO_SENZA_META", "copione", str(x),
+                         "Aggiungere in fondo alla riga «(area: ID)» con un'area del mondo.")]
+    archi = archi if archi is not None else archi_del_mondo()
+    for r in righe:
+        if r["quest"] >= 0:
+            da = GS.QUEST[r["quest"]]["consegna"]
+        else:
+            da = GS.AREE.get(m["scene"][r["scena"]]["codice"]) or "PIAZZA_GRANDE"
+        if not meta_raggiungibile(da, r["area"], archi):
+            pr.append(problema(ERRORE, "OBIETTIVO_IRRAGGIUNGIBILE", r["dove"],
+                               f"«{r['frase']}» porta a {r['area']}, che da {da} non si raggiunge.",
+                               "Correggere l'area meta o i varchi del mondo."))
     return pr
 
 

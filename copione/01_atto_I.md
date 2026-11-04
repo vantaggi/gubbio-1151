@@ -63,7 +63,7 @@ Regia: l'araldo esce. Giorgio scatta verso le scale.
 - GUIDO (preoccupato): Ieri era fuori dalle mura, al Teatro Romano. E al tramonto chiudo l'ultima postierla.
 - UBALDO (deciso): Allora andiamo prima del tramonto.
 - SISTEMA: Giorgio si unisce al gruppo.
-- OBIETTIVO: Raggiungi il Teatro Romano, fuori dalle mura di San Martino.
+- OBIETTIVO: Raggiungi il Teatro Romano, fuori dalle mura di San Martino. (area: TEATRO_ROMANO)
 
 > Nota. «Monaldo non concederà una seconda alba» (Sez. 11 Passo 6) diventa «tre albe», così il digiuno di tre giorni ha un senso preciso e l'epilogo della v1 cade alla terza alba. Vedi le note di coerenza nel README.
 
@@ -169,7 +169,7 @@ Regia: la postierla si chiude alle spalle del gruppo con un tonfo (si sente anch
 - GUIDO (calmo): La strada del monte passa dal Duomo. Che Dio vi accompagni.
 - UBALDO (calmo): Prima, Porta Romana. Poi il monte.
 - SISTEMA: Prima di salire puoi girare la città.
-- OBIETTIVO: Sali al Monte Ingino passando dal Duomo.
+- OBIETTIVO: Sali al Monte Ingino passando dal Duomo. (area: DUOMO_DUCALE)
 
 Regia: da qui i Quartieri sono aperti e i datori di quest parlano. Il gioco non spinge: l'obiettivo resta in alto finché il giocatore non entra negli Stradoni.
 
