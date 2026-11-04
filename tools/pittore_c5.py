@@ -46,15 +46,31 @@ def navata(t, luce=0):
     pavimento a lastre, l'altare. luce 0 spenta, 1 le candele, 2 i Ceri (il bordo verso il centro si
     accende)."""
     t.rett(0, 0, W, QUADRO, N_BUIO)
+    r = random.Random(31)                                     # i conci delle navate, appena un filo (F2)
+    for y0 in range(0, 98, 9):
+        x = -r.randint(0, 20)
+        while x < W:
+            largo = r.randint(16, 26)
+            if x + largo < 50 or x > 190:                     # fuori dall'abside e dall'alone dei Ceri
+                t.rett(x, y0, largo - 1, 1, N_P0)
+                t.rett(x, y0, 1, 8, N_P0)
+            x += largo
     for y in range(QUADRO):                                   # l'abside, appena piu' chiara
         for x in range(56, 184):
             d = abs(x - 120) / 64
             if y > 10 + 18 * (1 - (1 - d * d) ** 0.5) and (d < 0.92 or (x + y) % 2):
                 t.punto(x, y, N_P0)
-    for x0, spigolo in ((22, 45), (195, 195)):                # i pilastri con l'arco
+    for x0, spigolo in ((22, 45), (195, 195)):                # i pilastri con l'arco, come solidi (L2)
         t.rett(x0, 0, 24, QUADRO, N_P0)
+        verso = -2 if spigolo > x0 else 1                     # la faccia verso l'altare prende la luce
+        t.rett(spigolo + verso, 0, 2, QUADRO, N_P1)
         t.rett(spigolo, 0, 1, QUADRO, N_P2 if luce else N_P1)
+        for y in range(42, 98, 14):                           # i rocchi: il giunto e il filo di luce sopra
+            t.rett(x0 + 2, y, 20, 1, N_BUIO)
+            t.rett(x0 + 2, y + 1, 20, 1, N_P1 if luce else N_P0)
         t.rett(x0 - 2, 30, 28, 3, N_P1)
+        t.rett(x0 - 2, 30, 28, 1, N_P2)                       # il capitello: la luce sopra, l'ombra sotto
+        t.rett(x0, 33, 24, 1, N_BUIO)
     for x in range(22, 219):
         d = (x - 120) / 98
         y = int(12 * (1 - (1 - min(1, d * d)) ** 0.5))
@@ -65,14 +81,15 @@ def navata(t, luce=0):
                 c = (a + b) / 2
                 if y > 14 or (x + 0.5 - c) ** 2 + (y + 0.5 - 14) ** 2 * 0.6 < 25:
                     t.punto(x, y, N_BUIO if (y % 8 == 0 or x == int(c)) else N_VETRO)
-    for y in range(98, QUADRO):                               # il pavimento a lastre
-        t.rett(0, y, W, 1, N_P0)
+    for y in range(98, QUADRO):                               # il pavimento a lastre, i giunti nel
+        t.rett(0, y, W, 1, N_P1)                              # tono d'ombra della pietra (F3, C4)
     for y in (100, 103, 107):
-        t.rett(0, y, W, 1, N_BUIO)
+        t.rett(0, y, W, 1, N_P0)
     for k in range(-14, 15):
         x0 = 120 + k * 16
         for y in range(98, QUADRO):
-            t.punto(int(x0 + (x0 - 120) * (y - 98) / 18), y, N_BUIO)
+            t.punto(int(x0 + (x0 - 120) * (y - 98) / 18), y, N_P0)
+    t.rett(0, 98, W, 1, N_BUIO)                               # l'ombra dello zoccolo sul pavimento
     # l'altare: la mensa in luce, il paliotto in ombra
     x0, x1, y0, y1 = ALTARE
     t.rett(x0 - 2, y0, x1 - x0 + 4, 3, N_P3 if luce else N_P2)
