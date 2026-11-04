@@ -6,6 +6,8 @@
 #include "bn_color.h"
 #include "bn_fixed.h"
 #include "bn_log.h"
+#include "bn_timer.h"
+#include "bn_timers.h"
 #include "bn_regular_bg_map_item.h"
 #include "bn_regular_bg_tiles_item.h"
 #include "bn_regular_bg_map_ptr.h"
@@ -13,12 +15,14 @@
 #include "bn_sprite_palette_item.h"
 #include "bn_sprite_palette_ptr.h"
 #include "bn_sprite_palettes.h"
+#include "bn_sprites.h"
 #include "bn_sprite_shape_size.h"
 #include "bn_sprite_tiles_item.h"
 #include "bn_sprite_tiles_ptr.h"
 #include "bn_tile.h"
 
 #include "aiuti.h"
+#include "compagni.h"
 #include "game_state.h"
 #include "opzioni.h"
 #include "pannello.h"
@@ -83,6 +87,16 @@ namespace
     constexpr int COLORE_ACQUA_CHIARA = 13;
     constexpr Colori COLORI_GIOCATORE = colori(mondo::PALETTE_GIOCATORE);
     constexpr Colori COLORI_GIOCATORE_NOTTE = colori(mondo::PALETTE_GIOCATORE_NOTTE);
+    constexpr Colori COLORI_COMPAGNI[compagni::COMPAGNI] = { colori(compagni::PALETTE_GIORGIO), colori(compagni::PALETTE_ANTONIO) };
+    constexpr Colori COLORI_COMPAGNI_NOTTE[compagni::COMPAGNI] = { colori(compagni::PALETTE_GIORGIO_NOTTE),
+                                                                   colori(compagni::PALETTE_ANTONIO_NOTTE) };
+
+    // La fila (STANDARD: chi sta piu' in basso sullo schermo sta davanti): Ubaldo e i compagni hanno lo z dalla y,
+    // tutti sotto lo zero, cosi' restano davanti alla gente (z 0 e oltre) come prima; il fumetto davanti a tutti.
+    constexpr int z_della_fila(int y)
+    {
+        return -2 - y / 2;
+    }
 
     // Il cartiglio: sei pezzi da 32x16 (sinistro, quattro centrali, destro) in cima allo schermo,
     // dietro il nome dell'area, con la palette dei fondali. Nascosto finche' non c'e' un nome.
@@ -115,7 +129,8 @@ namespace
     // Il giocatore (tools/sagome_mappa.py): 16x32, 8 tile a fotogramma, 8 fotogrammi per direzione.
     constexpr int TILE_PER_FOTOGRAMMA = 8;
 
-    void scrivi_fotogramma(bn::sprite_tiles_ptr& tiles, int direzione, int fotogramma)
+    template<int N>
+    void scrivi_fotogramma_da(const uint32_t (&sorgente)[N], bn::sprite_tiles_ptr& tiles, int direzione, int fotogramma)
     {
         bn::span<bn::tile> vram = *tiles.vram();
         int primo = (direzione * mondo::GIOCATORE_FOTOGRAMMI + fotogramma) * TILE_PER_FOTOGRAMMA;
@@ -124,8 +139,25 @@ namespace
         {
             for(int r = 0; r < 8; ++r)
             {
-                vram[t].data[r] = GUBBIO_VOCE(mondo::TILE_GIOCATORE, (primo + t) * 8 + r);
+                vram[t].data[r] = GUBBIO_VOCE(sorgente, (primo + t) * 8 + r);
             }
+        }
+    }
+
+    void scrivi_fotogramma(bn::sprite_tiles_ptr& tiles, int direzione, int fotogramma)
+    {
+        scrivi_fotogramma_da(mondo::TILE_GIOCATORE, tiles, direzione, fotogramma);
+    }
+
+    void scrivi_fotogramma_compagno(int chi, bn::sprite_tiles_ptr& tiles, int direzione, int fotogramma)
+    {
+        if(chi == 0)
+        {
+            scrivi_fotogramma_da(compagni::TILE_GIORGIO, tiles, direzione, fotogramma);
+        }
+        else
+        {
+            scrivi_fotogramma_da(compagni::TILE_ANTONIO, tiles, direzione, fotogramma);
         }
     }
 
@@ -149,7 +181,7 @@ namespace
         }
 
         bn::sprite_ptr fumetto = bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(8, 8), bn::move(tiles), palette);
-        fumetto.set_z_order(-1);        // davanti a chi parla
+        fumetto.set_z_order(bn::sprites::min_z_order());     // davanti a chi parla e alla fila
         fumetto.set_visible(false);
         return fumetto;
     }
@@ -200,6 +232,7 @@ void Esplorazione::entra(mondo::AreaId id, int spawn)
 {
     mondo::colloca(_e, id, spawn);
     _carica_fondale();
+    _giocatore.set_visible(true);       // dopo il prologo (sospendi): Ubaldo torna solo in citta'
 }
 
 void Esplorazione::riprendi(mondo::AreaId id, int x, int y)
@@ -209,6 +242,7 @@ void Esplorazione::riprendi(mondo::AreaId id, int x, int y)
     _e.y = y;
     _e.varco_sotto = -1;
     _carica_fondale();
+    _giocatore.set_visible(true);
 }
 
 void Esplorazione::segnala(int x, int y, int altezza)
@@ -239,6 +273,12 @@ void Esplorazione::imposta_notte(bool notte)
         bn::sprite_palette_ptr palette = _giocatore.palette();
         palette.set_colors(bn::span<const bn::color>((notte ? COLORI_GIOCATORE_NOTTE : COLORI_GIOCATORE).colori));
 
+        for(int i = 0; i < _fila.size(); ++i)
+        {
+            bn::sprite_palette_ptr p = _fila[i].sprite.palette();
+            p.set_colors(bn::span<const bn::color>((notte ? COLORI_COMPAGNI_NOTTE[i] : COLORI_COMPAGNI[i]).colori));
+        }
+
         if(_fondale)
         {
             _carica_fondale();
@@ -249,6 +289,7 @@ void Esplorazione::imposta_notte(bool notte)
 void Esplorazione::sospendi()
 {
     nascondi_etichetta();
+    togli_compagni();
     _giocatore.set_visible(false);
     _fondale.reset();
     _tiles.reset();
@@ -273,6 +314,13 @@ void Esplorazione::_carica_fondale(bool etichetta)
     // Le celle sono gia' in ROM (include/mondo.h): Butano le copia in VRAM, o per una big map ne
     // carica solo la parte vicina allo schermo, e aggiunge da se' gli scostamenti di tile e palette.
     const mondo::Area& a = mondo::area(_e.area);
+#ifdef GUBBIO_PRESTAZIONI
+    bn::timer t;
+    int tempi[4];
+    auto segna = [&](int k) { tempi[k] = t.elapsed_ticks() * 100 / bn::timers::ticks_per_frame(); t.restart(); };
+#else
+    auto segna = [](int) {};
+#endif
     _area_caricata = _e.area;
     _fondale.reset();
 
@@ -283,9 +331,11 @@ void Esplorazione::_carica_fondale(bool etichetta)
     const Banchi& c = a.cupa ? BANCHI_CUPI : (_notte ? BANCHI_NOTTE : BANCHI_GIORNO);
     _palette.set_colors(bn::span<const bn::color>(c.colori));
 
+    segna(0);
     _tiles = bn::regular_bg_tiles_ptr::create(
         bn::regular_bg_tiles_item(bn::span<const bn::tile>(a.tile, a.tile_conteggio), bn::bpp_mode::BPP_4));
 
+    segna(1);
     bn::size lati(a.larghezza_fondale, a.altezza_fondale);
     bn::regular_bg_map_item voce(*a.fondale, lati, bn::compression_type::NONE, 1, a.fondale_grande);
     _mezza_larghezza_mappa = lati.width() * mondo::TILE_PX / 2;
@@ -293,6 +343,48 @@ void Esplorazione::_carica_fondale(bool etichetta)
     _fondale = bn::regular_bg_ptr::create(0, 0, bn::regular_bg_map_ptr::create(voce, *_tiles, _palette));
     _fondale->set_camera(_camera);
     _camera_ferma = true;
+    segna(2);
+
+    // i centri dei varchi in un giro solo della griglia (come aiuti::centro_del_varco, per tutti insieme)
+    {
+        int sx[mondo::VARCHI_MAX] = {}, sy[mondo::VARCHI_MAX] = {}, n[mondo::VARCHI_MAX] = {};
+        const uint8_t* g = a.griglia;
+        int i = 0;
+
+        for(int ty = 0; ty < a.altezza; ++ty)
+        {
+            for(int tx = 0; tx < a.larghezza; ++tx, ++i)
+            {
+                int k = int(g[i]) - mondo::PRIMO_VARCO;
+
+                if(k >= 0 && k < a.varchi)
+                {
+                    sx[k] += tx;
+                    sy[k] += ty;
+                    ++n[k];
+                }
+            }
+        }
+
+        for(int k = 0; k < a.varchi; ++k)
+        {
+            _centri[k] = n[k] ? aiuti::Punto{ (sx[k] * mondo::TILE_PX) / n[k] + mondo::TILE_PX / 2,
+                                              (sy[k] * mondo::TILE_PX) / n[k] + mondo::TILE_PX / 2 } : aiuti::Punto{ -1, -1 };
+        }
+    }
+
+    segna(3);
+#ifdef GUBBIO_PRESTAZIONI
+    BN_LOG("PREST carica area ", int(_e.area), " palette ", tempi[0], " tile ", tempi[1], " mappa ", tempi[2], " varchi ",
+           tempi[3]);
+
+    for(int k = 0; k < a.varchi; ++k)
+    {
+        aiuti::Punto c = aiuti::centro_del_varco(a, k);
+        BN_ASSERT(c.x == _centri[k].x && c.y == _centri[k].y, "Centro del varco ", k);
+    }
+#endif
+
     if(etichetta)
     {
         _mostra_etichetta(a.etichetta);
@@ -303,9 +395,12 @@ void Esplorazione::_carica_fondale(bool etichetta)
 
 void Esplorazione::_mostra_etichetta(testi::TestoId id)
 {
-    _ombra.mostra(id);
-    _etichetta.mostra(id);
-    _mostra_cartiglio(true);
+    // l'ombra e la scritta si preparano nei due frame seguenti, una per frame (ognuna costa piu' di mezzo frame:
+    // insieme, al cambio d'area, facevano perdere un frame in piu'); poi avanzano insieme
+    _ombra.nascondi();
+    _etichetta.nascondi();
+    _testo_etichetta = id;
+    _etichetta_passo = 2;
     _attesa_etichetta = FRAME_ETICHETTA;
 }
 
@@ -345,12 +440,28 @@ void Esplorazione::muovi(int dx, int dy, int passi)
         _urto_al_varco = _urto_al_varco || (dx && mondo::urta_il_varco(_e, dx, 0, _varco_chiuso)) ||
                          (dy && mondo::urta_il_varco(_e, 0, dy, _varco_chiuso));
 
-        if(dx && mondo::muovi_fino_al_varco(_e, dx, 0, _varco_chiuso))
+        bool passato_x = dx && mondo::muovi_fino_al_varco(_e, dx, 0, _varco_chiuso);
+
+        if(passato_x)
         {
             evento = mondo::controlla_varco(_e);
         }
 
-        if(evento == mondo::Evento::NESSUNO && dy && mondo::muovi_fino_al_varco(_e, 0, dy, _varco_chiuso))
+        bool passato_y = false;
+
+        if(evento == mondo::Evento::NESSUNO && dy)
+        {
+            passato_y = mondo::muovi_fino_al_varco(_e, 0, dy, _varco_chiuso);
+
+            if(passato_y)
+            {
+                evento = mondo::controlla_varco(_e);
+            }
+        }
+
+        // contro uno spigolo mancato di poco si scivola di lato invece di impuntarsi (solo coi passi dritti)
+        if(evento == mondo::Evento::NESSUNO && ! passato_x && ! passato_y && (dx == 0) != (dy == 0) &&
+           mondo::scivola(_e, dx, dy, _varco_chiuso))
         {
             evento = mondo::controlla_varco(_e);
         }
@@ -402,6 +513,160 @@ void Esplorazione::_anima_giocatore()
 
     _giocatore.set_horizontal_flip(_direzione == SINISTRA);
     _mosso = false;
+}
+
+// --- La fila: Giorgio e Antonio sulle orme di Ubaldo ---------------------------------------------------------
+
+void Esplorazione::imposta_compagni(int quanti)
+{
+    _compagni = quanti < 0 ? 0 : (quanti > COMPAGNI_MAX ? COMPAGNI_MAX : quanti);
+}
+
+void Esplorazione::togli_compagni()
+{
+    _fila.clear();
+}
+
+void Esplorazione::_azzera_orme()
+{
+    _orma = 0;
+    _orme_n = 1;
+    _orme[0] = { int16_t(_e.x), int16_t(_e.y) };
+}
+
+void Esplorazione::_segna_orme()
+{
+    if(_orme_n == 0)
+    {
+        _azzera_orme();
+        return;
+    }
+
+    Orma ultima = _orme[_orma];
+    int dx = _e.x - ultima.x;
+    int dy = _e.y - ultima.y;
+    int ax = dx < 0 ? -dx : dx;
+    int ay = dy < 0 ? -dy : dy;
+
+    // un salto (un varco, un ingresso, la storia che sposta Ubaldo): i compagni ripartono da dietro di lui
+    if(ax + ay > 8)
+    {
+        _azzera_orme();
+
+        for(Compagno& c : _fila)
+        {
+            c.x = _e.x;
+            c.y = _e.y;
+        }
+
+        return;
+    }
+
+    // un'orma per pixel: prima in orizzontale poi in verticale (come i passi di muovi())
+    int x = ultima.x;
+    int y = ultima.y;
+
+    while(x != _e.x || y != _e.y)
+    {
+        if(x != _e.x)
+        {
+            x += x < _e.x ? 1 : -1;
+        }
+        else
+        {
+            y += y < _e.y ? 1 : -1;
+        }
+
+        _orma = (_orma + 1) % ORME;
+        _orme[_orma] = { int16_t(x), int16_t(y) };
+        _orme_n = _orme_n < ORME ? _orme_n + 1 : ORME;
+    }
+}
+
+void Esplorazione::_anima_compagni()
+{
+    int voluti = _fondale && _giocatore.visible() ? _compagni : 0;
+
+    while(_fila.size() > voluti)
+    {
+        _fila.pop_back();
+    }
+
+    while(_fila.size() < voluti)
+    {
+        int i = _fila.size();
+        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(TILE_PER_FOTOGRAMMA, bn::bpp_mode::BPP_4);
+        scrivi_fotogramma_compagno(i, tiles, 0, mondo::GIOCATORE_RIPOSO);
+        bn::sprite_palette_ptr palette = bn::sprite_palette_ptr::create(bn::sprite_palette_item(
+            bn::span<const bn::color>((_notte ? COLORI_COMPAGNI_NOTTE[i] : COLORI_COMPAGNI[i]).colori), bn::bpp_mode::BPP_4));
+        bn::sprite_ptr sprite = bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 32), bn::move(tiles), bn::move(palette));
+        sprite.set_camera(_camera);
+        sprite.set_blending_enabled(_scura);
+        // il nuovo compagno esce da dietro Ubaldo: l'orma piu' vecchia che c'e'
+        Orma o = _orme[_orme_n > 0 ? (_orma - (_orme_n - 1) + ORME) % ORME : _orma];
+        _fila.push_back(Compagno{ bn::move(sprite), o.x, o.y, _direzione == SINISTRA ? int(DESTRA) : _direzione });
+    }
+
+    int indietro = 0;
+
+    for(int i = 0; i < _fila.size(); ++i)
+    {
+        Compagno& c = _fila[i];
+        // il posto sulle orme: COMPAGNO_DISTANZA dietro chi lo precede (di lato 18 px, in verticale 21); finche' le
+        // orme sono poche, la piu' vecchia
+        for(int costo = 0; costo < COMPAGNO_DISTANZA && indietro < _orme_n - 1; ++indietro)
+        {
+            Orma a = _orme[(_orma - indietro + ORME) % ORME];
+            Orma b = _orme[(_orma - indietro - 1 + ORME) % ORME];
+            costo += a.x != b.x ? COSTO_LATO : COSTO_SU;
+        }
+
+        Orma o = _orme[(_orma - indietro + ORME) % ORME];
+        int dx = o.x - c.x;
+        int dy = o.y - c.y;
+        bool mosso = dx || dy;
+
+        if(mosso)
+        {
+            int ax = dx < 0 ? -dx : dx;
+            int ay = dy < 0 ? -dy : dy;
+            c.direzione = ax >= ay ? (dx > 0 ? DESTRA : SINISTRA) : (dy > 0 ? GIU : SU);
+            c.x = o.x;
+            c.y = o.y;
+        }
+
+        // la camminata e il respiro come Ubaldo (A6, A5); il respiro sfasato, cosi' non respirano tutti insieme
+        int fotogramma;
+
+        if(mosso)
+        {
+            ++c.passo;
+            int vblank = _corre ? mondo::GIOCATORE_VBLANK_CORSA : mondo::GIOCATORE_VBLANK_PASSO;
+            fotogramma = (c.passo / vblank) % mondo::GIOCATORE_CAMMINATA;
+            c.fermo = 0;
+        }
+        else
+        {
+            ++c.fermo;
+            int sfasato = c.fermo + (i + 1) * 17;
+            fotogramma = (sfasato / mondo::GIOCATORE_VBLANK_RESPIRO) % 2 ? mondo::GIOCATORE_RESPIRO : mondo::GIOCATORE_RIPOSO;
+        }
+
+        int direzione = c.direzione == SINISTRA ? DESTRA : c.direzione;
+        int chiave = direzione * mondo::GIOCATORE_FOTOGRAMMI + fotogramma;
+
+        if(chiave != c.mostrato)
+        {
+            c.mostrato = chiave;
+            bn::sprite_tiles_ptr tiles = c.sprite.tiles();
+            scrivi_fotogramma_compagno(i, tiles, direzione, fotogramma);
+        }
+
+        c.sprite.set_horizontal_flip(c.direzione == SINISTRA);
+        c.sprite.set_position(c.x - _mezza_larghezza_mappa, c.y - 15 - _mezza_altezza_mappa);
+        // a pari y il compagno sta dietro a chi lo precede (Ubaldo davanti a tutti)
+        c.sprite.set_z_order(z_della_fila(c.y) + i + 1);
+    }
 }
 
 void Esplorazione::sincronizza(mondo::Evento evento)
@@ -484,7 +749,10 @@ void Esplorazione::aggiorna()
 
     // Lo sprite 16x32 ha i piedi sull'ultima riga (31): il centro sta 15 pixel sopra.
     _giocatore.set_position(_e.x - _mezza_larghezza_mappa, _e.y - 15 - _mezza_altezza_mappa);
+    _giocatore.set_z_order(z_della_fila(_e.y));
     _anima_giocatore();
+    _segna_orme();
+    _anima_compagni();
 
     // il fumetto oscilla di un pixel ogni FUMETTO_OSCILLA vblank (STANDARD I2)
     if(_fumetto_acceso)
@@ -497,7 +765,19 @@ void Esplorazione::aggiorna()
 
     _aggiorna_aiuti();
 
-    if(_attesa_etichetta > 0)
+    if(_attesa_etichetta > 0 && _etichetta_passo > 0)
+    {
+        if(--_etichetta_passo == 1)
+        {
+            _ombra.mostra(_testo_etichetta);
+        }
+        else
+        {
+            _etichetta.mostra(_testo_etichetta);
+            _mostra_cartiglio(true);
+        }
+    }
+    else if(_attesa_etichetta > 0)
     {
         _ombra.avanza();
         _etichetta.avanza();
@@ -532,6 +812,13 @@ void Esplorazione::scurisci(bool scura)
     }
 
     _giocatore.set_blending_enabled(scura);
+
+    for(Compagno& c : _fila)
+    {
+        c.sprite.set_blending_enabled(scura);
+    }
+
+    _scura = scura;
     bn::blending::set_black_fade_color();
     bn::blending::set_fade_alpha(scura ? bn::fixed(BUIO_CENTESIMI) / 100 : bn::fixed(0));
 }
@@ -555,6 +842,7 @@ void Esplorazione::_nascondi_aiuti()
     _targa.reset();
     _varco_cartello = -1;
     _cartello_k = -1;
+    _cartello_scrivi = 0;
     _cartello.reset();
     _oltre.reset();
     _cartello_fondo.reset();
@@ -608,7 +896,7 @@ void Esplorazione::promemoria()
         const mondo::Area& a = mondo::area(_e.area);
         const mondo::Varco& v = mondo::varco_di(a, varco);
         testi::TestoId dove = v.destinazione >= 0 ? mondo::area(mondo::AreaId(v.destinazione)).etichetta : v.etichetta;
-        aiuti::Punto c = aiuti::centro_del_varco(a, varco);
+        aiuti::Punto c = _centri[varco];
         _targa_verso = aiuti::verso_di(c.x - _e.x, c.y - _e.y);
         int largo = larghezza_testo(dove);
         aiuti::Rettangolo cartello = _cartello_fondo ? aiuti::Rettangolo{ _cartello_fondo->x(), _cartello_fondo->y(),
@@ -704,7 +992,7 @@ bool Esplorazione::segnala_cartello()
         return false;
     }
 
-    aiuti::Punto p = aiuti::cartello_a_portata(_e, _varco_cartello);
+    aiuti::Punto p = aiuti::cartello_a_portata(_e, _varco_cartello, _centri[_varco_cartello].x);
 
     if(p.x < 0)
     {
@@ -719,6 +1007,13 @@ bool Esplorazione::segnala_cartello()
 // varco, la via in chiaro e dove porta in pietra.
 void Esplorazione::_crea_cartello(int varco)
 {
+#ifdef GUBBIO_PRESTAZIONI
+    bn::timer t;
+    int tempi[4];
+    auto segna = [&](int k) { tempi[k] = t.elapsed_ticks() * 100 / bn::timers::ticks_per_frame(); t.restart(); };
+#else
+    auto segna = [](int) {};
+#endif
     const mondo::Area& a = mondo::area(_e.area);
     const mondo::Varco& v = mondo::varco_di(a, varco);
     testi::TestoId dove = v.destinazione >= 0 ? mondo::area(mondo::AreaId(v.destinazione)).etichetta : v.etichetta;
@@ -738,20 +1033,24 @@ void Esplorazione::_crea_cartello(int varco)
     _cartello.reset();
     _oltre.reset();
     _cartello_fondo.reset();
+    segna(0);
     _cartello_fondo.emplace(r.x0, r.y0, w, h, _palette_aiuti);
     _cartello_fondo->rett(0, 0, w - 1, h - 1, pannello::LEGNO);
     _cartello_fondo->bordo(0, 0, w - 1, h - 1, pannello::PIOMBO);
     _cartello_fondo->bordo(2, 2, w - 3, h - 3, pannello::LEGNO_LUCE);
-    aiuti::Punto c = aiuti::centro_del_varco(a, varco);
+    segna(1);
+    aiuti::Punto c = _centri[varco];
     aiuti::Verso verso = aiuti::verso_di(c.x - _e.x, c.y - _e.y);
     _cartello_fondo->disegno_da([verso](int x, int y) { return aiuti::pixel_freccia(verso, x, y); }, 5, (h - 8) / 2);
-    _mostra_aiuto(_cartello, testo::Contesto::AREA, r.x0 + 16, r.y0 + 4, pannello::CHIARO, dove);
-
-    if(due)
-    {
-        _mostra_aiuto(_oltre, testo::Contesto::AREA, r.x0 + 16, r.y0 + 14, pannello::PIETRA, cartelli::CARTELLO[k].oltre);
-    }
-
+    segna(2);
+#ifdef GUBBIO_PRESTAZIONI
+    BN_LOG("PREST cartello misure ", tempi[0], " fondo ", tempi[1], " freccia ", tempi[2]);
+#endif
+    // le due righe si scrivono nei due frame seguenti, una per frame (ognuna costa quasi mezzo frame): tutto
+    // insieme il cartello faceva perdere un frame avvicinandosi al varco. Il cartello e' ancora fuori schermo.
+    _cartello_dove = dove;
+    _cartello_oltre = k;
+    _cartello_scrivi = due ? 2 : 1;
     _cartello_x = r.x0;
     _cartello_y = r.y0;
     _cartello_k = aiuti::FRAME_ENTRATA_CARTELLO;
@@ -767,11 +1066,30 @@ void Esplorazione::_anima_cartello()
         return;
     }
 
+    if(_cartello_scrivi > 0)
+    {
+        if(! _cartello)
+        {
+            _mostra_aiuto(_cartello, testo::Contesto::AREA, _cartello_x + 16, _cartello_y + 4, pannello::CHIARO, _cartello_dove);
+        }
+        else
+        {
+            _mostra_aiuto(_oltre, testo::Contesto::AREA, _cartello_x + 16, _cartello_y + 14, pannello::PIETRA,
+                          cartelli::CARTELLO[_cartello_oltre].oltre);
+        }
+
+        --_cartello_scrivi;
+    }
+
     bool in_alto = _cartello_y < aiuti::SCHERMO_A / 2;
     int via = _cartello_k * 8;
     int y = _cartello_y + (in_alto ? -via : via);
     _cartello_fondo->sposta(_cartello_x, y);
-    _cartello->sposta(_cartello_x + 16, y + 4);
+
+    if(_cartello)
+    {
+        _cartello->sposta(_cartello_x + 16, y + 4);
+    }
 
     if(_oltre)
     {
@@ -788,7 +1106,7 @@ void Esplorazione::_anima_cartello()
             _cartello_fondo.reset();
         }
     }
-    else if(_cartello_k > 0)
+    else if(_cartello_k > 0 && _cartello_scrivi == 0)
     {
         --_cartello_k;
     }

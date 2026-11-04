@@ -3,6 +3,8 @@
 #include "bn_core.h"
 #include "bn_keypad.h"
 #include "bn_log.h"
+#include "bn_timer.h"
+#include "bn_timers.h"
 
 #include "audio.h"
 #include "esplorazione.h"
@@ -149,6 +151,9 @@ int main()
         // la partita nuova del gioco vero comincia dal prologo (le scene a schermo intero)
         if(GUBBIO_AVVIO == 0)
         {
+            // l'esplorazione e' gia' creata, col suo Ubaldo a schermo: il prologo e' a schermo intero e non lo
+            // deve vedere (compariva a caso durante la cutscene C1). Torna con entra().
+            esplorazione.sospendi();
             gubbio::Storia prologo;
             prologo.prologo(palette);
         }
@@ -232,8 +237,45 @@ int main()
     // che servono a fotografarli; spenti negli altri modi di prova
     esplorazione.attiva_aiuti(AIUTI_ATTIVI);
 
+#ifdef GUBBIO_PRESTAZIONI
+    // Le prestazioni (make USERFLAGS=-DGUBBIO_PRESTAZIONI): ogni 30 frame il frame piu' pesante, con il tempo
+    // di ogni pezzo del ciclo in centesimi di frame. Solo per le prove (tools/banco.sh).
+    int prest_max = 0, prest_frame = 0;
+    int prest_pezzi[4] = {}, prest_peggio[4] = {};
+    bn::timer prest_t;
+    auto prest_segna = [&](int k) { prest_pezzi[k] = prest_t.elapsed_ticks() * 100 / bn::timers::ticks_per_frame(); prest_t.restart(); };
+#else
+    auto prest_segna = [](int) {};
+#endif
+
     while(true)
     {
+#ifdef GUBBIO_PRESTAZIONI
+        {
+            int uso = (bn::core::last_cpu_usage() * 100).right_shift_integer();
+
+            if(uso > prest_max)
+            {
+                prest_max = uso;
+
+                for(int k = 0; k < 4; ++k)
+                {
+                    prest_peggio[k] = prest_pezzi[k];
+                }
+            }
+
+            if(++prest_frame == 30)
+            {
+                const gubbio::mondo::Esploratore& p = esplorazione.esploratore();
+                BN_LOG("PREST area ", int(p.area), " x ", p.x, " y ", p.y, " cpu ", prest_max, " muovi ", prest_peggio[0],
+                       " storia ", prest_peggio[1], " scontri ", prest_peggio[2], " update ", prest_peggio[3]);
+                prest_frame = 0;
+                prest_max = 0;
+            }
+
+            prest_t.restart();
+        }
+#endif
         ++gubbio::g_game_state.frames;
         ++gubbio::g_game_state.tempo_frames;
 
@@ -249,6 +291,7 @@ int main()
             // pausa (gli sprite sono 128 in tutto). Al frame dopo si rifanno quelli dell'area.
             storia.svuota();
             scontri.svuota();
+            esplorazione.togli_compagni();
             gubbio::pausa(esplorazione, palette);
         }
 
@@ -261,18 +304,28 @@ int main()
         int dy = bn::keypad::up_held() ? -1 : (bn::keypad::down_held() ? 1 : 0);
         esplorazione.muovi(dx, dy, gubbio::opzioni::passi(gubbio::opzioni::g_opzioni, bn::keypad::b_held()));
         esplorazione.aggiorna();
+        prest_segna(0);
         // la musica dell'area, della fase e del luogo (include/colonna_sonora.h); non riparte se e' la stessa
         const gubbio::mondo::Esploratore& qui = esplorazione.esploratore();
         gubbio::audio::esplorazione(gubbio::g_game_state, int(qui.area), gubbio::mondo::cella_x(qui),
                                     gubbio::mondo::cella_y(qui));
         // la storia prima degli scontri: una scena con la sua battaglia vale piu' del nemico sulla mappa
+// La prova della fila (make USERFLAGS="-DGUBBIO_AVVIO=14 -DGUBBIO_PROVA_FILA"): Giorgio e Antonio dietro Ubaldo, senza scene.
+#ifdef GUBBIO_PROVA_FILA
+        esplorazione.imposta_compagni(2);       // la prova della fila: niente scene, solo la camminata
+        if(false)
+#else
         if((COL_TITOLO || GUBBIO_AVVIO == 14) && storia.aggiorna(esplorazione, palette))
+#endif
         {
             scontri.svuota();
         }
 
+        prest_segna(1);
         scontri.aggiorna(esplorazione, palette);
+        prest_segna(2);
 
         bn::core::update();
+        prest_segna(3);
     }
 }
