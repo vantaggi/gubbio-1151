@@ -1284,7 +1284,9 @@ def parte_gola(codici, posti_raccolte, figure):
             "};", "",
             "// Le figure del forziere in FIGURA_RACCOLTA: chiuso, e aperto (preso, resta li').",
             f"inline constexpr int FIGURA_FORZIERE = {FN.ORDINE_RACCOLTE.index('forziere')};",
-            f"inline constexpr int FIGURA_FORZIERE_APERTO = {FN.ORDINE_RACCOLTE.index('forziere_aperto')};", ""]
+            f"inline constexpr int FIGURA_FORZIERE_APERTO = {FN.ORDINE_RACCOLTE.index('forziere_aperto')};",
+            "// La fiamma sopra i ceri dell'altare, con i Ceri risvegliati (CERO_ALTARE di storia_logica.h).",
+            f"inline constexpr int FIGURA_FIAMMA_CERO = {FN.ORDINE_RACCOLTE.index('fiamma_cero')};", ""]
 
 
 def parte_fornaci(posti_guardie):

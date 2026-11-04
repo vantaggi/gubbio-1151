@@ -50,8 +50,9 @@ private:
     bn::vector<bn::sprite_ptr, PERSONE_MAX> _npc;
     bn::vector<int, PERSONE_MAX> _indici;
     bn::vector<bn::sprite_ptr, storia::RACCOLTE> _raccolte;
-    // la gola (T2): i soldati di B-03 e i forzieri (chiusi o aperti); le guardie delle fornaci (F10)
-    bn::vector<bn::sprite_ptr, storia::SENTINELLE + storia::FORZIERI + storia::GUARDIE_FORNACE> _gola;
+    // la gola (T2): i soldati di B-03 e i forzieri (chiusi o aperti); le guardie delle fornaci e le fiamme dei
+    // ceri della Basilica (F10)
+    bn::vector<bn::sprite_ptr, storia::SENTINELLE + storia::FORZIERI + storia::GUARDIE_FORNACE + storia::CERI_ALTARE> _gola;
     int _area = -1;
     int _respiro = 0;           // i frame di fila di corsa nella nebbia (storia::respira_i_miasmi)
     uint32_t _ultimo_urto = 0;  // il frame dell'ultimo avviso dell'uscita chiusa (uno ogni due secondi)
