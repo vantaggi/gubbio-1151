@@ -152,30 +152,56 @@ def c7_cappella(m):
         t.rett(x, y, r.randint(3, 6), 2, ST_COTTO)
         t.rett(x, y + 2, 3, 1, ST_P2)
     poligono(t, [(0, 112), (0, 80), (60, 72), (140, 70), (240, 78), (240, 112)], ST_GHIAIA)
-    for _ in range(400):
-        x, y = r.randrange(240), r.randrange(72, 112)
-        if t.px[y][x] == ST_GHIAIA:
-            t.punto(x, y, ST_GHIAIA_L if r.random() < 0.5 else ST_P2)
-    for x in range(0, 140, 7):                                                    # il muretto
-        t.rett(x, 64 + x // 40, 6, 4, ST_P2)
-        t.rett(x, 64 + x // 40, 6, 1, ST_GHIAIA_L)
+    for x in range(0, 140, 7):                                                    # il muretto a secco
+        y = 64 + x // 40
+        t.rett(x, y, 6, 4, ST_P2)
+        t.rett(x, y, 5, 1, ST_GHIAIA_L)                                           # la luce sopra (L1)
+        t.rett(x + 6, y, 1, 4, ST_V0)
+        t.rett(x, y + 4, 7, 1, ST_P2)                                             # l'ombra sulla ghiaia
     cx = 150
+    # l'ombra portata della cappella e dei cipressi, verso destra sulla ghiaia (L4)
+    poligono(t, [(cx + 40, 72), (cx + 62, 72), (cx + 70, 78), (cx + 40, 78)], ST_P2)
+    # la ghiaia: sassolini di 2 px con la luce sopra e l'ombra sotto (niente pixel orfani, P3); piu'
+    # radi e piu' piccoli lontano, piu' grossi davanti
+    for _ in range(260):
+        x, y = r.randrange(240), r.randrange(73, 112)
+        if t.px[y][x] == ST_GHIAIA and t.px[y + 1][x] == ST_GHIAIA:
+            largo = 2 if y < 95 else 3
+            t.rett(x, y, largo, 1, ST_GHIAIA_L)
+            t.rett(x, y + 1, largo, 1, ST_P2)
+    # la cappella intonacata: il fronte in luce, il fianco destro in ombra, lo zoccolo piu' scuro, la
+    # nicchia incassata con lo strombo, il tetto a coppi; il bordo e' il tono scuro del materiale, non
+    # il nero (P2)
     t.rett(cx, 26, 40, 48, ST_BIANCO)
     t.rett(cx + 32, 26, 8, 48, ST_P2)
+    t.rett(cx + 31, 26, 1, 48, ST_GHIAIA)
+    t.rett(cx, 70, 32, 4, ST_P2)                                                  # lo zoccolo
+    t.rett(cx, 70, 32, 1, ST_GHIAIA)
+    t.rett(cx + 32, 70, 8, 4, ST_V0)
     poligono(t, [(cx - 4, 27), (cx + 20, 12), (cx + 44, 27)], ST_COTTO)
     poligono(t, [(cx + 20, 12), (cx + 44, 27), (cx + 36, 27)], ST_COTTO_S)
+    for k in range(-2, 46, 3):                                                    # i coppi (F1)
+        for yy in range(13, 28):
+            if t.px[yy][cx + k] == ST_COTTO and (yy // 2) % 2 == 0:
+                t.punto(cx + k, yy, ST_COTTO_S)
+    t.rett(cx - 4, 27, 48, 1, ST_COTTO_S)                                         # la gronda
+    t.rett(cx, 28, 32, 1, ST_GHIAIA)                                              # e la sua ombra
     t.rett(cx + 8, 38, 16, 24, ST_C)
     t.ellisse(cx + 16, 38, 8, 6, ST_C)
+    t.rett(cx + 23, 38, 1, 24, ST_P2)                                             # lo strombo, a destra
+    t.rett(cx + 7, 62, 18, 2, ST_GHIAIA)                                          # e il davanzale
     t.rett(cx + 14, 50, 4, 8, ST_ORO)                                             # il lumino
     t.rett(cx + 15, 47, 2, 3, ST_BIANCO)
     t.rett(cx + 15, 6, 2, 7, ST_C)
     t.rett(cx + 13, 8, 6, 2, ST_C)
-    contorna(t, ST_C, lambda c: c in (ST_BIANCO, ST_P2, ST_COTTO, ST_COTTO_S))
     for i in range(3):                                                            # i cipressi dietro
         x = 206 + i * 12
         for yy in range(30):
             w = max(1, int(4 * math.sin(math.pi * (yy + 2) / 32)))
             t.rett(x - w, 44 + yy, 2 * w, 1, ST_V0)
+            if w > 2:
+                t.rett(x - w + 1, 44 + yy, 1, 1, ST_V2)                           # la luce a sinistra
+        t.rett(x + 2, 72, 6, 2, ST_P2)                                            # l'ombra a terra
     return t, PALETTE_STRADONI, False
 
 
