@@ -325,8 +325,13 @@ def testa(f, s, pelle, capelli=None, barba=None, rx=None):
                                                    (tx - 1, ty - r - 0.6), (tx + r, ty - r), (tx + r + 0.3, ty - 1.2),
                                                    (tx + 0.5, ty - 1.6), (tx - 0.5, ty + 2.5)])
     if barba:
-        f.parte_nuova("barba", barba).poligono([(tx - 1, ty + 1), (tx + r + 0.4, ty + 1.2), (tx + r - 0.6, ty + 3.6),
-                                               (tx + 1, ty + r + 1.6), (tx - 0.6, ty + 3)])
+        # la barba sulla mascella, sotto la bocca: la pelle resta fra il naso e la barba (prima la barba
+        # copriva meta' viso e si leggeva come una maschera); la barba lunga scende sul petto
+        lunga = barba == "bianco"
+        f.parte_nuova("barba", barba).poligono([(tx - 1.4, ty + 1.6), (tx - 0.2, ty + 2.4), (tx + r - 0.4, ty + 2.6),
+                                               (tx + r - 0.2, ty + 3.4), (tx + r - 1.2, ty + (5.4 if lunga else 4.2)),
+                                               (tx + 0.6, ty + r + (3.4 if lunga else 1.6)), (tx - 0.8, ty + 3.4)])
+        f.dettaglio(tx + r - 0.7, ty + 1.9, ("pelle", 0))   # la bocca
     occhio(f, s)
 
 
