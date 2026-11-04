@@ -91,10 +91,12 @@ LETTE_DAL_GIOCO = {
     "GUARDIA_FORNACE_1": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
     "GUARDIA_FORNACE_2": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
     "GUARDIA_FORNACE_3": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
+    # F10, i Ceri risvegliati di A1-08: in battaglia il Fervore parte piu' alto; nella Basilica i ceri accesi
+    "CERI_RISVEGLIATI": "storia::ceri_accesi(): il Fervore iniziale dei Santi piu' alto, i tre ceri accesi sull'altare",
 }
 
 # Quelle che il gioco non legge ancora: sono in docs/bandiere_da_fare.md, con cosa dovranno fare.
-DA_FARE = ["CERI_RISVEGLIATI"]
+DA_FARE = []
 
 # Dove avviene ogni scena (AreaId), dalla riga Luogo; None per le scene a schermo intero (il prologo, e la
 # vetrata di E-02, che il gioco recita subito dopo E-01 senza risalire alla Basilica).

@@ -74,6 +74,12 @@ def codice_che_legge():
     return codice + "".join(re.search(r, storia_h, re.S).group(0) for r in tabelle)
 
 
+def righe_da_fare(doc):
+    """Le bandiere della prima tabella di docs/bandiere_da_fare.md (quelle che il gioco non legge ancora)."""
+    tabella = doc.split("\n## ")[0]
+    return re.findall(r"^\| `([A-Z0-9_]+)` \|", tabella, re.M)
+
+
 def lette_dal_gioco_senza_codice(lette, codice):
     """Le bandiere di LETTE_DAL_GIOCO che il codice non nomina: Bandiera::X per la storia (0-63), il nome per
     quelle delle quest (64-127, costanti di storia.h)."""
@@ -149,15 +155,29 @@ class Tabelle(unittest.TestCase):
         codice = re.sub(r"\bRUFINO_ASCOLTATO\b", "RUFINO", codice)
         self.assertEqual(lette_dal_gioco_senza_codice(GS.LETTE_DAL_GIOCO, codice), ["CRONACA_V1_FINITA", "RUFINO_ASCOLTATO"])
 
+    def test_nessuna_bandiera_da_fare(self):
+        """F10: CERI_RISVEGLIATI era l'ultima; ora il gioco le legge tutte e la tabella del documento e' vuota."""
+        self.assertEqual(GS.DA_FARE, [])
+        doc = open(os.path.join(RADICE, "docs", "bandiere_da_fare.md"), encoding="utf-8").read()
+        self.assertEqual(righe_da_fare(doc), [])
+
     def test_negativa_bandiera_da_fare_senza_documento(self):
         doc = open(os.path.join(RADICE, "docs", "bandiere_da_fare.md"), encoding="utf-8").read()
-        self.assertNotIn("| `CERI_RISVEGLIATI` |", doc.replace("| `CERI_RISVEGLIATI` |", "| CERI |"))
+        self.assertNotIn("| `CERI_RISVEGLIATI` |", doc)
+        riga = "| `CERI_RISVEGLIATI` | A1-08 | x | y |\n"
+        self.assertEqual(righe_da_fare(doc.replace("| :-- | :-- | :-- | :-- |\n", "| :-- | :-- | :-- | :-- |\n" + riga, 1)),
+                         ["CERI_RISVEGLIATI"])
+
+    def test_negativa_ceri_senza_codice(self):
+        """CERI_RISVEGLIATI e' letta dal gioco solo se il codice la nomina (storia::ceri_accesi())."""
+        codice = codice_che_legge().replace("Bandiera::CERI_RISVEGLIATI", "Bandiera::X")
+        self.assertEqual(lette_dal_gioco_senza_codice(GS.LETTE_DAL_GIOCO, codice), ["CERI_RISVEGLIATI"])
 
     def test_negativa_bandiera_scritta_e_mai_letta(self):
-        """Togliendo CERI_RISVEGLIATI dall'elenco delle bandiere da fare, resta scritta e mai letta; togliendo
-        MIASMI_VISTI da quelle lette dal gioco (T2), lo stesso."""
-        da_fare = [b for b in GS.DA_FARE if b != "CERI_RISVEGLIATI"]
-        self.assertEqual(scritte_non_lette(SCENE, set(GS.LETTE_DAL_GIOCO) | set(da_fare)), ["CERI_RISVEGLIATI"])
+        """Togliendo CERI_RISVEGLIATI da quelle lette dal gioco, resta scritta e mai letta; togliendo
+        MIASMI_VISTI (T2), lo stesso."""
+        lette = set(GS.LETTE_DAL_GIOCO) - {"CERI_RISVEGLIATI"}
+        self.assertEqual(scritte_non_lette(SCENE, lette | set(GS.DA_FARE)), ["CERI_RISVEGLIATI"])
         lette = set(GS.LETTE_DAL_GIOCO) - {"MIASMI_VISTI"}
         self.assertEqual(scritte_non_lette(SCENE, lette | set(GS.DA_FARE)), ["MIASMI_VISTI"])
 

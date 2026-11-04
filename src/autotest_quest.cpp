@@ -288,6 +288,33 @@ namespace
                   digiuno_alla_scena_dello_scontro(INCONTRO_DI_CORRADO) == 1, "Ubaldo mangia negli scontri del digiuno");
     static_assert(digiuno_alla_scena_dello_scontro(0) == 0, "negativa: alla Pattuglia del Teatro Ubaldo e' gia' a digiuno");
 
+    // --- I Ceri risvegliati -------------------------------------------------------------------------
+
+    // Lungo la storia i Ceri (CERI_RISVEGLIATI, accesa alla fine di A1-08) alzano il Fervore negli scontri dopo il
+    // rito: i Guerrieri di B-03 e Corrado. Negativa: la Pattuglia, l'Imboscata e gli Spettri (nella scena stessa,
+    // prima che la bandiera si accenda) si combattono senza.
+    consteval int ceri_alla_scena_dello_scontro(int incontro)
+    {
+        int k = scena_dello_scontro(incontro);
+        GameState p = fino_alla_scena(k);
+        return pronta(p, k, SCENA[k].area) ? int(ceri_accesi(p)) : -1;
+    }
+
+    static_assert(ceri_alla_scena_dello_scontro(battaglia::INCONTRO_GUERRIERI) == 1 &&
+                  ceri_alla_scena_dello_scontro(INCONTRO_DI_CORRADO) == 1, "i Ceri accesi dopo il rito");
+    static_assert(ceri_alla_scena_dello_scontro(0) == 0 && ceri_alla_scena_dello_scontro(1) == 0 &&
+                  ceri_alla_scena_dello_scontro(3) == 0, "negativa: i Ceri accesi prima del rito");
+
+    consteval bool ceri_solo_dalla_bandiera()
+    {
+        GameState p = {};
+        bool prima = ceri_accesi(p);
+        accendi_bandiera(p, Bandiera::CERI_RISVEGLIATI);
+        return ! prima && ceri_accesi(p);
+    }
+
+    static_assert(ceri_solo_dalla_bandiera(), "i Ceri si accendono con CERI_RISVEGLIATI");
+
     // --- La gola dopo B-05 ---------------------------------------------------------------------------
 
     // La storia giocata fino al rientro di B-05 (RIENTRO_PORTA_METAURO), prima della conferma di E-01.
