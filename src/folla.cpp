@@ -269,8 +269,7 @@ void Folla::aggiorna(const Esplorazione& esplorazione, int px, int py, int frame
             esplorazione.colloca_sulla_mappa(v.sprite, v.x, v.y, ALTEZZA_PASSANTE);
         }
 
-        // chi e' piu' in basso sullo schermo sta davanti a chi e' piu' in alto
-        v.sprite.set_z_order(2000 - v.y / 2);
+        // lo z dai piedi lo mette colloca_sulla_mappa (Esplorazione::z_sulla_mappa), come per la fila e gli NPC
     }
 }
 

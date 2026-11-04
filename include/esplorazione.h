@@ -48,8 +48,17 @@ public:
     void imposta_notte(bool notte);
     void ricompari();
 
-    // Uno sprite che sta sulla mappa (un nemico): sulla camera dell'area, coi piedi in (x, y) pixel.
+    // Uno sprite che sta sulla mappa (un nemico, un NPC, la gente): sulla camera dell'area, coi piedi in (x, y)
+    // pixel, e con lo z dai piedi (z_sulla_mappa), cosi' chi sta piu' in basso sta davanti a chi sta piu' in alto.
     void colloca_sulla_mappa(bn::sprite_ptr& sprite, int x, int y, int altezza) const;
+
+    // L'ordine di tutti gli sprite della mappa (STANDARD: chi sta piu' in basso sullo schermo sta davanti), uno
+    // solo per la fila, gli NPC, la gente e i nemici: z minore = davanti. Quattro z per riga di pixel, cosi' a pari
+    // y Ubaldo (-2) e i compagni (-1, 0) stanno davanti agli altri. y fino a 128 celle = 1024 px: z da -96 a 4000.
+    [[nodiscard]] static constexpr int z_sulla_mappa(int y)
+    {
+        return 4 * (1000 - y);
+    }
 
     // Input di un frame: dx, dy in -1..1, 'passi' pixel per asse. Ignorato durante una dissolvenza.
     void muovi(int dx, int dy, int passi);

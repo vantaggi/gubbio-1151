@@ -92,11 +92,11 @@ namespace
     constexpr Colori COLORI_COMPAGNI_NOTTE[compagni::COMPAGNI] = { colori(compagni::PALETTE_GIORGIO_NOTTE),
                                                                    colori(compagni::PALETTE_ANTONIO_NOTTE) };
 
-    // La fila (STANDARD: chi sta piu' in basso sullo schermo sta davanti): Ubaldo e i compagni hanno lo z dalla y,
-    // tutti sotto lo zero, cosi' restano davanti alla gente (z 0 e oltre) come prima; il fumetto davanti a tutti.
+    // La fila: lo z di Esplorazione::z_sulla_mappa, come la gente e gli NPC (prima la fila stava sempre davanti
+    // alla gente, anche a chi le passava davanti piu' in basso); a pari y Ubaldo davanti; il fumetto davanti a tutti.
     constexpr int z_della_fila(int y)
     {
-        return -2 - y / 2;
+        return Esplorazione::z_sulla_mappa(y) - 2;
     }
 
     // Il cartiglio: sei pezzi da 32x16 (sinistro, quattro centrali, destro) in cima allo schermo,
@@ -323,6 +323,7 @@ void Esplorazione::colloca_sulla_mappa(bn::sprite_ptr& sprite, int x, int y, int
 {
     sprite.set_camera(_camera);
     sprite.set_position(x - _mezza_larghezza_mappa, y - altezza / 2 - _mezza_altezza_mappa);
+    sprite.set_z_order(z_sulla_mappa(y));
 }
 
 void Esplorazione::_carica_fondale(bool etichetta)
