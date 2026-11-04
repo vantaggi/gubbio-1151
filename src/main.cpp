@@ -13,6 +13,7 @@
 #include "regia_scena.h"
 #include "storia_scena.h"
 #include "titolo.h"
+#include "menu_pagine.h"
 #include "schermate.h"
 #include "vista_testo.h"
 
@@ -182,6 +183,24 @@ int main()
         gubbio::GameState prima = gubbio::g_game_state;
         gubbio::partita_d_esempio(gubbio::g_game_state);
         gubbio::pausa(esplorazione, palette, true);
+
+        // la bottega del Venditore come il mockup 11: 84 Denari, il borgo dentro le mura (2 Crescia e 3 Biscotti)
+        gubbio::g_game_state.denari = 84;
+        gubbio::storia::accendi_una(gubbio::g_game_state, int(gubbio::storia::Bandiera::BORGO_DENTRO));
+        esplorazione.entra(gubbio::mondo::AreaId::PIAZZA_QUARANTA_MARTIRI, 0);
+
+        for(int f = 0; f < 30; ++f)
+        {
+            esplorazione.aggiorna();
+            bn::core::update();
+        }
+
+        esplorazione.nascondi_etichetta();
+
+        gubbio::menu::bottega(false, true);
+        bn::core::update();
+        gubbio::menu::bottega(true, true);
+        bn::core::update();
         gubbio::g_game_state = prima;
 
         // un nemico sulla mappa: la Pattuglia al Teatro Romano, vista dall'ingresso dalla citta'

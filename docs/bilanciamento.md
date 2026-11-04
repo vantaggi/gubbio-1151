@@ -44,6 +44,11 @@ Effetto su Corrado (pilota medio, 200 semi): al livello 5 dal **59%** al **61%**
 
 Le firme: 200 battaglie in più in `ATTESE_CERI` (Corrado e i Guerrieri, 50 semi × 2 piloti), confrontate col C++ da `src/autotest_battaglia.cpp`; le 700 di prima non cambiano.
 
+## MNEG: il Venditore delle Logge (4 nov 2026)
+La bottega (`include/negozio.h`) vende solo Crescia (30 Denari) e Biscotti (20), a scorte limitate: 3 + 3 fino al rientro (2 Crescia col borgo dentro le mura), altre 2 Crescia nella notte. I Denari li danno i nemici sulla mappa (Corrado no) e non toccano l'esperienza, quindi i livelli d'arrivo a Corrado non cambiano. Il caso peggiore per il bilanciamento è arrivarci con la bisaccia piena, 5 Crescia e 5 Biscotti (`BISACCIA_PIENA` di `tools/bilanciamento.py`): il mirror ora sa usare un consumabile (`T_OGGETTO`, come `Battaglia::usa_oggetto`) e il pilota medio mangia una Crescia per chi scende sotto un terzo dei PV (70% delle volte) e un Biscotto per chi brucia forte. Le firme del mirror non cambiano: il pilota forte e il debole non mangiano.
+
+Effetto su Corrado (pilota medio, coi Ceri, 200 semi): al livello 5 dal 61% al **59%**; al livello 6 con le quest e lo scudo in meno dal 75% al **74%**. Una Crescia costa il turno di chi la usa e i suoi 100 PV contano poco contro i colpi di Corrado: anche con 99 Crescia da 9999 PV il medio non supera il 68%. Lo prova `test_corrado_con_la_bisaccia_piena`, e `test_il_medio_mangia_davvero` che la prova non sia vuota.
+
 ## Risultati (200 semi)
 
 | Scontro | forte | medio | debole |

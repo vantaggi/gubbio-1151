@@ -102,7 +102,11 @@ EVENT_KINDS = ["HIT", "SHIELD_BREAK", "BARRIER_ABSORB", "GUARD_REDIRECT", "FERVO
                "CURA", "PURIFICA"]
 TIPI_DEL_PILOTA = EVENT_KINDS.index("CURA")
 IN_CORSO, VITTORIA, SCONFITTA, PARITA = range(4)
-T_ABILITA, T_CARICA, T_SUPREMA = range(3)
+T_ABILITA, T_CARICA, T_SUPREMA, T_OGGETTO = range(4)
+# I consumabili usabili in battaglia (battaglia_dati.h, OGGETTI), per OggettoId: (cura_pv, purifica, priorita).
+# Li comanda solo il pilota medio di tools/bilanciamento.py, per provare Corrado con le scorte del Venditore (MNEG).
+CRESCIA, BISCOTTI = 0, 3
+OGGETTI = {CRESCIA: (100, False, 6), BISCOTTI: (0, True, 10)}
 M32 = 0xFFFFFFFF
 
 
@@ -321,7 +325,8 @@ class Battaglia:
         for e, eroe in enumerate(self.eroi):
             if eroe.vivo():
                 c = self.comandi[e]
-                priorita = 0 if c[0] == T_CARICA else ABILITA[c[1]][7]
+                priorita = (0 if c[0] == T_CARICA else
+                            OGGETTI[c[1]][2] if c[0] == T_OGGETTO else ABILITA[c[1]][7])
                 self.azioni.append((False, e, c, eroe.velocita + priorita))
         fine = False
         for n, nemico in enumerate(self.nemici):
@@ -381,6 +386,9 @@ class Battaglia:
             attore.carica = True
             self.emetti(CHARGE, an, slot, an, slot, 0, attore.pv)
             return
+        if tipo == T_OGGETTO:
+            self.usa_oggetto(slot, ab_id, b)
+            return
         ab = ABILITA[ab_id]
         costo = ab[3] + BOOST_COSTO[boost]
         if attore.fervore < costo:
@@ -422,6 +430,21 @@ class Battaglia:
             if not self.unita(lato_nemico, b).vivo():
                 break
             self.colpo(azione, ab, boost, b)
+
+    def usa_oggetto(self, slot, oggetto, b):
+        """Battaglia::usa_oggetto: sul bersaglio vivo, o sul piu' ferito (il mirror non ha il digiuno)."""
+        cura_pv, purifica, _ = OGGETTI[oggetto]
+        bersaglio = b if 0 <= b < EROI and self.eroi[b].vivo() else self.piu_ferito()
+        if bersaglio < 0:
+            return
+        u = self.eroi[bersaglio]
+        if cura_pv > 0:
+            cura = u.pv_max - u.pv if u.pv + cura_pv > u.pv_max else cura_pv
+            u.pv += cura
+            self.emetti(EVENT_KINDS.index("CURA"), False, slot, False, bersaglio, cura, u.pv)
+        if purifica:
+            u.ustione_cariche = u.ustione_danno = u.ustione_turni = 0
+            self.emetti(EVENT_KINDS.index("PURIFICA"), False, slot, False, bersaglio, 0, u.pv)
 
     def colpo(self, azione, ab, boost, slot):
         an, a_slot, _, _ = azione

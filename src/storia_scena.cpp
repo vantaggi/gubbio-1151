@@ -16,6 +16,8 @@
 #include "audio.h"
 #include "battaglia_grafica.h"
 #include "esplorazione.h"
+#include "menu_pagine.h"
+#include "negozio.h"
 #include "game_state.h"
 #include "opzioni.h"
 #include "progressione.h"
@@ -1321,6 +1323,13 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
                 }
 
                 svuota();   // l'infiltrato puo' essere comparso
+            }
+
+            // MNEG: dopo le battute e l'indizio, la bottega del Venditore
+            if(indice == negozio::NPC_VENDITORE)
+            {
+                attendi(1);
+                menu::bottega(s_dialogo_in_alto, false);
             }
 
             dialogo_fine();

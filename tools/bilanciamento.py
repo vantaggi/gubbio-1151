@@ -65,14 +65,41 @@ def livelli_lungo_la_storia(esperienza_nemico=None, con_quest=False):
     return livelli
 
 
+# La bisaccia piena del Venditore (MNEG, include/negozio.h): con tutte le scorte comprate si arriva a Corrado col
+# massimo che si porta (battaglia_dati.h, OGGETTI[].massimo), cinque Crescia e cinque Biscotti.
+BISACCIA_PIENA = {M.CRESCIA: 5, M.BISCOTTI: 5}
+
+
 class Medio(M.Battaglia):
-    """Un giocatore plausibile: usa le abilita' ma senza calcolo."""
+    """Un giocatore plausibile: usa le abilita' ma senza calcolo. Con 'scorte' ({OggettoId: quanti}) mangia anche:
+    una Crescia a chi e' sotto un terzo dei PV, un Biscotto a chi brucia forte; un viveri per round."""
+
+    scorte = None
+
+    def _viveri(self, e):
+        if not self.scorte or self._mangiato:
+            return None
+        f = self.piu_ferito()
+        if (self.scorte.get(M.CRESCIA, 0) > 0 and f >= 0 and
+                M.idiv(self.eroi[f].pv * 100, self.eroi[f].pv_max) < 33 and self.rng.random() < 0.7):
+            return (M.CRESCIA, f)
+        ustionato = [k for k, u in enumerate(self.eroi) if u.vivo() and u.ustione_cariche >= 2]
+        if self.scorte.get(M.BISCOTTI, 0) > 0 and ustionato and self.rng.random() < 0.5:
+            return (M.BISCOTTI, ustionato[0])
+        return None
 
     def pilota(self):
         rng = self.rng
+        self._mangiato = False
         for e, eroe in enumerate(self.eroi):
             if not eroe.vivo():
                 self.comandi[e] = (M.T_ABILITA, M.ATTACCO, -1, 0)
+                continue
+            viveri = self._viveri(e)
+            if viveri:
+                self.scorte[viveri[0]] -= 1
+                self._mangiato = True
+                self.comandi[e] = (M.T_OGGETTO, viveri[0], viveri[1], 0)
                 continue
             t = rng.choice([n for n, u in enumerate(self.nemici) if u.vivo()])
             firma = M.ABILITA_FIRMA[e]
@@ -96,7 +123,7 @@ class Medio(M.Battaglia):
             self.comandi[e] = rng.choice(opz)
 
 
-def gioca(incontro, liv, pilota, seme, scudo_meno=0, ceri=False):
+def gioca(incontro, liv, pilota, seme, scudo_meno=0, ceri=False, scorte=None):
     crescita = leggi_tabella("CRESCITA_PERCENTO")
     base = M.STATISTICHE_EROI
     try:
@@ -106,6 +133,7 @@ def gioca(incontro, liv, pilota, seme, scudo_meno=0, ceri=False):
         if pilota == "medio":
             b = Medio(incontro, seme, scudi_in_meno=scudo_meno, ceri=ceri)
             b.rng = random.Random(seme * 7919)
+            b.scorte = dict(scorte) if scorte else None
         else:
             b = M.Battaglia(incontro, seme, pilota_debole=(pilota == "debole"), scudi_in_meno=scudo_meno, ceri=ceri)
         return b.gioca()
@@ -113,9 +141,10 @@ def gioca(incontro, liv, pilota, seme, scudo_meno=0, ceri=False):
         M.STATISTICHE_EROI = base
 
 
-def misura(incontro, liv, pilota, semi=200, scudo_meno=0, ceri=False):
+def misura(incontro, liv, pilota, semi=200, scudo_meno=0, ceri=False, scorte=None):
     """(percentuale di vittorie, round mediano delle vittorie)."""
-    vinte = sorted(f.round for f in (gioca(incontro, liv, pilota, s, scudo_meno, ceri) for s in range(1, semi + 1))
+    vinte = sorted(f.round for f in (gioca(incontro, liv, pilota, s, scudo_meno, ceri, scorte)
+                                     for s in range(1, semi + 1))
                    if f.esito == M.VITTORIA)
     return len(vinte) * 100 // semi, (vinte[len(vinte) // 2] if vinte else None)
 
@@ -135,6 +164,8 @@ def main():
                 riga.append(f"medio scudo-1 {v}% r{r}")
                 v, r = misura(i, livelli[i], "medio")
                 riga.append(f"medio senza ceri {v}% r{r}")
+                v, r = misura(i, livelli[i], "medio", ceri=True, scorte=BISACCIA_PIENA)
+                riga.append(f"medio bisaccia piena {v}% r{r}")
             print("  " + " | ".join(riga))
     print("facoltative, al livello piu' basso")
     for i, liv in LIVELLO_FACOLTATIVI.items():

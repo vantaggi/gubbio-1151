@@ -141,6 +141,10 @@ private:
 [[nodiscard]] Esito pagina_compagni(const bn::sprite_palette_ptr& palette, bool istantanea);
 [[nodiscard]] Esito pagina_opzioni(const bn::sprite_palette_ptr& palette, bool istantanea);
 
+// La bottega del Venditore (MNEG, src/menu_bottega.cpp), sopra la scena dopo le sue battute; col dialogo in cima se
+// Ubaldo sta in basso. Con istantanea=true scrive "Istantanea bottega" (o "bottega_in_alto") e ritorna.
+void bottega(bool dialogo_in_alto, bool istantanea);
+
 }
 
 #endif
