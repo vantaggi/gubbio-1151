@@ -371,9 +371,13 @@ def _porta_del_morto(q, x0, ybase, h):
     q.conta("porta_del_morto")
 
 
-def _finestra(q, x0, y0, w, h, seme, imposte):
-    """Finestra ad arco col davanzale e la sua ombra; a volte con le imposte di legno o il vaso di fiori."""
-    _vano_arco(q, x0, y0, w, h, lambda x, y: NERO)
+def _finestra(q, x0, y0, w, h, seme, imposte, chiusa=False):
+    """Finestra ad arco col davanzale e la sua ombra; a volte con le imposte di legno o il vaso di fiori.
+    chiusa: scuri di legno serrati, per le finestrelle basse che, nere, sembrerebbero porte (M2)."""
+    if chiusa:
+        _vano_arco(q, x0, y0, w, h, lambda x, y: (L, 0) if x == w // 2 else (L, 1))
+    else:
+        _vano_arco(q, x0, y0, w, h, lambda x, y: NERO)
     q.rett(x0 - 1, y0 + h, w + 2, 1, (P, 4))
     q.rett(x0, y0 + h + 1, w + 1, 1, (P, 1))
     if imposte:
@@ -385,15 +389,18 @@ def _finestra(q, x0, y0, w, h, seme, imposte):
 
 
 def _bottega(q, x0, ybase, w, h, seme):
-    """La bottega al piano terra: un arco largo, dentro il buio con la merce, davanti il banco di legno."""
+    """La bottega al piano terra: un arco largo chiuso dalle imposte di legno con la sbarra, davanti il banco."""
     def dentro(x, y):
-        return NERO if y < h - 6 else (L, 0)
+        # le imposte chiuse, a tavole verticali (solo dove si entra il vano e' aperto e luminoso: dipingi_ingressi)
+        if y >= h - 6:
+            return (L, 0)
+        tavola = (x // 3) % 2
+        if x % 3 == 2:
+            return (L, 0)
+        return (L, 2) if tavola == 0 and x < w // 2 else (L, 1)
     _vano_arco(q, x0, ybase - h, w, h, dentro)
-    # la merce sugli scaffali: piccoli segni caldi nel buio
-    for k in range(2, w - 3, 3):
-        c = (T, 3) if h32(seme, k) < 0.5 else (L, 2)
-        q.punto(x0 + k, ybase - h + 7 + (k % 2), c)
-        q.punto(x0 + k, ybase - h + 8 + (k % 2), scuro(c))
+    # la sbarra di ferro che tiene chiuse le imposte
+    q.rett(x0 + 2, ybase - h // 2 - 1, w - 4, 1, (L, 0))
     # il banco
     q.rett(x0 - 1, ybase - 6, w + 2, 2, (L, 2))
     q.rett(x0 - 1, ybase - 4, w + 2, 3, (L, 1))
@@ -425,7 +432,7 @@ def dipingi_casa(q, casa, w_celle):
     if alta < 16:
         # facciata bassa: solo una finestrella
         if larga >= 12:
-            _finestra(q, X0 + larga // 2 - 2, Y0 + 3, 5, max(4, alta - 8), casa.n, False)
+            _finestra(q, X0 + larga // 2 - 2, Y0 + 3, 5, max(4, alta - 8), casa.n, False, chiusa=True)
         return
     # il piano terra: porta (o bottega) e, se c'e' posto, la porta del morto
     hp = min(28, alta - 4)       # M2: porte e botteghe di almeno 26 pixel dove la facciata e' alta 4-5 tile
@@ -1270,3 +1277,228 @@ def dipingi_roccia(q, x, y, seme):
         if (crepa, yy) in dentro:
             q.punto(crepa, yy, (P, 1))
     q.conta("roccia")
+
+
+# --- gli ingressi (Cioti 4 nov sera: in citta' non si capisce dove sono le porte) ---------------------------
+# Un solo disegno per le porte dove si entra, diverso da tutto il resto: il vano APERTO con la luce calda di
+# dentro (l'unico vano luminoso della citta': le botteghe delle case hanno le imposte chiuse), le ante aperte
+# contro gli stipiti, gli stipiti e l'arco di pietra chiara, la soglia, la pozza di luce sul selciato davanti e
+# la lanterna appesa alla mensola. Colori del banco VITA (nero, ocra, legno, pietra 1-3) per il vano e del banco
+# PIETRA per il selciato: la luce resta calda anche di notte (le rampe O e R del banco 3 non cambiano).
+def _luce_dentro(u, v, alto):
+    """Il colore del vano aperto: u in 0..1 da sinistra a destra, v pixel dal fondo (0 = soglia). In fondo il
+    pavimento illuminato, piu' su il buio."""
+    if v <= 2:
+        return (O, 3) if 0.3 <= u <= 0.7 else (O, 2)
+    if v <= 6:
+        return (O, 2) if 0.25 <= u <= 0.75 else (O, 1)
+    if v <= 9:
+        return (O, 1) if 0.35 <= u <= 0.65 else (L, 0)
+    return NERO
+
+
+def _lanterna(q, x, y):
+    """La lanterna appesa alla mensola di ferro (M6: la gabbia vista di fronte col tettuccio sopra): accesa."""
+    q.rett(x, y, 4, 1, (L, 0))           # la mensola
+    q.punto(x + 3, y + 1, (L, 0))
+    q.rett(x + 2, y + 2, 3, 1, (L, 0))   # il tettuccio
+    q.punto(x + 2, y + 3, (L, 0))
+    q.punto(x + 3, y + 3, (O, 3))
+    q.punto(x + 4, y + 3, (L, 0))
+    q.punto(x + 2, y + 4, (L, 0))
+    q.punto(x + 3, y + 4, (O, 2))
+    q.punto(x + 4, y + 4, (L, 0))
+    q.rett(x + 2, y + 5, 3, 1, (L, 0))
+
+
+def dipingi_ingresso_frontale(q, x0, x1, ybase, alto=28):
+    """L'ingresso su una facciata che guarda in basso: il vano di (x1 - x0) pixel per 'alto', ad arco, aperto."""
+    w = x1 - x0
+    r = w / 2.0
+    top = ybase - alto + 1
+    for yy in range(top, ybase + 1):
+        for xx in range(x0, x1):
+            dx = xx - x0 + 0.5 - r
+            dy = yy - top + 0.5
+            d2 = dx * dx + (r - dy) ** 2 if dy < r else dx * dx
+            fuori = dy < r and d2 > r * r
+            if fuori:
+                continue
+            bordo = xx - x0 < 2 or x1 - 1 - xx < 2 or (dy < r and d2 > (r - 2) ** 2)
+            v = ybase - yy
+            if bordo:
+                # stipiti e ghiera di pietra chiara: luce a sinistra, ombra a destra (L1); la chiave in cima
+                sinistra = xx - x0 < w / 2
+                c = (P, 3) if sinistra else (P, 2)
+                if dy < r and ((xx - x0) // 3) % 2 and abs(dx) > 2:
+                    c = (P, 2) if sinistra else (P, 1)
+                if abs(dx) < 1.5 and dy < 2.5:
+                    c = (P, 3)
+            else:
+                u = (xx - x0 - 2) / max(1, w - 5)
+                c = _luce_dentro(u, v, alto)
+                # le ante aperte verso dentro, contro gli stipiti: 2 pixel di legno per parte
+                if xx - x0 in (2, 3) and v < alto - r:
+                    c = (L, 2) if xx - x0 == 2 else (L, 1)
+                elif x1 - 1 - xx in (2, 3) and v < alto - r:
+                    c = (L, 0) if x1 - 1 - xx == 2 else (L, 1)
+            q.punto(xx, yy, c)
+    # la soglia: un gradino di pietra
+    q.rett(x0, ybase, w, 1, (P, 3))
+    _lanterna(q, x1 - 2, top + 2)
+    q.conta("ingresso")
+
+
+def pozza_di_luce(q, x0, x1, y0, verso=(0, 1), lungo=6):
+    """La luce che esce dal vano e schiarisce il selciato davanti (un tono, a ventaglio): si vede da lontano."""
+    for k in range(lungo):
+        allarga = k // 2
+        for t in range(-allarga, (x1 - x0) + allarga):
+            if verso[1]:
+                xx, yy = x0 + t, y0 + k * verso[1]
+            else:
+                xx, yy = y0 + k * verso[0], x0 + t
+            if 0 <= xx < q.w and 0 <= yy < q.h and q.tipo[yy][xx] == "suolo":
+                bordo = t in (-allarga, (x1 - x0) + allarga - 1)
+                if bordo and k > 1:
+                    continue
+                c = q.px[yy][xx]
+                if c[0] == P:
+                    q.px[yy][xx] = (P, min(4, c[1] + 1))
+
+
+def dipingi_ingresso_laterale(q, x, y0, y1, verso):
+    """L'ingresso su un fianco (le celle del varco in colonna): si vede di scorcio dall'alto. Dentro la colonna
+    di celle, dal lato della strada: la spalla di pietra in alto e in basso, il vano aperto con la luce verso
+    l'esterno, l'anta aperta; 'verso' e' +1 se la strada sta a destra, -1 a sinistra."""
+    X0 = x * 8
+    for yy in range(y0, y1):
+        for k in range(8):
+            xx = X0 + (k if verso > 0 else 7 - k)       # k = 7 sul lato della strada
+            v = yy - y0
+            if v < 3 or y1 - 1 - yy < 2:
+                c = (P, 3) if v < 3 and v != 2 else (P, 1)   # architrave chiaro in alto, spalla in ombra in basso
+            elif k < 2:
+                c = NERO
+            else:
+                u = (y1 - 1 - yy) / max(1, y1 - y0 - 5)      # piu' luce verso la strada e verso il basso
+                c = (O, 3) if k >= 6 and 0.2 < u < 0.8 else ((O, 2) if k >= 4 else (O, 1))
+                if v in (3, 4) and k >= 3:
+                    c = (L, 1) if v == 3 else (L, 0)         # l'anta aperta contro l'architrave
+            q.punto(xx, yy, c)
+    lx = X0 + 8 if verso > 0 else X0 - 5
+    _lanterna(q, lx, y0 - 2)
+    q.conta("ingresso")
+
+
+def accendi_portale(q, x0, x1, ybase, cerca=48):
+    """Il portale gia' disegnato sopra le celle del varco (il vano buio o le ante di legno, collegati alla soglia):
+    lo si apre e lo si accende con la luce di dentro, tenendone la forma. Falso se non c'e' o e' piu' basso di 22."""
+    def vano(c):
+        return c == NERO or c[0] in (L, N) and c[1] <= 1 or c == ("neutri", 0)
+    semi = []
+    for yb in range(ybase - 1, ybase - 13, -1):           # il fondo del vano puo' stare sopra un gradino
+        semi = [(xx, yb) for xx in range(x0, x1) if vano(q.px[yb][xx])]
+        if len(semi) >= 4:
+            ybase = yb + 1
+            break
+    dentro, coda = set(semi), list(semi)
+    while coda:
+        xx, yy = coda.pop()
+        for nx, ny in ((xx + 1, yy), (xx - 1, yy), (xx, yy - 1)):
+            if (nx, ny) not in dentro and x0 - 8 <= nx < x1 + 8 and ybase - cerca <= ny <= ybase and vano(q.px[ny][nx]):
+                dentro.add((nx, ny))
+                coda.append((nx, ny))
+    if not dentro:
+        return False
+    top = min(y for _, y in dentro)
+    if ybase - top < 21:
+        return False
+    sx, dx = min(x for x, _ in dentro), max(x for x, _ in dentro)
+    larga = dx - sx + 1
+    for (xx, yy) in dentro:
+        v = ybase - 1 - yy
+        u = (xx - sx) / max(1, larga - 1)
+        c = _luce_dentro(u, v, ybase - top)
+        if xx - sx in (0, 1) and v < (ybase - top) * 0.7:
+            c = (L, 2) if xx - sx == 0 else (L, 1)
+        elif dx - xx in (0, 1) and v < (ybase - top) * 0.7:
+            c = (L, 0) if dx - xx == 0 else (L, 1)
+        q.px[yy][xx] = c
+    q.rett(sx, ybase, larga, 1, (P, 3))
+    _lanterna(q, dx + 1, top + 3)
+    q.conta("ingresso")
+    return True
+
+
+# Le botteghe e le case dove si entra hanno ognuna la sua tenda sopra l'ingresso, a strisce col colore del
+# mestiere: da lontano si riconoscono (Cioti 4 nov sera: «gli edifici da fuori sono anonimi»). I monumenti
+# (Consoli, Basilica) si riconoscono gia' dalla facciata e non la hanno.
+TENDE = {"taverna": (R, 2), "spezieria": (V, 2), "casa_medico": (A, 2), "bottega_conti": (O, 2),
+         "bottega_carradore": (R, 1)}
+
+
+def dipingi_tenda(q, x0, x1, y, colore):
+    """La tenda a strisce sopra la porta in 3/4: il telo che scende verso chi guarda (strisce verticali di 2 pixel,
+    il colore del mestiere e la tela chiara), l'orlo a festoni, l'ombra sul muro sotto (L4)."""
+    alto = 7
+    for yy in range(y, y + alto):
+        for xx in range(x0, x1):
+            k = (xx - x0) // 3
+            c = colore if k % 2 == 0 else (O, 1)
+            if yy == y:
+                c = (L, 0)                                       # il bastone in alto
+            elif yy >= y + alto - 2:
+                c = scuro(c, 1) if c[0] != O else (O, 1)        # l'orlo, piu' in ombra (la tenda scende verso chi guarda)
+            if yy == y + alto - 1 and (xx - x0) % 3 == 1:
+                continue                                         # i festoni
+            q.punto(xx, yy, c)
+    # l'ombra della tenda sul muro e sul vano, due righe sotto l'orlo (L4)
+    for xx in range(x0 + 1, x1 + 1):
+        for yy in (y + alto, y + alto + 1):
+            if 0 <= xx < q.w and yy < q.h:
+                c = q.px[yy][xx]
+                if c[0] == P:
+                    q.px[yy][xx] = scuro(c, 1)
+                elif c[0] == O:
+                    q.px[yy][xx] = (O, max(1, c[1] - 1))
+    q.conta("tenda")
+
+
+def dipingi_ingressi(q, a, griglia):
+    """Ogni ingresso dell'area (riga 'ingresso'), col disegno giusto per il lato su cui sta."""
+    h, w = len(griglia), len(griglia[0])
+    for lettera in sorted(a.get("ingressi", {})):
+        celle = [(x, y) for y in range(h) for x in range(w) if griglia[y][x] == lettera]
+        if not celle:
+            continue
+        xs, ys = sorted({x for x, _ in celle}), sorted({y for _, y in celle})
+        if len(ys) == 1:
+            y = ys[0]
+            x0, x1 = xs[0] * 8, (xs[-1] + 1) * 8
+            ybase = y * 8 + 7
+            # sotto il vano c'e' la strada: la soglia guarda in basso. Se il pittore del monumento ha gia' il suo
+            # portale (Consoli, Basilica, chiese), si accende quello; se no si disegna il vano dello standard.
+            if not accendi_portale(q, x0, x1, ybase):
+                dipingi_ingresso_frontale(q, x0, x1, ybase)
+            tenda = TENDE.get(a["ingressi"][lettera])
+            if tenda:
+                dipingi_tenda(q, x0 - 6, x1 + 6, ybase - 29, tenda)
+            pozza_di_luce(q, x0, x1, ybase + 1, (0, 1))
+        else:
+            x = xs[0]
+            destra = x + 1 < w and not _solida_cella(griglia[ys[0]][x + 1])
+            verso = 1 if destra else -1
+            y0, y1 = ys[0] * 8, (ys[-1] + 1) * 8
+            dipingi_ingresso_laterale(q, x, y0, y1, verso)
+            tenda = TENDE.get(a["ingressi"][lettera])
+            if tenda:
+                # di fianco la tenda sporge sulla strada: un telo stretto sopra il vano
+                tx = x * 8 + 8 if verso > 0 else x * 8 - 6
+                dipingi_tenda(q, tx, tx + 6, y0 - 1, tenda)
+            pozza_di_luce(q, y0, y1, x * 8 + 8 if verso > 0 else x * 8 - 1, (verso, 0))
+
+
+def _solida_cella(c):
+    import genera_mondo as G
+    return G.solida(c)

@@ -930,7 +930,7 @@ def esamina(st, cx, cy):
 # --- le stanze --------------------------------------------------------------------------------------
 def taverna(variante="giorno"):
     """La taverna del corso, di Padellino (San Pietro): il banco con le botti, il camino, tre tavoli.
-    Nel DIGIUNO i tavoli sono vuoti e le panche stanno capovolte sopra (l'ordine di Ubaldo, A1-05)."""
+    Nel DIGIUNO i tavoli sono vuoti con gli sgabelli capovolti sopra (l'ordine di Ubaldo, A1-05)."""
     st = Stanza("taverna", 14, 9, "cotto", seme=3)
     st.finestra(1); st.finestra(3)
     scaffale_a_muro(st, 5, 2, "fiaschi")
@@ -943,9 +943,8 @@ def taverna(variante="giorno"):
     pieno = variante == "giorno"
     for (tx, ty) in ((1, 4), (5, 5), (1, 7)):
         tavolo(st, tx, ty, 2, oggetti=((5, 1, "boccale"), (18, 0, "pane")) if pieno else ())
-        if pieno:
-            panca(st, tx, ty + 1, 2)
-        else:
+        panca(st, tx, ty + 1, 2)       # le panche restano: la griglia del gioco e' la stessa nelle due varianti
+        if not pieno:
             for k in range(2):
                 sgabello(st, tx + k, ty, rovesciato=True, dy=-2)
     if pieno:
@@ -1087,11 +1086,17 @@ INTERNI = {
 STANZA_DELL_AREA = {v[0]: k for k, v in INTERNI.items()}
 
 
-def stanza_di_gioco(nome):
+# Le varianti di fase nel gioco (INTp): l'area, il nome della variante (VARIANTI) e l'id per mondo.h. Quando
+# valgono lo decide la storia (storia::variante_dell_area: la taverna nel DIGIUNO, la bottega dei conti nella NOTTE
+# con BORGO_FUORI). La griglia resta quella della stanza di giorno: le varianti spostano solo cose piccole.
+VARIANTI_DI_GIOCO = [("taverna_interno", "digiuno"), ("bottega_conti_interno", "rovesciata")]
+
+
+def stanza_di_gioco(nome, variante="giorno"):
     """La stanza disegnata coi riferimenti (rampa, tono), senza figure."""
     global GIOCO, NOTTE
     GIOCO, NOTTE = True, False
-    st = STANZE[nome]("giorno")
+    st = STANZE[nome](variante)
     st.disegna()
     return st
 
@@ -1160,13 +1165,13 @@ def dipinge(area_id):
 
 def dipingi(q, a):
     """Il fondale dell'interno nel Quadro di genera_mondo (riferimenti (rampa, tono) per pixel)."""
-    st = stanza_di_gioco(STANZA_DELL_AREA[a["id"]])
+    st = stanza_di_gioco(STANZA_DELL_AREA[a["id"]], a.get("variante", "giorno"))
     if (st.t.w, st.t.h) != (q.w, q.h):
         raise ValueError(f"{a['id']}: la stanza e' {st.t.w}x{st.t.h} px, l'area {q.w}x{q.h}: rifare --aree")
     for y in range(q.h):
         for x in range(q.w):
             q.px[y][x] = st.t.px[y][x]
-    nella_rampa(q, a["id"])
+    nella_rampa(q, a["id"] + (":" + a["variante"] if a.get("variante") else ""))
     return q
 
 

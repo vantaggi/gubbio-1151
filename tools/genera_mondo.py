@@ -196,11 +196,12 @@ if len(CELLE) >= PRIMO_VARCO:
 PALETTE_FONDALI = PC.PALETTE_BASE   # il banco 0: (rampa, tono) della Guida, vedi tools/pittore_citta.py
 
 
-def banchi_fondali(palette_stile, cupa=False, notte=False):
+def banchi_fondali(palette_stile, cupa=False, notte=False, dentro=False):
     """I banchi della palette dei fondali in BGR555 (pezzo EDI): di giorno; cupa (la gola: il banco 0 e' la
     palette cupa, gli altri le rampe di notte); notte (la citta' dopo il rientro da Porta Metauro: tutte le
     rampe di notte, ma oro e vermiglio del banco della vita restano caldi, perche' sono fiaccole e drappi
-    alla luce delle fiaccole, L5)."""
+    alla luce delle fiaccole, L5); dentro (gli interni di notte: anche oro e vermiglio alle rampe di notte, il
+    tappeto della soglia non brilla piu' della stanza)."""
     import pittore_citta as _PC
     out = []
     for b, banco in enumerate(BANCHI_FONDALI):
@@ -208,7 +209,8 @@ def banchi_fondali(palette_stile, cupa=False, notte=False):
             out.append([S.colore(palette_stile, r, True) for r in palette_cupa(palette_stile)])
             continue
         scura = cupa or notte
-        out.append([S.colore(palette_stile, r, scura and not (b == 3 and r[0] in (_PC.O, _PC.R))) for r in banco])
+        caldi = b == 3 and not dentro
+        out.append([S.colore(palette_stile, r, scura and not (caldi and r[0] in (_PC.O, _PC.R))) for r in banco])
     return out
 
 
@@ -2381,6 +2383,8 @@ def ridipingi(a, celle, tile_di, mondo, elementi):
     if citta:
         PC.contorno_selettivo(q)
     PI.apri_portali(q, a)                 # i portoni da cui si entra negli interni: aperti, col vano buio
+    if citta:
+        PC.dipingi_ingressi(q, a, g)      # e il disegno unico degli ingressi: vano luminoso, soglia, lanterna
     elementi["citta"] = dict(q.elementi)
     return q
 
@@ -2444,7 +2448,8 @@ def indicizza_tile(q, x, y, a):
             migliore = (costo, b, mappa)
     costo, b, mappa = migliore
     if mappa:
-        COMPROMESSI.setdefault(a["id"], []).append((x, y, costo))
+        chiave = a["id"] + (":" + a["variante"] if a.get("variante") else "")     # le varianti contano a parte
+        COMPROMESSI.setdefault(chiave, []).append((x, y, costo))
     banco = BANCHI_FONDALI[b]
     indice = {c: banco.index(c, 1) for c in banco[1:]}
     return b, [[indice[mappa.get(c, c)] for c in r] for r in pix]
@@ -2931,6 +2936,14 @@ def scrivi_header(aree, grafo, palette_stile):
         out += [f"// Fondale {gw}x{gh}" + (" (big map, riga per riga)" if grande(a) else " (a blocchi 32x32)")
                 + ": fuori dall'area tile vuoti.",
                 f"inline constexpr uint16_t FONDALE_{nome}[{gw * gh}] = {{", a_blocchi(fondale, 32), "};", ""]
+        for v in a.get("varianti", []):
+            vn = f"{nome}_{v['nome'].upper()}"
+            fv = celle_fondale(a, [i | (v["specchi"][k] << 10) | (v["banchi"][i] << 12)
+                                   for k, i in enumerate(v["indici"])])
+            out += [f"// La variante {v['nome']} di {a['id']}: {len(v['tile'])} tile, stessa griglia.",
+                    f"inline constexpr bn::tile TILE_{vn}[{len(v['tile'])}] = {{"]
+            out += ["    { { " + ", ".join(f"0x{w:08X}" for w in parole_tile(t)) + " } }," for t in v["tile"]]
+            out += ["};", "", f"inline constexpr uint16_t FONDALE_{vn}[{gw * gh}] = {{", a_blocchi(fv, 32), "};", ""]
 
     out += ["inline constexpr Area AREE[AREE_CONTEGGIO] = {"]
     for a in aree:
@@ -2961,6 +2974,17 @@ def scrivi_header(aree, grafo, palette_stile):
         ]
     out += ["};", ""]
 
+    varianti = [(a["id"].upper(), v["nome"].upper(), len(v["tile"])) for a in aree for v in a.get("varianti", [])]
+    out += ["// Le stanze che cambiano aspetto con la fase (INTp, tools/pittore_interni.py VARIANTI_DI_GIOCO): un altro",
+            "// fondale con gli stessi lati e la stessa griglia. Quando vale lo decide la storia (variante_dell_area).",
+            "struct Variante", "{", "    AreaId area;", "    const uint16_t* fondale;", "    const bn::tile* tile;",
+            "    uint16_t tile_conteggio;", "};", "",
+            "enum class VarianteId : uint8_t", "{"] + [f"    {n}_{v}," for n, v, _ in varianti] + ["};", "",
+            f"inline constexpr int VARIANTI = {len(varianti)};",
+            "inline constexpr Variante VARIANTE[VARIANTI] = {"]
+    out += [f"    {{ AreaId::{n}, FONDALE_{n}_{v}, TILE_{n}_{v}, {k} }}," for n, v, k in varianti]
+    out += ["};", ""]
+
     out += ["// I tipi di tile del suolo, come li usa MAPPA_<AREA> (i tile veri sono in TILE_<AREA>).",
             "enum class TileFondale : uint8_t", "{"]
     out += [f"    {nome}," for nome, _ in TILE_FONDALI]
@@ -2977,7 +3001,8 @@ def scrivi_header(aree, grafo, palette_stile):
             "// I banchi della palette dei fondali (pezzo EDI, tools/pittore_citta.py): il banco 0 e' PALETTE_FONDALI,",
             "// gli altri sono tetti, pietra, vita, verde e giardino. La cella del fondale porta il banco nei bit 12-15.",
             f"inline constexpr int BANCHI_FONDALI = {len(BANCHI_FONDALI)};", ""]
-    for nome, kw in (("", {}), ("_CUPA", {"cupa": True}), ("_NOTTE", {"notte": True})):
+    for nome, kw in (("", {}), ("_CUPA", {"cupa": True}), ("_NOTTE", {"notte": True}),
+                     ("_NOTTE_INTERNI", {"notte": True, "dentro": True})):
         parole = [v for banco in banchi_fondali(palette_stile, **kw) for v in banco]
         out += [f"inline constexpr uint16_t PALETTE_FONDALI_BANCHI{nome}[BANCHI_FONDALI * 16] = {{",
                 a_blocchi(parole, 8, lambda v: f"0x{v:04X}"), "};", ""]
@@ -3093,6 +3118,14 @@ def genera(sorgenti, palette_stile, mondo=None):
             raise ErroreMondo(f"{a['file']}: celle di edificio calpestabili: {calpestabili[:4]}")
         a["tile"], a["indici"], elementi = disegna_area(a, mondo)
         controlla_grafica(a, a["tile"], elementi)
+        a["varianti"] = []
+        for aid, nome in PI.VARIANTI_DI_GIOCO:      # le stanze che cambiano con la fase (INTp): stessa griglia
+            if aid == a["id"]:
+                v = dict(a, variante=nome)
+                tile, indici, _ = disegna_area(v, mondo)
+                controlla_grafica(v, tile, {})
+                a["varianti"].append({"nome": nome, "tile": tile, "indici": indici, "banchi": v["banchi"],
+                                      "specchi": v["specchi"]})
     return scrivi_header(aree, mondo["grafo"], palette_stile)
 
 
