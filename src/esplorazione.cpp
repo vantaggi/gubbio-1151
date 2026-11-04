@@ -78,6 +78,7 @@ namespace
     constexpr Banchi BANCHI_GIORNO = banchi(mondo::PALETTE_FONDALI_BANCHI);
     constexpr Banchi BANCHI_CUPI = banchi(mondo::PALETTE_FONDALI_BANCHI_CUPA);
     constexpr Banchi BANCHI_NOTTE = banchi(mondo::PALETTE_FONDALI_BANCHI_NOTTE);
+    constexpr Banchi BANCHI_NOTTE_INTERNI = banchi(mondo::PALETTE_FONDALI_BANCHI_NOTTE_INTERNI);   // senza fiaccole
     constexpr int FRAME_RIFLESSI = 20;             // ogni quanto i riflessi dell'acqua cambiano
     constexpr int COLORE_ACQUA = 12;               // i due colori dell'acqua nella palette dei fondali
     constexpr int COLORE_ACQUA_CHIARA = 13;
@@ -295,7 +296,7 @@ void Esplorazione::_carica_fondale(bool etichetta)
     _tiles.reset();
 
     // le stanze della gola hanno la palette cupa; la citta' di notte le rampe di notte (pezzo EDI)
-    const Banchi& c = a.cupa ? BANCHI_CUPI : (_notte ? BANCHI_NOTTE : BANCHI_GIORNO);
+    const Banchi& c = a.cupa ? BANCHI_CUPI : (_notte ? (a.interno ? BANCHI_NOTTE_INTERNI : BANCHI_NOTTE) : BANCHI_GIORNO);
     _palette.set_colors(bn::span<const bn::color>(c.colori));
 
     // una stanza che cambia con la fase (INTp): stessi lati e stessa griglia, altri tile e altro fondale
