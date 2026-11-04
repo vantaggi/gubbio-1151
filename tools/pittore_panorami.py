@@ -160,12 +160,23 @@ def finestra(t, x, y, tipo, notte, r):
 
 
 def tetto(t, x0, y, largo, falde=False):
-    """Il tetto a coppi: la fila dei coppi a righe, la gronda che fa ombra sul muro sotto."""
+    """Il tetto a coppi (F1): i coppi in colonne di tre toni (luce a sinistra, base, ombra fra un coppo
+    e l'altro), a file di due righe sfalsate; il colmo piu' chiaro; la gronda che fa ombra sul muro
+    sotto. Ogni tono tiene almeno due pixel in verticale (niente pixel orfani, P3)."""
+    righe = [(y, x0 - 1, x0 + largo + 1), (y + 1, x0 - 1, x0 + largo + 1)]
     if falde:
-        t.trapezio(x0 + largo // 2, y - 3, y, largo - 4, largo + 2, COTTO)
-    t.rett(x0 - 1, y, largo + 2, 2, COTTO)
-    for k in range(x0 - 1, x0 + largo + 1, 2):
-        t.punto(k, y, COTTO_C)
+        for k, yy in enumerate((y - 1, y - 2, y - 3)):
+            m = (largo + 2 - (largo - 4)) * (3 - k) / 6.0
+            righe.append((yy, int(x0 - 1 + (largo + 2) / 2 - (largo - 4) / 2 - m / 2 + 0.5) - 1,
+                          int(x0 - 1 + (largo + 2) / 2 + (largo - 4) / 2 + m / 2 + 0.5) + 1))
+    for yy, a, b in righe:
+        fila = (y + 1 - yy) // 2
+        for x in range(a, b):
+            if yy == y - 3:
+                c = COTTO_C                                    # il colmo
+            else:
+                c = (COTTO_C, COTTO, COTTO_S)[(x + fila) % 3]
+            t.punto(x, yy, c)
     t.rett(x0, y + 2, largo, 1, PIETRA_S)
 
 
@@ -361,7 +372,13 @@ def campo(momento):
     for k in range(22):
         x = 12 + k * 23 + r.randint(-4, 4)
         y = QUADRO - 6 + r.randint(-4, 2)
-        t.trapezio(x, y - 7, y, 1, 11, PIETRA_C if k % 3 else VERMIGLIO)
+        tela_c, tela_s = (PIETRA_C, PIETRA) if k % 3 else (VERMIGLIO, COTTO_S)
+        for dy in range(7):                                  # la tenda come un solido (L1, L2, L4)
+            m = int((1 + 10 * dy / 6) / 2)
+            t.rett(x + m + 1, y - 7 + dy, 3, 1, VERDE_S)     # l'ombra portata a destra, sul prato
+            t.rett(x - m, y - 7 + dy, m + 1, 1, tela_c)      # la falda a sinistra prende la luce
+            t.rett(x + 1, y - 7 + dy, m, 1, tela_s)          # quella a destra sta in ombra
+        t.rett(x, y - 3, 2, 3, CONTORNO)                     # l'ingresso, il vano scuro
         t.rett(x, y - 9, 1, 3, CONTORNO)
         if notte and k % 2 == 0:
             fuoco(t, x + 9, y - 3)
