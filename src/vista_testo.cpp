@@ -45,9 +45,11 @@ namespace
     bn::sprite_ptr crea_sprite(int x, int y, const bn::sprite_tiles_ptr& tiles,
                                const bn::sprite_palette_ptr& palette)
     {
-        return bn::sprite_ptr::create(x + 16 - LARGHEZZA_SCHERMO / 2, y + 8 - ALTEZZA_SCHERMO / 2,
-                                      bn::sprite_shape_size(bn::sprite_shape::WIDE, bn::sprite_size::BIG),
-                                      tiles, palette);
+        bn::sprite_ptr s = bn::sprite_ptr::create(x + 16 - LARGHEZZA_SCHERMO / 2, y + 8 - ALTEZZA_SCHERMO / 2,
+                                                  bn::sprite_shape_size(bn::sprite_shape::WIDE, bn::sprite_size::BIG),
+                                                  tiles, palette);
+        s.set_bg_priority(PRIORITA_RIQUADRI);     // sopra i riquadri e la scena
+        return s;
     }
 
     void pulisci_tiles(bn::sprite_tiles_ptr& tiles)
@@ -279,78 +281,109 @@ bn::sprite_palette_ptr crea_palette_testo()
         bn::sprite_palette_item(bn::span<const bn::color>(COLORI_CORNICE.colori), bn::bpp_mode::BPP_4));
 }
 
+namespace
+{
+    constexpr int TILE_VUOTO = stile::TILE_CORNICE;      // l'ultimo tile del fondo dei riquadri: trasparente
+
+    bn::regular_bg_tiles_ptr tiles_riquadri()
+    {
+        bn::regular_bg_tiles_ptr tiles = bn::regular_bg_tiles_ptr::allocate(TILE_VUOTO + 1, bn::bpp_mode::BPP_4);
+        bn::span<bn::tile> vram_tiles = *tiles.vram();
+
+        for(int t = 0; t <= TILE_VUOTO; ++t)
+        {
+            for(int r = 0; r < 8; ++r)
+            {
+                vram_tiles[t].data[r] = t < TILE_VUOTO ? GUBBIO_VOCE(stile::CORNICE_TILE, t * 8 + r) : 0;
+            }
+        }
+
+        return tiles;
+    }
+
+}
+
+int larghezza_testo(testo::TestoId id)
+{
+    const testo::Testo& t = testo::dati(id);
+    return testo::riga(testo::indice_riga(t, 0)).larghezza;
+}
+
+Riquadri::Riquadri() :
+    _mappa(bn::regular_bg_map_ptr::allocate(
+        bn::size(32, 32), tiles_riquadri(),
+        bn::bg_palette_ptr::create(bn::bg_palette_item(bn::span<const bn::color>(COLORI_CORNICE.colori),
+                                                       bn::bpp_mode::BPP_4)))),
+    // Una mappa 256x256 centrata sullo schermo ha l'angolo in (-8, -48): si sposta in (0, 0).
+    _bg(bn::regular_bg_ptr::create(256 / 2 - LARGHEZZA_SCHERMO / 2, 256 / 2 - ALTEZZA_SCHERMO / 2, _mappa))
+{
+    _bg.set_priority(PRIORITA_RIQUADRI);
+    svuota();
+}
+
+void Riquadri::_cella(int tx, int ty, TileRiquadro t)
+{
+    if(tx < 0 || tx >= 32 || ty < 0 || ty >= 32)
+    {
+        return;
+    }
+
+    bn::regular_bg_map_cell_info info;
+    info.set_tile_index(t.tile);
+    info.set_horizontal_flip(t.hflip);
+    info.set_vertical_flip(t.vflip);
+    info.set_palette_id(_mappa.palette().id());
+    (*_mappa.vram())[ty * 32 + tx] = info.cell();
+}
+
+void Riquadri::svuota()
+{
+    for(int ty = 0; ty < 32; ++ty)
+    {
+        for(int tx = 0; tx < 32; ++tx)
+        {
+            _cella(tx, ty, { TILE_VUOTO, false, false });
+        }
+    }
+}
+
+void Riquadri::cornice(int x, int y, int colonne, int righe)
+{
+    BN_ASSERT(x % 8 == 0 && y % 8 == 0, "Riquadri: la cornice va sulla griglia dei tile");
+    BN_ASSERT(colonne >= 3 && righe >= 3, "Riquadri: una cornice 9-slice vuole almeno 3x3 tile");
+
+    for(int cy = 0; cy < righe; ++cy)
+    {
+        for(int cx = 0; cx < colonne; ++cx)
+        {
+            _cella(x / 8 + cx, y / 8 + cy, tile_cornice(cx, cy, colonne, righe));
+        }
+    }
+}
+
+void Riquadri::cartiglio(int x, int y, int colonne)
+{
+    BN_ASSERT(x % 8 == 0 && y % 8 == 0, "Riquadri: il cartiglio va sulla griglia dei tile");
+
+    for(int cy = 0; cy < 2; ++cy)
+    {
+        for(int cx = 0; cx < colonne; ++cx)
+        {
+            _cella(x / 8 + cx, y / 8 + cy, tile_cartiglio(cx, cy, colonne));
+        }
+    }
+}
+
+void Riquadri::set_visible(bool visibile)
+{
+    _bg.set_visible(visibile);
+}
+
 bn::regular_bg_ptr crea_riquadro_dialogo()
 {
-    constexpr int TILE_VUOTO = stile::TILE_CORNICE;
-
-    bn::regular_bg_tiles_ptr tiles = bn::regular_bg_tiles_ptr::allocate(TILE_VUOTO + 1, bn::bpp_mode::BPP_4);
-    bn::span<bn::tile> vram_tiles = *tiles.vram();
-
-    for(int t = 0; t <= TILE_VUOTO; ++t)
-    {
-        for(int r = 0; r < 8; ++r)
-        {
-            vram_tiles[t].data[r] = t < TILE_VUOTO ? GUBBIO_VOCE(stile::CORNICE_TILE, t * 8 + r) : 0;
-        }
-    }
-
-    bn::bg_palette_ptr palette = bn::bg_palette_ptr::create(
-        bn::bg_palette_item(bn::span<const bn::color>(COLORI_CORNICE.colori), bn::bpp_mode::BPP_4));
-    bn::regular_bg_map_ptr mappa = bn::regular_bg_map_ptr::allocate(bn::size(32, 32), tiles, palette);
-    bn::span<bn::regular_bg_map_cell> celle = *mappa.vram();
-
-    int x0 = stile::DIALOGO_X / 8;
-    int y0 = stile::DIALOGO_Y / 8;
-    int colonne = stile::DIALOGO_COLONNE;
-    int righe = stile::DIALOGO_RIGHE;
-
-    for(int y = 0; y < 32; ++y)
-    {
-        for(int x = 0; x < 32; ++x)
-        {
-            int cx = x - x0;
-            int cy = y - y0;
-            int tile = TILE_VUOTO;
-            bool hflip = false;
-            bool vflip = false;
-
-            if(cx >= 0 && cx < colonne && cy >= 0 && cy < righe)
-            {
-                bool bordo_x = cx == 0 || cx == colonne - 1;
-                bool bordo_y = cy == 0 || cy == righe - 1;
-
-                if(bordo_x && bordo_y)
-                {
-                    tile = stile::TILE_ANGOLO;
-                    hflip = cx != 0;
-                    vflip = cy != 0;
-                }
-                else if(bordo_y)
-                {
-                    tile = GUBBIO_VOCE(stile::LATO_ORIZZONTALE, (cx - 1) % 3);
-                }
-                else if(bordo_x)
-                {
-                    tile = GUBBIO_VOCE(stile::LATO_VERTICALE, (cy - 1) % 3);
-                }
-                else
-                {
-                    tile = stile::TILE_CENTRO;
-                }
-            }
-
-            bn::regular_bg_map_cell_info info;
-            info.set_tile_index(tile);
-            info.set_horizontal_flip(hflip);
-            info.set_vertical_flip(vflip);
-            info.set_palette_id(palette.id());
-            celle[y * 32 + x] = info.cell();
-        }
-    }
-
-    // Una mappa 256x256 centrata sullo schermo ha l'angolo in (-8, -48): si sposta in (0, 0).
-    return bn::regular_bg_ptr::create(256 / 2 - LARGHEZZA_SCHERMO / 2, 256 / 2 - ALTEZZA_SCHERMO / 2,
-                                      mappa);
+    Riquadri r;
+    r.cornice(stile::DIALOGO_X, stile::DIALOGO_Y, stile::DIALOGO_COLONNE, stile::DIALOGO_RIGHE);
+    return r.bg();
 }
 
 }
