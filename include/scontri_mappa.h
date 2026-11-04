@@ -43,6 +43,7 @@ private:
     Storia* _storia;
     bn::vector<bn::sprite_ptr, progressione::SCONTRI> _sprite;
     int _area = -1;
+    int _caricata = -1;     // il fondale su cui sono messi gli sprite
 
     void _prepara(const Esplorazione& esplorazione);
     [[nodiscard]] bool _visibile(const progressione::ScontroSullaMappa& s) const;

@@ -64,6 +64,7 @@ private:
     // ceri della Basilica (F10)
     bn::vector<bn::sprite_ptr, storia::SENTINELLE + storia::FORZIERI + storia::GUARDIE_FORNACE + storia::CERI_ALTARE> _gola;
     int _area = -1;
+    int _ingresso = -1;     // l'area di cui all_ingresso ha gia' acceso le bandiere
     int _caricata = -1;     // il fondale su cui sono state messe le persone (le coordinate dipendono dai suoi lati)
     int _respiro = 0;           // i frame di fila di corsa nella nebbia (storia::respira_i_miasmi)
     uint32_t _ultimo_urto = 0;  // il frame dell'ultimo avviso dell'uscita chiusa (uno ogni due secondi)

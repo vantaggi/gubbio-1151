@@ -17,12 +17,14 @@ void ScontriSullaMappa::svuota()
 {
     _sprite.clear();
     _area = -1;
+    _caricata = -1;
 }
 
 void ScontriSullaMappa::_prepara(const Esplorazione& esplorazione)
 {
     _sprite.clear();
     _area = int(esplorazione.esploratore().area);
+    _caricata = int(esplorazione.area_caricata());
 
     for(int k = 0; k < progressione::SCONTRI; ++k)
     {
@@ -47,7 +49,11 @@ bool ScontriSullaMappa::aggiorna(Esplorazione& esplorazione, const bn::sprite_pa
 {
     const mondo::Esploratore& e = esplorazione.esploratore();
 
-    if(int(e.area) != _area)
+    // I nemici dell'area nuova si mettono quando arriva il suo fondale, a meta' dissolvenza: le coordinate degli
+    // sprite dipendono dai lati del fondale caricato. Prima si mettevano al varco, sui lati del fondale vecchio,
+    // e restavano spostati se le due aree avevano fondali di misura diversa (Loop 5).
+    if(esplorazione.area_caricata() == e.area &&
+       (int(e.area) != _area || int(esplorazione.area_caricata()) != _caricata))
     {
         _prepara(esplorazione);
     }

@@ -851,11 +851,14 @@ void Storia::svuota()
     _raccolte.clear();
     _gola.clear();
     _area = -1;
+    _ingresso = -1;     // dopo una pausa o una battaglia l'ingresso si rifa' (come prima: all_ingresso non cambia nulla due volte)
 }
 
 void Storia::_prepara_npc(const Esplorazione& esplorazione)
 {
+    int ingresso = _ingresso;
     svuota();
+    _ingresso = ingresso;
     _area = int(esplorazione.esploratore().area);
     _caricata = int(esplorazione.area_caricata());
     int fase = int(fase_npc(g_game_state));
@@ -1181,14 +1184,22 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
 {
     const mondo::Esploratore& e = esplorazione.esploratore();
 
-    if(int(e.area) != _area)
+    // L'ingresso in un'area (le bandiere all'arrivo) appena il giocatore passa il varco, una volta.
+    if(int(e.area) != _ingresso)
     {
         all_ingresso(g_game_state, int(e.area));
-        _prepara_npc(esplorazione);
+        _ingresso = int(e.area);
     }
-    else if(int(esplorazione.area_caricata()) != _caricata)
+
+    // Le persone dell'area nuova si fanno una volta sola, quando a meta' dissolvenza arriva il suo fondale (le
+    // coordinate dipendono dai suoi lati): prima si facevano gia' al varco, sopra il fondale vecchio che si
+    // scuriva, e poi di nuovo a meta' strada. Fino ad allora quelle dell'area vecchia restano ferme e si scuriscono
+    // col resto (Loop 5: niente sprite dell'area nuova insieme ai tile di quella vecchia).
+    bool fondale_dell_area = esplorazione.area_caricata() == e.area;
+
+    if(fondale_dell_area && (int(e.area) != _area || int(esplorazione.area_caricata()) != _caricata))
     {
-        _prepara_npc(esplorazione);     // il fondale nuovo e' arrivato a meta' dissolvenza (gli interni sono piu' piccoli)
+        _prepara_npc(esplorazione);
     }
 
     // la notte (dal rientro da Porta Metauro): anche i fondali con le rampe notte, come la gente (pezzo EDI)
@@ -1198,8 +1209,11 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     esplorazione.imposta_compagni(accesa(g_game_state, Bandiera::GIORGIO_NEL_GRUPPO) ?
                                   (accesa(g_game_state, Bandiera::ANTONIO_NEL_GRUPPO) ? 2 : 1) : 0);
 
-    _anima_npc();
-    _folla.aggiorna(esplorazione, e.x, e.y, int(g_game_state.frames));
+    if(fondale_dell_area)
+    {
+        _anima_npc();
+        _folla.aggiorna(esplorazione, e.x, e.y, int(g_game_state.frames));
+    }
 
     // l'uscita del Condotto chiusa durante il duello (T2): si urta come un muro, e lo si dice
     esplorazione.chiudi_varco(varco_chiuso(g_game_state, int(e.area)));
