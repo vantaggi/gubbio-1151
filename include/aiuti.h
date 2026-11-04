@@ -325,7 +325,9 @@ inline constexpr int TARGA_Y0 = 142;
     int sotto = PROMEMORIA_Y0 + altezza_promemoria(righe_promemoria) + 2;
     Rettangolo in_alto = { destra.x0, sotto, destra.x1, sotto + TARGA_ALTEZZA - 1 };
 
-    for(const Rettangolo& r : { destra, sinistra })
+    const Rettangolo prove[2] = { destra, sinistra };   // un array: niente std::initializer_list (host)
+
+    for(const Rettangolo& r : prove)
     {
         if(! si_toccano(r, giocatore) && ! si_toccano(r, cartello))
         {
