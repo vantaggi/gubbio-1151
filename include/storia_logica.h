@@ -134,12 +134,35 @@ constexpr void accendi_una(GameState& p, int b)
 
 // --- L'obiettivo della cronaca e le aree viste (MOB, menu/PROPOSTA.md sez. 4 e 5) ---------------------------
 
-// Le aree gia' visitate: un bit per mondo::AreaId in GameState::aree_viste (la nebbia della mappa).
-static_assert(mondo::AREE_CONTEGGIO <= 8 * int(sizeof(GameState::aree_viste)), "le aree viste non stanno in 3 byte");
+// Le aree gia' visitate: un bit per mondo::AreaId in GameState::aree_viste (la nebbia della mappa). La nebbia e'
+// solo all'aperto: gli interni (mondo::Area::interno: BASILICA_INTERNO oggi, i *_INTERNO e SALA_CONSOLI che
+// verranno, accodati dopo le aree di oggi) non segnano niente, cosi' possono avere un indice oltre i 24 bit.
+inline constexpr int BIT_AREE_VISTE = 8 * int(sizeof(GameState::aree_viste));
+
+[[nodiscard]] constexpr bool nella_nebbia(int area)
+{
+    return area >= 0 && area < mondo::AREE_CONTEGGIO && ! mondo::area(mondo::AreaId(area)).interno;
+}
+
+// Ogni area all'aperto ha il suo bit nei 3 byte.
+[[nodiscard]] constexpr bool aperte_nei_bit()
+{
+    for(int a = 0; a < mondo::AREE_CONTEGGIO; ++a)
+    {
+        if(nella_nebbia(a) && a >= BIT_AREE_VISTE)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static_assert(aperte_nei_bit(), "un'area all'aperto ha un indice oltre i 24 bit di GameState::aree_viste");
 
 constexpr void segna_area_vista(GameState& p, int area)
 {
-    if(area >= 0 && area < mondo::AREE_CONTEGGIO)
+    if(nella_nebbia(area) && area < BIT_AREE_VISTE)
     {
         p.aree_viste[area / 8] = uint8_t(p.aree_viste[area / 8] | (1 << (area % 8)));
     }
@@ -147,7 +170,7 @@ constexpr void segna_area_vista(GameState& p, int area)
 
 [[nodiscard]] constexpr bool area_vista(const GameState& p, int area)
 {
-    return area >= 0 && area < mondo::AREE_CONTEGGIO && ((p.aree_viste[area / 8] >> (area % 8)) & 1);
+    return nella_nebbia(area) && area < BIT_AREE_VISTE && ((p.aree_viste[area / 8] >> (area % 8)) & 1);
 }
 
 [[nodiscard]] constexpr int aree_viste(const GameState& p)

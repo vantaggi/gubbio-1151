@@ -359,6 +359,48 @@ namespace
 
     static_assert(aree_viste_entrando(), "entrare in un'area non la segna vista, o si segna un'area che non c'e'");
 
+    // La nebbia e' solo all'aperto: entrare in un interno non accende nessun bit, e l'interno non risulta visto
+    // neanche se il suo bit fosse acceso (un salvataggio di prima). Le aree all'aperto stanno tutte nei 24 bit.
+    consteval bool interni_fuori_dalla_nebbia()
+    {
+        int interni = 0;
+        int aperte = 0;
+
+        for(int a = 0; a < mondo::AREE_CONTEGGIO; ++a)
+        {
+            GameState p = partita();
+            all_ingresso(p, a);
+            bool interno = mondo::area(mondo::AreaId(a)).interno;
+            bool nessun_bit = p.aree_viste[0] == 0 && p.aree_viste[1] == 0 && p.aree_viste[2] == 0;
+
+            if(interno)
+            {
+                ++interni;
+                p.aree_viste[a / 8] = uint8_t(p.aree_viste[a / 8] | (1 << (a % 8)));
+
+                if(! nessun_bit || area_vista(p, a) || aree_viste(p) != 0)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                ++aperte;
+
+                if(a >= BIT_AREE_VISTE || ! area_vista(p, a) || aree_viste(p) != 1)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return interni >= 1 && aperte >= 1;
+    }
+
+    static_assert(interni_fuori_dalla_nebbia(), "un interno accende un bit della nebbia, o un'area all'aperto non ne ha uno");
+    static_assert(mondo::area(mondo::AreaId::BASILICA_INTERNO).interno && ! mondo::area(mondo::AreaId::BASILICA).interno,
+                  "la Basilica e' all'aperto, il suo interno no");
+
     // === MAI ==================================================================================================
     using namespace aiuti;
 

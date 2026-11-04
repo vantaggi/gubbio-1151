@@ -104,5 +104,54 @@ class Negative(unittest.TestCase):
         self.assertIn("storia::dopo_il_caricamento(gubbio::g_game_state);", leggi("src", "main.cpp"))
 
 
+def aree_e_interni():
+    """[(AreaId, interno)] nell'ordine di mondo::AreaId: l'enum di include/mondo.h e il flag 'interno' dei .area."""
+    mondo_h = leggi("include", "mondo.h")
+    corpo = re.search(r"enum class AreaId : \w+\s*\{(.*?)\};", mondo_h, re.S).group(1)
+    ids = re.findall(r"^\s*([A-Z_]+),", corpo, re.M)
+    interni = set()
+    cartella = os.path.join(RADICE, "mondo", "aree")
+    for nome in os.listdir(cartella):
+        if nome.endswith(".area"):
+            righe = [r.strip() for r in leggi("mondo", "aree", nome).splitlines()]
+            aid = next(r.split()[1] for r in righe if r.startswith("id "))
+            if "interno" in righe:
+                interni.add(aid.upper())
+    return [(i, i in interni) for i in ids]
+
+
+def fuori_dai_bit(aree, bit=24):
+    """Le aree all'aperto con un indice che non sta nei bit di GameState::aree_viste."""
+    return [i for k, (i, interno) in enumerate(aree) if not interno and k >= bit]
+
+
+class NebbiaSoloAllAperto(unittest.TestCase):
+
+    AREE = aree_e_interni()
+
+    def test_le_aree_all_aperto_stanno_nei_24_bit(self):
+        self.assertEqual(fuori_dai_bit(self.AREE), [])
+        self.assertIn(f"inline constexpr int AREE_CONTEGGIO = {len(self.AREE)};", leggi("include", "mondo.h"))
+
+    def test_gli_interni_sono_marcati(self):
+        interni = [i for i, interno in self.AREE if interno]
+        self.assertIn("BASILICA_INTERNO", interni)
+        for i, interno in self.AREE:
+            if i.endswith("_INTERNO") or i == "SALA_CONSOLI":
+                self.assertTrue(interno, f"{i} e' un interno ma il suo .area non lo dice")
+        self.assertEqual(leggi("include", "mondo.h").count("bool interno;"), 1)
+
+    def test_la_regola_nel_gioco(self):
+        logica = leggi("include", "storia_logica.h")
+        self.assertIn("! mondo::area(mondo::AreaId(area)).interno", logica)
+        self.assertIn("static_assert(aperte_nei_bit()", logica)
+
+    def test_negativa_un_area_all_aperto_oltre_i_bit(self):
+        # le sei stanze degli interni accodate (19-24) vanno bene; un'area all'aperto in fondo no
+        aree = self.AREE + [(f"STANZA_{k}_INTERNO", True) for k in range(6)]
+        self.assertEqual(fuori_dai_bit(aree), [])
+        self.assertEqual(fuori_dai_bit(aree + [("PORTA_NUOVA", False)]), ["PORTA_NUOVA"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
