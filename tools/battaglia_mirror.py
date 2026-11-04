@@ -62,6 +62,9 @@ STATISTICHE_EROI = [
     (210, 210, 18, 28, 95, 56, 38, 0, NESSUNO, NESSUNO),
 ]
 FERVORE_INIZIALE = [80, 45, 20]
+# Con i Ceri risvegliati (CERI_RISVEGLIATI, A1-08) ogni Santo parte con questi punti percentuali in piu' del
+# suo Fervore massimo, mai oltre il massimo (FERVORE_CERI di battaglia_dati.h).
+FERVORE_CERI = 15
 ABILITA_FIRMA = [GIUDIZIO, FENDENTE, FUOCO]
 # IA a regole: (condizione, param, limite, abilita, mira, param_mira)
 SEMPRE, ROUND_UGUALE, ROUND_PARI, ROUND_DISPARI = range(4)
@@ -195,16 +198,17 @@ class Firma:
 class Battaglia:
     """Opzioni per le prove negative: senza_redirect toglie l'emissione di GUARD_REDIRECT.
     scudi_in_meno: quanti scudi in meno hanno i nemici (mai sotto 0), come Battaglia::ricomincia() del C++:
-    Corrado ne ha uno in meno con Q-SM01 consegnata o RUFINO_ASCOLTATO (storia::scudi_in_meno())."""
+    Corrado ne ha uno in meno con Q-SM01 consegnata o RUFINO_ASCOLTATO (storia::scudi_in_meno()).
+    ceri: i Ceri risvegliati (storia::ceri_accesi()): il Fervore iniziale sale di FERVORE_CERI punti percentuali."""
 
-    def __init__(self, incontro, seme, senza_redirect=False, pilota_debole=False, scudi_in_meno=0):
+    def __init__(self, incontro, seme, senza_redirect=False, pilota_debole=False, scudi_in_meno=0, ceri=False):
         self.caso = Caso(seme)
         self.senza_redirect = senza_redirect
         self.pilota_debole = pilota_debole
         self.eroi = []
         for e in range(EROI):
             u = Unita(STATISTICHE_EROI[e], False)
-            u.fervore = idiv(u.fervore_max * FERVORE_INIZIALE[e], 100)
+            u.fervore = idiv(u.fervore_max * min(100, FERVORE_INIZIALE[e] + (FERVORE_CERI if ceri else 0)), 100)
             self.eroi.append(u)
         self.nemici = []
         for n in INCONTRO[incontro]:
@@ -529,14 +533,25 @@ def firme_scudo_in_meno():
             for d in PILOTI for s in SEMI}
 
 
+# I Ceri risvegliati (CERI_RISVEGLIATI, A1-08): gli scontri obbligatori che vengono dopo la scena, Corrado e i
+# Guerrieri della Roccia di B-03, con il Fervore iniziale piu' alto. 50 semi x 2 piloti ciascuno, a parte.
+INCONTRI_CON_I_CERI = (INCONTRO_CORRADO, 4)
+
+
+def firme_ceri():
+    return {(i, s, d): gioca(i, s, pilota_debole=d, ceri=True)
+            for d in PILOTI for i in INCONTRI_CON_I_CERI for s in SEMI}
+
+
 def righe_attese(firme):
     esiti = ["IN_CORSO", "VITTORIA", "SCONFITTA", "PARITA"]
     return [f"    {{ {i}, {s}, {'true' if d else 'false'}, 0x{f.hash:08X}u, {f.eventi}, {f.round}, "
             f"Esito::{esiti[f.esito]}, 0x{f.tipi:04X}u }}," for (i, s, d), f in sorted(firme.items())]
 
 
-def header(firme, scudo_in_meno=None):
+def header(firme, scudo_in_meno=None, ceri=None):
     scudo_in_meno = firme_scudo_in_meno() if scudo_in_meno is None else scudo_in_meno
+    ceri = firme_ceri() if ceri is None else ceri
     out = ["// GENERATO da tools/battaglia_mirror.py: le firme che il mirror Python trova per ogni",
            "// incontro e ogni seme. src/autotest_battaglia.cpp le confronta con il C++ (include/battaglia.h).",
            "// Non modificare a mano.",
@@ -568,6 +583,11 @@ def header(firme, scudo_in_meno=None):
             f"inline constexpr int ATTESE_SCUDO_IN_MENO_CONTEGGIO = {len(scudo_in_meno)};",
             "inline constexpr Attesa ATTESE_SCUDO_IN_MENO[ATTESE_SCUDO_IN_MENO_CONTEGGIO] = {"]
     out += righe_attese(scudo_in_meno)
+    out += ["};", "",
+            "// Corrado e i Guerrieri di B-03 con i Ceri risvegliati (Battaglia::ricomincia(..., ceri = true)).",
+            f"inline constexpr int ATTESE_CERI_CONTEGGIO = {len(ceri)};",
+            "inline constexpr Attesa ATTESE_CERI[ATTESE_CERI_CONTEGGIO] = {"]
+    out += righe_attese(ceri)
     out += ["};", "", "}", "", "#endif", ""]
     return "\n".join(out)
 

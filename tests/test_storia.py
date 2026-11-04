@@ -74,6 +74,12 @@ def codice_che_legge():
     return codice + "".join(re.search(r, storia_h, re.S).group(0) for r in tabelle)
 
 
+def righe_da_fare(doc):
+    """Le bandiere della prima tabella di docs/bandiere_da_fare.md (quelle che il gioco non legge ancora)."""
+    tabella = doc.split("\n## ")[0]
+    return re.findall(r"^\| `([A-Z0-9_]+)` \|", tabella, re.M)
+
+
 def lette_dal_gioco_senza_codice(lette, codice):
     """Le bandiere di LETTE_DAL_GIOCO che il codice non nomina: Bandiera::X per la storia (0-63), il nome per
     quelle delle quest (64-127, costanti di storia.h)."""
@@ -109,6 +115,78 @@ def quest_non_completabili(quest, scene):
 
 def scene_del_log(log):
     return sorted(re.findall(r"^Scena ([A-Z0-9]+-\d+[a-z]?)$", log.split("Giro 1\n")[0], re.M))
+
+
+def griglia_area(nome):
+    """Le righe della griglia di mondo/aree/<nome>.area (dopo «griglia», larghe quanto dice «dimensioni»)."""
+    testo = open(os.path.join(RADICE, "mondo", "aree", nome + ".area"), encoding="utf-8").read()
+    largo = int(re.search(r"^dimensioni (\d+) \d+$", testo, re.M).group(1))
+    return [r for r in testo.split("\ngriglia\n", 1)[1].splitlines() if len(r) == largo]
+
+
+def ceri_dell_altare(logica):
+    """La tabella CERO_ALTARE di storia_logica.h: [(area, tx, ty)]."""
+    corpo = re.search(r"CERO_ALTARE\[CERI_ALTARE\] = \{(.*?)\n\};", logica, re.S).group(1)
+    return [(a, int(x), int(y)) for a, x, y in re.findall(r"AreaId::(\w+)\), (\d+), (\d+) \}", corpo)]
+
+
+def errori_ceri(ceri, griglie):
+    """Ogni cero della tabella sta nell'interno della Basilica, sulla cella in alto a sinistra di un blocco 2x4 di
+    'e'; ogni blocco di 'e' ha il suo cero; nessun'altra area ha celle 'e' (regola di Cioti)."""
+    err = []
+    for area, tx, ty in ceri:
+        if area != "BASILICA_INTERNO":
+            err.append(f"cero fuori dalla Basilica: {area}")
+            continue
+        g = griglie["basilica_interno"]
+        blocco = [g[ty + dy][tx + dx] for dy in range(4) for dx in range(2) if ty + dy < len(g) and tx + dx < len(g[0])]
+        if blocco != ["e"] * 8 or (tx > 0 and g[ty][tx - 1] == "e") or (ty > 0 and g[ty - 1][tx] == "e"):
+            err.append(f"({tx}, {ty}) non e' l'angolo di un cero")
+    celle = sum(r.count("e") for r in griglie["basilica_interno"])
+    if celle != 8 * len([c for c in ceri if c[0] == "BASILICA_INTERNO"]):
+        err.append(f"{celle} celle di ceri per {len(ceri)} ceri in tabella")
+    for nome, g in griglie.items():
+        if nome != "basilica_interno" and any("e" in r for r in g):
+            err.append(f"ceri fuori dalla Basilica: {nome}")
+    return err
+
+
+class CeriDellaBasilica(unittest.TestCase):
+    """F10: con CERI_RISVEGLIATI una fiamma sopra ognuno dei tre ceri dell'altare (CERO_ALTARE)."""
+
+    def setUp(self):
+        self.logica = open(os.path.join(RADICE, "include", "storia_logica.h"), encoding="utf-8").read()
+        nomi = [f[:-5] for f in os.listdir(os.path.join(RADICE, "mondo", "aree")) if f.endswith(".area")]
+        self.griglie = {n: griglia_area(n) for n in nomi}
+
+    def test_i_tre_ceri_sulla_griglia(self):
+        ceri = ceri_dell_altare(self.logica)
+        self.assertEqual(len(ceri), 3)
+        self.assertEqual(errori_ceri(ceri, self.griglie), [])
+
+    def test_negativa_cero_spostato(self):
+        ceri = ceri_dell_altare(self.logica)
+        ceri[1] = (ceri[1][0], ceri[1][1] + 1, ceri[1][2])
+        self.assertEqual(len(errori_ceri(ceri, self.griglie)), 1)
+
+    def test_negativa_cero_fuori_dalla_basilica(self):
+        ceri = ceri_dell_altare(self.logica)
+        ceri[0] = ("BASILICA", ceri[0][1], ceri[0][2])
+        self.assertIn("cero fuori dalla Basilica: BASILICA", errori_ceri(ceri, self.griglie))
+        griglie = dict(self.griglie)
+        griglie["piazza_grande"] = griglie["piazza_grande"][:1] + ["e" + r[1:] for r in griglie["piazza_grande"][1:2]]
+        self.assertIn("ceri fuori dalla Basilica: piazza_grande", errori_ceri(ceri_dell_altare(self.logica), griglie))
+
+    def test_la_fiamma_coi_colori_della_palette(self):
+        """La fiamma usa solo il contorno, il vermiglio, l'oro e il bianco della palette dei popolani."""
+        fiamma = GS.FN.FIGURE_RACCOLTE["fiamma_cero"]
+        self.assertEqual(set("".join(fiamma)) - {"."}, {"1", "5", "e", "6"})
+        self.assertIn("inline constexpr int FIGURA_FIAMMA_CERO = 4;", open(GS.USCITA_H, encoding="utf-8").read())
+
+    def test_la_scena_mette_le_fiamme(self):
+        scena = open(os.path.join(RADICE, "src", "storia_scena.cpp"), encoding="utf-8").read()
+        self.assertIn("k < CERI_ALTARE && ceri_accesi(g_game_state)", scena)
+        self.assertIn("crea_raccolta(palette, FIGURA_FIAMMA_CERO)", scena)
 
 
 class GeneratoAggiornato(unittest.TestCase):
@@ -149,15 +227,29 @@ class Tabelle(unittest.TestCase):
         codice = re.sub(r"\bRUFINO_ASCOLTATO\b", "RUFINO", codice)
         self.assertEqual(lette_dal_gioco_senza_codice(GS.LETTE_DAL_GIOCO, codice), ["CRONACA_V1_FINITA", "RUFINO_ASCOLTATO"])
 
+    def test_nessuna_bandiera_da_fare(self):
+        """F10: CERI_RISVEGLIATI era l'ultima; ora il gioco le legge tutte e la tabella del documento e' vuota."""
+        self.assertEqual(GS.DA_FARE, [])
+        doc = open(os.path.join(RADICE, "docs", "bandiere_da_fare.md"), encoding="utf-8").read()
+        self.assertEqual(righe_da_fare(doc), [])
+
     def test_negativa_bandiera_da_fare_senza_documento(self):
         doc = open(os.path.join(RADICE, "docs", "bandiere_da_fare.md"), encoding="utf-8").read()
-        self.assertNotIn("| `CERI_RISVEGLIATI` |", doc.replace("| `CERI_RISVEGLIATI` |", "| CERI |"))
+        self.assertNotIn("CERI_RISVEGLIATI", righe_da_fare(doc))
+        riga = "| `CERI_RISVEGLIATI` | A1-08 | x | y |\n"
+        self.assertEqual(righe_da_fare(doc.replace("| :-- | :-- | :-- | :-- |\n", "| :-- | :-- | :-- | :-- |\n" + riga, 1)),
+                         ["CERI_RISVEGLIATI"])
+
+    def test_negativa_ceri_senza_codice(self):
+        """CERI_RISVEGLIATI e' letta dal gioco solo se il codice la nomina (storia::ceri_accesi())."""
+        codice = codice_che_legge().replace("Bandiera::CERI_RISVEGLIATI", "Bandiera::X")
+        self.assertEqual(lette_dal_gioco_senza_codice(GS.LETTE_DAL_GIOCO, codice), ["CERI_RISVEGLIATI"])
 
     def test_negativa_bandiera_scritta_e_mai_letta(self):
-        """Togliendo CERI_RISVEGLIATI dall'elenco delle bandiere da fare, resta scritta e mai letta; togliendo
-        MIASMI_VISTI da quelle lette dal gioco (T2), lo stesso."""
-        da_fare = [b for b in GS.DA_FARE if b != "CERI_RISVEGLIATI"]
-        self.assertEqual(scritte_non_lette(SCENE, set(GS.LETTE_DAL_GIOCO) | set(da_fare)), ["CERI_RISVEGLIATI"])
+        """Togliendo CERI_RISVEGLIATI da quelle lette dal gioco, resta scritta e mai letta; togliendo
+        MIASMI_VISTI (T2), lo stesso."""
+        lette = set(GS.LETTE_DAL_GIOCO) - {"CERI_RISVEGLIATI"}
+        self.assertEqual(scritte_non_lette(SCENE, lette | set(GS.DA_FARE)), ["CERI_RISVEGLIATI"])
         lette = set(GS.LETTE_DAL_GIOCO) - {"MIASMI_VISTI"}
         self.assertEqual(scritte_non_lette(SCENE, lette | set(GS.DA_FARE)), ["MIASMI_VISTI"])
 

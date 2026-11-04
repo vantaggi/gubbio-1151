@@ -124,6 +124,60 @@ namespace
                   scudi_di_corrado(0, 4) && scudi_di_corrado(1, 3) && scudi_di_corrado(9, 0),
                   "gli scudi di Corrado");
     static_assert(! scudi_di_corrado(1, 4), "negativa: con uno scudo in meno Corrado non ne ha 4");
+
+    // I Ceri risvegliati (CERI_RISVEGLIATI, storia::ceri_accesi()): Corrado e i Guerrieri di B-03 con il Fervore
+    // iniziale piu' alto. Le firme del C++ con ceri = true sono quelle del mirror con la stessa manopola.
+    void ceri_diversi_dal_mirror(int indice);
+
+    consteval int verifica_ceri()
+    {
+        for(int i = 0; i < battaglia::ATTESE_CERI_CONTEGGIO; ++i)
+        {
+            const battaglia::Attesa& a = battaglia::ATTESE_CERI[i];
+            battaglia::Firma f = battaglia::gioca(a.incontro, a.seme, a.pilota_debole, 0, true);
+
+            if(f.hash != a.hash || f.eventi != a.eventi || f.round != a.round || f.esito != a.esito ||
+               f.tipi != a.tipi || f.traboccato)
+            {
+                ceri_diversi_dal_mirror(i);
+            }
+        }
+
+        return battaglia::ATTESE_CERI_CONTEGGIO;
+    }
+
+    static_assert(verifica_ceri() == 200, "autotest dei Ceri risvegliati");
+
+    // Negativa: le firme dei Ceri non tornano senza la manopola (i Ceri cambiano davvero la battaglia), e
+    // ceri = false da' la firma di sempre.
+    consteval bool ceri_contano()
+    {
+        int diverse = 0;
+
+        for(int i = 0; i < battaglia::ATTESE_CERI_CONTEGGIO; ++i)
+        {
+            const battaglia::Attesa& a = battaglia::ATTESE_CERI[i];
+            diverse += battaglia::gioca(a.incontro, a.seme, a.pilota_debole).hash != a.hash;
+        }
+
+        return diverse > 0 && battaglia::gioca(2, 7, false, 0, false).hash == battaglia::gioca(2, 7, false).hash;
+    }
+
+    static_assert(ceri_contano(), "i Ceri risvegliati non cambiano la battaglia");
+
+    // Il Fervore iniziale: 80, 45, 20 per cento del massimo senza i Ceri, 95, 60, 35 con.
+    consteval bool fervore_iniziale(int eroe, bool ceri, int percento)
+    {
+        battaglia::Battaglia b(2, 1);
+        b.ricomincia(2, 1, false, nullptr, battaglia::TUTTI_PRESENTI, 0, 0, nullptr, ceri);
+        return b.eroe(eroe).fervore == b.eroe(eroe).fervore_max * percento / 100;
+    }
+
+    static_assert(battaglia::FERVORE_CERI == 15 && fervore_iniziale(0, false, 80) && fervore_iniziale(0, true, 95) &&
+                  fervore_iniziale(1, true, 60) && fervore_iniziale(2, true, 35) && fervore_iniziale(2, false, 20),
+                  "il Fervore dei Ceri");
+    static_assert(! fervore_iniziale(1, true, 45) && ! fervore_iniziale(1, false, 60),
+                  "negativa: con i Ceri il Fervore di Giorgio parte come senza");
 }
 
 }

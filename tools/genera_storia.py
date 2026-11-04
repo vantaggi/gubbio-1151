@@ -91,10 +91,12 @@ LETTE_DAL_GIOCO = {
     "GUARDIA_FORNACE_1": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
     "GUARDIA_FORNACE_2": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
     "GUARDIA_FORNACE_3": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
+    # F10, i Ceri risvegliati di A1-08: in battaglia il Fervore parte piu' alto; nella Basilica i ceri accesi
+    "CERI_RISVEGLIATI": "storia::ceri_accesi(): il Fervore iniziale dei Santi piu' alto, i tre ceri accesi sull'altare",
 }
 
 # Quelle che il gioco non legge ancora: sono in docs/bandiere_da_fare.md, con cosa dovranno fare.
-DA_FARE = ["CERI_RISVEGLIATI"]
+DA_FARE = []
 
 # Dove avviene ogni scena (AreaId), dalla riga Luogo; None per le scene a schermo intero (il prologo, e la
 # vetrata di E-02, che il gioco recita subito dopo E-01 senza risalire alla Basilica).
@@ -1282,7 +1284,9 @@ def parte_gola(codici, posti_raccolte, figure):
             "};", "",
             "// Le figure del forziere in FIGURA_RACCOLTA: chiuso, e aperto (preso, resta li').",
             f"inline constexpr int FIGURA_FORZIERE = {FN.ORDINE_RACCOLTE.index('forziere')};",
-            f"inline constexpr int FIGURA_FORZIERE_APERTO = {FN.ORDINE_RACCOLTE.index('forziere_aperto')};", ""]
+            f"inline constexpr int FIGURA_FORZIERE_APERTO = {FN.ORDINE_RACCOLTE.index('forziere_aperto')};",
+            "// La fiamma sopra i ceri dell'altare, con i Ceri risvegliati (CERO_ALTARE di storia_logica.h).",
+            f"inline constexpr int FIGURA_FIAMMA_CERO = {FN.ORDINE_RACCOLTE.index('fiamma_cero')};", ""]
 
 
 def parte_fornaci(posti_guardie):

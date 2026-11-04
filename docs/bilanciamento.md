@@ -35,6 +35,15 @@ L'esperienza dei nemici nuovi (`ESPERIENZA_NEMICO` = 35, 45, 200, 27, 60, **20, 
 
 `tools/bilanciamento.py` conta le facoltative tutte all'inizio nello scenario con le quest (il caso peggiore per i livelli) e misura le facoltative al livello più basso con cui si possono affrontare: la fornace al livello 1, l'infiltrato al 3 (il digiuno comincia dopo la Pattuglia). Il mirror gioca sempre in tre: al livello 1 una guardia della fornace affrontata prima di salvare Antonio si combatte in due, senza il fuoco che rompe lo scudo (più lunga, da provare a mano).
 
+## F10: i Ceri risvegliati (4 nov 2026)
+Da A1-08 (`CERI_RISVEGLIATI`, accesa a fine scena) ogni Santo entra in battaglia con **15 punti percentuali** di Fervore in più del suo massimo, mai oltre il massimo: Ubaldo 80 → 95%, Giorgio 45 → 60%, Antonio 20 → 35% (`battaglia::FERVORE_CERI`, `storia::ceri_accesi()`; nel mirror la manopola `ceri`, come `scudi_in_meno`). È il «Fervore che parte più alto» di `docs/bandiere_da_fare.md`: non tocca il massimo né il guadagno durante lo scontro.
+
+Nell'ordine della storia la bandiera viene **prima dei Guerrieri di B-03 e di Corrado** (A1-08 → A1-09 → B-01...B-04), quindi le loro righe qui sotto sono misurate coi Ceri (`DOPO_I_CERI` di `tools/bilanciamento.py`). Gli Spettri si combattono dentro A1-08, prima che la bandiera si accenda: senza. Le facoltative (guardie, infiltrato) restano misurate senza, al livello più basso, cioè prima del rito.
+
+Effetto su Corrado (pilota medio, 200 semi): al livello 5 dal **59%** al **61%**; al livello 6 con le quest e lo scudo in meno dal 74% al **75%**, ancora dentro gli obiettivi. Con 10 punti invece di 15 il pilota forte coi Guerrieri passava a 8 round (fuori dai 3-6): con 15 restano 4. Anche a Fervore pieno Corrado al livello 5 non supera il 66%, e al livello 3 coi Ceri resta sotto il 55% (`test_negativa_corrado_troppo_presto`).
+
+Le firme: 200 battaglie in più in `ATTESE_CERI` (Corrado e i Guerrieri, 50 semi × 2 piloti), confrontate col C++ da `src/autotest_battaglia.cpp`; le 700 di prima non cambiano.
+
 ## Risultati (200 semi)
 
 | Scontro | forte | medio | debole |
@@ -42,13 +51,13 @@ L'esperienza dei nemici nuovi (`ESPERIENZA_NEMICO` = 35, 45, 200, 27, 60, **20, 
 | Pattuglia (liv 1) | 100%, 5 round | 100%, 6 | 98%, 23 |
 | Imboscata (liv 3) | 100%, 4 | 100%, 3 | 100%, 6 |
 | Spettri (liv 4) | 100%, 4 | 100%, 3 | 100%, 12 |
-| Guerrieri della Roccia (liv 5) | 100%, 5 | 100%, 5 | 100%, 24 |
-| Corrado (liv 5) | 100%, 6 | **59%**, 7 | 0% |
-| Corrado (liv 6, con quest e scudo in meno) | 100%, 6 | **74%**, 6 | 0% |
+| Guerrieri della Roccia (liv 5, coi Ceri) | 100%, 4 | 100%, 5 | 100%, 24 |
+| Corrado (liv 5, coi Ceri) | 100%, 6 | **61%**, 7 | 0% |
+| Corrado (liv 6, coi Ceri, con quest e scudo in meno) | 100%, 6 | **75%**, 6 | 0% |
 | Guardia della fornace (liv 1) | 100%, 4 | 100%, 3 | 100%, 18 |
 | L'infiltrato (liv 3) | 100%, 4 | 100%, 4 | 100%, 8 |
 
-Obiettivi: scontri normali vinti oltre il 90% in 3-6 round (forte e medio); Corrado 55-75% per il pilota medio al livello atteso; nessun livello in cui Corrado si batte con il solo Attacco. Tutti rispettati. Lo scudo in meno (Q-SM01 o Rufino) vale circa 10 punti di percentuale al livello 5.
+Obiettivi: scontri normali vinti oltre il 90% in 3-6 round (forte e medio); Corrado 55-75% per il pilota medio al livello atteso; nessun livello in cui Corrado si batte con il solo Attacco. Tutti rispettati. Lo scudo in meno (Q-SM01 o Rufino) vale circa 8-10 punti di percentuale al livello 5 (coi Ceri 61 → 69%); i Ceri circa 2.
 
 ## Da rifare dopo
 - Le quest ora sono giocabili (SV2c): ricontrollare con le quest fatte una alla volta e non tutte all'inizio. Con F10 le battaglie facoltative sono quattro (tre guardie delle fornaci, l'infiltrato con le sue spie: 144 punti) e B-03 ne aggiunge una obbligatoria (40): con tutto si arriva a Corrado con 665 punti, ancora al livello 6; lo prova `livello_con_l_infiltrato()` in `src/autotest_quest.cpp`.
