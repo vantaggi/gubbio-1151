@@ -209,7 +209,7 @@ class Tabelle(unittest.TestCase):
 
     def test_le_scene_del_copione(self):
         self.assertEqual(len(SCENE), 20)
-        self.assertEqual(sum(len(s["battute"]) for s in SCENE), 229)
+        self.assertEqual(sum(len(s["battute"]) for s in SCENE), 233)       # MTUT: le 4 righe dei comandi in A1-01
         self.assertEqual(len(NPC), 14 + 26 + 21)            # NPC d'ambiente (con Fra' Matteo), amici (con Milia e Michelino), mestieri (VIVA)
 
     def test_ogni_bandiera_scritta_e_letta(self):
