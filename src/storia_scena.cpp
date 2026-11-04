@@ -522,8 +522,21 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
             battaglia::Esito esito = scena_battaglia(s.battaglia, automatica ? 1u : (uint32_t(g_game_state.frames) | 1u),
                                                      automatica ? Guida::PILOTA : Guida::GIOCATORE, palette_testo,
                                                      automatica, &g_game_state);
-            mondo::colloca(esplorazione->esploratore(), esplorazione->esploratore().area,
-                           esito == battaglia::Esito::VITTORIA ? 0 : 1);
+            // a meta' scena (B-03) vinta si resta sotto l'arco e la scena va avanti; persa si torna indietro, allo
+            // spawn 0 (dalla parte dei miasmi: lo spawn 1 e' oltre i guerrieri), e si ripassa sotto l'arco
+            if(a_meta_della_scena(k) >= 0)
+            {
+                if(esito != battaglia::Esito::VITTORIA)
+                {
+                    mondo::colloca(esplorazione->esploratore(), esplorazione->esploratore().area, 0);
+                }
+            }
+            else
+            {
+                mondo::colloca(esplorazione->esploratore(), esplorazione->esploratore().area,
+                               esito == battaglia::Esito::VITTORIA ? 0 : 1);
+            }
+
             esplorazione->ricompari();
 
             if(esito != battaglia::Esito::VITTORIA)

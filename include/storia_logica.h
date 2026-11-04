@@ -251,6 +251,10 @@ constexpr void vinta_a_meta(GameState& p, int k)
     }
 }
 
+// I Guerrieri di B-03 non sono uno scontro sulla mappa (SCONTRI_SULLA_MAPPA): la scena parte sotto l'arco
+// (INNESCO), e Storia::aggiorna lo riconosce perche' il suo incontro sta oltre progressione::SCONTRI.
+static_assert(battaglia::INCONTRO_GUERRIERI >= progressione::SCONTRI && battaglia::INCONTRO_FORNACE >= progressione::SCONTRI &&
+              battaglia::INCONTRO_INFILTRATO >= progressione::SCONTRI, "un incontro di F10 si scambia per uno sulla mappa");
 static_assert(SCENA[BATTAGLIA_A_META[0].scena].battaglia == battaglia::INCONTRO_GUERRIERI &&
               BATTAGLIA_A_META[0].battuta > SCENA[BATTAGLIA_A_META[0].scena].prima_battuta &&
               BATTAGLIA_A_META[0].battuta < SCENA[BATTAGLIA_A_META[0].scena].prima_battuta +
