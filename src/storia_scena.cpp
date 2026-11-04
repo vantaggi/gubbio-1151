@@ -7,6 +7,7 @@
 #include "bn_keypad.h"
 #include "bn_log.h"
 #include "bn_sprite_palette_item.h"
+#include "bn_sprite_palettes.h"
 #include "bn_sprite_shape_size.h"
 #include "bn_sprite_tiles_ptr.h"
 
@@ -340,6 +341,36 @@ namespace
         }
     }
 
+    // Una riga del SISTEMA nel riquadro del dialogo (i forzieri, l'uscita chiusa del Condotto).
+    void di_sistema(testi::TestoId id, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo)
+    {
+        const Battuta b = { id, id, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { NESSUNA_BANDIERA, NESSUNA_BANDIERA }, -1 };
+        dialogo_inizio(esplorazione);
+        recita_battute(&b, 0, 1, palette_testo, false);
+        dialogo_fine();
+    }
+
+    // Il lampo dei miasmi: lo schermo vira verso il verde della nebbia (la voce 11 della palette cupa) e torna.
+    // Forte e due volte alla prima nebbia (B-02), appena accennato a ogni ferita.
+    void lampo(int volte, bn::fixed forza)
+    {
+        bn::color verde(GUBBIO_VOCE(mondo::PALETTE_FONDALI_CUPA, 11));
+        constexpr int PASSI = 8;
+
+        for(int v = 0; v < volte; ++v)
+        {
+            for(int f = 0; f < PASSI; ++f)
+            {
+                bn::bg_palettes::set_fade(verde, forza * (PASSI - f) / PASSI);
+                bn::sprite_palettes::set_fade(verde, forza * (PASSI - f) / PASSI / 2);
+                attendi(1);
+            }
+        }
+
+        bn::bg_palettes::set_fade(verde, 0);
+        bn::sprite_palettes::set_fade(verde, 0);
+    }
+
     // Chi sale di livello con l'esperienza di una quest: le stesse frasi della battaglia, come SISTEMA.
     void annuncia_livelli(const bool (&saliti)[battaglia::EROI], const bn::sprite_palette_ptr& palette_testo)
     {
@@ -390,6 +421,8 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
 {
     const Scena& s = GUBBIO_VOCE(SCENA, k);
     BN_LOG("Scena ", s.codice);
+    // il duello gia' incontrato (CORRADO_INCONTRATO): al secondo tentativo niente battute, dritti alla battaglia
+    bool salta_le_battute = gia_incontrata(g_game_state, k);
 
     if(esplorazione)
     {
@@ -426,6 +459,10 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
             attendi(1);
         }
     }
+    else if(salta_le_battute)
+    {
+        BN_LOG("Scena ", s.codice, " gia' incontrata: si torna al duello");
+    }
     else
     {
         // le battute, spezzate dove entra una cutscene (INSERTO)
@@ -460,6 +497,9 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
 
     if(s.battaglia >= 0)
     {
+        // l'incontro e' avvenuto anche se la battaglia si perde: l'uscita del Condotto si chiude (varco_chiuso)
+        all_incontro(g_game_state, k);
+
         if(automatica && ! battaglia_col_pilota)
         {
             BN_LOG("Battaglia ", int(s.battaglia), " data per vinta");
@@ -518,6 +558,7 @@ void Storia::svuota()
     _npc.clear();
     _indici.clear();
     _raccolte.clear();
+    _gola.clear();
     _area = -1;
 }
 
@@ -564,6 +605,34 @@ void Storia::_prepara_npc(const Esplorazione& esplorazione)
         esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(INFILTRATO.tx), mondo::piedi_y(INFILTRATO.ty), ALTEZZA_NPC);
         _npc.push_back(bn::move(sprite));
         _indici.push_back(NPC + QUEST);
+    }
+
+    // i soldati di B-03 oltre l'arco, finche' il piano di Corrado non e' ascoltato
+    for(int k = 0; k < SENTINELLE && sentinelle_presenti(g_game_state); ++k)
+    {
+        const Sentinella& s = GUBBIO_VOCE(SENTINELLA, k);
+
+        if(s.area == _area)
+        {
+            bn::sprite_ptr sprite = crea_npc(palette, s.figura);
+            sprite.set_horizontal_flip(true);       // guardano verso valle, verso l'arco
+            esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(s.tx), mondo::piedi_y(s.ty), ALTEZZA_NPC);
+            _gola.push_back(bn::move(sprite));
+        }
+    }
+
+    // i forzieri negli slarghi: chiusi, o aperti se gia' presi
+    for(int k = 0; k < FORZIERI; ++k)
+    {
+        const Forziere& f = GUBBIO_VOCE(FORZIERE, k);
+
+        if(f.area == _area)
+        {
+            bn::sprite_ptr sprite = crea_raccolta(palette, forziere_chiuso(g_game_state, k) ? FIGURA_FORZIERE
+                                                                                             : FIGURA_FORZIERE_APERTO);
+            esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(f.tx), mondo::piedi_y(f.ty), ALTEZZA_RACCOLTA);
+            _gola.push_back(bn::move(sprite));
+        }
     }
 
     // gli oggetti da raccogliere ancora al loro posto
@@ -649,10 +718,23 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         _prepara_npc(esplorazione);
     }
 
+    // l'uscita del Condotto chiusa durante il duello (T2): si urta come un muro, e lo si dice
+    esplorazione.chiudi_varco(varco_chiuso(g_game_state, int(e.area)));
+
     if(esplorazione.in_dissolvenza())
     {
         return false;
     }
+
+    if(esplorazione.urto_al_varco_chiuso() && g_game_state.frames - _ultimo_urto > 120)
+    {
+        _ultimo_urto = g_game_state.frames;
+        di_sistema(testi::TestoId::CONDOTTO_CHIUSO, &esplorazione, palette_testo);
+        return true;
+    }
+
+    // la cella sotto i piedi: le scene della gola partono su una cella (la nebbia, l'arco), i miasmi la leggono
+    int cella = mondo::cella(mondo::area(e.area), mondo::cella_x(e), mondo::cella_y(e));
 
     // le scene con una battaglia partono toccando il loro nemico sulla mappa (ScontriSullaMappa);
     // quelle con una battaglia senza nemico sulla mappa (il rito) partono entrando, come le altre
@@ -662,7 +744,7 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     {
         int b = GUBBIO_VOCE(SCENA, j).battaglia;
 
-        if((b < 0 || b >= progressione::SCONTRI) && pronta(g_game_state, j, int(e.area)))
+        if((b < 0 || b >= progressione::SCONTRI) && pronta_qui(g_game_state, j, int(e.area), cella))
         {
             k = j;
         }
@@ -670,6 +752,13 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
 
     if(k >= 0)
     {
+        // la prima nebbia (B-02): il lampo verde, poi l'avviso di Ubaldo, che accende MIASMI_VISTI
+        if(cella_dell_innesco(k) == int(mondo::Cella::MIASMA))
+        {
+            esplorazione.nascondi_etichetta();
+            lampo(2, bn::fixed(0.6));
+        }
+
         // le scene a schermo intero che quella appena finita rende pronte partono subito, senza camminare:
         // la vetrata di E-02 dopo la terza alba (E-01), come il prologo all'avvio
         if(recita(k, &esplorazione, palette_testo))
@@ -681,6 +770,27 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         }
 
         svuota();       // la fase puo' essere cambiata: gli NPC si rifanno al prossimo frame
+        return true;
+    }
+
+    // i miasmi: chi corre nella nebbia lascia indietro Ubaldo e si ferisce (poco, mai a morte)
+    bool corre = bn::keypad::b_held() && (bn::keypad::left_held() || bn::keypad::right_held() ||
+                                          bn::keypad::up_held() || bn::keypad::down_held());
+
+    if(respira_i_miasmi(g_game_state, cella, corre, _respiro))
+    {
+        BN_LOG("Miasmi: ferite ", int(g_game_state.ferite[1]), " ", int(g_game_state.ferite[2]));
+        lampo(1, bn::fixed(0.25));
+    }
+
+    // un forziere si apre toccandolo: l'oggetto, la bandiera; resta li' aperto
+    int z = forziere_toccato(g_game_state, int(e.area), e.x, e.y);
+
+    if(z >= 0 && apri_forziere(g_game_state, z))
+    {
+        BN_LOG("Forziere ", z);
+        di_sistema(GUBBIO_VOCE(FORZIERE, z).testo, &esplorazione, palette_testo);
+        svuota();       // il forziere si rifa' aperto al prossimo frame
         return true;
     }
 

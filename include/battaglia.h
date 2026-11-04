@@ -261,9 +261,11 @@ public:
     // RUFINO_ASCOLTATO, storia::scudi_in_meno()); il mirror Python ha la stessa manopola.
     // 'a_digiuno': un bit per Santo che non mangia (Ubaldo nel DIGIUNO, storia::a_digiuno()): non usa
     // consumabili e nessuno li usa su di lui. Il pilota non usa oggetti: le firme non cambiano.
+    // 'ferite': i PV in meno con cui parte ogni Santo (i miasmi della gola, GameState::ferite), mai sotto 1:
+    // le ferite non uccidono. Senza (nullptr), tutti a PV pieni come nel mirror.
     constexpr void ricomincia(int incontro, uint32_t seme, bool pilota_debole = false,
                               const Statistiche* eroi = nullptr, uint8_t presenti = TUTTI_PRESENTI,
-                              int scudi_in_meno = 0, uint8_t a_digiuno = 0)
+                              int scudi_in_meno = 0, uint8_t a_digiuno = 0, const uint8_t* ferite = nullptr)
     {
         _caso = Caso(seme);
         _pilota_debole = pilota_debole;
@@ -277,6 +279,11 @@ public:
             _eroi[e] = da_statistiche(eroi ? eroi[e] : STATISTICHE_EROI[e], false);
             _eroi[e].fervore = (_eroi[e].fervore_max * FERVORE_INIZIALE[e]) / 100;
             _eroi[e].a_digiuno = (a_digiuno >> e) & 1;
+
+            if(ferite)
+            {
+                _eroi[e].pv = _eroi[e].pv - ferite[e] < 1 ? 1 : _eroi[e].pv - ferite[e];
+            }
 
             if(! ((presenti >> e) & 1))
             {

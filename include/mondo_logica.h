@@ -161,6 +161,20 @@ constexpr bool muovi(Esploratore& e, int dx, int dy)
     return true;
 }
 
+// Come muovi(), ma il passo che porterebbe il giocatore sul varco 'chiuso' (indice nell'area, -1 nessuno) non
+// si fa: il varco si vede ma si urta come un muro. Quale varco sia chiuso lo dice chi chiama (il duello del
+// Condotto, varco_chiuso in storia_logica.h): la logica del mondo resta senza stato di partita. False anche per
+// l'urto col varco: chi chiama distingue con urta_il_varco().
+[[nodiscard]] constexpr bool urta_il_varco(const Esploratore& e, int dx, int dy, int chiuso)
+{
+    return chiuso >= 0 && cella(area(e.area), (e.x + dx) / TILE_PX, (e.y + dy - 1) / TILE_PX) == PRIMO_VARCO + chiuso;
+}
+
+constexpr bool muovi_fino_al_varco(Esploratore& e, int dx, int dy, int chiuso)
+{
+    return ! urta_il_varco(e, dx, dy, chiuso) && muovi(e, dx, dy);
+}
+
 // Il navigatore: cerca la strada sulla griglia (in ampiezza, sulle celle non solide) fino a un
 // varco e la percorre un pixel alla volta con muovi(), cioe' con la stessa collisione del gioco.
 // Gli altri varchi non si attraversano: la strada li aggira.

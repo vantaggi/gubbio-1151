@@ -66,6 +66,7 @@ a un varco, e dopo averli posati ogni varco resta raggiungibile da ogni spawn.
     python tools/genera_mondo.py --controlla  # esce con 1 se include/mondo.h non e' aggiornato
 """
 import glob
+import math
 import json
 import os
 import sys
@@ -102,7 +103,9 @@ DISTANZA_MIN_SPAWN = 3
 # dentro l'area, non sulla soglia.
 DISTANZA_MIN_SPAWN_USCITA = 6
 
-# Celle della griglia: carattere del file .area -> (nome C++, solida).
+# Celle della griglia: carattere del file .area -> (nome C++, solida). L'ordine conta: il gioco
+# (mondo::solida in include/mondo_logica.h) dice solida ogni cella da PRIMA_CELLA_SOLIDA in su, quindi
+# tutte le calpestabili stanno prima di FONTANA (controlla_ordine_celle).
 CELLE = {
     ".": ("SUOLO", False),
     ",": ("STRADA", False),
@@ -113,6 +116,8 @@ CELLE = {
     "J": ("ARCO", False),          # sotto l'arco di una porta della citta': si passa
     "N": ("PRATO", False),         # il prato fuori le mura ("prato" nella .area)
     "b": ("BRECCIA", False),       # la ghiaia degli stradoni del Monte Ingino
+    "g": ("MIASMA", False),        # la nebbia verde dei miasmi sulla via: ci si cammina (e si perdono PV)
+    "+": ("PONTE", False),         # il ponticello sul torrente della gola
     "F": ("FONTANA", True),
     "d": ("PORTONE", True),        # portone di un edificio: solo visivo, non si attraversa
     "#": ("MURO", True),
@@ -146,7 +151,8 @@ CELLE = {
     "e": ("CERO", True),           # un cero esposto
     "~": ("ACQUA", True),          # il torrente (il Camignano nella gola): non si attraversa
     "x": ("STRISCIA_NERA", True),  # la rupe con la striscia nera del limite K-Pg (Bottaccione)
-    "g": ("MIASMA", False),        # la nebbia verde dei miasmi sulla via: ci si cammina
+    "i": ("LAPIDE", True),         # la lapide che segna il limite K-Pg
+    "|": ("DIGA", True),           # la diga del Bottaccione, in fondo alla gola
 }
 VARCHI = "ABEGHI"                 # I e' l'ingresso di un dungeon
 
@@ -200,6 +206,22 @@ PALETTE_FONDALI = [
     ("legno e cuoio", 1),     # 14
     ("legno e cuoio", 3),     # 15
 ]
+
+
+def palette_cupa(palette_stile):
+    """La palette cupa della gola: le rampe di notte, ma un tono piu' chiare (oltre il contorno), cosi'
+    si legge come le notti delle cutscene. Dentro una rampa due voci non finiscono mai sullo stesso tono:
+    dalla piu' chiara in giu', ognuna sale di uno solo se resta sotto quella sopra (la pietra chiarissima
+    e la chiara restano distinte: la scaglia bianca ha due toni)."""
+    toni = {r["nome"]: len(r["notte"]) for r in palette_stile["rampe"]}
+    out = list(PALETTE_FONDALI)
+    sopra = {}
+    for i in sorted(range(2, len(out)), key=lambda i: -out[i][1]):
+        rampa, tono = out[i]
+        limite = sopra.get(rampa, toni[rampa]) - 1
+        out[i] = (rampa, min(tono + 1, limite))
+        sopra[rampa] = out[i][1]
+    return out
 
 
 def _tile(funzione):
@@ -598,26 +620,6 @@ def tile_roccia(x, y):
     return 5 if x + y < 6 else (3 if x + y < 10 else 2)
 
 
-def tile_rupe(x, y):
-    # la rupe di calcare della gola: strati che ondeggiano, crepe sparse, luce da sinistra
-    strato = (y + (1 if 2 <= x <= 4 else 0)) % 4
-    if strato == 3 or (x * 5 + y * 3) % 13 == 0:
-        return 2
-    return 4 if (x + y // 4) % 5 else 3
-
-
-def tile_striscia_nera(x, y):
-    # la stessa rupe con la striscia nera: lo strato d'argilla scura del limite K-Pg
-    if y in (3, 4):
-        return 1 if (x + y) % 5 else 14
-    return tile_rupe(x, y)
-
-
-def tile_acqua(x, y):
-    # l'acqua del torrente: increspature chiare sfalsate
-    return 13 if y % 4 == 1 and (x + (y // 4) * 3) % 6 < 2 else 12
-
-
 def tile_miasma(x, y):
     # la nebbia verde bassa sul selciato: fitta, a fiocchi di due verdi, le pietre si vedono appena
     if (x * 3 + y * 5) % 4 == 0 or (x + 2 * y) % 5 == 0:
@@ -625,6 +627,303 @@ def tile_miasma(x, y):
     if (x + y) % 2 == 0:
         return 10
     return tile_strada(x, y)
+
+
+def _strati(x, y, rossa):
+    """La scaglia: strati orizzontali di spessore diverso (il giunto ondeggia), rossa o bianca."""
+    giunto_1 = 2 + (1 if 3 <= x <= 5 else 0)
+    giunto_2 = 6 - (1 if x <= 1 else 0)
+    if y in (giunto_1, giunto_2):
+        return 6 if rossa else 3
+    if rossa:
+        return 8 if y < giunto_1 else (7 if (x + y) % 5 else 9)
+    return 5 if y < giunto_1 else (4 if (x * 3 + y) % 7 else 9)
+
+
+def tile_rupe(x, y):
+    # la rupe della gola: la scaglia rossa a strati irregolari
+    return _strati(x, y, True)
+
+
+def tile_rupe_bianca(x, y):
+    # la scaglia bianca, piu' chiara, con un velo rosato fra gli strati
+    return _strati(x, y, False)
+
+
+def tile_rupe_frattura(x, y):
+    # una frattura verticale che scende a zig-zag nella scaglia
+    if x == 3 + (y // 3) % 2:
+        return 1
+    if x == 4 + (y // 3) % 2:
+        return 6
+    return _strati(x, y, True)
+
+
+def tile_rupe_piede(x, y):
+    # il piede della rupe sopra la via: il muschio e l'ombra in basso
+    if y >= 6:
+        return 1 if y == 7 and x % 3 == 0 else 14
+    if y >= 4:
+        return 11 if (x + y) % 2 else 10
+    return _strati(x, y, True)
+
+
+def tile_edera(x, y):
+    # l'edera aggrappata alla rupe: grappoli di foglie su due verdi, i rami scuri
+    if (x * 2 + y * 3) % 5 < 2:
+        return 11 if (x + y) % 3 else 10
+    if (x + y * 2) % 7 == 0:
+        return 1
+    return _strati(x, y, x % 2 == 0)
+
+
+def _banda_nera(x, y, spessore):
+    """Il limite K-Pg: la scaglia rossa sopra, l'orlo d'argilla, la banda nera continua, la bianca chiara
+    sotto (cosi' la banda si stacca anche nella palette cupa)."""
+    if y < 2:
+        return 8 if (x + y) % 5 else 7
+    if y == 2:
+        return 14
+    if y < 3 + spessore:
+        return 1
+    if y == 3 + spessore:
+        return 14
+    return 5 if (x * 3 + y) % 7 else 4
+
+
+def tile_striscia_nera(x, y):
+    # la banda nera, tre pixel
+    return _banda_nera(x, y, 3)
+
+
+def tile_striscia_nera_2(x, y):
+    # dove la banda si gonfia: quattro pixel, l'argilla che cola in un punto
+    if y == 7 and x in (2, 3):
+        return 14
+    return _banda_nera(x, y, 4 if 1 <= x <= 5 else 3)
+
+
+def tile_lapide(x, y):
+    # la lapide che segna il limite: cornice scura, pietra chiara, le righe incise
+    if x in (0, 7) or y in (0, 7):
+        return 2
+    return 3 if y in (2, 4) and 1 < x < 6 else 5
+
+
+def tile_ghiaia(x, y):
+    # la ghiaia della via, nell'ombra della gola: un tono sotto la scaglia bianca, coi sassi chiari
+    if (x * 5 + y * 3) % 7 == 0:
+        return 4
+    return 3 if (x * 3 + y * 7) % 4 else 2
+
+
+def tile_ghiaia_2(x, y):
+    # la stessa ghiaia con sassi piu' grossi e l'ombra sotto a destra
+    if (x, y) in ((2, 2), (5, 5), (6, 1), (3, 2), (6, 5)):
+        return 2
+    if (x, y) in ((1, 2), (2, 1), (4, 5), (5, 4), (5, 1)):
+        return 4
+    return 3 if (x + y * 3) % 5 else 2
+
+
+def tile_terra(x, y):
+    # la terra battuta, coi sassolini
+    if (x * 7 + y * 5) % 11 == 0:
+        return 4
+    return 15 if (x + y * 2) % 5 else 14
+
+
+def tile_erba(x, y):
+    # la sponda: terra e ciuffi d'erba
+    if (x + y * 3) % 6 in (0, 1) and y % 3 != 2:
+        return 11 if x % 2 else 10
+    return 15 if (x * 2 + y) % 4 else 14
+
+
+def tile_erba_2(x, y):
+    # la sponda piu' fitta: felci a ventaglio
+    if abs(x - 3.5) + (7 - y) * 0.6 < 4 and (x + y) % 2 == 0:
+        return 11
+    if (x * 3 + y) % 4 == 0:
+        return 10
+    return 15 if (x + y) % 3 else 14
+
+
+def tile_acqua(x, y):
+    # l'acqua del Camignano: increspature chiare sfalsate (i colori 12 e 13 si scambiano: i riflessi)
+    return 13 if y % 4 == 1 and (x + (y // 4) * 3) % 6 < 2 else 12
+
+
+def tile_acqua_sassi(x, y):
+    # i sassi nel torrente, con la luce in alto a sinistra
+    for cx, cy in ((2, 2), (5, 5)):
+        d = (x - cx) ** 2 + (y - cy) ** 2
+        if d <= 2:
+            return 5 if x <= cx and y <= cy else 3
+        if d <= 3:
+            return 2
+    return tile_acqua(x, y)
+
+
+def tile_acqua_schiuma(x, y):
+    # le rapide: creste bianche corte lungo la corrente
+    if y % 4 == 1 and (x + (y // 4) * 4) % 8 < 3:
+        return 5
+    if y % 4 == 2 and (x + (y // 4) * 4 + 1) % 8 < 4:
+        return 13
+    return 12
+
+
+def tile_canaletta(x, y):
+    # la canaletta dell'acquedotto: il labbro di pietra sopra e sotto, l'acqua che corre
+    if y == 0:
+        return 3
+    if y == 7:
+        return 2
+    return 13 if y == 3 and (x + 2) % 6 < 3 else 12
+
+
+def tile_ponte(x, y):
+    # il ponticello di legno: le assi di traverso alla via, la luce a sinistra, il giunto scuro
+    if x % 3 == 2:
+        return 14
+    if (x // 3 * 3 + y) % 7 == 0:
+        return 15
+    return 9 if x % 3 == 0 else 15
+
+
+def tile_ponte_sponda(x, y):
+    # il corrimano del ponticello a monte: un tronco scuro, sotto le assi
+    if y <= 1:
+        return 1 if y == 0 else 14
+    return tile_ponte(x, y)
+
+
+def tile_ponte_sponda_giu(x, y):
+    # il corrimano a valle, coi pioli che scendono nell'acqua
+    if y >= 6:
+        return 14 if y == 6 else 1
+    return tile_ponte(x, y)
+
+
+def _conci(x, y, scarto=0):
+    """Pietra squadrata a corsi di 4 pixel, i giunti sfalsati."""
+    if y % 4 == 3 or (x + (y // 4) * 4 + scarto) % 8 == 7:
+        return 2
+    return 4 if (x + y) % 6 else 3
+
+
+def tile_diga(x, y):
+    # la cresta della diga del Bottaccione: grandi conci
+    return _conci(x, y)
+
+
+def tile_diga_luce(x, y):
+    # il fianco della diga verso valle, nella luce
+    return 5 if x <= 1 else _conci(x, y)
+
+
+def tile_diga_ombra(x, y):
+    # il fianco verso il lago: la pietra bagnata, scura
+    if x >= 6:
+        return 1 if x == 7 else 12
+    return _conci(x, y)
+
+
+def tile_contrafforte(x, y):
+    # il pilone del contrafforte: conci, la luce a sinistra
+    if x == 0:
+        return 5
+    if x == 7:
+        return 1
+    return _conci(x, y, 3)
+
+
+def _arco_gola(x, y, lato):
+    """L'arco del contrafforte visto dall'alto: i conci della ghiera di traverso, la luce da sinistra."""
+    if lato < 0 and x <= 1:
+        return 5 if x == 1 else 2
+    if lato > 0 and x >= 6:
+        return 3 if x == 6 else 1
+    if y % 4 == 0 and (x + (y // 4) * 3) % 6 != 0:
+        return 3
+    if (x + (y // 4) * 3) % 6 == 0:
+        return 3
+    return 4 if (x + y) % 7 else 5
+
+
+def tile_arco_gola(x, y):
+    return _arco_gola(x, y, 0)
+
+
+def tile_arco_gola_s(x, y):
+    return _arco_gola(x, y, -1)
+
+
+def tile_arco_gola_d(x, y):
+    return _arco_gola(x, y, 1)
+
+
+def tile_acquedotto_cornice(x, y):
+    # la cornice in cima all'acquedotto, sotto il camminamento: il bordo in luce, i conci sotto
+    if y < 2:
+        return 5
+    if y == 2:
+        return 1
+    return 2 if y == 7 or (x + (y > 4) * 4) % 8 == 0 else 4
+
+
+def tile_acquedotto_pilastro(x, y):
+    # un pilastro dell'acquedotto: conci, luce a sinistra, ombra a destra
+    if x == 0:
+        return 2
+    if x == 7:
+        return 1
+    if y % 4 == 3:
+        return 2
+    return 4 if x < 4 else 3
+
+
+def tile_acquedotto_base(x, y):
+    # il piede del pilastro: si allarga e affonda nell'acqua
+    if y >= 6:
+        return 1 if (x + y) % 2 else 12
+    return tile_acquedotto_pilastro(x, y)
+
+
+def _lontano(x, y, profondita):
+    """Quel che si vede sotto un arco: la rupe in fondo, scura, poi il bosco, in fondo il torrente."""
+    if profondita <= 1:
+        return 1 if (x + y) % 3 else 14
+    if profondita <= 3:
+        return 6 if (y + x // 4) % 4 else 1
+    if profondita <= 5:
+        return 10 if (x * 3 + y * 5) % 7 < 3 else 6
+    return 12 if (x + y) % 4 else 1
+
+
+def _curva_arco(u):
+    """L'intradosso dell'arco largo 24 pixel (tre tile): pixel dall'alto della prima riga d'archi."""
+    return 1 + 12 - math.sqrt(max(0.0, 144 - (u - 11.5) ** 2))
+
+
+def _tile_arco_acquedotto(colonna, riga):
+    """La tile (colonna 0-2 dentro l'arco, riga 0-1 sotto la cornice) dell'arco dell'acquedotto."""
+    def tile(x, y):
+        u, v = colonna * 8 + x, riga * 8 + y
+        curva = _curva_arco(u)
+        if v < curva - 2:
+            return 2 if (v % 4 == 3 or (u + v // 4 * 3) % 6 == 0) else 4
+        if v < curva:
+            return 2 if v < curva - 1 else 1
+        return _lontano(x, y, riga)
+    return tile
+
+
+def _tile_lontano(profondita):
+    def tile(x, y):
+        return _lontano(x, y, profondita)
+    return tile
 
 
 def tile_colonna(x, y):
@@ -721,8 +1020,116 @@ TILE_FONDALI = [
     ("STRISCIA_NERA", tile_striscia_nera),
     ("ACQUA", tile_acqua),
     ("MIASMA", tile_miasma),
+    ("RUPE_BIANCA", tile_rupe_bianca),
+    ("RUPE_FRATTURA", tile_rupe_frattura),
+    ("RUPE_PIEDE", tile_rupe_piede),
+    ("EDERA", tile_edera),
+    ("STRISCIA_NERA_2", tile_striscia_nera_2),
+    ("LAPIDE", tile_lapide),
+    ("GHIAIA", tile_ghiaia),
+    ("GHIAIA_2", tile_ghiaia_2),
+    ("TERRA", tile_terra),
+    ("ERBA", tile_erba),
+    ("ERBA_2", tile_erba_2),
+    ("ACQUA_SASSI", tile_acqua_sassi),
+    ("ACQUA_SCHIUMA", tile_acqua_schiuma),
+    ("CANALETTA", tile_canaletta),
+    ("PONTE", tile_ponte),
+    ("PONTE_SPONDA", tile_ponte_sponda),
+    ("PONTE_SPONDA_GIU", tile_ponte_sponda_giu),
+    ("DIGA", tile_diga),
+    ("DIGA_LUCE", tile_diga_luce),
+    ("DIGA_OMBRA", tile_diga_ombra),
+    ("CONTRAFFORTE", tile_contrafforte),
+    ("ARCO_GOLA", tile_arco_gola),
+    ("ARCO_GOLA_S", tile_arco_gola_s),
+    ("ARCO_GOLA_D", tile_arco_gola_d),
+    ("ACQUEDOTTO_CORNICE", tile_acquedotto_cornice),
+    ("ACQUEDOTTO_PILASTRO", tile_acquedotto_pilastro),
+    ("ACQUEDOTTO_BASE", tile_acquedotto_base),
+] + [(f"ACQUEDOTTO_ARCO_{c}{r}", _tile_arco_acquedotto(c, r)) for r in range(2) for c in range(3)] + [
+    (f"ACQUEDOTTO_LONTANO_{p}", _tile_lontano(p)) for p in range(2, 8)
 ]
 INDICE_TILE = {nome: i for i, (nome, _) in enumerate(TILE_FONDALI)}
+
+
+CALPESTABILI_GOLA = ".,+gJ" + VARCHI
+
+
+def tile_della_gola(griglia, x, y, c):
+    """Il tile di una cella nelle stanze della gola, o None per quello di sempre."""
+    alt, larg = len(griglia), len(griglia[0])
+
+    def g(xx, yy):
+        return griglia[yy][xx] if 0 <= xx < larg and 0 <= yy < alt else "#"
+
+    caso = pseudo(x, y, 21)
+    if c == "#":
+        if g(x, y + 1) in CALPESTABILI_GOLA:
+            return "RUPE_PIEDE"
+        vicino_alla_via = any(g(x, y + k) in CALPESTABILI_GOLA for k in (1, 2, 3))
+        if caso < (0.22 if vicino_alla_via else 0.05):
+            return "EDERA"
+        if caso < (0.28 if vicino_alla_via else 0.11):
+            return "RUPE_FRATTURA"
+        # gli strati: fasce di un tile e mezzo che salgono piano verso monte, rosse e bianche alternate (una
+        # bianca ogni tre, qualcuna in piu' a caso fisso); sopra la striscia nera la scaglia e' quasi tutta
+        # rossa, sotto le bianche sono due su tre
+        striscia = next((yy for yy in range(alt) if g(x, yy) == "x"), None)
+        fascia = (2 * y + x // 7) // 3
+        if striscia is not None and y < striscia:
+            bianca = fascia % 5 == 0
+        elif striscia is not None:
+            bianca = fascia % 3 != 1
+        else:
+            bianca = fascia % 3 == 0 or pseudo(fascia, 0, 31) < 0.15
+        return "RUPE_BIANCA" if bianca else "RUPE"
+    if c == "x":
+        return "STRISCIA_NERA_2" if pseudo(x // 3, y, 25) < 0.3 else "STRISCIA_NERA"
+    if c == ",":
+        sponda = any(g(x + dx, y + dy) == "." for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+        if (sponda and caso < 0.45) or pseudo(x // 3, y // 2, 22) < 0.12:
+            return "TERRA"
+        return "GHIAIA_2" if pseudo(x, y, 24) < 0.4 else "GHIAIA"
+    if c == ".":
+        return "ERBA_2" if caso < 0.3 else "ERBA"
+    if c == "~":
+        if g(x, y - 1) != "~" and g(x, y + 1) != "~":
+            return "CANALETTA"
+        if caso < 0.08:
+            return "ACQUA_SASSI"
+        if pseudo(x // 3, y, 23) < 0.18:
+            return "ACQUA_SCHIUMA"
+        return "ACQUA"
+    if c == "+":
+        if g(x, y - 1) != "+":
+            return "PONTE_SPONDA"
+        return "PONTE_SPONDA_GIU" if g(x, y + 1) != "+" else "PONTE"
+    if c == "J":
+        if g(x - 1, y) != "J":
+            return "ARCO_GOLA_S"
+        return "ARCO_GOLA_D" if g(x + 1, y) != "J" else "ARCO_GOLA"
+    if c == "X":
+        return "CONTRAFFORTE"
+    if c == "|":
+        if g(x - 1, y) != "|":
+            return "DIGA_LUCE"
+        return "DIGA_OMBRA" if g(x + 1, y) != "|" else "DIGA"
+    if c == "P":
+        # gli archi dell'acquedotto, larghi tre tile fra pilastri di uno: la cornice in cima, la ghiera
+        # nelle due righe sotto, poi quel che si vede sotto l'arco
+        riga = 0
+        while g(x, y - riga - 1) == "P":
+            riga += 1
+        ultima = g(x, y + 1) != "P"
+        if riga == 0:
+            return "ACQUEDOTTO_CORNICE"
+        if x % 4 == 0:
+            return "ACQUEDOTTO_BASE" if ultima else "ACQUEDOTTO_PILASTRO"
+        if riga <= 2:
+            return f"ACQUEDOTTO_ARCO_{x % 4 - 1}{riga - 1}"
+        return f"ACQUEDOTTO_LONTANO_{7 if ultima else min(riga, 6)}"
+    return None
 
 
 def del_monte(a):
@@ -745,9 +1152,11 @@ def tile_per_cella(griglia, x, y, del_monte=False, monte=None):
         vicine = [griglia[y + dy][x + dx] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
                   if 0 <= y + dy < len(griglia) and 0 <= x + dx < len(griglia[0])]
         return INDICE_TILE["VUOTO_OMBRA" if "=" in vicine else "CITTA_BASSA"]
+    if del_monte == "gola":
+        gola = tile_della_gola(griglia, x, y, c)
+        if gola:
+            return INDICE_TILE[gola]
     if nome == "MURO":
-        if del_monte == "gola":
-            return INDICE_TILE["RUPE"]
         if del_monte:
             return INDICE_TILE["BOSCO"]
         sotto = griglia[y + 1][x] if y + 1 < len(griglia) else "#"
@@ -833,6 +1242,18 @@ class ErroreMondo(Exception):
 
 def solida(c):
     return c not in VARCHI and CELLE[c][1]
+
+
+def controlla_ordine_celle(celle=None):
+    """Le celle calpestabili tutte prima della prima solida: cosi' il gioco, che confronta l'indice con
+    PRIMA_CELLA_SOLIDA, vede solida la stessa cella che la .area dice solida (il MIASMA, a indice 42,
+    bloccava la via)."""
+    celle = CELLE if celle is None else celle
+    valori = list(celle.values())
+    prima = next(i for i, (_, s) in enumerate(valori) if s)
+    dopo = [nome for nome, s in valori[prima:] if not s]
+    if dopo:
+        raise ErroreMondo(f"celle calpestabili dopo {valori[prima][0]} (il gioco le vedrebbe solide): {', '.join(dopo)}")
 
 
 def leggi_area(nome_file, testo):
@@ -2070,7 +2491,7 @@ def scrivi_header(aree, grafo, palette_stile):
         "};",
         "",
         f"inline constexpr int PRIMO_VARCO = {PRIMO_VARCO};   // cella = PRIMO_VARCO + indice del varco",
-        f"inline constexpr int PRIMA_CELLA_SOLIDA = {list(CELLE.values()).index(('FONTANA', True))};",
+        f"inline constexpr int PRIMA_CELLA_SOLIDA = {[s for _, s in CELLE.values()].index(True)};",
         f"inline constexpr int DISTANZA_MIN_SPAWN = {DISTANZA_MIN_SPAWN};",
         f"inline constexpr int DISTANZA_MIN_SPAWN_USCITA = {DISTANZA_MIN_SPAWN_USCITA};",
         f"inline constexpr int LATO_MAX = {LATO_MAX};          // tile per lato di un'area",
@@ -2192,7 +2613,7 @@ def scrivi_header(aree, grafo, palette_stile):
             "};", "",
             "// La palette cupa delle stanze della gola (Area::cupa): le stesse voci con le rampe di notte.",
             "inline constexpr uint16_t PALETTE_FONDALI_CUPA[16] = {",
-            a_blocchi([S.colore(palette_stile, r, True) for r in PALETTE_FONDALI], 8, lambda v: f"0x{v:04X}"),
+            a_blocchi([S.colore(palette_stile, r, True) for r in palette_cupa(palette_stile)], 8, lambda v: f"0x{v:04X}"),
             "};", ""]
 
     out += ["// Il cartiglio dietro il nome dell'area: tre pezzi da 32x16 (sinistro, centrale, destro),",
@@ -2260,6 +2681,7 @@ def prepara_area(a, mondo):
 def genera(sorgenti, palette_stile, mondo=None):
     """sorgenti: lista di (nome, testo). Ritorna il testo di include/mondo.h."""
     mondo = mondo or mondo_del_repo()
+    controlla_ordine_celle()
     aree = [leggi_area(nome, testo) for nome, testo in sorgenti]
     cinta = errori_cinta(mondo["grafo"])
     if cinta:

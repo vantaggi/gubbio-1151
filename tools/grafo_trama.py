@@ -57,7 +57,11 @@ ACCESE_DAL_GIOCO = {"BORGO_FUORI": "storia::all_ingresso(): salire agli Stradoni
                     "ROSA_RIPRESA": "storia::riprendi_la_rosa(): la battaglia con l'infiltrato vinta",
                     "INDIZIO_LUCIA": "storia::trova_indizio(): Lucia, con Q-SP01 presa",
                     "INDIZIO_VENDITORE": "storia::trova_indizio(): il Venditore delle Logge, con Q-SP01 presa",
-                    "INDIZIO_FONTANIERE": "storia::trova_indizio(): Giordano, con Q-SP01 presa"}
+                    "INDIZIO_FONTANIERE": "storia::trova_indizio(): Giordano, con Q-SP01 presa",
+                    # T2, la gola: l'incontro con Corrado acceso quando il duello parte (anche se si perde), i forzieri
+                    "CORRADO_INCONTRATO": "storia::all_incontro(): quando parte il duello di B-04, prima della battaglia",
+                    "FORZIERE_CRESCIA": "storia::apri_forziere(): il forziere dello slargo della striscia nera",
+                    "FORZIERE_BISCOTTI": "storia::apri_forziere(): il forziere dello slargo dell'arco"}
 
 
 def problema(gravita, codice, dove, testo, proposta=""):

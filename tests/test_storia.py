@@ -60,14 +60,15 @@ def scritte_non_lette(scene, lette_dal_gioco):
 
 def codice_che_legge():
     """Il codice che legge le bandiere: la logica della storia, la scena, e le tabelle delle quest di storia.h
-    (QUEST_V1; e, per le quest giocabili, QUEST_GIOCO, RACCOLTA e INDIZIO)."""
+    (QUEST_V1; e, per le quest giocabili, QUEST_GIOCO, RACCOLTA e INDIZIO; per la gola, FORZIERE)."""
     codice = "".join(open(os.path.join(RADICE, p), encoding="utf-8").read()
                      for p in ("include/storia_logica.h", "src/storia_scena.cpp"))
     storia_h = open(GS.USCITA_H, encoding="utf-8").read()
     tabelle = [r"inline constexpr Quest QUEST_V1\[QUEST\] = \{.*?\n\};",
                r"inline constexpr QuestGioco QUEST_GIOCO\[QUEST\] = \{.*?\n\};",
                r"inline constexpr Raccolta RACCOLTA\[RACCOLTE\] = \{.*?\n\};",
-               r"inline constexpr Indizio INDIZIO\[INDIZI\] = \{.*?\n\};"]
+               r"inline constexpr Indizio INDIZIO\[INDIZI\] = \{.*?\n\};",
+               r"inline constexpr Forziere FORZIERE\[FORZIERI\] = \{.*?\n\};"]
     return codice + "".join(re.search(r, storia_h, re.S).group(0) for r in tabelle)
 
 
@@ -148,12 +149,15 @@ class Tabelle(unittest.TestCase):
 
     def test_negativa_bandiera_da_fare_senza_documento(self):
         doc = open(os.path.join(RADICE, "docs", "bandiere_da_fare.md"), encoding="utf-8").read()
-        self.assertNotIn("| `MIASMI_VISTI` |", doc.replace("| `MIASMI_VISTI` |", "| MIASMI |"))
+        self.assertNotIn("| `CERI_RISVEGLIATI` |", doc.replace("| `CERI_RISVEGLIATI` |", "| CERI |"))
 
     def test_negativa_bandiera_scritta_e_mai_letta(self):
-        """Togliendo MIASMI_VISTI dall'elenco delle bandiere da fare, resta scritta e mai letta."""
-        da_fare = [b for b in GS.DA_FARE if b != "MIASMI_VISTI"]
-        self.assertEqual(scritte_non_lette(SCENE, set(GS.LETTE_DAL_GIOCO) | set(da_fare)), ["MIASMI_VISTI"])
+        """Togliendo CERI_RISVEGLIATI dall'elenco delle bandiere da fare, resta scritta e mai letta; togliendo
+        MIASMI_VISTI da quelle lette dal gioco (T2), lo stesso."""
+        da_fare = [b for b in GS.DA_FARE if b != "CERI_RISVEGLIATI"]
+        self.assertEqual(scritte_non_lette(SCENE, set(GS.LETTE_DAL_GIOCO) | set(da_fare)), ["CERI_RISVEGLIATI"])
+        lette = set(GS.LETTE_DAL_GIOCO) - {"MIASMI_VISTI"}
+        self.assertEqual(scritte_non_lette(SCENE, lette | set(GS.DA_FARE)), ["MIASMI_VISTI"])
 
     def test_nessuna_scena_irraggiungibile(self):
         ordine, accese = giro(SCENE)

@@ -26,7 +26,8 @@ struct GameState
     uint8_t scene_fatte[4];     // un bit per scena del copione gia' giocata (storia::SCENA)
     uint8_t cutscene_viste[2];  // un bit per cutscene gia' vista (regia::CUTSCENE_DATI)
     uint8_t quest[8];           // le bandiere delle quest e degli indizi (intervallo 64-127)
-    uint8_t riservato[8];
+    uint8_t ferite[3];          // i PV tolti dai miasmi della gola, per Santo: pesano sulla prossima battaglia (T2)
+    uint8_t riservato[5];
 };
 
 static_assert(sizeof(GameState) == 64, "sizeof(GameState) cambiato: va aggiornato il salvataggio");
@@ -36,7 +37,7 @@ static_assert(offsetof(GameState, frames) == 0 && offsetof(GameState, tempo_fram
               offsetof(GameState, oggetti) == 22 && offsetof(GameState, scontri_vinti) == 30 &&
               offsetof(GameState, storia) == 34 && offsetof(GameState, scene_fatte) == 42 &&
               offsetof(GameState, cutscene_viste) == 46 && offsetof(GameState, quest) == 48 &&
-              offsetof(GameState, riservato) == 56,
+              offsetof(GameState, ferite) == 56 && offsetof(GameState, riservato) == 59,
               "GameState: gli offset sono congelati");
 
 // L'unica istanza, definita in src/game_state.cpp con BN_DATA_EWRAM_BSS: deve stare in EWRAM

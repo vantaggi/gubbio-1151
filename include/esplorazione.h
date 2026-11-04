@@ -46,6 +46,21 @@ public:
 
     void nascondi_etichetta();
 
+    // Il varco 'indice' dell'area si urta come un muro (-1: tutti aperti). Lo decide la storia a ogni frame
+    // (storia::varco_chiuso(): il duello del Condotto).
+    void chiudi_varco(int indice)
+    {
+        _varco_chiuso = indice;
+    }
+
+    // Il giocatore ha urtato il varco chiuso dall'ultima chiamata? (una volta: poi torna false)
+    [[nodiscard]] bool urto_al_varco_chiuso()
+    {
+        bool urto = _urto_al_varco;
+        _urto_al_varco = false;
+        return urto;
+    }
+
     [[nodiscard]] const mondo::Esploratore& esploratore() const
     {
         return _e;
@@ -75,6 +90,9 @@ private:
     int _mezza_larghezza_mappa = 0;
     int _mezza_altezza_mappa = 0;
     int _dissolvenza = 0;           // >0 in uscita, <0 in entrata
+    int _riflessi = 0;              // i frame dei riflessi dell'acqua nelle stanze della gola
+    int _varco_chiuso = -1;         // il varco che si urta come un muro (chiudi_varco)
+    bool _urto_al_varco = false;
     int _attesa_etichetta = 0;
 
     void _carica_fondale();

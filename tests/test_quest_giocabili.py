@@ -119,9 +119,10 @@ class Bandiere(unittest.TestCase):
         self.assertEqual(pezzi_non_consecutivi(GS.QUEST), [])
 
     def test_negativa_troppe_bandiere(self):
-        # oggi le bandiere delle quest sono 24 (64-87): la quarantesima in piu' cade a 128
-        self.assertEqual(len(GS.BANDIERE_QUEST), 24)
-        self.assertEqual(fuori_intervallo(GS.BANDIERE_QUEST + [f"X{i}" for i in range(64)])[:1], ["X40"])
+        # oggi le bandiere delle quest sono 26 (64-89, con i due forzieri della gola, T2): la trentottesima in piu'
+        # cade a 128
+        self.assertEqual(len(GS.BANDIERE_QUEST), 26)
+        self.assertEqual(fuori_intervallo(GS.BANDIERE_QUEST + [f"X{i}" for i in range(64)])[:1], ["X38"])
 
     def test_negativa_pezzi_sparsi(self):
         quest = copy.deepcopy(GS.QUEST)
@@ -161,11 +162,20 @@ class Raccolte(unittest.TestCase):
         area, x, y, q, b = raccolte[0]
         self.assertEqual(raccolte_sbagliate([("TEATRO_ROMANO", x, y, 1, "ELLEBORO_1")]), [("ELLEBORO_1", "area")])
 
-    def test_negativa_nei_miasmi(self):
-        """Il MIASMA nella .area e' calpestabile, ma nel gioco (mondo::solida) blocca: li' non si raccoglie."""
+    def test_nei_miasmi_si_raccoglie(self):
+        """Da T2 il MIASMA e' calpestabile anche nel gioco (sta prima di PRIMA_CELLA_SOLIDA): una radice fra la
+        nebbia si raccoglie, come vuole il copione (04_quest.md: «uno e' dentro una zona di miasmi»)."""
         a = AREE["GOLA_MIASMI"]
-        x, y = next((x, y) for y, r in enumerate(a["griglia"]) for x, c in enumerate(r) if c == "g")
+        raggiunte = GS.raggiungibili_da(a, *a["spawn"][0], G)
+        x, y = next((x, y) for y, r in enumerate(a["griglia"]) for x, c in enumerate(r) if c == "g" and (x, y) in raggiunte)
         self.assertFalse(G.solida("g"))
+        self.assertFalse(GS.solida_nel_gioco("g", G))
+        self.assertEqual(raccolte_sbagliate([("GOLA_MIASMI", x, y, 1, "ELLEBORO_3")]), [])
+
+    def test_negativa_nel_torrente(self):
+        """Il Camignano non si attraversa: una radice nell'acqua si rifiuta."""
+        a = AREE["GOLA_MIASMI"]
+        x, y = next((x, y) for y, r in enumerate(a["griglia"]) for x, c in enumerate(r) if c == "~")
         self.assertEqual(raccolte_sbagliate([("GOLA_MIASMI", x, y, 1, "ELLEBORO_3")]), [("ELLEBORO_3", "cella")])
 
     def test_la_gola_dopo_b05(self):

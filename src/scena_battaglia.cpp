@@ -812,12 +812,18 @@ Esito scena_battaglia(int incontro, uint32_t seme, Guida guida, const bn::sprite
     // Corrado con uno scudo in meno (Q-SM01 o Rufino), Ubaldo che nel DIGIUNO non mangia
     int scudi_in_meno = partita ? storia::scudi_in_meno(*partita, incontro) : 0;
     uint8_t a_digiuno = partita ? storia::a_digiuno(*partita) : 0;
-    g_scena.ricomincia(incontro, seme, false, eroi, presenti, scudi_in_meno, a_digiuno);
+    // e i PV che i miasmi della gola hanno tolto: pesano su questa battaglia, poi si azzerano (storia::guarisci)
+    g_scena.ricomincia(incontro, seme, false, eroi, presenti, scudi_in_meno, a_digiuno, partita ? partita->ferite : nullptr);
     Esito esito;
 
     {
         Scena scena(incontro, guida, palette_testo, istantanee, partita);
         esito = scena.gioca(partita);
+    }
+
+    if(partita)
+    {
+        storia::guarisci(*partita);
     }
 
     // Butano libera i tile e gli sprite della scena al prossimo aggiornamento: prima di crearne
