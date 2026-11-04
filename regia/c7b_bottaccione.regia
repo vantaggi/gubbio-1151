@@ -1,0 +1,9 @@
+# C7B La gola del Bottaccione (cutscene/v2/SCHEDE.md, approvata): la cartolina del luogo all'inizio di B-01,
+# prima della battuta di Antonio sulla striscia nera; solo la prima volta (una cutscene vista non riparte).
+# Il narratore non spiega la riga scura: lo lascia ad Antonio e a Berto.
+cutscene C7B | La gola del Bottaccione
+inquadratura 8 | c7_gola_fondo c7_gola_parete c7_gola_torrente | 12
+narratore R_C7B_00
+narratore R_C7B_01
+inquadratura 4.5 | c7_striscia | 0
+narratore R_C7B_02

@@ -1,0 +1,11 @@
+# C6 La visione nel vetro (cutscene/v2/SCHEDE.md, approvata): dentro A1-09, al posto della regia «uno dei
+# vetri chiari si scurisce». Su tutti e due i percorsi: con almeno due indizi lo scambio di Ubaldo e Antonio
+# viene prima, nella vista di gioco. La bifora del prologo, un vetro si scurisce, dentro il vetro la fila in
+# ferro sale la gola sotto gli archi, il gigante cala il martello sull'arco, di nuovo la bifora col vetro
+# scuro. Muta: le parole le dicono subito dopo i tre.
+cutscene C6 | La visione nel vetro
+inquadratura 3 | vetrata | 0
+inquadratura 3.5 | c6_vetro_scuro vetrata | 0 | dissolvi
+inquadratura 8 | c6_cielo c6_parete c6_sentiero c6_fanti | 16
+inquadratura 3 | c6_corrado | 0 | colpo
+inquadratura 2.5 | c6_vetro_scuro | 0
