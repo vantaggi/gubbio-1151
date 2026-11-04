@@ -125,14 +125,17 @@ def su(f):
     # il cappuccio a scudo sulle spalle, d'oro, e lo stolone che scende al centro
     t.parte_nuova("scudo", "oro").poligono([(c - 3, 17.5 + dy), (c + 4, 17.5 + dy), (c + 0.5, 22.5 + dy)])
     t.dettaglio_linea(c + 0.5, 22 + dy, c + 0.5 + o, 29, ("oro", 1))
-    t.parte_nuova("testa", "capelli").ellisse(c + 0.5, 14 + dy, 3, 3.2)      # la nuca canuta
+    # la nuca canuta: capelli bianchi sotto la mitria (non grigio scuro, che di schiena faceva una macchia),
+    # e una striscia di collo fra i capelli e il piviale
+    t.parte_nuova("collo", "pelle").rett(c - 1, 15 + dy, 4, 2)
+    t.parte_nuova("testa", "bianco").ellisse(c + 0.5, 13.4 + dy, 3, 2.6)
     t.parte_nuova("mitria", "bianco").poligono([(c - 3, 11.5 + dy), (c + 4, 11.5 + dy), (c + 3, 7 + dy),
                                               (c + 0.5, 4.5 + dy), (c - 2, 7 + dy)])
     t.dettaglio_rett(c - 2, 10 + dy, 6, 1, ("oro", 2))
-    t.parte_nuova("infule", "oro")                                           # le infule sulla nuca
-    for y in range(12, 17):
-        t.punto(c - 1, y + dy)
-        t.punto(c + 2, y + dy)
+    # le infule sulla nuca: due nastri d'oro chiaro di un pixel, senza ombra (un pezzo ombreggiato
+    # incorniciava la nuca di bruno e la testa si leggeva come un elmo)
+    t.dettaglio_linea(c - 1, 12 + dy, c - 1, 17 + dy, ("oro", 2))
+    t.dettaglio_linea(c + 2, 12 + dy, c + 2, 17 + dy, ("oro", 2))
     return t
 
 
