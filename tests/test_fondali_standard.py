@@ -328,6 +328,20 @@ class IngressiLeggibili(unittest.TestCase):
             tende = sum(1 for mid in a["ingressi"].values() if mid in PC.TENDE)
             self.assertEqual(el.get("tenda", 0), tende, nome)
 
+    def test_portale_del_monumento_acceso_non_doppio(self):
+        """Cioti 4 nov: sulla Basilica la porta nuova stava sotto quella vecchia. Dove il monumento ha il suo
+        portale (Consoli, Basilica) si accende quello, senza disegnarne un secondo."""
+        vecchio = PC.dipingi_ingresso_frontale
+        chiamate = []
+        PC.dipingi_ingresso_frontale = lambda *x, **k: chiamate.append(x)
+        try:
+            for nome in ("basilica", "piazza_grande"):
+                chiamate.clear()
+                self._area(nome)
+                self.assertEqual(chiamate, [], nome)
+        finally:
+            PC.dipingi_ingresso_frontale = vecchio
+
     def test_negativa_nessun_ingresso_senza_riga(self):
         a, el = self._area("via_dei_consoli")
         self.assertEqual(a.get("ingressi", {}), {})

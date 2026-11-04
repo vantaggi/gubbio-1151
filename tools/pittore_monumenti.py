@@ -651,10 +651,15 @@ def porta(w, h, info):
     # il fornice e' murato per l'assedio (conci chiari a corsi): il nero aperto e' riservato agli
     # ingressi veri (custode visivo, 4 nov); i varchi percorribili delle mura li disegna genera_mondo
     t.arco(fx, fy, fw, 16, PIETRA_CHIARA)
-    for y in range(fy + 4, fy + 16, 4):
+    for y in range(fy + 1, fy + 16):
+        corso = (y - fy) // 4
         for x in range(fx + 1, fx + fw - 1):
-            if t.get(x, y) == PIETRA_CHIARA:
-                t.punto(x, y, PIETRA)
+            if t.px[y][x] != PIETRA_CHIARA:
+                continue
+            if (y - fy) % 4 == 0 or (x - fx + 3 * corso) % 6 == 0:
+                t.punto(x, y, PIETRA_SCURA)          # giunti P2, sfalsati come il muro accanto
+            elif (y - fy) % 4 == 1:
+                t.punto(x, y, PIETRA_LUCE)           # luce dall'alto sul concio
     t.elementi["fornice"] += 1
     t.contorno()
     return t
@@ -1007,9 +1012,13 @@ def loggia_tiratori(w, h, info):
     t.gronda(0, (h - 6) * 8 - 3, w * 8)
     y0 = (h - 6) * 8
     t.conci(0, y0, w * 8, 48, TINTE[0])
-    # la loggia: pilastrini di legno e il vuoto del loggiato
-    for x in range(2, w * 8 - 8, 8):
-        t.rett(x, y0 + 2, 6, 14, CONTORNO)
+    # la loggia: pilastrini di legno e il loggiato in ombra, non nero (il nero aperto e' delle porte vere,
+    # custode visivo 4 nov); qua e la' un panno di lana steso ad asciugare
+    for i, x in enumerate(range(2, w * 8 - 8, 8)):
+        t.rett(x, y0 + 2, 6, 14, PIETRA_SCURA)
+        t.rett(x, y0 + 2, 6, 2, PIETRA)
+        if i % 3 == 1:
+            t.rett(x + 1, y0 + 4, 4, 7, (COTTO_CHIARO, PIETRA_LUCE, COTTO)[i % 3])
         t.rett(x + 6, y0 + 2, 2, 14, LEGNO)
         t.elementi["arcata"] += 1
     t.rett(0, y0 + 16, w * 8, 3, LEGNO)
@@ -1017,10 +1026,12 @@ def loggia_tiratori(w, h, info):
     for x in range(4, w * 8 - 16, 16):
         t.arco(x, y0 + 22, 12, 24, PIETRA_SCURA)
     t.elementi["ospedale"] += 1
-    x = w * 8 - 8
-    t.conci(x, 0, 8, h * 8, TINTE[0])
-    t.arco(x + 1, (h * 8) // 2 - 7, 6, 14, LEGNO_SCURO)
-    t.elementi["fianco"] += 1
+    if w < h:
+        # coricata in verticale (la citta' di prima, tag citta-v1) si vedeva anche il fianco destro
+        x = w * 8 - 8
+        t.conci(x, 0, 8, h * 8, TINTE[0])
+        t.arco(x + 1, (h * 8) // 2 - 7, 6, 14, LEGNO_SCURO)
+        t.elementi["fianco"] += 1
     t.contorno()
     return t
 
@@ -1047,7 +1058,7 @@ PITTORI.update({"teatro_romano": teatro_romano, "san_francesco": san_francesco,
 REQUISITI.update({
     "teatro_romano": {"gradinate": 1, "arcate": 1, "scena": 1},
     "san_francesco": {"facciata": 1, "portale": 1, "campanile": 1, "abside": 1},
-    "loggia_tiratori": {"arcata": 6, "ospedale": 1, "fianco": 1},
+    "loggia_tiratori": {"arcata": 6, "ospedale": 1},
     "san_pietro": {"portale": 1, "arcata_cieca": 4, "campanile": 1},
 })
 
@@ -1131,7 +1142,7 @@ def basilica(w, h, info):
     for k in range(2):
         t.arco(cx0 + 4 + k * 10, 14, 8, 14)
     t.rett(cx0 + 4, 36, cw - 8, 2, PIETRA_LUCE)
-    t.arco(cx0 + 8, 42, 10, 12, CONTORNO)
+    t.arco(cx0 + 8, 42, 10, 12, PIETRA_SCURA)   # nicchia cieca in ombra: non e' un ingresso (custode visivo)
     t.elementi["campanile"] += 1
     # la facciata: conci chiari, il rosone, il portale grande in cima alla scalinata
     y0 = alto - facciata
