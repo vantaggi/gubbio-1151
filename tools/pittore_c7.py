@@ -19,7 +19,7 @@ import math
 import random
 
 from genera_battaglia import Tela
-from pennelli import contorna, poligono
+from pennelli import chioma, contorna, poligono
 
 W, H = 512, 256
 QUADRO = 112
@@ -34,6 +34,10 @@ PALETTE_STRADONI = [("neutri", 0), ("neutri", 0), ("verde dei monti", 0), ("verd
                     ("neutri", 4), ("oro e bronzo", 3), ("vermiglio comunale", 2), ("cielo e acqua", 2)]
 ST_C, ST_V0, ST_V1, ST_V2, ST_V3, ST_P2, ST_GHIAIA, ST_GHIAIA_L = 1, 2, 3, 4, 5, 6, 7, 8
 ST_COTTO_S, ST_COTTO, ST_LEGNO, ST_BIANCO, ST_ORO, ST_ROSSO, ST_AZZURRO = 9, 10, 11, 12, 13, 14, 15
+# il primo piano della cappelletta: la ghiaia nel tono medio della pietra, come gli stradoni della mappa
+# (tools/pittore_citta.py, area monte_ingino: fondo pietra 3, sassolini pietra 4, ombre pietra 2; C5)
+PALETTE_CAPPELLA = PALETTE_STRADONI[:8] + [("pietra calcarea", 3)] + PALETTE_STRADONI[9:]
+ST_GHIAIA_M = 8
 CAPPELLE = {3: "Sant'Ubaldo", 6: "San Giorgio", 7: "Sant'Antonio"}
 
 
@@ -55,18 +59,23 @@ def c7_monte(m):
     t = Tela(W, H)
     def cresta(x):
         return int(2 + 0.0016 * (x - 300) ** 2 + 2 * math.sin(x / 9.0))
+    def in_luce(x, y):
+        return x < 300 + y * 1.6 + 5 * math.sin(y / 6.0)        # il costolone: a destra il fianco in ombra
     for x in range(W):                                                            # il fianco del monte
         top = cresta(x)
         for y in range(max(0, top), QUADRO):
-            t.punto(x, y, ST_V1 if (x * 5 + y * 3) % 13 else ST_V0)
-        if top >= 0:
+            t.punto(x, y, ST_V1 if in_luce(x, y) else ST_V0)
+        if top >= 0 and x < 300:
             t.punto(x, top, ST_V3)
     r = random.Random(17)
-    for _ in range(260):                                                          # il bosco a macchie
-        cx, cy = r.randrange(W), r.randrange(4, QUADRO)
+    for _ in range(300):                                     # il bosco: chiome di tre toni (L1, L2, L4)
+        cx, cy = r.randrange(W), r.randrange(4, QUADRO + 3)
         if cy > cresta(cx) + 3:
-            t.ellisse(cx, cy, 3, 2, ST_V2 if r.random() < 0.55 else ST_V0)
-            t.punto(cx - 1, cy - 1, ST_V3)
+            rx, ry = r.choice((3, 3, 4)), r.choice((2, 3))
+            if in_luce(cx, cy):
+                chioma(t, cx, cy, rx, ry, ST_V3, ST_V2, ST_V0)
+            else:
+                chioma(t, cx, cy, rx, ry, ST_V2, ST_V1, ST_V0)
     gir = tornanti()
     for k, (x0, y0, x1, y1) in enumerate(gir):                                    # gli stradoni di ghiaia
         n = abs(x1 - x0)
@@ -87,6 +96,7 @@ def c7_monte(m):
                     t.rett(hx, hy, 2, 3, ST_GHIAIA)
         if k + 1 in CAPPELLE:                                                     # la cappelletta
             cx, cy = int(x1) + (6 if x1 > x0 else -8), int(y1) - 1
+            t.rett(cx + 4, cy - 5, 2, 6, ST_V0)                           # l'ombra portata a destra (L4)
             t.rett(cx - 3, cy - 7, 7, 7, ST_BIANCO)
             t.rett(cx + 2, cy - 7, 2, 7, ST_P2)
             poligono(t, [(cx - 4, cy - 7), (cx, cy - 10), (cx + 5, cy - 7)], ST_COTTO)
@@ -94,6 +104,7 @@ def c7_monte(m):
             t.punto(cx, cy - 3, ST_ORO)
     # la Basilica in cima, col campanile, sopra l'ultimo stradone
     bx, by = 222, 22
+    t.rett(bx + 38, by - 14, 5, 15, ST_V0)                                # l'ombra portata a destra (L4)
     t.rett(bx, by - 9, 30, 10, ST_BIANCO)
     t.rett(bx + 24, by - 9, 6, 10, ST_P2)
     poligono(t, [(bx - 1, by - 9), (bx + 15, by - 15), (bx + 31, by - 9)], ST_COTTO)
@@ -144,32 +155,65 @@ def c7_cappella(m):
         x, y = r.randrange(0, 130), r.randrange(42, 60)
         t.rett(x, y, r.randint(3, 6), 2, ST_COTTO)
         t.rett(x, y + 2, 3, 1, ST_P2)
-    poligono(t, [(0, 112), (0, 80), (60, 72), (140, 70), (240, 78), (240, 112)], ST_GHIAIA)
-    for _ in range(400):
-        x, y = r.randrange(240), r.randrange(72, 112)
-        if t.px[y][x] == ST_GHIAIA:
-            t.punto(x, y, ST_GHIAIA_L if r.random() < 0.5 else ST_P2)
-    for x in range(0, 140, 7):                                                    # il muretto
-        t.rett(x, 64 + x // 40, 6, 4, ST_P2)
-        t.rett(x, 64 + x // 40, 6, 1, ST_GHIAIA_L)
+    poligono(t, [(0, 112), (0, 80), (60, 72), (140, 70), (240, 78), (240, 112)], ST_GHIAIA_M)
+    for x in range(0, 140, 7):                                                    # il muretto a secco
+        y = 64 + x // 40
+        t.rett(x, y, 6, 4, ST_P2)
+        t.rett(x, y, 5, 1, ST_GHIAIA)                                           # la luce sopra (L1)
+        t.rett(x + 6, y, 1, 4, ST_V0)
+        t.rett(x, y + 4, 7, 1, ST_P2)                                             # l'ombra sulla ghiaia
     cx = 150
+    # l'ombra portata della cappella e dei cipressi, verso destra sulla ghiaia (L4)
+    poligono(t, [(cx + 40, 72), (cx + 62, 72), (cx + 70, 78), (cx + 40, 78)], ST_P2)
+    # la ghiaia: sassolini di 2 px con la luce sopra e l'ombra sotto (niente pixel orfani, P3); piu'
+    # radi e piu' piccoli lontano, piu' grossi davanti
+    # l'erba che invade la ghiaia lungo il bordo in alto, a ciuffi di 2 px, come sugli stradoni della mappa
+    for x in range(0, 240, 2):
+        for y in range(68, 82):
+            if t.px[y][x] == ST_GHIAIA_M and t.px[y - 1][x] != ST_GHIAIA_M:
+                n = 1 + (x * 7 % 5 < 2) + (x * 13 % 7 < 2)
+                t.rett(x, y, 2, n, ST_V2 if (x // 2) % 3 else ST_V1)
+                break
+    for _ in range(260):
+        x, y = r.randrange(240), r.randrange(73, 112)
+        if t.px[y][x] == ST_GHIAIA_M and t.px[y + 1][x] == ST_GHIAIA_M:
+            largo = 2 if y < 95 else 3
+            t.rett(x, y, largo, 1, ST_GHIAIA)
+            t.rett(x, y + 1, largo, 1, ST_P2)
+    # la cappella intonacata: il fronte in luce, il fianco destro in ombra, lo zoccolo piu' scuro, la
+    # nicchia incassata con lo strombo, il tetto a coppi; il bordo e' il tono scuro del materiale, non
+    # il nero (P2)
     t.rett(cx, 26, 40, 48, ST_BIANCO)
     t.rett(cx + 32, 26, 8, 48, ST_P2)
+    t.rett(cx + 31, 26, 1, 48, ST_GHIAIA)
+    t.rett(cx, 70, 32, 4, ST_P2)                                                  # lo zoccolo
+    t.rett(cx, 70, 32, 1, ST_GHIAIA)
+    t.rett(cx + 32, 70, 8, 4, ST_V0)
     poligono(t, [(cx - 4, 27), (cx + 20, 12), (cx + 44, 27)], ST_COTTO)
     poligono(t, [(cx + 20, 12), (cx + 44, 27), (cx + 36, 27)], ST_COTTO_S)
+    for k in range(-2, 46, 3):                                                    # i coppi (F1)
+        for yy in range(13, 28):
+            if t.px[yy][cx + k] == ST_COTTO and (yy // 2) % 2 == 0:
+                t.punto(cx + k, yy, ST_COTTO_S)
+    t.rett(cx - 4, 27, 48, 1, ST_COTTO_S)                                         # la gronda
+    t.rett(cx, 28, 32, 1, ST_GHIAIA)                                              # e la sua ombra
     t.rett(cx + 8, 38, 16, 24, ST_C)
     t.ellisse(cx + 16, 38, 8, 6, ST_C)
+    t.rett(cx + 23, 38, 1, 24, ST_P2)                                             # lo strombo, a destra
+    t.rett(cx + 7, 62, 18, 2, ST_GHIAIA)                                          # e il davanzale
     t.rett(cx + 14, 50, 4, 8, ST_ORO)                                             # il lumino
     t.rett(cx + 15, 47, 2, 3, ST_BIANCO)
     t.rett(cx + 15, 6, 2, 7, ST_C)
     t.rett(cx + 13, 8, 6, 2, ST_C)
-    contorna(t, ST_C, lambda c: c in (ST_BIANCO, ST_P2, ST_COTTO, ST_COTTO_S))
     for i in range(3):                                                            # i cipressi dietro
         x = 206 + i * 12
         for yy in range(30):
             w = max(1, int(4 * math.sin(math.pi * (yy + 2) / 32)))
             t.rett(x - w, 44 + yy, 2 * w, 1, ST_V0)
-    return t, PALETTE_STRADONI, False
+            if w > 2:
+                t.rett(x - w + 1, 44 + yy, 1, 1, ST_V2)                           # la luce a sinistra
+        t.rett(x + 2, 72, 6, 2, ST_P2)                                            # l'ombra a terra
+    return t, PALETTE_CAPPELLA, False
 
 
 # ======================================================================================================
@@ -194,7 +238,18 @@ def strati(x, y, pendenza=0.18, scala=1.0):
     if 59.6 <= s < 60.4:
         return G_P4                                                  # l'argilla chiara sopra la riga
     k = int(v // 3.4)
-    return (G_ROSA_S, G_P2, G_ROSA, G_P1, G_ROSA_S, G_ROSA_C, G_P2)[k % 7]
+    base = (G_ROSA_S, G_P2, G_ROSA, G_P1, G_ROSA_S, G_ROSA_C, G_P2)[k % 7]
+    # ogni strato e' un solido (L2): il ciglio in alto prende la luce, il sottosquadro in basso l'ombra
+    f = v / 3.4 - k
+    if f < 0.22:
+        return LUCE_STRATO.get(base, base)
+    if f > 0.8:
+        return OMBRA_STRATO.get(base, base)
+    return base
+
+
+LUCE_STRATO = {G_ROSA_S: G_ROSA, G_ROSA: G_ROSA_C, G_P1: G_P2, G_P2: G_P3}
+OMBRA_STRATO = {G_ROSA_C: G_ROSA, G_ROSA: G_ROSA_S, G_P2: G_P1, G_P3: G_P2}
 
 
 def c7_gola_fondo(m):
@@ -222,17 +277,25 @@ def c7_gola_parete(m):
         for y in range(top, bot):
             t.punto(x, y, strati(x, y))
         t.punto(x, top, G_P4)
-    for x in range(0, utile, 14):                                                     # il condotto
+    for x in range(0, utile, 14):                    # il condotto sugli archetti, come un solido (L1-L4)
+        for k in range(1, 6):                                 # l'ombra portata sulla roccia, sotto a destra
+            t.rett(x + 4, 74 + k, 10, 1, G_P1) if k < 3 else None
         t.rett(x, 70, 14, 4, G_P3)
         t.rett(x, 70, 14, 1, G_P4)
-        t.rett(x, 74, 14, 1, G_C)
-        t.rett(x + 1, 75, 3, 10, G_P2)
+        t.rett(x + 13, 70, 1, 4, G_P2)
+        t.rett(x, 74, 14, 1, G_P1)                            # la cornice d'ombra, non il nero (C4)
+        t.rett(x + 1, 75, 3, 10, G_P2)                        # il pilastrino: luce a sinistra
+        t.rett(x + 1, 75, 1, 10, G_P3)
         t.rett(x + 3, 75, 1, 10, G_P1)
+        for dx in range(4, 14):                               # l'intradosso dell'archetto
+            dy = int(3 * (1 - ((dx - 9) / 5.0) ** 2) ** 0.5)
+            t.rett(x + dx, 75, 1, 3 - dy + 1, G_P2)
+            t.punto(x + dx, 75 + 3 - dy + 1, G_P1)
     r = random.Random(8)
     for _ in range(30):                                                           # ciuffi aggrappati
         cx, cy = r.randrange(utile), r.randrange(24, 88)
         if t.px[cy][cx]:
-            t.ellisse(cx, cy, 3, 2, G_V1 if r.random() < 0.5 else G_V0)
+            chioma(t, cx, cy, 3, 2, G_V1, G_V1 if r.random() < 0.5 else G_V0, G_V0)
     return t, PALETTE_GOLA, False
 
 
@@ -246,8 +309,7 @@ def c7_gola_torrente(m):
     for _ in range(18):
         cx = r.randrange(W)
         cy = 100 + r.randint(0, 8)
-        t.ellisse(cx, cy, r.randint(4, 8), r.randint(2, 3), G_P2)
-        t.rett(cx - 3, cy - 2, 4, 1, G_P3)
+        chioma(t, cx, cy, r.randint(4, 8), r.randint(2, 3), G_P3, G_P2, G_P1)     # i massi (L2, L4)
     for (x0, y0, n) in ((0, 0, 50), (150, 116, 30), (300, 0, 40)):
         for _ in range(n):
             t.ellisse(x0 + r.gauss(0, 14), y0 + r.gauss(0, 10), r.randint(3, 5), r.randint(2, 3), G_V0)
@@ -263,18 +325,21 @@ def c7_striscia(m):
         for x in range(SW):
             t.punto(x, y, strati(x * 0.5, y * 0.5 + 20, 0.22))
     r = random.Random(3)
-    for _ in range(500):                                                          # la grana della pietra
+    for _ in range(260):                     # la grana della pietra: scaglie di 2-3 px lungo lo strato (P3)
         x, y = r.randrange(SW), r.randrange(QUADRO)
-        if t.px[y][x] not in (G_NERA, G_P4):
-            t.punto(x, y, G_P1 if r.random() < 0.6 else G_ROSA_C)
+        c = t.px[y][x]
+        if c not in (G_NERA, G_P4):
+            g = OMBRA_STRATO.get(c, c) if r.random() < 0.6 else LUCE_STRATO.get(c, c)
+            for k in range(r.choice((2, 3))):
+                t.punto(x + k, y - k // 2 if r.random() < 0.3 else y, g)
     for _ in range(6):                                                            # le crepe
         x, y = r.randrange(SW), r.randrange(QUADRO)
         for k in range(14):
             t.punto(x, y, G_C)
             x += r.choice((0, 1))
             y += 1
-    for _ in range(7):
-        t.ellisse(r.randrange(SW), r.randrange(QUADRO), 4, 2, G_V1)
+    for _ in range(7):                                                            # i licheni
+        chioma(t, r.randrange(SW), r.randrange(QUADRO), 4, 2, G_V1, G_V1, G_V0)
     return t, PALETTE_GOLA, False
 
 

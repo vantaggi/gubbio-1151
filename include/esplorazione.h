@@ -18,6 +18,8 @@ namespace gubbio
 // La scena di esplorazione: il fondale dell'area (dalla mappa generata), la camera che segue il
 // giocatore senza uscire dall'area, i varchi con una dissolvenza e l'etichetta col nome
 // dell'area. Muoversi, urtare e attraversare passa tutto da mondo_logica.h.
+inline constexpr int ALTEZZA_SCHERMO_ESPLORAZIONE = 160;
+
 class Esplorazione
 {
 public:
@@ -54,6 +56,13 @@ public:
     // sopra. La storia lo chiama a ogni frame; spegni_segnale() lo toglie (anche nascondi_etichetta() e
     // sospendi(), cosi' non resta sotto un dialogo).
     void segnala(int x, int y, int altezza);
+
+    // Il giocatore sta nella meta' bassa dello schermo? Allora il riquadro del dialogo va in alto, per non
+    // coprire chi parla (STANDARD I3). Conta la testa, 16 px sopra i piedi.
+    [[nodiscard]] bool giocatore_in_basso() const
+    {
+        return _e.y - 16 - (_cam_y - ALTEZZA_SCHERMO_ESPLORAZIONE / 2) >= ALTEZZA_SCHERMO_ESPLORAZIONE / 2;
+    }
     void spegni_segnale();
 
     // Il varco 'indice' dell'area si urta come un muro (-1: tutti aperti). Lo decide la storia a ogni frame

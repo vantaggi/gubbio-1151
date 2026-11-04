@@ -14,8 +14,8 @@ PAUSA_SALVA_2             | DIALOGO | Salva nello slot 2
 PAUSA_AIUTO               | DIALOGO | Su e giù per scegliere, A per confermare, Start per riprendere.
 PAUSA_SALVATO             | DIALOGO | Partita salvata.
 PAUSA_NON_SALVATO         | DIALOGO | Il salvataggio non è riuscito.
-STORIA_FINE               | DIALOGO | Fine della prima cronaca. La cronaca continua...
+STORIA_FINE               | DIALOGO | Fine del primo atto. La cronaca continua...
 # T2, la gola del Bottaccione: i forzieri negli slarghi e l'uscita del Condotto chiusa durante il duello
-FORZIERE_CRESCIA          | DIALOGO | Un forziere fra i sassi. Ricevi 2 Crescia di Pasqua.
-FORZIERE_BISCOTTI         | DIALOGO | Un forziere fra i sassi. Ricevi 3 Biscotti all'Anice.
+FORZIERE_CRESCIA          | DIALOGO | Un forziere fra i sassi. Ricevi 2 fette di Crescia di Pasqua.
+FORZIERE_BISCOTTI         | DIALOGO | Un forziere fra i sassi. Ricevi 3 Biscotti all'anice.
 CONDOTTO_CHIUSO           | DIALOGO | Corrado vi sbarra il ritorno. Da qui si esce solo battendolo.

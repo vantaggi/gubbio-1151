@@ -17,7 +17,7 @@ BATT_INDIZIO              | DIALOGO | Il ferro scivola sull'armatura di Corrado:
 BATT_VITTORIA             | DIALOGO | Vittoria!
 BATT_SCONFITTA            | DIALOGO | Sconfitta...
 BATT_PARITA               | DIALOGO | Lo scontro resta in sospeso.
-BATT_PATTUGLIA            | DIALOGO | Pattuglia Perugina
+BATT_PATTUGLIA            | DIALOGO | Pattuglia perugina
 BATT_IMBOSCATA            | DIALOGO | Imboscata agli Stradoni
 BATT_DUELLO               | DIALOGO | Duello con Corrado
 BATT_RITO                 | DIALOGO | Il rito della Basilica
@@ -25,9 +25,9 @@ BATT_GUERRIERI            | DIALOGO | Guerrieri della Roccia
 BATT_FORNACE              | DIALOGO | Guardia della fornace
 BATT_INFILTRATO           | DIALOGO | L'infiltrato delle Logge
 BATT_SCEGLI               | DIALOGO | Su e giù per scegliere, A per confermare.
-BATT_BERSAGLIO            | DIALOGO | Su e giù per il bersaglio, A conferma, B torna.
+BATT_BERSAGLIO            | DIALOGO | Su e giù per il bersaglio, A per confermare, B per tornare.
 BATT_SALE_UBALDO          | DIALOGO | Ubaldo sale di livello!
 BATT_SALE_GIORGIO         | DIALOGO | Giorgio sale di livello!
 BATT_SALE_ANTONIO         | DIALOGO | Antonio sale di livello!
 BATT_CRESCIA              | DIALOGO | Crescia di Pasqua
-BATT_BISCOTTI             | DIALOGO | Biscotti all'Anice
+BATT_BISCOTTI             | DIALOGO | Biscotti all'anice

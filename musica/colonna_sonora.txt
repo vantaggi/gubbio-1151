@@ -1,0 +1,101 @@
+# Colonna sonora di Gubbio 1151 (F7c): quale brano suona dove. Da qui tools/genera_colonna_sonora.py
+# scrive include/colonna_sonora.h; tests/test_colonna_sonora.py controlla che ogni area abbia il suo
+# brano in ogni fase, che ogni brano citato esista in audio/ e che nessun file di audio/ resti orfano.
+#
+# I nomi dei brani e degli effetti sono i file di audio/ senza estensione (bn::music_items::<nome>,
+# bn::sound_items::<nome>). Un '#' dopo uno spazio apre un commento.
+
+# --- Esplorazione: un brano per area e per fase ----------------------------------------------------
+# Le fasi della storia (storia::fase_npc) piu' l'alba dell'epilogo:
+#   giorno   ULTIMATUM, prima che la citta' si chiuda
+#   digiuno  da CITTA_IN_DIGIUNO: e' ancora giorno, la citta' prega e aspetta
+#   notte    dal rientro da Porta Metauro (RIENTRO_PORTA_METAURO)
+#   alba     da ATTO_I_COMPLETATO: la terza alba e' venuta, la cronaca e' finita
+fasi giorno digiuno notte alba
+
+#    area                       giorno       digiuno      notte        alba
+area PIAZZA_GRANDE              citta        citta        notte        bandiere     # in festa, come i cortei
+area VIA_XX_SETTEMBRE           citta        citta        notte        canzone_di_flaviano
+area DUOMO_DUCALE               citta        citta        notte        canzone_di_flaviano
+area SAN_MARTINO                citta        citta        notte        canzone_di_flaviano
+area LARGO_BARGELLO             citta        citta        notte        canzone_di_flaviano
+area VIA_DEI_CONSOLI            citta        citta        notte        canzone_di_flaviano
+area PIAZZA_QUARANTA_MARTIRI    citta        citta        notte        canzone_di_flaviano
+area SAN_PIETRO                 citta        citta        notte        canzone_di_flaviano
+area SANT_AGOSTINO              citta        citta        notte        canzone_di_flaviano
+area SANT_ANDREA                citta        citta        notte        canzone_di_flaviano
+area TEATRO_ROMANO              citta        citta        notte        canzone_di_flaviano
+# la salita: gli Stradoni e il sagrato in cima; dentro, la lauda
+area MONTE_INGINO               stradoni     stradoni     stradoni     stradoni
+area BASILICA                   stradoni     stradoni     stradoni     stradoni
+area BASILICA_INTERNO           basilica     basilica     basilica     basilica
+# la gola e il Condotto: il frigio di Corrado
+area BOTTACCIONE                bottaccione  bottaccione  bottaccione  bottaccione
+area GOLA_STRISCIA              bottaccione  bottaccione  bottaccione  bottaccione
+area GOLA_MIASMI                bottaccione  bottaccione  bottaccione  bottaccione
+area GOLA_ARCO                  bottaccione  bottaccione  bottaccione  bottaccione
+area CONDOTTO                   bottaccione  bottaccione  bottaccione  bottaccione
+
+# --- Luoghi dentro un'area -------------------------------------------------------------------------
+# luogo NOME AREA EDIFICIO RAGGIO BRANO MODO: il portone dell'edificio (mondo/monumenti.json, posato da
+# tools/genera_mondo.py) allargato di RAGGIO celle.
+#   fondo     il brano sostituisce quello dell'area finche' si resta li'
+#   segnale   suona una volta entrando (senza anello), poi torna il brano dell'area; si riarma uscendo.
+#             Con un amico (dati/amici.json) suona solo se l'amico e' in bottega.
+luogo taverna  SAN_PIETRO     taverna        3  taverna  fondo
+luogo fazio    SANT_AGOSTINO  bottega_conti  2  fazio    segnale  FAZIO
+
+# --- Cutscene (regia/*.regia, per codice) ----------------------------------------------------------
+# cutscene CODICE BRANO [EFFETTO]: il brano parte all'inizio; '-' lascia quello che suonava.
+# L'effetto, se c'e', suona sul primo quadro. Le inquadrature col colpo suonano l'effetto 'colpo'.
+cutscene C0   -
+cutscene C1   prologo
+cutscene C2   undici_bandiere
+cutscene C2P  pastorale
+cutscene C3A  presentazione
+cutscene C3C  presentazione
+cutscene C3G  presentazione
+cutscene C3U  presentazione
+cutscene C4   terza_alba     campanone      # la risposta del Campanone, poi il Tema per i titoli
+cutscene C5   basilica                      # il risveglio dei Ceri, sull'altare della basilica
+cutscene C6   bottaccione                   # la visione nel vetro: la gola, prima di vederla
+cutscene C7B  bottaccione
+cutscene C7S  stradoni
+cutscene C9   -
+
+# --- Schermate e battaglia -------------------------------------------------------------------------
+titolo     titolo
+battaglia  battaglia
+duello     2  corrado          # INCONTRO_DI_CORRADO: il duello sul Condotto
+vittoria   vittoria
+sconfitta  sconfitta
+
+# --- Effetti della battaglia, per evento (battaglia::EventKind) -----------------------------------
+# '-' nessun effetto. Il colpo di Antonio e' fuoco, non 'colpo' (fuoco_di ANTONIO).
+evento HIT             colpo
+evento SHIELD_BREAK    scudo
+evento BARRIER_ABSORB  fede
+evento GUARD_REDIRECT  scudo
+evento FERVOR_GAIN     -
+evento BURN_TICK       fuoco
+evento DEFEAT          svanisce
+evento BARRIER_UP      fede
+evento GUARD_UP        scudo
+evento CHARGE          fede
+evento BREAK_SKIP      -
+evento IMMUNE          scudo
+evento FERVOR_SPEND    -
+evento DEF_UP          scudo
+evento CURA            cura
+evento PURIFICA        cura
+fuoco_di   ANTONIO  fuoco
+
+# --- Effetti dell'interfaccia ----------------------------------------------------------------------
+# effetto NOME USO: dove li usa il codice (audio::Suono::<USO>). Ogni effetto di audio/ ha almeno un uso.
+uso CURSORE    cursore      # su e giu' nei menu
+uso CONFERMA   conferma     # A su una voce
+uso ANNULLA    annulla      # B: indietro, nessun bersaglio
+uso TESTO      testo        # A che manda avanti il dialogo
+uso SALVA      salva        # salvataggio riuscito
+uso LIVELLO    livello      # un Santo sale di livello
+uso RACCOLTA   cura         # un oggetto raccolto o un forziere aperto

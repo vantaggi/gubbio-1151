@@ -12,8 +12,8 @@ Regole comuni:
 | Quest | Datore e luogo | Si prende | Obiettivo | Ricompensa |
 | :-- | :-- | :-- | :-- | :-- |
 | Q-SM01 Il ferro del Monte Calvo | Mastro Raniero, San Martino | da `ULTIMATUM_RICEVUTO` | 3 blocchi di ferro dalle fornaci occupate da Spoleto al Teatro Romano | 3 Crescia di Pasqua; Raniero spiega come si apre il ferro di Spoleto |
-| Q-SA01 Le erbe del Bottaccione | Monna Agnese, Sant'Andrea | da `CITTA_IN_DIGIUNO` | 4 radici di elleboro nella Strada del Bottaccione | 3 Biscotti all'Anice; i feriti di Porta Romana si salvano |
-| Q-SP01 La rosa d'argento | Fra' Bernardo, San Pietro | da `CITTA_IN_DIGIUNO` | Trovare l'infiltrato con tre indizi e riprendere il reliquiario | 1 Crescia sotto la Cenere; la benedizione dei miliziani |
+| Q-SA01 Le erbe del Bottaccione | Monna Agnese, Sant'Andrea | da `CITTA_IN_DIGIUNO` | 4 radici di elleboro nella Strada del Bottaccione | 3 Biscotti all'anice; i feriti di Porta Romana si salvano |
+| Q-SP01 La rosa d'argento | Fra' Bernardo, San Pietro | da `CITTA_IN_DIGIUNO` | Trovare l'infiltrato con tre indizi e riprendere il reliquiario | 1 Crescia sotto la cenere; la benedizione dei miliziani |
 
 ---
 
@@ -60,7 +60,7 @@ Dopo `CITTA_IN_DIGIUNO` la postierla di San Martino è chiusa. Se Q-SM01 è atti
 - ANTONIO (calmo): Col fuoco. Sento che questa la ricorderò io.
 - RANIERO: E per la strada, prendete queste.
 - RANIERO: Mia moglie le ha fatte stamattina. Col digiuno, chissà quando ne rifà.
-- SISTEMA: Ricevi 3 Crescia di Pasqua.
+- SISTEMA: Ricevi 3 fette di Crescia di Pasqua.
 - SISTEMA: San Martino ti è grato.
 
 Regia: la fornace di Raniero si riaccende. Da qui la sua battuta cambia.
@@ -119,7 +119,7 @@ Si consegna in qualunque momento fino alla conferma di E-01; di solito in fase N
 - AGNESE: Quattro radici! E sono ancora umide. Siete scesi davvero laggiù.
 - AGNESE: Non me lo dite, cosa c'era. Me lo racconterete quando sarà finita.
 - AGNESE: Prendete questi biscotti all'anice. Tolgono il veleno dal sangue, e la paura dallo stomaco.
-- SISTEMA: Ricevi 3 Biscotti all'Anice.
+- SISTEMA: Ricevi 3 Biscotti all'anice.
 - SISTEMA: Sant'Andrea ti è grato.
 
 Se `CONDOTTO_SALVO` (la consegna avviene dopo il Condotto), una battuta in più:
@@ -140,7 +140,7 @@ Se `CONDOTTO_SALVO` (la consegna avviene dopo il Condotto), una battuta in più:
 
 ### Proposta
 
-- FRA' BERNARDO: Hanno profanato l'altare, Vescovo Ubaldo! Ci hanno rubato la Rosa d'Argento.
+- FRA' BERNARDO: Hanno profanato l'altare, vescovo Ubaldo! Ci hanno rubato la Rosa d'Argento.
 - FRA' BERNARDO: Con quella benediciamo le guardie della notte. Senza, tremano davanti al Grifo.
 - UBALDO (calmo): Chi è entrato, Bernardo?
 - FRA' BERNARDO: Un pellegrino, diceva. Parlava come noi, ma pregava male. Ha preso la Rosa ed è sparito.
@@ -149,7 +149,7 @@ Se `CONDOTTO_SALVO` (la consegna avviene dopo il Condotto), una battuta in più:
 
 ### Attesa (presa, la Rosa non ancora ripresa)
 
-- FRA' BERNARDO: La Rosa, Vescovo Ubaldo. Chiedete in giro: qualcuno avrà visto quel pellegrino.
+- FRA' BERNARDO: La Rosa, vescovo Ubaldo. Chiedete in giro: qualcuno avrà visto quel pellegrino.
 
 ### Gli indizi
 
@@ -184,7 +184,7 @@ Regia: un uomo avvolto in un mantello da pellegrino, la mano sotto il mantello. 
 
 Dopo la vittoria:
 
-- INFILTRATO: Tenetevela, la vostra rosa. Tanto all'alba non ci sarà più nessuno da benedire.
+- INFILTRATO: Tenetevela, la vostra Rosa. Tanto all'alba non ci sarà più nessuno da benedire.
 - UBALDO (calmo): All'alba vedremo. Intanto ci sarà qualcuno a pregare per te.
 - UBALDO (preoccupato): Parli come noi.
 - INFILTRATO: Ero dei Valmarcola. Lo sono ancora.
@@ -196,7 +196,7 @@ Dopo la vittoria:
 - FRA' BERNARDO: Stanotte i miliziani avranno la loro benedizione. E voi la mia, che vale meno ma è di cuore.
 - FRA' BERNARDO: Sapete che la Rosa ce la donò Perugia? Altri tempi. Altri vescovi.
 - FRA' BERNARDO: Prendete questa crescia sotto la cenere. Chi la mangia, si rialza anche quando è caduto.
-- SISTEMA: Ricevi 1 Crescia sotto la Cenere.
+- SISTEMA: Ricevi una Crescia sotto la cenere.
 - SISTEMA: San Pietro ti è grato.
 
 ### Dopo

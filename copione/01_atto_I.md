@@ -124,7 +124,7 @@ Regia: Antonio, curvo sotto una fascina, è circondato da tre Fanti di Perugia. 
 Regia: transizione di battaglia. Durante lo scontro compaiono le battute di tutorial, una alla volta, al primo turno utile.
 
 - SISTEMA: Scegli Attacca e poi il bersaglio. Ogni colpo giusto toglie uno scudo.
-- SISTEMA: A zero scudi il nemico va in BREAK e perde il turno.
+- SISTEMA: A zero scudi il nemico barcolla e perde il turno.
 - SISTEMA: Antonio combatte con voi, ma per ora non ascolta ordini.
 
 Dopo la vittoria:
@@ -238,7 +238,7 @@ Regia: un canonico del Duomo sta sul varco. Il dialogo parte quando il giocatore
 
 Regia: la presentazione del luogo: la cutscene C7S «Gli Stradoni del Monte» (`regia/c7s_stradoni.regia`) parte appena si entra negli Stradoni con la porta del monte aperta, prima di salire verso l'imboscata; solo la prima volta.
 
-- ANTONIO (calmo): Due chilometri di sterrato. E il vescovo ha le gambe di un mulo.
+- ANTONIO (calmo): Quasi due miglia di ghiaia. E il vescovo ha le gambe di un mulo.
 - UBALDO (calmo): E il mulo ti sente.
 - GIORGIO (deciso): Così lassù ci arriviamo a notte, padre!
 - UBALDO (calmo): Ci arriviamo quando ci arriviamo. Il monte non scappa.

@@ -12,7 +12,7 @@ import math
 import random
 
 from genera_battaglia import Tela
-from pennelli import ACCESO, contorna, piombi, poligono
+from pennelli import luce_ai_pannelli, ACCESO, contorna, piombi, poligono
 
 W, H = 512, 256
 QUADRO = 112
@@ -54,6 +54,11 @@ VI_PIOMBO, VI_NOTTE, VI_BLU, VI_AZZURRO, VI_CHIARO = 1, 2, 3, 4, 5
 VI_ROCCIA_S, VI_ROCCIA, VI_VERDE_S, VI_VERDE, VI_FERRO, VI_FERRO_C, VI_ROSSO = 6, 7, 8, 9, 10, 11, 12
 VI_GAMBE_A, VI_GAMBE_B, VI_ORO = 13, 14, 15
 VI_FERRO_S = 13
+# la luce sui pezzi del vetro (L1): la roccia, il verde e il ferro si leggono come pezzi di un solido
+# (solo sulle figure e sul verde: la roccia resta a pezzi piatti, come nel mockup approvato)
+CHIARO_DEL_VETRO = {8: 9, 13: 10, 10: 11}
+SCURO_DEL_VETRO = {9: 8, 11: 10}
+
 # i fanti: il 14 ha il colore della roccia del sentiero (VI_ROCCIA), come in pittore_c2 il 14 ha quello del
 # prato; le gambe della posa che non c'e' spariscono nella roccia
 PALETTE_VISIONE_FANTI = PALETTE_VISIONE[:13] + [("neutri", 1), ("pietra calcarea", 3), ("oro e bronzo", 3, ACCESO)]
@@ -89,6 +94,7 @@ def c6_parete(m):
                 if (xx + 0.5 - (x + 15)) ** 2 + (y + 0.5 - 63) ** 2 > 80:
                     t.punto(xx, y, VI_ROCCIA)
     piombi(t, VI_PIOMBO, (16, 13), sfasa=3)
+    luce_ai_pannelli(t, VI_PIOMBO, CHIARO_DEL_VETRO, SCURO_DEL_VETRO)
     return t, PALETTE_VISIONE, True
 
 
@@ -105,6 +111,7 @@ def c6_sentiero(m):
     for x0 in (60, 300):                                                          # la parete vicina
         poligono(t, [(x0, QUADRO), (x0 + 4, 40), (x0 + 16, 0), (x0 + 40, 0), (x0 + 46, QUADRO)], VI_ROCCIA_S)
     piombi(t, VI_PIOMBO, (16, 12), sfasa=5)
+    luce_ai_pannelli(t, VI_PIOMBO, CHIARO_DEL_VETRO, SCURO_DEL_VETRO)
     return t, PALETTE_VISIONE, True
 
 
@@ -171,6 +178,7 @@ def c6_corrado(m):
         for a in (-0.9, -0.4, 0.1, 0.6, 1.1):
             t.punto(150 + d * math.cos(a), 36 + d * math.sin(a), VI_ORO)
     piombi(t, VI_PIOMBO, (16, 15), sfasa=2)
+    luce_ai_pannelli(t, VI_PIOMBO, CHIARO_DEL_VETRO, SCURO_DEL_VETRO)
     return t, PALETTE_VISIONE, True
 
 

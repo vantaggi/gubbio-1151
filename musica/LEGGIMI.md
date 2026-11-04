@@ -58,21 +58,31 @@ alternativa si apre `audio/*.xm` con OpenMPT o direttamente in mGBA dentro la RO
 `fede` (Ubaldo), `cura`, `scudo` (Corrado), `svanisce` (nemico sconfitto), `livello`, `salva`,
 `campanone` (rintocco singolo, 2,8 s).
 
-## Come si aggancia nel gioco (lavoro del thread del gioco, sul PC)
+## Come è agganciato nel gioco (F7c)
 
-1. Il Makefile ha già `AUDIO := audio`: Butano passa `audio/` a mmutil e genera
-   `bn_music_items.h` e `bn_sound_items.h`.
-2. Musica: `bn::music_items::citta.play(bn::fixed(0.6));` (anello per default);
-   jingle: `bn::music_items::vittoria.play(bn::fixed(0.7), false);`; stop con `bn::music::stop()`.
-   Effetti: `bn::sound_items::conferma.play();`.
-3. Punti di aggancio proposti: titolo → `titolo`; esplorazione → brano per area
-   (quartieri `citta`, fase NOTTE `notte`, stradoni `stradoni`, basilica `basilica`, Bottaccione
-   `bottaccione`); `scena_battaglia` → `battaglia` o `corrado`, poi `vittoria`/`sconfitta`;
-   `regia` → il brano della cutscene all'inizio (la regia può portare il nome del brano);
-   menù e testo → effetti. Cambiare brano solo se è diverso da quello che suona (niente ripartenze
-   passando da un'area all'altra dello stesso quartiere).
-4. Prova: suono in mGBA, ROM < 1 MB in più (audio/ pesa ~800 KB prima della conversione), zero
-   heap invariato (maxmod usa memoria statica di Butano).
+```
+musica/colonna_sonora.txt + audio/ ──> tools/genera_colonna_sonora.py --scrivi ──> include/colonna_sonora.h
+```
+
+1. Il Makefile ha `AUDIO := audio` e `AUDIOBACKEND := maxmod`: Butano passa `audio/` a mmutil
+   (la soundbank, ~290 KB nella ROM) e genera `bn_music_items.h` e `bn_sound_items.h`. I buffer del
+   mixer di maxmod sono statici dentro Butano (IWRAM ed EWRAM): il gate zero-heap li accetta.
+2. **Quale brano suona dove** sta in `musica/colonna_sonora.txt`: un brano per area e per fase
+   (giorno, digiuno, notte, alba dell'epilogo), i luoghi dentro un'area (lo stornello davanti alla
+   taverna di Padellino, il segnale di Fazio davanti alla sua bottega, solo se lui c'è), il brano e
+   l'effetto di ogni cutscene, la battaglia e il duello con Corrado, vittoria e sconfitta, l'effetto di
+   ogni evento di battaglia e gli effetti dell'interfaccia. Il generatore rifiuta un'area senza brano,
+   un brano o un effetto che non c'è in `audio/`, un file di `audio/` che nessuno usa, una cutscene o
+   un evento senza riga (`tests/test_colonna_sonora.py`, con le negative).
+3. Le regole (fase, luogo, amico in bottega, fuoco di Antonio) sono constexpr in
+   `include/audio_logica.h`, provate da `src/autotest_audio.cpp`; il suono vero in `src/audio.cpp`
+   (`gubbio::audio`). Un brano non riparte se sta già suonando; un jingle (vittoria, segnale di Fazio)
+   si lascia finire, poi torna il brano dell'area.
+4. Ganci: `main.cpp` (ogni frame dell'esplorazione), `titolo.cpp` (titolo, menu, salvataggio),
+   `regia.cpp` (inizio cutscene, colpo sul lampo), `scena_battaglia.cpp` (brano, eventi, livello,
+   esito, menu), `storia_scena.cpp` (dialoghi, scelte, forzieri e raccolte).
+5. Audio spento: `audio::accendi(false)` ferma la musica e zittisce gli effetti; è il gancio per il
+   menu delle opzioni, che verrà dopo.
 
 ## Formato delle partiture (`*.brano`)
 

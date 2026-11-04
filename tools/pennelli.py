@@ -87,3 +87,32 @@ def piombi(t, piombo, griglia=(11, 13), sfasa=0):
             pannello = celle[y][x] != celle[y][x + 1] or celle[y][x] != celle[y + 1][x]
             if bordo or pannello:
                 t.punto(x, y, piombo)
+
+
+def chioma(t, cx, cy, rx, ry, luce, base, ombra):
+    """Una chioma tonda come un solido (L2): la falce chiara in alto a sinistra, il corpo, la falce
+    d'ombra in basso a destra e l'ombra portata di un pixel sotto (L4)."""
+    def dentro(x, y, ox, oy):
+        return ((x + 0.5 - cx - ox) / rx) ** 2 + ((y + 0.5 - cy - oy) / ry) ** 2 <= 1
+    for y in range(int(cy - ry) - 1, int(cy + ry) + 3):
+        for x in range(int(cx - rx) - 1, int(cx + rx) + 3):
+            if dentro(x, y, 0, 0):
+                t.punto(x, y, luce if not dentro(x, y, 1, 1) else ombra if not dentro(x, y, -1, -1) else base)
+            elif dentro(x, y, 1, 1):
+                t.punto(x, y, ombra)
+
+
+def luce_ai_pannelli(t, piombo, piu_chiaro, piu_scuro=None):
+    """La luce sui pezzi di vetro (L1, alla maniera della grisaglia): dentro ogni pezzo il filo che tocca
+    il piombo in alto o a sinistra prende il tono piu' chiaro (piu_chiaro: {colore: colore}); con
+    piu_scuro, quello che lo tocca in basso o a destra prende il tono piu' scuro. Da chiamare dopo piombi()."""
+    px = [riga[:] for riga in t.px]
+    for y in range(1, min(QUADRO, t.h) - 1):
+        for x in range(1, t.w - 1):
+            c = px[y][x]
+            if not c or c == piombo:
+                continue
+            if (px[y - 1][x] == piombo or px[y][x - 1] == piombo) and c in piu_chiaro:
+                t.px[y][x] = piu_chiaro[c]
+            elif piu_scuro and (px[y + 1][x] == piombo or px[y][x + 1] == piombo) and c in piu_scuro:
+                t.px[y][x] = piu_scuro[c]

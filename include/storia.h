@@ -803,8 +803,8 @@ struct Quest
 inline constexpr int QUEST = 3;
 inline constexpr Quest QUEST_V1[QUEST] = {
     { "Q-SM01", int8_t(mondo::AreaId::SAN_MARTINO), Bandiera::ULTIMATUM_RICEVUTO, Bandiera::ATTO_I_COMPLETATO, Q_SM01_CONSEGNATA, 0, 3 },  // 3 Crescia di Pasqua
-    { "Q-SA01", int8_t(mondo::AreaId::SANT_ANDREA), Bandiera::CITTA_IN_DIGIUNO, Bandiera::ATTO_I_COMPLETATO, Q_SA01_CONSEGNATA, 3, 3 },  // 3 Biscotti all'Anice
-    { "Q-SP01", int8_t(mondo::AreaId::SAN_PIETRO), Bandiera::CITTA_IN_DIGIUNO, Bandiera::ATTO_I_COMPLETATO, Q_SP01_CONSEGNATA, 1, 1 },  // 1 Crescia sotto la Cenere
+    { "Q-SA01", int8_t(mondo::AreaId::SANT_ANDREA), Bandiera::CITTA_IN_DIGIUNO, Bandiera::ATTO_I_COMPLETATO, Q_SA01_CONSEGNATA, 3, 3 },  // 3 Biscotti all'anice
+    { "Q-SP01", int8_t(mondo::AreaId::SAN_PIETRO), Bandiera::CITTA_IN_DIGIUNO, Bandiera::ATTO_I_COMPLETATO, Q_SP01_CONSEGNATA, 1, 1 },  // 1 Crescia sotto la cenere
 };
 
 // --- Le quest giocabili (SV2c, copione/04_quest.md) ----------------------------------------------

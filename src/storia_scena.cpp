@@ -6,11 +6,13 @@
 #include "bn_fixed.h"
 #include "bn_keypad.h"
 #include "bn_log.h"
+#include "bn_optional.h"
 #include "bn_sprite_palette_item.h"
 #include "bn_sprite_palettes.h"
 #include "bn_sprite_shape_size.h"
 #include "bn_sprite_tiles_ptr.h"
 
+#include "audio.h"
 #include "battaglia_grafica.h"
 #include "esplorazione.h"
 #include "game_state.h"
@@ -21,6 +23,7 @@
 #include "scontri_mappa.h"
 #include "storia_logica.h"
 #include "tabella.h"
+#include "stile/cornice.h"
 #include "vista_testo.h"
 
 namespace gubbio
@@ -31,9 +34,29 @@ namespace
     using testo::Contesto;
     using namespace storia;
 
-    constexpr int INCHIOSTRO_CHIARO = 2;
-    constexpr int NOME_Y = 104;
-    constexpr int TESTO_Y = 118;
+    constexpr int INCHIOSTRO_CHIARO = 2;    // sul cartiglio vermiglio e sul nero dei titoli
+    constexpr int INCHIOSTRO_SCURO = 1;     // sul fondo chiaro dei riquadri (Guida, scelta 9)
+    // Il dialogo della Guida: riquadro 30x7 a y=104, nome nel cartiglio a (8, 96). Il testo ha 4 px di
+    // respiro dentro il piombo (interno da (8, 112)): parte da (12, 116), righe da 216 px (genera_testi).
+    constexpr int RESPIRO = 4;
+    constexpr int TESTO_X = stile::DIALOGO_X + 8 + RESPIRO;
+    constexpr int TESTO_Y = stile::DIALOGO_Y + 8 + RESPIRO;
+
+    // STANDARD I3: il testo non copre chi parla. Sulla mappa, se Ubaldo sta nella meta' bassa dello schermo,
+    // riquadro, cartiglio del nome, testo e scelte salgono in cima (riquadro a y=16, cartiglio a y=8).
+    // Lo decide dialogo_inizio() (e recita()) guardando il giocatore; nelle cutscene resta in basso.
+    constexpr int DIALOGO_IN_ALTO_Y = 16;
+    bool s_dialogo_in_alto = false;
+
+    int su()
+    {
+        return s_dialogo_in_alto ? DIALOGO_IN_ALTO_Y - stile::DIALOGO_Y : 0;
+    }
+
+    void scegli_il_lato(const Esplorazione* esplorazione)
+    {
+        s_dialogo_in_alto = esplorazione && esplorazione->giocatore_in_basso();
+    }
     constexpr int FRAME_CARTELLO = 90;
     constexpr int FRAME_TITOLI = 300;
     constexpr int FRAME_AUTOMATICA = 3;
@@ -52,11 +75,12 @@ namespace
     int s_voce_automatica = 0;              // la voce che prende ogni menu nelle prove senza tasti
     int s_scelte_fotografate = 0;           // le istantanee dei menu nelle prove
 
-    constexpr int MENU_X = 32;                  // le voci dentro il riquadro del dialogo (y 104-160)
-    constexpr int MENU_Y = 120;
-    constexpr int MENU_PASSO = 16;
+    // Le due voci di una scelta dentro il riquadro del dialogo, col cursore a triangolo della Guida a sinistra.
+    constexpr int MENU_X = TESTO_X + 12;       // il cursore a x=12, allineato al testo dei dialoghi
+    constexpr int MENU_Y = TESTO_Y + 2;
+    constexpr int MENU_PASSO = 12;
 
-    // Il cursore del menu: un triangolo pieno verso destra, nell'inchiostro chiaro del testo.
+    // Il cursore della Guida (tile "cursore" della cornice: triangolo vermiglio col piombo).
     bn::sprite_ptr crea_cursore(const bn::sprite_palette_ptr& palette_testo)
     {
         bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(1, bn::bpp_mode::BPP_4);
@@ -64,30 +88,45 @@ namespace
 
         for(int r = 0; r < 8; ++r)
         {
-            uint32_t riga = 0;
-            int largo = r < 4 ? r + 1 : 7 - r;
-
-            for(int x = 1; x <= largo && r < 7; ++x)
-            {
-                riga |= uint32_t(INCHIOSTRO_CHIARO) << (4 * x);
-            }
-
-            vram[0].data[r] = riga;
+            vram[0].data[r] = GUBBIO_VOCE(stile::CORNICE_TILE, stile::TILE_CURSORE * 8 + r);
         }
 
-        return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(8, 8), bn::move(tiles), palette_testo);
+        bn::sprite_ptr cursore = bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(8, 8), bn::move(tiles), palette_testo);
+        cursore.set_bg_priority(PRIORITA_RIQUADRI);
+        return cursore;
     }
 
-    // Il menu di una scelta nella vista di gioco, sullo sfondo scurito come nei dialoghi: due voci, su e
-    // giu' per spostarsi, A per scegliere. La voce col cursore e' chiara, l'altra in ombra.
+    // Il riquadro del dialogo; con un nome, il cartiglio largo quanto il nome sopra il bordo.
+    void componi_dialogo(Riquadri& riquadri, bn::optional<VistaTesto>& nome, testi::TestoId parlante, bool con_nome,
+                         const bn::sprite_palette_ptr& palette_testo)
+    {
+        riquadri.svuota();
+        riquadri.cornice(stile::DIALOGO_X, stile::DIALOGO_Y + su(), stile::DIALOGO_COLONNE, stile::DIALOGO_RIGHE);
+        nome.reset();
+
+        if(con_nome)
+        {
+            int larghezza = larghezza_testo(parlante);
+            int colonne = colonne_cartiglio(larghezza);
+            riquadri.cartiglio(stile::CARTIGLIO_NOME_X, stile::CARTIGLIO_NOME_Y + su(), colonne);
+            nome.emplace(Contesto::HUD, stile::CARTIGLIO_NOME_X + (colonne * 8 - larghezza) / 2,
+                         stile::CARTIGLIO_NOME_Y + su() + 4, INCHIOSTRO_CHIARO, palette_testo);
+            nome->mostra(parlante);
+            nome->rivela_tutto();
+        }
+    }
+
+    // Il menu di una scelta sopra la scena, nel riquadro del dialogo: due voci in inchiostro scuro sul fondo
+    // chiaro, il cursore a triangolo davanti a quella scelta, su e giu' per spostarsi, A per scegliere.
     int menu_scelta(const Battuta& b, const bn::sprite_palette_ptr& palette_testo, bool automatica)
     {
         int voce = 0;
         bool cambiata = true;
         bn::optional<VistaTesto> voci[2];
         int attesa = 0;
+        Riquadri riquadri;
+        riquadri.cornice(stile::DIALOGO_X, stile::DIALOGO_Y + su(), stile::DIALOGO_COLONNE, stile::DIALOGO_RIGHE);
         bn::sprite_ptr cursore = crea_cursore(palette_testo);
-        bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));     // come nei dialoghi: lo sfondo scuro
 
         while(true)
         {
@@ -95,15 +134,17 @@ namespace
             {
                 for(int k = 0; k < 2; ++k)
                 {
-                    voci[k].reset();
-                    voci[k].emplace(Contesto::SCELTA, MENU_X, MENU_Y + k * MENU_PASSO, k == voce ? INCHIOSTRO_CHIARO : 1,
-                                    palette_testo);
-                    voci[k]->mostra(k == 0 ? b.testo : b.parlante);
-                    voci[k]->rivela_tutto();
+                    if(! voci[k])
+                    {
+                        voci[k].emplace(Contesto::SCELTA, MENU_X, MENU_Y + su() + k * MENU_PASSO, INCHIOSTRO_SCURO, palette_testo);
+                        voci[k]->mostra(k == 0 ? b.testo : b.parlante);
+                        voci[k]->rivela_tutto();
+                    }
                 }
 
-                // le coordinate degli sprite partono dal centro dello schermo
-                cursore.set_position(MENU_X - 12 - 120 + 4, MENU_Y + voce * MENU_PASSO - 80 + 4);
+                // le coordinate degli sprite partono dal centro dello schermo; il triangolo e' alto 7 px e
+                // sta a meta' della riga di testo
+                cursore.set_position(MENU_X - 12 - 120 + 4, MENU_Y + su() + voce * MENU_PASSO + 1 - 80 + 4);
 
                 cambiata = false;
             }
@@ -130,9 +171,11 @@ namespace
             {
                 voce = 1 - voce;
                 cambiata = true;
+                audio::suona(colonna::Suono::CURSORE);
             }
             else if(bn::keypad::a_pressed())
             {
+                audio::suona(colonna::Suono::CONFERMA);
                 BN_LOG("Scelta ", voce);
                 return voce;
             }
@@ -144,8 +187,9 @@ namespace
     void recita_battute(const Battuta* tabella, int prima, int quante, const bn::sprite_palette_ptr& palette_testo,
                         bool automatica, bool npc = false)
     {
-        VistaTesto nome(Contesto::HUD, 8, NOME_Y, INCHIOSTRO_CHIARO, palette_testo);
-        VistaTesto testo(Contesto::DIALOGO, 8, TESTO_Y, INCHIOSTRO_CHIARO, palette_testo);
+        bn::optional<Riquadri> riquadri;
+        bn::optional<VistaTesto> nome;
+        bn::optional<VistaTesto> testo;
         int scelta = -1;
 
         // un NPC: la prima variante "(se BANDIERA)" che vale parla da sola, se no le altre righe
@@ -168,28 +212,32 @@ namespace
 
             if(b.tipo == TipoBattuta::SCELTA)
             {
-                nome.nascondi();
-                testo.nascondi();
+                // il menu ha il suo riquadro: quello del dialogo si toglie, per non averne due uno sull'altro
+                nome.reset();
+                testo.reset();
+                riquadri.reset();
                 scelta = menu_scelta(b, palette_testo, automatica);
                 scegli(g_game_state, b, scelta);
                 continue;
             }
 
-            if(b.tipo == TipoBattuta::PERSONAGGIO)
+            if(! riquadri)
             {
-                nome.mostra(b.parlante);
-                nome.rivela_tutto();
-            }
-            else
-            {
-                nome.nascondi();
+                riquadri.emplace();
             }
 
-            testo.mostra(b.testo);
+            componi_dialogo(*riquadri, nome, b.parlante, b.tipo == TipoBattuta::PERSONAGGIO, palette_testo);
+
+            if(! testo)
+            {
+                testo.emplace(Contesto::DIALOGO, TESTO_X, TESTO_Y + su(), INCHIOSTRO_SCURO, palette_testo);
+            }
+
+            testo->mostra(b.testo);
 
             if(automatica)
             {
-                testo.rivela_tutto();
+                testo->rivela_tutto();
                 attendi(FRAME_AUTOMATICA);
 
                 // la prima battuta di un personaggio nella prova: l'istantanea del dialogo a schermo
@@ -208,17 +256,18 @@ namespace
 
             while(true)
             {
-                if(! testo.completo())
+                if(! testo->completo())
                 {
-                    testo.avanza();
+                    testo->avanza();
 
                     if(bn::keypad::a_pressed())
                     {
-                        testo.rivela_tutto();
+                        testo->rivela_tutto();
                     }
                 }
                 else if(bn::keypad::a_pressed())
                 {
+                    audio::suona(colonna::Suono::TESTO);
                     break;
                 }
 
@@ -339,20 +388,23 @@ namespace
         return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 16), bn::move(tiles), palette);
     }
 
-    // Le righe di FRASE_QUEST nel riquadro del dialogo, con lo sfondo scurito come per gli NPC.
+    // Le righe di FRASE_QUEST nel riquadro del dialogo, sopra la scena: il riquadro e' opaco, la scena non
+    // si scurisce (scurirla scuriva anche la cornice, che sta fra le palette dei fondi).
     void dialogo_inizio(Esplorazione* esplorazione)
     {
+        scegli_il_lato(esplorazione);
+
         if(esplorazione)
         {
             esplorazione->nascondi_etichetta();
         }
 
-        bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));
         attendi(1);
     }
 
     void dialogo_fine()
     {
+        s_dialogo_in_alto = false;
         bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
         attendi(1);
     }
@@ -463,9 +515,10 @@ void Storia::recita_tratto(int da, int a, Esplorazione* esplorazione, const bn::
                 da += n.copre;
             }
 
+            // dopo la cutscene la scena torna com'era: niente velo scuro sotto il riquadro del dialogo
             if(esplorazione)
             {
-                bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));
+                bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
             }
         }
     }
@@ -480,11 +533,11 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
     BN_LOG("Scena ", s.codice);
     // il duello gia' incontrato (CORRADO_INCONTRATO): al secondo tentativo niente battute, dritti alla battaglia
     bool salta_le_battute = gia_incontrata(g_game_state, k);
+    scegli_il_lato(esplorazione);
 
     if(esplorazione)
     {
         esplorazione->nascondi_etichetta();
-        bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));
     }
 
     if(s.cutscene && s.regia >= 0)
@@ -506,7 +559,9 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
     else if(s.cutscene)
     {
         // il nodo segnaposto: il cartello col titolo, poi si passa oltre
-        VistaTesto cartello(Contesto::DIALOGO, 16, 72, INCHIOSTRO_CHIARO, palette_testo);
+        Riquadri riquadri;
+        riquadri.cornice(0, 64, 30, 4);
+        VistaTesto cartello(Contesto::DIALOGO, TESTO_X, 72, INCHIOSTRO_SCURO, palette_testo);
         cartello.mostra(s.titolo);
         cartello.rivela_tutto();
         BN_LOG("Cutscene ", s.codice, " (segnaposto)");
@@ -595,7 +650,6 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
         if(esplorazione)
         {
             esplorazione->nascondi_etichetta();
-            bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));
         }
 
         recita_tratto(dopo, s.prima_battuta + s.battute, esplorazione, palette_testo, automatica);
@@ -1015,6 +1069,7 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     if(z >= 0 && apri_forziere(g_game_state, z))
     {
         BN_LOG("Forziere ", z);
+        audio::suona(colonna::Suono::RACCOLTA);
         di_sistema(GUBBIO_VOCE(FORZIERE, z).testo, &esplorazione, palette_testo);
         svuota();       // il forziere si rifa' aperto al prossimo frame
         return true;
@@ -1037,6 +1092,7 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     {
         raccogli(g_game_state, r);
         BN_LOG("Raccolta ", r);
+        audio::suona(colonna::Suono::RACCOLTA);
         dialogo_inizio(&esplorazione);
         recita_righe(GUBBIO_VOCE(QUEST_GIOCO, GUBBIO_VOCE(RACCOLTA, r).quest).raccolta, palette_testo);
         dialogo_fine();

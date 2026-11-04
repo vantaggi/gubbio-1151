@@ -178,11 +178,11 @@ QUEST = [
      "presa": "Q_SM01_PRESA", "pezzi": ["FERRO_1", "FERRO_2", "FERRO_3"], "ancora": None},
     {"id": "Q-SA01", "datore": "SANT_ANDREA", "da": "CITTA_IN_DIGIUNO", "obiettivo": "BOTTACCIONE",
      "consegna": "SANT_ANDREA", "entro": "ATTO_I_COMPLETATO", "consegnata": "Q_SA01_CONSEGNATA",
-     "premio": ("BISCOTTI", 3), "nome_premio": "Biscotti all'Anice",
+     "premio": ("BISCOTTI", 3), "nome_premio": "Biscotti all'anice",
      "presa": "Q_SA01_PRESA", "pezzi": ["ELLEBORO_1", "ELLEBORO_2", "ELLEBORO_3", "ELLEBORO_4"], "ancora": "san_marziale"},
     {"id": "Q-SP01", "datore": "SAN_PIETRO", "da": "CITTA_IN_DIGIUNO", "obiettivo": "SAN_PIETRO",
      "consegna": "SAN_PIETRO", "entro": "ATTO_I_COMPLETATO", "consegnata": "Q_SP01_CONSEGNATA",
-     "premio": ("CENERE", 1), "nome_premio": "Crescia sotto la Cenere",
+     "premio": ("CENERE", 1), "nome_premio": "Crescia sotto la cenere",
      "presa": "Q_SP01_PRESA", "pezzi": ["ROSA_RIPRESA"], "ancora": "san_pietro"},
 ]
 FILE_QUEST = "04_quest.md"
