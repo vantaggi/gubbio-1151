@@ -9,6 +9,7 @@
 #include "mondo.h"
 #include "progressione.h"
 #include "storia_logica.h"
+#include "tabella.h"
 
 namespace gubbio::menu
 {
@@ -117,9 +118,9 @@ namespace
         return tessere_x() - 4 - larghezza_testo(TestoId::MENU_L);
     }
 
-    int titolo_x(int indice)
+    int titolo_x(TestoId titolo)
     {
-        return 8 + (colonne_titolo(VOCI[indice]) * 8 - larghezza_testo(VOCI[indice])) / 2;
+        return 8 + (colonne_titolo(titolo) * 8 - larghezza_testo(titolo)) / 2;
     }
 }
 
@@ -141,7 +142,8 @@ AiutoTasti::AiutoTasti(TestoId solo, int x, int y, const bn::sprite_palette_ptr&
 }
 
 Pagina::Pagina(int indice, TestoId aiuto_a, TestoId aiuto_b, const bn::sprite_palette_ptr& palette) :
-    _titolo(Contesto::HUD, titolo_x(indice), CARTIGLIO_Y + 4, CHIARO, palette),
+    _titolo_testo(GUBBIO_VOCE(VOCI, indice)),
+    _titolo(Contesto::HUD, titolo_x(GUBBIO_VOCE(VOCI, indice)), CARTIGLIO_Y + 4, CHIARO, palette),
     _aiuto(aiuto_a, aiuto_b, MARGINE_X, PIEDE_Y, palette),
     _l(Contesto::HUD, l_x(), PIEDE_Y, SPENTO, palette),
     _r(Contesto::HUD, r_x(), PIEDE_Y, SPENTO, palette),
@@ -152,7 +154,13 @@ Pagina::Pagina(int indice, TestoId aiuto_a, TestoId aiuto_b, const bn::sprite_pa
 }
 
 Pagina::Pagina(int indice, TestoId aiuto, const bn::sprite_palette_ptr& palette) :
-    _titolo(Contesto::HUD, titolo_x(indice), CARTIGLIO_Y + 4, CHIARO, palette),
+    Pagina(indice, aiuto, palette, GUBBIO_VOCE(VOCI, indice))
+{
+}
+
+Pagina::Pagina(int indice, TestoId aiuto, const bn::sprite_palette_ptr& palette, TestoId titolo) :
+    _titolo_testo(titolo),
+    _titolo(Contesto::HUD, titolo_x(titolo), CARTIGLIO_Y + 4, CHIARO, palette),
     _aiuto(aiuto, MARGINE_X, PIEDE_Y, palette),
     _l(Contesto::HUD, l_x(), PIEDE_Y, SPENTO, palette),
     _r(Contesto::HUD, r_x(), PIEDE_Y, SPENTO, palette),
@@ -167,15 +175,14 @@ void Pagina::con_mappa(int alto)
     _riquadri.cornice(0, 0, 30, alto);
     _riquadri.cornice(0, alto * 8, 30, 20 - alto);
     _riquadri.buca(8, 8, 28, alto - 2);
-    _riquadri.cartiglio(8, CARTIGLIO_Y, colonne_titolo(VOCI[_indice]));
+    _riquadri.cartiglio(8, CARTIGLIO_Y, colonne_titolo(_titolo_testo));
 }
 
 void Pagina::_componi(int indice)
 {
-    _indice = indice;
     _riquadri.cornice(0, 0, 30, 20);
-    _riquadri.cartiglio(8, CARTIGLIO_Y, colonne_titolo(VOCI[indice]));
-    _titolo.mostra(VOCI[indice]);
+    _riquadri.cartiglio(8, CARTIGLIO_Y, colonne_titolo(_titolo_testo));
+    _titolo.mostra(_titolo_testo);
     _r.mostra(TestoId::MENU_R);
     _l.mostra(TestoId::MENU_L);
     _filo.rett(0, 0, DESTRA_X - MARGINE_X, 0, GRIGIO);

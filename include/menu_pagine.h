@@ -112,12 +112,15 @@ class Pagina
 public:
     Pagina(int indice, testo::TestoId aiuto_a, testo::TestoId aiuto_b, const bn::sprite_palette_ptr& palette);
     Pagina(int indice, testo::TestoId aiuto, const bn::sprite_palette_ptr& palette);
+    // con un nome suo nel cartiglio (il libro di Gubbio, dentro la Mappa)
+    Pagina(int indice, testo::TestoId aiuto, const bn::sprite_palette_ptr& palette, testo::TestoId titolo);
 
     // La pagina della mappa (MMA, mockup 03): due riquadri che si toccano, in alto la mappa (l'interno senza tile,
     // si vede il fondo della mappa) con 'alto' righe di tile, in basso la scheda.
     void con_mappa(int alto);
 
 private:
+    testo::TestoId _titolo_testo;
     Riquadri _riquadri;
     VistaTesto _titolo;
     AiutoTasti _aiuto;
@@ -125,7 +128,6 @@ private:
     VistaTesto _r;
     Striscia _filo;
     Striscia _tessere;
-    int _indice = 0;
 
     void _componi(int indice);
 };

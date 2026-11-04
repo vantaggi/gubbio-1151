@@ -206,11 +206,13 @@ def header(d, archi):
     out += ["};", "",
             "// Un'area sulla mappa: il centro del nodo in pixel del riquadro, la riga della scheda e la quota.",
             "struct NodoMappa", "{", "    mondo::AreaId area;", "    uint8_t x;", "    uint8_t y;",
-            "    testi::TestoId riga;", "    testi::TestoId quota;", "};", "",
+            "    testi::TestoId riga;", "    testi::TestoId quota;",
+            "    testi::TestoId libro[2];       // la pagina del libro di Gubbio (testi/libro.testi, MLIB)", "};", "",
             "inline constexpr int NODI_MAPPA = %d;" % len(nodi), "inline constexpr NodoMappa NODO_MAPPA[NODI_MAPPA] = {"]
     for k in nodi:
         x, y = pos[k]
-        out.append("    { mondo::AreaId::%s, %d, %d, testi::TestoId::MAPPA_RIGA_%s, testi::TestoId::MAPPA_QUOTA_%s }," % (k, x, y, k, k))
+        out.append("    { mondo::AreaId::%s, %d, %d, testi::TestoId::MAPPA_RIGA_%s, testi::TestoId::MAPPA_QUOTA_%s,\n"
+                   "      { testi::TestoId::LIBRO_%s_1, testi::TestoId::LIBRO_%s_2 } }," % (k, x, y, k, k, k, k))
     out += ["};", "", "// Una strada fra due nodi (indici in NODO_MAPPA): i suoi pixel in ARCO_PIXEL, a coppie x, y.",
             "struct ArcoMappa", "{", "    uint8_t a;", "    uint8_t b;", "    uint16_t primo;", "    uint16_t quanti;", "};", "",
             "inline constexpr int ARCHI_MAPPA = %d;" % len(archi), "inline constexpr ArcoMappa ARCO_MAPPA[ARCHI_MAPPA] = {"]

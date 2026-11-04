@@ -1,0 +1,43 @@
+# MLIB: il libro di Gubbio (mockup 03d; approvato da Cioti il 4 nov): per ogni area della mappa, com'è oggi. Dalla
+# scheda della mappa, A apre la pagina dell'area sotto il cursore, se ci si è già stati. Fonti: le schede delle aree
+# (mappa/aree_schede.json nella cartella del progetto) e mondo/monumenti.json; due testi per pagina.
+LIBRO_TITOLO              | HUD     | Libro di Gubbio
+LIBRO_OGGI                | HUD     | Com'è oggi
+LIBRO_DI                  | HUD     | di
+LIBRO_AIUTO               | AREA    | Destra e sinistra: altra pagina
+LIBRO_PIAZZA_GRANDE_1     | DIALOGO | Una piazza sospesa nel vuoto: la cominciarono nel 1321, sopra grandi arconi che si vedono ancora da via Baldassini, più in basso.
+LIBRO_PIAZZA_GRANDE_2     | DIALOGO | Il Palazzo dei Consoli (1332-1349) guarda il Pretorio, oggi sede del Comune. Dal parapetto si vede tutta la città bassa.
+LIBRO_VIA_DEI_CONSOLI_1   | DIALOGO | Scende stretta e ripida fra case di pietra, molte con la porta del morto accanto all'ingresso.
+LIBRO_VIA_DEI_CONSOLI_2   | DIALOGO | Nel 2007, scavando, qui sono venute fuori tombe di tremila anni fa. Al numero 39 si vedono blocchi delle mura antiche.
+LIBRO_LARGO_BARGELLO_1    | DIALOGO | Al centro c'è la Fontana dei Matti: chi le gira intorno tre volte diventa Matto d'Agobbio.
+LIBRO_LARGO_BARGELLO_2    | DIALOGO | Il Palazzo del Bargello è del primo Trecento. Di fronte c'è San Giuliano, e pochi passi più in là il ponte sul Camignano.
+LIBRO_SAN_MARTINO_1       | DIALOGO | Si entra dal Ponte di San Martino, romano e rifatto nel Medioevo. La piazza sta davanti a San Domenico, dalla facciata mai finita.
+LIBRO_SAN_MARTINO_2       | DIALOGO | Porta Metauro ha ancora i portoni di legno di una volta, e Palazzo Gabrielli la torre medievale più alta rimasta.
+LIBRO_TEATRO_ROMANO_1     | DIALOGO | Il teatro dei Romani sta in un prato fuori dalle mura, in piano sotto la città.
+LIBRO_TEATRO_ROMANO_2     | DIALOGO | Ci si arriva da Porta degli Ortacci o lungo il viale fuori le mura. Poco lontano c'è anche una cisterna romana.
+LIBRO_PIAZZA_QUARANTA_MARTIRI_1 | DIALOGO | È la piazza più grande e più bassa della città: il mercato ci si fa dal Medioevo, e i giardini sono del 1881.
+LIBRO_PIAZZA_QUARANTA_MARTIRI_2 | DIALOGO | Da una parte San Francesco; dall'altra la Loggia dei Tiratori, dove si stendeva la lana, sopra il colonnato dell'ospedale.
+LIBRO_SAN_PIETRO_1        | DIALOGO | Davanti all'abbazia, dell'XI secolo, c'è una piazza quadrata; sulla facciata ci sono animali scolpiti.
+LIBRO_SAN_PIETRO_2        | DIALOGO | Porta San Pietro è doppia: quella di fuori si chiama Porta Vittoria. La fonte di San Pietro è del 1536.
+LIBRO_VIA_XX_SETTEMBRE_1  | DIALOGO | Continua via dei Consoli dall'altra parte della piazza, in piano lungo il pendio.
+LIBRO_VIA_XX_SETTEMBRE_2  | DIALOGO | C'è un'edicola affrescata del Quattrocento; dai due lati salgono e scendono vicoli a scale.
+LIBRO_SANT_ANDREA_1       | DIALOGO | L'arco di San Marziale è fatto con le pietre di una porta romana, e porta ancora un'iscrizione latina.
+LIBRO_SANT_ANDREA_2       | DIALOGO | Da qui via Dante scende fino a Porta Romana, e via Appennino sale lungo le mura fino a Porta Sant'Ubaldo.
+LIBRO_SANT_AGOSTINO_1     | DIALOGO | Porta Romana è una torre del Trecento con lo stemma della città; dov'era il ponte levatoio ora c'è un ponte di pietra.
+LIBRO_SANT_AGOSTINO_2     | DIALOGO | Appena fuori, la chiesa di Sant'Agostino, finita nel 1294, è piena di affreschi.
+LIBRO_DUOMO_DUCALE_1      | DIALOGO | Davanti al Duomo non c'è una piazza: Federico da Montefeltro ci costruì di fronte il suo palazzo.
+LIBRO_DUOMO_DUCALE_2      | DIALOGO | Il Palazzo Ducale (1470-1476) è l'unico edificio del Rinascimento in città. Sotto passa il Voltone, una strada a volta.
+LIBRO_MONTE_INGINO_1      | DIALOGO | Porta Sant'Ubaldo, detta anche dell'Angelo, è il punto più alto della città dentro le mura.
+LIBRO_MONTE_INGINO_2      | DIALOGO | Di lì la strada sale a tornanti sul Monte Ingino, fino alla basilica in cima.
+LIBRO_BASILICA_1          | DIALOGO | La basilica sta in cima all'Ingino, sotto i resti della Rocca. Da quassù si vede tutta la pianura.
+LIBRO_BASILICA_2          | DIALOGO | Ha un chiostro, e dentro si custodiscono i tre Ceri.
+LIBRO_BOTTACCIONE_1       | DIALOGO | La strada corre in fondo alla gola, lungo il Camignano, fra pareti di roccia dritte.
+LIBRO_BOTTACCIONE_2       | DIALOGO | Sopra passa il condotto che portava l'acqua in città; sul fianco del monte c'è l'eremo di Sant'Ambrogio.
+LIBRO_GOLA_STRISCIA_1     | DIALOGO | Nella roccia della gola c'è uno strato sottile di argilla: segna la fine dell'età dei dinosauri.
+LIBRO_GOLA_STRISCIA_2     | DIALOGO | Lì, nel 1980, si trovò l'iridio che fece pensare a un grande asteroide caduto sulla Terra.
+LIBRO_GOLA_MIASMI_1       | DIALOGO | Le rocce della gola si leggono come un libro: strati di calcare posati sul fondo di un mare antico.
+LIBRO_GOLA_MIASMI_2       | DIALOGO | Per questo la gola del Bottaccione la studiano geologi di tutto il mondo.
+LIBRO_GOLA_ARCO_1         | DIALOGO | Bottaccione vuol dire grande bottaccio: una vasca murata, chiusa fra le rocce, per tenere l'acqua.
+LIBRO_GOLA_ARCO_2         | DIALOGO | Da lì il condotto portava l'acqua fino alla città, lungo il fianco del monte.
+LIBRO_CONDOTTO_1          | DIALOGO | Il condotto del Bottaccione è del Medioevo e corre lungo il fianco dell'Ingino, sopra la città.
+LIBRO_CONDOTTO_2          | DIALOGO | Oggi lo si segue a piedi: è una delle passeggiate più belle sopra Gubbio.
