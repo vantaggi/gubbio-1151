@@ -501,6 +501,78 @@ namespace
         bn::optional<Scritta> _riga;
     };
 
+    // ------------------------------------------------------------------ il libro di Gubbio (mockup 03d)
+    // Una pagina per area gia' vista, nell'ordine della mappa: com'e' quel luogo oggi. Destra e sinistra passano alle
+    // altre aree viste; B torna alla mappa col cursore sull'ultima pagina letta.
+    Esito libro(const GameState& p, int& nodo, const bn::sprite_palette_ptr& palette, bool istantanea)
+    {
+        bn::vector<int, NODI_MAPPA> viste;
+        int i = 0;
+
+        for(int n = 0; n < NODI_MAPPA; ++n)
+        {
+            if(vista(p, n))
+            {
+                i = n == nodo ? viste.size() : i;
+                viste.push_back(n);
+            }
+        }
+
+        while(true)
+        {
+            Esito esito = Esito::INDIETRO;
+            int passo = 0;
+
+            {
+                const NodoMappa& pagina_nodo = GUBBIO_VOCE(NODO_MAPPA, viste[i]);
+                Pagina pagina(PAGINA_MAPPA, TestoId::LIBRO_AIUTO, palette, TestoId::LIBRO_TITOLO);
+                Scritta nome(mondo::area(pagina_nodo.area).etichetta, 13, 24, TITOLO, palette);
+                // «3 di 10» contro il bordo destro
+                VistaNumero quante(0, 24, NOTA, palette);
+                quante.mostra(viste.size());
+                quante.colloca_a_destra(DESTRA_X, 24);
+                int di_x = DESTRA_X + 1 - quante.larghezza() - 4 - larghezza_testo(TestoId::LIBRO_DI);
+                Scritta di(TestoId::LIBRO_DI, di_x, 24, NOTA, palette);
+                VistaNumero questa(0, 24, NOTA, palette);
+                questa.mostra(i + 1);
+                questa.colloca_a_destra(di_x - 4, 24);
+                Scritta oggi(TestoId::LIBRO_OGGI, 13, 35, NOTA, palette);
+                TestoId primo = GUBBIO_VOCE(pagina_nodo.libro, 0);
+                Scritta uno(primo, 13, 52, INCHIOSTRO, palette);
+                Scritta due(GUBBIO_VOCE(pagina_nodo.libro, 1), 13, 52 + testo::dati(primo).righe * 10 + 5, INCHIOSTRO, palette);
+
+                if(istantanea)
+                {
+                    attendi(30);
+                    BN_LOG("Istantanea pausa_mappa_libro");
+                    attendi(30);
+                    return Esito::INDIETRO;
+                }
+
+                while(passo == 0)
+                {
+                    attendi(1);
+
+                    if(navigazione(esito))
+                    {
+                        audio::suona(colonna::Suono::ANNULLA);
+                        nodo = viste[i];
+                        return esito;
+                    }
+
+                    if(viste.size() > 1 && (bn::keypad::left_pressed() || bn::keypad::right_pressed()))
+                    {
+                        passo = bn::keypad::right_pressed() ? 1 : -1;
+                        audio::suona(colonna::Suono::CURSORE);
+                    }
+                }
+            }
+
+            i = (i + passo + viste.size()) % viste.size();
+            attendi(1);
+        }
+    }
+
     // ------------------------------------------------------------------ la legenda (mockup 03c)
     Esito legenda(const bn::sprite_palette_ptr& palette, const bn::sprite_palette_ptr& icone, bool istantanea)
     {
@@ -576,9 +648,10 @@ Esito pagina_mappa(const bn::sprite_palette_ptr& palette, bool istantanea)
     {
         Esito esito = Esito::INDIETRO;
         bool apri_legenda = false;
+        bool apri_libro = false;
 
         {
-            Pagina pagina(PAGINA_MAPPA, TestoId::MAPPA_AIUTO_SELECT, palette);
+            Pagina pagina(PAGINA_MAPPA, TestoId::MAPPA_AIUTO_A, TestoId::MAPPA_AIUTO_SELECT, palette);
             pagina.con_mappa(RIGHE_MAPPA);
             FondoMappa fondo(p);
             bn::vector<Segnalino, SEGNALINI_MAX> segni = segnalini(p);
@@ -627,6 +700,19 @@ Esito pagina_mappa(const bn::sprite_palette_ptr& palette, bool istantanea)
                     break;
                 }
 
+                if(bn::keypad::a_pressed())
+                {
+                    // il libro c'e' solo per le aree gia' viste
+                    bool aperto = vista(p, voce);
+                    audio::suona(aperto ? colonna::Suono::CONFERMA : colonna::Suono::ANNULLA);
+
+                    if(aperto)
+                    {
+                        apri_libro = true;
+                        break;
+                    }
+                }
+
                 int dx = bn::keypad::left_pressed() ? -1 : (bn::keypad::right_pressed() ? 1 : 0);
                 int dy = bn::keypad::up_pressed() ? -1 : (bn::keypad::down_pressed() ? 1 : 0);
 
@@ -650,7 +736,25 @@ Esito pagina_mappa(const bn::sprite_palette_ptr& palette, bool istantanea)
         {
             [[maybe_unused]] Esito e = legenda(palette, icone, true);
             attendi(1);
+
+            if(vista(p, voce))
+            {
+                e = libro(p, voce, palette, true);
+                attendi(1);
+            }
+
             return Esito::INDIETRO;
+        }
+
+        if(apri_libro)
+        {
+            Esito e = libro(p, voce, palette, false);
+            attendi(1);
+
+            if(e != Esito::INDIETRO)
+            {
+                return e;
+            }
         }
 
         if(apri_legenda)
