@@ -722,7 +722,7 @@ inline constexpr Npc NPC_AMBIENTE[NPC] = {
     { int8_t(mondo::AreaId::SAN_MARTINO), 29, 84, { 62, 63, 64 }, { 1, 1, 1 }, 16, 255, 0, 0, 0, false },  // Flaviano
     { int8_t(mondo::AreaId::SAN_MARTINO), 61, 21, { 65, 66, 67 }, { 1, 1, 1 }, 17, 255, 0, 0, 0, false },  // Masio il Romano
     { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 50, 10, { 68, 69, 70 }, { 1, 1, 1 }, 18, 255, 0, 0, 0, false },  // Montano
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 64, 48, { 71, 72, 73 }, { 1, 1, 1 }, 19, 65, 2, 0, 0, false },  // Giordano
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 79, 48, { 71, 72, 73 }, { 1, 1, 1 }, 19, 65, 2, 0, 0, false },  // Giordano
     { int8_t(mondo::AreaId::SAN_PIETRO), 22, 23, { 74, 75, 76 }, { 1, 1, 1 }, 20, 255, 0, 0, 0, false },  // Febo
     { int8_t(mondo::AreaId::SAN_PIETRO), 25, 25, { 77, 78, 79 }, { 1, 1, 1 }, 21, 66, 2, 0, 0, false },  // Giambono
     { int8_t(mondo::AreaId::SAN_PIETRO), 18, 28, { 80, 81, 82 }, { 1, 1, 1 }, 22, 67, 7, 0, 0, false },  // Ricciardo
@@ -752,9 +752,9 @@ inline constexpr Npc NPC_AMBIENTE[NPC] = {
     { int8_t(mondo::AreaId::SAN_MARTINO), 61, 123, { 164, 165, 166 }, { 1, 1, 1 }, 46, 255, 0, 0, 0, false },  // Il Tintore
     { int8_t(mondo::AreaId::SAN_MARTINO), 68, 21, { 167, 168, 169 }, { 1, 1, 1 }, 47, 255, 0, 0, 0, false },  // Il Conciatore
     { int8_t(mondo::AreaId::SAN_MARTINO), 3, 123, { 170, 171, 172 }, { 1, 1, 1 }, 48, 255, 0, 0, 0, false },  // Il Mugnaio
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 61, 48, { 173, 174, 175 }, { 1, 1, 1 }, 49, 255, 0, 0, 0, false },  // Il Lanaiolo
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 76, 48, { 173, 174, 175 }, { 1, 1, 1 }, 49, 255, 0, 0, 0, false },  // Il Lanaiolo
     { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 87, 85, { 176, 177, 178 }, { 1, 1, 1 }, 50, 255, 0, 0, 0, false },  // Il Pastore
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 73, 17, { 179, 180, 0xFFFF }, { 1, 1, 0 }, 51, 255, 0, 0, 0, false },  // Il Macellaio
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 102, 12, { 179, 180, 0xFFFF }, { 1, 1, 0 }, 51, 255, 0, 0, 0, false },  // Il Macellaio
     { int8_t(mondo::AreaId::SAN_PIETRO), 5, 34, { 181, 182, 183 }, { 1, 1, 1 }, 52, 255, 0, 0, 0, false },  // La Fornaia
     { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 4, 13, { 184, 185, 186 }, { 1, 1, 2 }, 53, 255, 0, 0, 0, false },  // Il Calzolaio
     { int8_t(mondo::AreaId::SANT_AGOSTINO), 45, 32, { 188, 189, 190 }, { 1, 1, 1 }, 54, 255, 0, 0, 0, false },  // L'Ortolana
@@ -1057,7 +1057,7 @@ struct Infiltrato
     Righe dopo;
 };
 
-inline constexpr Infiltrato INFILTRATO = { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 67, 48, 68, 6, { 65, 3 }, { 68, 5 } };
+inline constexpr Infiltrato INFILTRATO = { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 82, 48, 68, 6, { 65, 3 }, { 68, 5 } };
 
 // --- La gola del Bottaccione (T2) ----------------------------------------------------------------
 // Le scene che partono su una cella dell'area (non entrando): B-02 sulla prima nebbia, B-03 sotto l'arco.
