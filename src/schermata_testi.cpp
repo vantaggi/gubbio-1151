@@ -62,7 +62,7 @@ void schermata_testi(const bn::sprite_palette_ptr& palette)
     gubbio::VistaNumero numero_oro(64, 46, INCHIOSTRO_CHIARO, palette);
     gubbio::VistaNumero numero_passi(64, 60, INCHIOSTRO_CHIARO, palette);
     gubbio::VistaNumero numero_errori(64, 74, INCHIOSTRO_CHIARO, palette);
-    gubbio::VistaTesto dialogo(Contesto::DIALOGO, gubbio::stile::DIALOGO_X + 8, gubbio::stile::DIALOGO_Y + 8,
+    gubbio::VistaTesto dialogo(Contesto::DIALOGO, gubbio::stile::DIALOGO_X + 12, gubbio::stile::DIALOGO_Y + 12,
                                INCHIOSTRO_SCURO, palette);
 
     etichetta_pv.mostra(TestoId::HUD_PV);
