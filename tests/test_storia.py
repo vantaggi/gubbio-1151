@@ -235,7 +235,7 @@ class Tabelle(unittest.TestCase):
 
     def test_negativa_bandiera_da_fare_senza_documento(self):
         doc = open(os.path.join(RADICE, "docs", "bandiere_da_fare.md"), encoding="utf-8").read()
-        self.assertNotIn("| `CERI_RISVEGLIATI` |", doc)
+        self.assertNotIn("CERI_RISVEGLIATI", righe_da_fare(doc))
         riga = "| `CERI_RISVEGLIATI` | A1-08 | x | y |\n"
         self.assertEqual(righe_da_fare(doc.replace("| :-- | :-- | :-- | :-- |\n", "| :-- | :-- | :-- | :-- |\n" + riga, 1)),
                          ["CERI_RISVEGLIATI"])
