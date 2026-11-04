@@ -458,7 +458,28 @@ FIGURE_RACCOLTE["forziere_aperto"] = [
     "..111111111111..",
     "................",
 ]
-ORDINE_RACCOLTE = ["ferro", "elleboro", "forziere", "forziere_aperto"]
+# F10: la fiamma sopra un cero dell'altare della Basilica, con i Ceri risvegliati (CERI_RISVEGLIATI). Solo colori
+# della palette dei popolani: il contorno, il vermiglio fuori, l'oro dentro, il bianco nel cuore. Non e' da
+# raccogliere: la mette sulla mappa storia::ceri_accesi(), e solo nell'interno della Basilica (CERO_ALTARE).
+FIGURE_RACCOLTE["fiamma_cero"] = [
+    "................",
+    ".......11.......",
+    "......1551......",
+    "......1551......",
+    ".....15e51......",
+    ".....15ee51.....",
+    "....15eee551....",
+    "....15e66e51....",
+    "....15e66e51....",
+    "....15eeee51....",
+    ".....15ee51.....",
+    "......1551......",
+    ".......11.......",
+    "................",
+    "................",
+    "................",
+]
+ORDINE_RACCOLTE = ["ferro", "elleboro", "forziere", "forziere_aperto", "fiamma_cero"]
 
 
 def parole_16(nome):

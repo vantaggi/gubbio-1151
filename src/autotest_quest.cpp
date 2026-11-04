@@ -315,6 +315,38 @@ namespace
 
     static_assert(ceri_solo_dalla_bandiera(), "i Ceri si accendono con CERI_RISVEGLIATI");
 
+    // Le fiamme sopra i tre ceri dell'altare: tre nell'interno della Basilica con i Ceri risvegliati, nessuna prima;
+    // e fuori dalla Basilica mai (regola di Cioti: i ceri stanno solo dentro).
+    consteval int fiamme(bool ceri, mondo::AreaId area)
+    {
+        GameState p = {};
+
+        if(ceri)
+        {
+            accendi_bandiera(p, Bandiera::CERI_RISVEGLIATI);
+        }
+
+        return fiamme_dei_ceri(p, int(area));
+    }
+
+    consteval bool ceri_solo_nella_basilica()
+    {
+        for(int k = 0; k < CERI_ALTARE; ++k)
+        {
+            if(CERO_ALTARE[k].area != int8_t(mondo::AreaId::BASILICA_INTERNO))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    static_assert(fiamme(true, mondo::AreaId::BASILICA_INTERNO) == 3 && ceri_solo_nella_basilica(),
+                  "le fiamme dei ceri nella Basilica");
+    static_assert(fiamme(false, mondo::AreaId::BASILICA_INTERNO) == 0 && fiamme(true, mondo::AreaId::BASILICA) == 0 &&
+                  fiamme(true, mondo::AreaId::PIAZZA_GRANDE) == 0, "negativa: fiamme senza i Ceri o fuori dalla Basilica");
+
     // --- La gola dopo B-05 ---------------------------------------------------------------------------
 
     // La storia giocata fino al rientro di B-05 (RIENTRO_PORTA_METAURO), prima della conferma di E-01.

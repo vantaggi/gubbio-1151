@@ -836,7 +836,7 @@ inline constexpr Raccolta RACCOLTA[RACCOLTE] = {
 };
 
 // Le figure degli oggetti da raccogliere, 16x16 (4 tile), con la palette dei popolani (tools/figure_npc.py).
-inline constexpr int FIGURE_RACCOLTA = 4;
+inline constexpr int FIGURE_RACCOLTA = 5;
 inline constexpr uint32_t FIGURA_RACCOLTA[FIGURE_RACCOLTA][4 * 8] = {
     {  // ferro
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x11110000, 0xDDDD1000,
@@ -861,6 +861,12 @@ inline constexpr uint32_t FIGURA_RACCOLTA[FIGURE_RACCOLTA][4 * 8] = {
         0x00000000, 0x00000000, 0x00011111, 0x001BBBBB, 0x001AAAAA, 0x001DDDDD, 0x01111111, 0x01CC1111,
         0xAAAAAA10, 0xAAAAAA10, 0xBBBBBB10, 0xBBBBBB10, 0xBBBBCC10, 0xAAAAAA10, 0x11111100, 0x00000000,
         0x01AAAAAA, 0x01AAAAAA, 0x01BBBBBB, 0x01BBBBBB, 0x01CCBBBB, 0x01AAAAAA, 0x00111111, 0x00000000,
+    },
+    {  // fiamma_cero
+        0x00000000, 0x10000000, 0x51000000, 0x51000000, 0xE5100000, 0xE5100000, 0xEE510000, 0x6E510000,
+        0x00000000, 0x00000001, 0x00000015, 0x00000015, 0x00000015, 0x0000015E, 0x0000155E, 0x000015E6,
+        0x6E510000, 0xEE510000, 0xE5100000, 0x51000000, 0x10000000, 0x00000000, 0x00000000, 0x00000000,
+        0x000015E6, 0x000015EE, 0x0000015E, 0x00000015, 0x00000001, 0x00000000, 0x00000000, 0x00000000,
     },
 };
 
@@ -949,6 +955,8 @@ inline constexpr Forziere FORZIERE[FORZIERI] = {
 // Le figure del forziere in FIGURA_RACCOLTA: chiuso, e aperto (preso, resta li').
 inline constexpr int FIGURA_FORZIERE = 2;
 inline constexpr int FIGURA_FORZIERE_APERTO = 3;
+// La fiamma sopra i ceri dell'altare, con i Ceri risvegliati (CERO_ALTARE di storia_logica.h).
+inline constexpr int FIGURA_FIAMMA_CERO = 4;
 
 // --- Le guardie delle fornaci (F10, Q-SM01) -----------------------------------------------------
 // Un Guerriero della Roccia davanti a ogni blocco di ferro, visibile sulla mappa: toccarlo avvia la battaglia

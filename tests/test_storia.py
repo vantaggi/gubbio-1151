@@ -117,6 +117,78 @@ def scene_del_log(log):
     return sorted(re.findall(r"^Scena ([A-Z0-9]+-\d+[a-z]?)$", log.split("Giro 1\n")[0], re.M))
 
 
+def griglia_area(nome):
+    """Le righe della griglia di mondo/aree/<nome>.area (dopo «griglia», larghe quanto dice «dimensioni»)."""
+    testo = open(os.path.join(RADICE, "mondo", "aree", nome + ".area"), encoding="utf-8").read()
+    largo = int(re.search(r"^dimensioni (\d+) \d+$", testo, re.M).group(1))
+    return [r for r in testo.split("\ngriglia\n", 1)[1].splitlines() if len(r) == largo]
+
+
+def ceri_dell_altare(logica):
+    """La tabella CERO_ALTARE di storia_logica.h: [(area, tx, ty)]."""
+    corpo = re.search(r"CERO_ALTARE\[CERI_ALTARE\] = \{(.*?)\n\};", logica, re.S).group(1)
+    return [(a, int(x), int(y)) for a, x, y in re.findall(r"AreaId::(\w+)\), (\d+), (\d+) \}", corpo)]
+
+
+def errori_ceri(ceri, griglie):
+    """Ogni cero della tabella sta nell'interno della Basilica, sulla cella in alto a sinistra di un blocco 2x4 di
+    'e'; ogni blocco di 'e' ha il suo cero; nessun'altra area ha celle 'e' (regola di Cioti)."""
+    err = []
+    for area, tx, ty in ceri:
+        if area != "BASILICA_INTERNO":
+            err.append(f"cero fuori dalla Basilica: {area}")
+            continue
+        g = griglie["basilica_interno"]
+        blocco = [g[ty + dy][tx + dx] for dy in range(4) for dx in range(2) if ty + dy < len(g) and tx + dx < len(g[0])]
+        if blocco != ["e"] * 8 or (tx > 0 and g[ty][tx - 1] == "e") or (ty > 0 and g[ty - 1][tx] == "e"):
+            err.append(f"({tx}, {ty}) non e' l'angolo di un cero")
+    celle = sum(r.count("e") for r in griglie["basilica_interno"])
+    if celle != 8 * len([c for c in ceri if c[0] == "BASILICA_INTERNO"]):
+        err.append(f"{celle} celle di ceri per {len(ceri)} ceri in tabella")
+    for nome, g in griglie.items():
+        if nome != "basilica_interno" and any("e" in r for r in g):
+            err.append(f"ceri fuori dalla Basilica: {nome}")
+    return err
+
+
+class CeriDellaBasilica(unittest.TestCase):
+    """F10: con CERI_RISVEGLIATI una fiamma sopra ognuno dei tre ceri dell'altare (CERO_ALTARE)."""
+
+    def setUp(self):
+        self.logica = open(os.path.join(RADICE, "include", "storia_logica.h"), encoding="utf-8").read()
+        nomi = [f[:-5] for f in os.listdir(os.path.join(RADICE, "mondo", "aree")) if f.endswith(".area")]
+        self.griglie = {n: griglia_area(n) for n in nomi}
+
+    def test_i_tre_ceri_sulla_griglia(self):
+        ceri = ceri_dell_altare(self.logica)
+        self.assertEqual(len(ceri), 3)
+        self.assertEqual(errori_ceri(ceri, self.griglie), [])
+
+    def test_negativa_cero_spostato(self):
+        ceri = ceri_dell_altare(self.logica)
+        ceri[1] = (ceri[1][0], ceri[1][1] + 1, ceri[1][2])
+        self.assertEqual(len(errori_ceri(ceri, self.griglie)), 1)
+
+    def test_negativa_cero_fuori_dalla_basilica(self):
+        ceri = ceri_dell_altare(self.logica)
+        ceri[0] = ("BASILICA", ceri[0][1], ceri[0][2])
+        self.assertIn("cero fuori dalla Basilica: BASILICA", errori_ceri(ceri, self.griglie))
+        griglie = dict(self.griglie)
+        griglie["piazza_grande"] = griglie["piazza_grande"][:1] + ["e" + r[1:] for r in griglie["piazza_grande"][1:2]]
+        self.assertIn("ceri fuori dalla Basilica: piazza_grande", errori_ceri(ceri_dell_altare(self.logica), griglie))
+
+    def test_la_fiamma_coi_colori_della_palette(self):
+        """La fiamma usa solo il contorno, il vermiglio, l'oro e il bianco della palette dei popolani."""
+        fiamma = GS.FN.FIGURE_RACCOLTE["fiamma_cero"]
+        self.assertEqual(set("".join(fiamma)) - {"."}, {"1", "5", "e", "6"})
+        self.assertIn("inline constexpr int FIGURA_FIAMMA_CERO = 4;", open(GS.USCITA_H, encoding="utf-8").read())
+
+    def test_la_scena_mette_le_fiamme(self):
+        scena = open(os.path.join(RADICE, "src", "storia_scena.cpp"), encoding="utf-8").read()
+        self.assertIn("k < CERI_ALTARE && ceri_accesi(g_game_state)", scena)
+        self.assertIn("crea_raccolta(palette, FIGURA_FIAMMA_CERO)", scena)
+
+
 class GeneratoAggiornato(unittest.TestCase):
 
     def test_file_generati_aggiornati(self):

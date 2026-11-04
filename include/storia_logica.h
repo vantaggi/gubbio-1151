@@ -358,6 +358,37 @@ inline constexpr int INCONTRO_DI_CORRADO = 2;     // il duello sul Condotto (B-0
     return accesa(p, Bandiera::CERI_RISVEGLIATI);
 }
 
+// I tre ceri sui supporti davanti all'altare della Basilica (le celle 'e' di mondo/aree/basilica_interno.area,
+// 2x4 celle ciascuno: qui la cella in alto a sinistra). Con i Ceri risvegliati sopra ognuno arde una fiamma
+// (FIGURA_FIAMMA_CERO, uno sprite 16x16 come i forzieri); prima restano spenti. Regola di Cioti: i ceri stanno
+// solo dentro la Basilica. tests/test_storia_v2.py controlla le celle sulla griglia dell'area.
+struct CeroAltare
+{
+    int8_t area;                  // mondo::AreaId
+    uint8_t tx;
+    uint8_t ty;
+};
+
+inline constexpr int CERI_ALTARE = 3;
+inline constexpr CeroAltare CERO_ALTARE[CERI_ALTARE] = {
+    { int8_t(mondo::AreaId::BASILICA_INTERNO), 9, 10 },
+    { int8_t(mondo::AreaId::BASILICA_INTERNO), 15, 10 },
+    { int8_t(mondo::AreaId::BASILICA_INTERNO), 21, 10 },
+};
+
+// Quante fiamme ardono nell'area: tre nella Basilica con i Ceri risvegliati, altrimenti nessuna.
+[[nodiscard]] constexpr int fiamme_dei_ceri(const GameState& p, int area)
+{
+    int quante = 0;
+
+    for(int k = 0; k < CERI_ALTARE; ++k)
+    {
+        quante += CERO_ALTARE[k].area == area && ceri_accesi(p);
+    }
+
+    return quante;
+}
+
 // Una quest si consegna se e' gia' stata data (la sua bandiera di partenza), prima della sua scadenza
 // (ATTO_I_COMPLETATO: la conferma dell'alba che avvia E-01; regola «nessuna quest si perde») e una volta sola.
 [[nodiscard]] constexpr bool quest_consegnabile(const GameState& p, int q)

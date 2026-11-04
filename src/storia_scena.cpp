@@ -690,6 +690,21 @@ void Storia::_prepara_npc(const Esplorazione& esplorazione)
         }
     }
 
+    // i tre ceri dell'altare della Basilica (F10): con i Ceri risvegliati (A1-08) una fiamma sopra ognuno, al
+    // centro dei suoi due tile; prima restano spenti, solo il disegno del fondale
+    for(int k = 0; k < CERI_ALTARE && ceri_accesi(g_game_state); ++k)
+    {
+        const CeroAltare& c = GUBBIO_VOCE(CERO_ALTARE, k);
+
+        if(c.area == _area)
+        {
+            bn::sprite_ptr sprite = crea_raccolta(palette, FIGURA_FIAMMA_CERO);
+            esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(c.tx) + mondo::TILE_PX / 2, mondo::piedi_y(c.ty),
+                                             ALTEZZA_RACCOLTA);
+            _gola.push_back(bn::move(sprite));
+        }
+    }
+
     // le guardie delle fornaci (F10): un Guerriero della Roccia davanti a ogni blocco, finche' non e' battuto;
     // la figura e' quella della battaglia, come i nemici sulla mappa (ScontriSullaMappa)
     for(int k = 0; k < GUARDIE_FORNACE; ++k)
