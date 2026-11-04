@@ -1166,7 +1166,50 @@ def dipingi(q, a):
     for y in range(q.h):
         for x in range(q.w):
             q.px[y][x] = st.t.px[y][x]
+    nella_rampa(q, a["id"])
     return q
+
+
+SOSTITUZIONI = {}   # area -> [(colore voluto, colore messo)], tutti nella stessa rampa (nota alla regola C1)
+
+
+def nella_rampa(q, aid):
+    """Ogni tile 8x8 usa un banco solo (genera_mondo.indicizza_tile). Se nessun banco ha tutti i suoi colori,
+    qui si sceglie il banco che ha almeno un tono di ogni rampa del tile e si mette il tono piu' vicino della
+    stessa rampa (regola C1: il compromesso resta nella rampa). Se nessun banco ha tutte le rampe, il tile
+    resta com'e' e il compromesso lo conta genera_mondo (COMPROMESSI)."""
+    import genera_mondo as G
+    fatte = SOSTITUZIONI.setdefault(aid, [])
+    fatte.clear()
+    for ty in range(q.h // 8):
+        for tx in range(q.w // 8):
+            colori = {q.px[ty * 8 + j][tx * 8 + i] for j in range(8) for i in range(8)}
+            if any(colori <= set(b[1:]) for b in G.BANCHI_FONDALI):
+                continue
+            migliore = None
+            for b in G.BANCHI_FONDALI:
+                voci = set(b[1:])
+                mappa = {}
+                for c in colori - voci:
+                    toni = [v for v in voci if v[0] == c[0]]
+                    if not toni:
+                        mappa = None
+                        break
+                    mappa[c] = min(toni, key=lambda v: (abs(v[1] - c[1]), -v[1]))
+                if mappa is None:
+                    continue
+                costo = (sum(abs(v[1] - c[1]) for c, v in mappa.items()), len(mappa))
+                if migliore is None or costo < migliore[0]:
+                    migliore = (costo, mappa)
+            if migliore is None:
+                continue
+            for j in range(8):
+                riga = q.px[ty * 8 + j]
+                for i in range(8):
+                    c = riga[tx * 8 + i]
+                    if c in migliore[1]:
+                        riga[tx * 8 + i] = migliore[1][c]
+            fatte.extend(migliore[1].items())
 
 
 def tavole(uscita):

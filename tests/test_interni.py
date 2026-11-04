@@ -168,12 +168,30 @@ class FondaleNeiBanchi(unittest.TestCase):
             self.assertLessEqual(len(a["tile"]), 400, aid)
 
     def test_compromessi_pochi_e_vicini(self):
-        """Gli oggetti piccoli a tanti colori (vasi, libri, fiaschi) sul cotto: al piu' il 10% dei tile prende
-        un colore vicino, e mai lontano (costo sotto 300, come un tono della stessa rampa)."""
+        """Nota alla regola C1: dove nessun banco ha tutti i colori di un tile, il pittore mette un tono della
+        stessa rampa; restano compromessi di genera_mondo (fra rampe) al piu' nel 3% dei tile, e vicini."""
         for aid, a in self.aree.items():
             comp = G.COMPROMESSI.get(aid, [])
-            self.assertLess(len(comp), a["larghezza"] * a["altezza"] * 0.10, aid)
+            self.assertLess(len(comp), a["larghezza"] * a["altezza"] * 0.03, aid)
             self.assertLess(max([c for *_xy, c in comp], default=0), 300, aid)
+
+    def test_le_sostituzioni_restano_nella_rampa(self):
+        for aid in self.aree:
+            fatte = PI.SOSTITUZIONI.get(aid, [])
+            self.assertTrue(fatte, aid)
+            self.assertTrue(all(c[0] == v[0] for c, v in fatte), aid)
+
+    def test_negativa_un_tile_senza_banco_viene_portato_nella_rampa(self):
+        q = G.PC.Quadro(1, 1)
+        for y in range(8):
+            for x in range(8):
+                q.px[y][x] = (("legno e cuoio", 3), ("cotto e coppi", 2), ("oro e bronzo", 1))[(x + y) % 3]
+        prima = {c for r in q.px for c in r}
+        self.assertFalse(any(prima <= set(b[1:]) for b in G.BANCHI_FONDALI))
+        PI.nella_rampa(q, "prova_rampa")
+        dopo = {c for r in q.px for c in r}
+        self.assertTrue(any(dopo <= set(b[1:]) for b in G.BANCHI_FONDALI))
+        self.assertEqual({c[0] for c in dopo}, {c[0] for c in prima})
 
     def test_banco_degli_interni(self):
         self.assertIn(PI.BANCO_INTERNI, G.BANCHI_FONDALI)
