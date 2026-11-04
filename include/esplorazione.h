@@ -102,6 +102,11 @@ private:
     int _mostrato = -1;
     bool _mosso = false;
     bool _corre = false;
+    // la camera morbida (giro 6): il punto inquadrato insegue il giocatore con un anticipo nella direzione
+    // in cui guarda; _camera_ferma = la prossima inquadratura salta subito al bersaglio (cambio d'area)
+    int _cam_x = 0;
+    int _cam_y = 0;
+    bool _camera_ferma = true;
 
     void _carica_fondale(bool etichetta = true);
     void _mostra_etichetta(testi::TestoId id);

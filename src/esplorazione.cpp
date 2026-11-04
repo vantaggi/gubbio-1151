@@ -111,6 +111,20 @@ namespace
     {
         return v < minimo ? minimo : (v > massimo ? massimo : v);
     }
+
+    constexpr int ANTICIPO_X = 24;
+    constexpr int ANTICIPO_Y = 16;
+    constexpr int PASSI_CAMERA = 6;
+
+    // Il passo della camera verso il bersaglio: un sesto della distanza, almeno un pixel, mai oltre.
+    constexpr int verso_il_bersaglio(int distanza)
+    {
+        int passo = distanza / PASSI_CAMERA;
+        return passo != 0 ? passo : (distanza > 0 ? 1 : (distanza < 0 ? -1 : 0));
+    }
+
+    static_assert(verso_il_bersaglio(0) == 0 && verso_il_bersaglio(5) == 1 && verso_il_bersaglio(-5) == -1);
+    static_assert(verso_il_bersaglio(60) == 10 && verso_il_bersaglio(-60) == -10);
 }
 
 Esplorazione::Esplorazione(const bn::sprite_palette_ptr& palette_testo) :
@@ -190,6 +204,7 @@ void Esplorazione::_carica_fondale(bool etichetta)
     _mezza_altezza_mappa = lati.height() * mondo::TILE_PX / 2;
     _fondale = bn::regular_bg_ptr::create(0, 0, bn::regular_bg_map_ptr::create(voce, *_tiles, _palette));
     _fondale->set_camera(_camera);
+    _camera_ferma = true;
     if(etichetta)
     {
         _mostra_etichetta(a.etichetta);
@@ -224,6 +239,7 @@ void Esplorazione::_dopo_evento(mondo::Evento evento)
     {
         const mondo::Area& a = mondo::area(_e.area);
         _mostra_etichetta(mondo::varco_di(a, _e.ultimo_varco).etichetta);
+        _camera_ferma = true;
     }
 }
 
@@ -348,15 +364,34 @@ void Esplorazione::aggiorna()
         bn::sprite_palettes::set_fade(bn::color(0, 0, 0), intensita);
     }
 
-    // La camera segue il giocatore ma non mostra oltre i bordi dell'area; un'area piu' stretta
-    // dello schermo resta centrata.
+    // La camera inquadra il corpo (8 px sopra i piedi) con un anticipo di 24 px in orizzontale e 16 in
+    // verticale verso dove guarda il giocatore, cosi' si vede la strada davanti e non quella alle spalle;
+    // ci arriva per gradi (un sesto della distanza a frame) e non mostra oltre i bordi dell'area.
+    // Un'area piu' stretta dello schermo resta centrata.
     const mondo::Area& a = mondo::area(_e.area);
     int larghezza = a.larghezza * mondo::TILE_PX;
     int altezza = a.altezza * mondo::TILE_PX;
-    int cx = larghezza <= LARGHEZZA_SCHERMO ? larghezza / 2 :
-             limita(_e.x, LARGHEZZA_SCHERMO / 2, larghezza - LARGHEZZA_SCHERMO / 2);
-    int cy = altezza <= ALTEZZA_SCHERMO ? altezza / 2 :
-             limita(_e.y, ALTEZZA_SCHERMO / 2, altezza - ALTEZZA_SCHERMO / 2);
+    int anticipo_x = _direzione == DESTRA ? ANTICIPO_X : _direzione == SINISTRA ? -ANTICIPO_X : 0;
+    int anticipo_y = _direzione == GIU ? ANTICIPO_Y : _direzione == SU ? -ANTICIPO_Y : 0;
+    int bersaglio_x = larghezza <= LARGHEZZA_SCHERMO ? larghezza / 2 :
+                      limita(_e.x + anticipo_x, LARGHEZZA_SCHERMO / 2, larghezza - LARGHEZZA_SCHERMO / 2);
+    int bersaglio_y = altezza <= ALTEZZA_SCHERMO ? altezza / 2 :
+                      limita(_e.y - 8 + anticipo_y, ALTEZZA_SCHERMO / 2, altezza - ALTEZZA_SCHERMO / 2);
+
+    if(_camera_ferma)
+    {
+        _cam_x = bersaglio_x;
+        _cam_y = bersaglio_y;
+        _camera_ferma = false;
+    }
+    else
+    {
+        _cam_x += verso_il_bersaglio(bersaglio_x - _cam_x);
+        _cam_y += verso_il_bersaglio(bersaglio_y - _cam_y);
+    }
+
+    int cx = _cam_x;
+    int cy = _cam_y;
     _camera.set_position(cx - _mezza_larghezza_mappa, cy - _mezza_altezza_mappa);
 
     // Lo sprite 16x32 ha i piedi sull'ultima riga (31): il centro sta 15 pixel sopra.
