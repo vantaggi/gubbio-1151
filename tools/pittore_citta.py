@@ -218,7 +218,7 @@ DETTAGLI_SUOLO = (_ciuffo, _pietra_consumata, _ciuffo, _pozzanghera)
 
 
 # --- le case (M2, F1, F2, F5) -------------------------------------------------------------------------------
-ALTEZZA_FACCIATA_MAX = 4   # tile: 32 pixel, un piano con la porta (M2)
+ALTEZZA_FACCIATA_MAX = 5   # tile: 40 pixel, la porta alta 28 (il giocatore e' alto 22-24, M2) e il piano di sopra
 
 
 class Casa:
@@ -428,11 +428,11 @@ def dipingi_casa(q, casa, w_celle):
             _finestra(q, X0 + larga // 2 - 2, Y0 + 3, 5, max(4, alta - 8), casa.n, False)
         return
     # il piano terra: porta (o bottega) e, se c'e' posto, la porta del morto
-    hp = min(26, alta - 4)
+    hp = min(28, alta - 4)       # M2: porte e botteghe di almeno 26 pixel dove la facciata e' alta 4-5 tile
     if casa.bottega:
         wb = min(larga - 6, 18)
         bx = X0 + 8 * int(h32(casa.n, 12) * max(1, (larga - wb) // 8)) + 3
-        _bottega(q, bx, Y1, wb, min(hp, 20), casa.n)
+        _bottega(q, bx, Y1, wb, hp, casa.n)
         porta_x, porta_w = bx, wb
     else:
         pw = 10 if larga >= 20 else 8
@@ -444,8 +444,8 @@ def dipingi_casa(q, casa, w_celle):
             _porta_del_morto(q, px - 7, Y1, hp)
         elif casa.morto and X1 - (px + pw) >= 9:
             _porta_del_morto(q, px + pw + 2, Y1, hp)
-    # le finestre: al piano di sopra se la facciata e' alta 4 tile, accanto alla porta se c'e' posto
-    if alta >= 32:
+    # le finestre: al piano di sopra se la facciata e' alta 5 tile, accanto alla porta se c'e' posto
+    if alta >= 40:
         k = max(1, (larga - 4) // 12)
         passo = larga / (k + 1)
         for i in range(k):
