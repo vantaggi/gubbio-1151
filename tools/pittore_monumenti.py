@@ -484,7 +484,19 @@ def duomo(w, h, info):
         fh = altezza_facciata(h, None, 6)
         tetto_e_facciata(t, w, h, fh, tinta)
         largo, base = w * 8, h * 8
-        t.arco_acuto(largo // 2 - 10, base - 28, 20, 28)
+        # portale strombato alla scala dei Consoli e del Bargello (custode visivo, 4 nov): tre ghiere
+        # digradanti, la lunetta chiara, i battenti chiusi (il Duomo si apre piu' avanti) e lo scalino
+        cx = largo // 2
+        for k, c in enumerate((PIETRA_LUCE, PIETRA_CHIARA, PIETRA)):
+            t.arco_acuto(cx - 15 + 2 * k, base - 36 + 2 * k, 30 - 4 * k, 34 - 2 * k, c, c)
+        t.arco_acuto(cx - 9, base - 30, 18, 28, LEGNO_SCURO, PIETRA_LUCE)
+        t.arco_acuto(cx - 7, base - 28, 14, 9, PIETRA_CHIARA, PIETRA_CHIARA)   # lunetta
+        t.rett(cx - 8, base - 19, 16, 1, PIETRA_LUCE)                            # architrave
+        for x in range(cx - 7, cx + 8):
+            for y in range(base - 18, base - 2):
+                t.punto(x, y, LEGNO_SCURO if x in (cx - 7, cx, cx + 7) or x % 3 == 0 else LEGNO)
+        t.rett(cx - 17, base - 2, 34, 1, PIETRA_LUCE)                            # scalino
+        t.rett(cx - 18, base - 1, 36, 1, PIETRA_CHIARA)
         rosone(t, largo // 2, (h - fh) * 8 + 14, 8)
     t.elementi["portale_acuto"] += 1
     t.elementi["rosone"] += 1
@@ -511,6 +523,13 @@ def ducale(w, h, info):
         t.falde(0, 0, w * 8, (h - 2) * 8)
         t.gronda(0, (h - 2) * 8 - 3, w * 8)
         t.conci(0, (h - 2) * 8, w * 8, 16, TINTE[2])
+        # il fronte di dietro non resta una banda liscia (F3): finestre basse a cornice di pietra
+        for x in range(6, w * 8 - 10, 16):
+            t.rett(x - 1, (h - 2) * 8 + 3, 7, 9, PIETRA_LUCE)
+            t.rett(x, (h - 2) * 8 + 4, 5, 6, PIETRA_SCURA)
+            t.rett(x, (h - 2) * 8 + 4, 5, 1, CONTORNO)
+            t.rett(x - 2, (h - 2) * 8 + 12, 9, 1, PIETRA_CHIARA)
+        t.elementi["finestre_retro"] += 1
     cw, ch = (w * 8) * 2 // 5, (h * 8) * 2 // 5
     cx0, cy0 = (w * 8 - cw) // 2 + spostamento, (h * 8 - ch) // 2
     t.rett(cx0 - 3, cy0 - 3, cw + 6, ch + 6, CONTORNO)
@@ -626,9 +645,16 @@ def porta(w, h, info):
     t.elementi["merlatura"] += 1
     largo, alto = w * 8, h * 8
     if largo >= alto:
-        t.arco(largo // 2 - 6, alto - 16, 12, 16, CONTORNO)
+        fx, fy, fw = largo // 2 - 6, alto - 16, 12
     else:
-        t.arco(largo // 2 - min(6, largo // 2 - 1), alto // 2 - 8, min(12, largo - 2), 16, CONTORNO)
+        fx, fy, fw = largo // 2 - min(6, largo // 2 - 1), alto // 2 - 8, min(12, largo - 2)
+    # il fornice e' murato per l'assedio (conci chiari a corsi): il nero aperto e' riservato agli
+    # ingressi veri (custode visivo, 4 nov); i varchi percorribili delle mura li disegna genera_mondo
+    t.arco(fx, fy, fw, 16, PIETRA_CHIARA)
+    for y in range(fy + 4, fy + 16, 4):
+        for x in range(fx + 1, fx + fw - 1):
+            if t.get(x, y) == PIETRA_CHIARA:
+                t.punto(x, y, PIETRA)
     t.elementi["fornice"] += 1
     t.contorno()
     return t
