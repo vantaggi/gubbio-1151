@@ -21,6 +21,10 @@ spawn 1 49 31
 spawn 2 28 8
 uscita A sant_andrea 1 largo 12
 uscita B san_pietro 2 largo 12
+# La porta di bottega_conti porta dentro (pezzo INT2, tools/pittore_interni.py).
+spawn 3 45 30
+ingresso E bottega_conti
+uscita E bottega_conti_interno 3
 griglia
 #######################BBBBBBBBBBBB########################
 #######################BBBBBBBBBBBB########################

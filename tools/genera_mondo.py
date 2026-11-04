@@ -81,6 +81,7 @@ sys.path.insert(0, os.path.join(RADICE, "tools"))
 import mondo_dati as M  # noqa: E402
 import pittore_monumenti as PM  # noqa: E402
 import pittore_citta as PC  # noqa: E402
+import pittore_interni as PI  # noqa: E402
 
 AREE_GLOB = os.path.join(RADICE, "mondo", "aree", "*.area")
 USCITA = os.path.join(RADICE, "include", "mondo.h")
@@ -103,6 +104,8 @@ DISTANZA_MIN_SPAWN = 3
 # Dalla propria uscita, quella da cui si e' entrati, lo spawn sta piu' lontano: si arriva gia'
 # dentro l'area, non sulla soglia.
 DISTANZA_MIN_SPAWN_USCITA = 6
+# Gli arrivi di un'area (0-7): Quaranta Martiri ne ha 7, l'ultimo e' davanti alla bottega del carradore (INT2).
+SPAWN_PER_AREA = 8
 
 # Celle della griglia: carattere del file .area -> (nome C++, solida). L'ordine conta: il gioco
 # (mondo::solida in include/mondo_logica.h) dice solida ogni cella da PRIMA_CELLA_SOLIDA in su, quindi
@@ -199,7 +202,7 @@ def banchi_fondali(palette_stile, cupa=False, notte=False):
     alla luce delle fiaccole, L5)."""
     import pittore_citta as _PC
     out = []
-    for b, banco in enumerate([PALETTE_FONDALI] + _PC.BANCHI_NUOVI):
+    for b, banco in enumerate(BANCHI_FONDALI):
         if b == 0 and cupa:
             out.append([S.colore(palette_stile, r, True) for r in palette_cupa(palette_stile)])
             continue
@@ -1258,6 +1261,8 @@ def leggi_area(nome_file, testo):
             elif t[0] == "dimensioni":
                 a["larghezza"], a["altezza"] = int(t[1]), int(t[2])
             elif t[0] == "spawn":
+                if not 0 <= int(t[1]) < SPAWN_PER_AREA:
+                    raise ErroreMondo(f"{nome_file}:{n}: spawn {t[1]} oltre SPAWN_PER_AREA ({SPAWN_PER_AREA})")
                 a["spawn"][int(t[1])] = (int(t[2]), int(t[3]))
             elif t[0] == "uscita":
                 if t[2] in DUNGEON:
@@ -2113,7 +2118,7 @@ def disegna_area(a, mondo):
 # --- Lo standard grafico sui fondali (pezzo EDI) -----------------------------------------------------
 # La palette dei fondali ha 5 banchi da 16 colori: il banco 0 e' PALETTE_FONDALI (la gola e il monte ci
 # restano interi), gli altri tre li definisce tools/pittore_citta.py. Ogni tile usa un banco solo.
-BANCHI_FONDALI = [PALETTE_FONDALI] + PC.BANCHI_NUOVI
+BANCHI_FONDALI = [PALETTE_FONDALI] + PC.BANCHI_NUOVI + [PI.BANCO_INTERNI]   # il settimo: gli interni (pezzo INT1)
 
 # Le celle e come proiettano l'ombra (L4): (tipo del pixel, altezza in pixel).
 TIPO_CELLA = {
@@ -2167,6 +2172,8 @@ def ridipingi(a, celle, tile_di, mondo, elementi):
                 v = pix[yy][xx]
                 q.px[y * 8 + yy][x * 8 + xx] = PALETTE_FONDALI[v] if isinstance(v, int) else v
     citta = area_di_citta(a)
+    if a.get("interno") and PI.dipinge(a["id"]):
+        return PI.dipingi(q, a)           # gli interni esplorabili: la stanza intera da tools/pittore_interni.py
     if a["id"] in AREE_GOLA or a.get("interno"):
         return q
     occupate = {}
@@ -2756,10 +2763,17 @@ def celle_fondale(a, mappa):
     return out
 
 
+# Gli interni esplorabili (pezzo INT2) vanno in coda, dopo le 19 aree di prima e in quest'ordine: i salvataggi
+# tengono l'indice dell'area (AreaId) e la nebbia della mappa ha un bit per area all'aperto (indici sotto 24).
+AREE_IN_CODA = ["taverna_interno", "spezieria_interno", "bottega_conti_interno", "carradore_interno",
+                "casa_medico_interno", "sala_consoli"]
+
+
 def ordina(aree, giro):
-    altre = sorted(a["id"] for a in aree if a["id"] not in giro)
+    coda = [i for i in AREE_IN_CODA if i in {a["id"] for a in aree}]
+    altre = sorted(a["id"] for a in aree if a["id"] not in giro and a["id"] not in coda)
     per_id = {a["id"]: a for a in aree}
-    return [per_id[i] for i in giro + altre]
+    return [per_id[i] for i in giro + altre + coda]
 
 
 def scrivi_header(aree, grafo, palette_stile):
@@ -2801,7 +2815,7 @@ def scrivi_header(aree, grafo, palette_stile):
         f"inline constexpr int DISTANZA_MIN_SPAWN = {DISTANZA_MIN_SPAWN};",
         f"inline constexpr int DISTANZA_MIN_SPAWN_USCITA = {DISTANZA_MIN_SPAWN_USCITA};",
         f"inline constexpr int LATO_MAX = {LATO_MAX};          // tile per lato di un'area",
-        f"inline constexpr int SPAWN_PER_AREA = 6;",
+        f"inline constexpr int SPAWN_PER_AREA = {SPAWN_PER_AREA};",
         f"inline constexpr int VARCHI_MAX = {len(VARCHI)};",
         "",
         "enum class AreaId : uint8_t",
@@ -2895,7 +2909,7 @@ def scrivi_header(aree, grafo, palette_stile):
                 varchi.append(f"{{ {indice[dest]}, {arrivo}, testi::TestoId::{a['etichetta']} }}")
         while len(varchi) < len(VARCHI):
             varchi.append(f"{{ DUNGEON, 0, testi::TestoId::{a['etichetta']} }}")
-        spawn = [a["spawn"].get(i, a["spawn"][0]) for i in range(6)]
+        spawn = [a["spawn"].get(i, a["spawn"][0]) for i in range(SPAWN_PER_AREA)]
         out += [
             f"    {{   // {a['id']}",
             f"        GRIGLIA_{nome}, MAPPA_{nome}, {a['larghezza']}, {a['altezza']},",

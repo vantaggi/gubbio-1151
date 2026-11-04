@@ -27,6 +27,12 @@ AREA_SAN_PIETRO           | AREA | San Pietro
 AREA_DUOMO_DUCALE         | AREA | Duomo e Palazzo Ducale
 AREA_BASILICA             | AREA | Basilica di Sant'Ubaldo
 AREA_BASILICA_INTERNO     | AREA | Dentro la Basilica
+AREA_TAVERNA_INTERNO      | AREA | Taverna del corso
+AREA_SPEZIERIA_INTERNO    | AREA | Spezieria e ospizio
+AREA_BOTTEGA_CONTI_INTERNO | AREA | Bottega dei conti
+AREA_CARRADORE_INTERNO    | AREA | Bottega del carradore
+AREA_CASA_MEDICO_INTERNO  | AREA | Casa del medico
+AREA_SALA_CONSOLI         | AREA | Sala dei Consoli
 AREA_TEATRO_ROMANO        | AREA | Teatro Romano
 
 HUD_PV                    | HUD  | PV

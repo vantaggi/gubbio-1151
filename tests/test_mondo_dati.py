@@ -186,16 +186,17 @@ class Direzioni(unittest.TestCase):
                           "come vuole il vincolo su PIAZZA_GRANDE"])
 
     def test_lati_attesi(self):
-        """Piazza Grande: via dei Consoli in alto (ovest), via XX Settembre in basso (est), e basta."""
+        """Piazza Grande: via dei Consoli in alto (ovest), via XX Settembre in basso (est), e la porta della Sala dei Consoli."""
         lati = {v["verso"]: v["lato"] for v in M.calcola_varchi(GRAFO, CENS)["PIAZZA_GRANDE"]}
-        self.assertEqual(lati, {"VIA_DEI_CONSOLI": "alto", "VIA_XX_SETTEMBRE": "basso"})
+        self.assertEqual(lati, {"VIA_DEI_CONSOLI": "alto", "VIA_XX_SETTEMBRE": "basso", "SALA_CONSOLI": "dentro"})
 
     def test_lati_attesi_quaranta_martiri(self):
         """Quaranta Martiri: San Martino e via dei Consoli a destra (nord), San Pietro e via XX
         Settembre in basso (est), il Teatro in alto (ovest)."""
         lati = {v["verso"]: v["lato"] for v in M.calcola_varchi(GRAFO, CENS)["PIAZZA_QUARANTA_MARTIRI"]}
         self.assertEqual(lati, {"SAN_MARTINO": "destra", "VIA_DEI_CONSOLI": "destra", "SAN_PIETRO": "basso",
-                                "VIA_XX_SETTEMBRE": "basso", "TEATRO_ROMANO": "alto"})
+                                "VIA_XX_SETTEMBRE": "basso", "TEATRO_ROMANO": "alto",
+                                "CARRADORE_INTERNO": "dentro"})
 
     def test_lati_attesi_ordine_nuovo(self):
         """Rete stradale OSM: da via XX Settembre si va a Sant'Andrea (in basso, sud-est), si sale al
@@ -206,7 +207,8 @@ class Direzioni(unittest.TestCase):
                                                     "PIAZZA_QUARANTA_MARTIRI": "alto", "DUOMO_DUCALE": "destra"})
         self.assertEqual(lati("SANT_ANDREA"), {"VIA_XX_SETTEMBRE": "alto", "SANT_AGOSTINO": "sinistra",
                                                "MONTE_INGINO": "destra"})
-        self.assertEqual(lati("SANT_AGOSTINO"), {"SANT_ANDREA": "destra", "SAN_PIETRO": "alto"})
+        self.assertEqual(lati("SANT_AGOSTINO"), {"SANT_ANDREA": "destra", "SAN_PIETRO": "alto",
+                                                 "BOTTEGA_CONTI_INTERNO": "dentro"})
         self.assertEqual(lati("DUOMO_DUCALE"), {"LARGO_BARGELLO": "alto", "MONTE_INGINO": "basso",
                                                 "VIA_XX_SETTEMBRE": "sinistra"})
 

@@ -243,7 +243,11 @@ AREE_NPC = {"Piazza Grande": "PIAZZA_GRANDE", "via dei Consoli": "VIA_DEI_CONSOL
             "Sant'Agostino": "SANT_AGOSTINO", "Sant'Andrea": "SANT_ANDREA",
             "Piazza Quaranta Martiri": "PIAZZA_QUARANTA_MARTIRI", "San Pietro": "SAN_PIETRO",
             "Monte Ingino": "MONTE_INGINO", "Basilica": "BASILICA", "Strada del Bottaccione": "BOTTACCIONE",
-            "Via dei Consoli": "VIA_DEI_CONSOLI", "Sant'Agostino (fuori Porta Romana)": "SANT_AGOSTINO"}
+            "Via dei Consoli": "VIA_DEI_CONSOLI", "Sant'Agostino (fuori Porta Romana)": "SANT_AGOSTINO",
+            # gli interni esplorabili (pezzo INTC): chi ci lavora sta dentro
+            "Taverna del corso": "TAVERNA_INTERNO", "Spezieria e ospizio": "SPEZIERIA_INTERNO",
+            "Bottega dei conti e dei congegni": "BOTTEGA_CONTI_INTERNO", "Bottega del carradore": "CARRADORE_INTERNO",
+            "Casa del medico": "CASA_MEDICO_INTERNO"}
 
 RIGA_BATTUTA = re.compile(r"^- ([A-Z][A-Z' ]*?)(?: \(([a-z]+)\))?: (.+)$")
 # Le righe di battaglia ("- IN BATTAGLIA (evento): PARLANTE: testo", B-04): si dicono dentro lo scontro, non
@@ -902,9 +906,13 @@ def posti_dei_forzieri(posti_raccolte):
 
 def punto_dell_ancora(a, ancora, G):
     """Il punto da cui cercare il posto di un NPC: lo spawn 0, o davanti al monumento, al varco o
-    all'edificio nuovo dell'ancora (se l'edificio non c'e' ancora, lo spawn 0)."""
+    all'edificio nuovo dell'ancora (se l'edificio non c'e' ancora, lo spawn 0); "posto X Y" e' una cella
+    dell'area (negli interni: dove il mockup mette la figura, tools/pittore_interni.py)."""
     if ancora:
         tipo, _, nome = ancora.partition(" ")
+        if tipo == "posto":
+            x, y = map(int, nome.split())
+            return x, y
         if tipo == "varco":
             celle = [(x, y) for y, r in enumerate(a["griglia"]) for x, c in enumerate(r) if c == nome]
             return sum(x for x, _ in celle) // len(celle), sum(y for _, y in celle) // len(celle)

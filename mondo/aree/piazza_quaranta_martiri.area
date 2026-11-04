@@ -33,6 +33,10 @@ uscita B via_dei_consoli 2 largo 5
 uscita E san_pietro 3
 uscita G via_xx_settembre 4 largo 7
 uscita H teatro_romano 5
+# La porta di bottega_carradore porta dentro (pezzo INT2, tools/pittore_interni.py).
+spawn 6 38 56
+ingresso I bottega_carradore
+uscita I carradore_interno 6
 griglia
 ##############################################################HHHH##############################################################
 ##############################################################HHHH##############################################################

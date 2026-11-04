@@ -381,87 +381,87 @@ NPC_15_02                 | DIALOGO | Ciaccio vuole uscire con dieci archi. Io g
 NPC_16_00                 | DIALOGO | Tre luci sul monte. Ecco la canzone nuova. Manca solo l'alba.
 NPC_16_01                 | DIALOGO | C'è una canzone di undici anni fa, sui Valmarcola. Non la canto più.
 NPC_16_02                 | DIALOGO | Undici stendardi e un monte solo: la rima è facile, il finale no.
-NPC_17_00                 | DIALOGO | Undici eserciti mangiano la piana in due settimane. Monaldo ha fretta.
-NPC_17_01                 | DIALOGO | Nel 1140 cacciammo i Valmarcola. Chi è cacciato prima o poi torna.
-NPC_17_02                 | DIALOGO | Cento assedi ho studiato. Novanta finiscono con la fame, gli altri peggio.
-NPC_18_00                 | DIALOGO | Gualdo e Nocera vogliono solo er pedaggio. Gli fate lo sconto e tornano a casa.
-NPC_18_01                 | DIALOGO | Da fuori, Gubbio è quella che s'allarga. Da dentro, ve lo giuro, è più carina.
-NPC_18_02                 | DIALOGO | A Roma 'sto grifo lo famo arrosto. Co' le patate no, che non ci stanno.
-NPC_19_00                 | DIALOGO | Stanotte ho ritratto le ragazze di guardia. Tutte più belle del Grifo, s'intende.
-NPC_19_01                 | DIALOGO | A Bergamo cavo denti da dieci anni. Qui li cavo gratis, finché dura l'assedio.
-NPC_19_02                 | DIALOGO | Torno da Bergamo per mia madre e trovo undici eserciti. Gubbio sa accogliere.
-NPC_20_00                 | DIALOGO | Finito l'assedio, si rifà la corsa dei carri giù per la piana. Il mio è già unto.
-NPC_20_01                 | DIALOGO | Da vent'anni cerchio le ruote col ferro. Nessun ferro è stregato: col calore si apre.
-NPC_20_02                 | DIALOGO | Undici eserciti e nemmeno un carro decente. Il mio arriva a Perugia prima di loro.
-NPC_21_00                 | DIALOGO | È tornata su. Tre spanne. Non so chi siate, ma vi offro da bere.
-NPC_21_01                 | DIALOGO | Stanotte la vasca è calata di due spanne. Il condotto ha una ferita.
-NPC_21_02                 | DIALOGO | Quest'acqua viene dal Bottaccione, tre miglia di pietra. Dolce come il latte.
-NPC_22_00                 | DIALOGO | All'alba, se il Campanone chiama, San Pietro risponde. Parola.
-NPC_22_01                 | DIALOGO | Campane mute per tre giorni. Le dita mi tremano da sole.
-NPC_22_02                 | DIALOGO | Senti i tamburi? Tre colpi e una pausa: sono di Foligno.
-NPC_23_00                 | DIALOGO | Il frate dice che il concilio vieta la balestra. Tiro ai perugini, pregano male.
-NPC_23_01                 | DIALOGO | La pietra nera della gola si sbriciola come pane secco. Lì scava chiunque.
-NPC_23_02                 | DIALOGO | Cecco dice che tira meglio lui. Cecco dice tante cose.
-NPC_24_00                 | DIALOGO | Ho ritratto chi passava stanotte. Uno aveva l'abito da canonico.
-NPC_24_01                 | DIALOGO | Quest'acqua sa di veratro, l'elleboro bianco. Agnese lo sa curare.
-NPC_24_02                 | DIALOGO | Fermi un momento. Così. Vi ritraggo, che domani chissà.
-NPC_25_00                 | DIALOGO | La Rosa la donò Perugia, in un anno di pace. L'abate se lo ricorda.
-NPC_25_01                 | DIALOGO | I soldati di Gualdo cantano che il soldo non arriva. In tre dialetti.
-NPC_25_02                 | DIALOGO | Ho tradotto molte lettere oggi. Di quali, monsignore, non chiedetemelo.
-NPC_26_00                 | DIALOGO | Ho insegnato una parola nuova: «alba». La scrivono tutti, storta ma la scrivono.
-NPC_26_01                 | DIALOGO | I bambini sono nel chiostro. Imparano le lettere, così non sentono i tamburi.
-NPC_26_02                 | DIALOGO | Giambono dice che tira meglio di Cecco. Io dico che parlano meglio di come tirano.
-NPC_27_00                 | DIALOGO | Tutti al loro posto, stanotte. Anche quelli che avevano la febbre. Contati.
-NPC_27_01                 | DIALOGO | Un pellegrino si era messo nei turni di guardia. Mai visto alla torre. Strano.
-NPC_27_02                 | DIALOGO | Febo al tamburo, Giambono sulle mura, gli altri a turno. Il ruolo è fatto.
-NPC_28_00                 | DIALOGO | La popolana mi ha portato mezza crescia per gli altri. Viene da voi?
-NPC_28_01                 | DIALOGO | Gabrione ha ritratto anche me, stanotte. Dice che ho la faccia dell'alba.
-NPC_28_02                 | DIALOGO | Il pane dei poveri basta per oggi. Domani lo dividiamo per due.
-NPC_28_03                 | DIALOGO | Tano dice che i matti veri stanno fuori le mura. Qui ci sono solo i miei.
-NPC_29_00                 | DIALOGO | All'alba riapro. Il primo bicchiere lo offro io, chiunque vinca la piazza.
-NPC_29_01                 | DIALOGO | Renzo cercava una carta e non la trovava. Renzo non perde mai niente.
-NPC_29_02                 | DIALOGO | Giordano stamattina guardava la vasca come si guarda un malato.
-NPC_29_03                 | DIALOGO | Giambono dice che certe pietre non reggono. Chiedetegli quali.
-NPC_29_04                 | DIALOGO | Taverna chiusa, voci aperte. Dicono che al Bottaccione l'acqua parla strano.
-NPC_29_05                 | DIALOGO | Monsignore! Il solito? Ah no, oggi niente vino. Allora il solito di domani.
-NPC_30_00                 | DIALOGO | Ho salvato il tavoliere. Le pedine no: le ha mangiate un mulo.
-NPC_30_01                 | DIALOGO | La bottega l'hanno rovesciata. Il tavoliere l'avevo sotto il mantello.
-NPC_30_02                 | DIALOGO | Niente pane, niente vino. Una partita a filetto, almeno?
-NPC_30_03                 | DIALOGO | Undici contro uno? In tre mosse la vinco, se le pedine stanno ferme.
-NPC_31_00                 | DIALOGO | La bottega l'hanno rovesciata. Le serrature le ho salvate: senza, la porta non regge.
-NPC_31_01                 | DIALOGO | Ho unto i cardini e pulito la chiarina. All'alba, se serve, suono io il segnale.
-NPC_31_02                 | DIALOGO | La porta si apre e si richiude in un fiato. L'argano l'ho fatto io.
-NPC_31_03                 | DIALOGO | Se tirate questa leva, la porta scende. Se non la tirate, no. Facile.
-NPC_32_00                 | DIALOGO | Stanotte eravamo nella pieve, con Renzo e le carte. Nicoluccio ha dormito tutta la notte.
-NPC_32_01                 | DIALOGO | Nicoluccio dorme sulle pedine di Ciotto. Le ha contate tutte prima di chiudere gli occhi.
-NPC_32_02                 | DIALOGO | Sei giorni di grano, per tutti. Li ho contati tre volte: bastano, se nessuno ruba.
-NPC_32_03                 | DIALOGO | Sette giorni di grano, dentro. Per noi del borgo, quello che c'è nella madia.
-NPC_32_04                 | DIALOGO | Ho rifatto il conto tre volte. Dentro: sei giorni di grano. Fuori: sette, e il borgo.
-NPC_32_05                 | DIALOGO | Settanta bocche nel borgo. Con il grano dei consoli, un giorno in meno per tutti.
-NPC_33_00                 | DIALOGO | Ho visto tre luci sul monte. Le ho contate: sono tre.
-NPC_33_01                 | DIALOGO | Ciotto mi ha insegnato il filetto. Gli ho vinto tre volte. Quasi.
-NPC_33_02                 | DIALOGO | Mamma dice che undici è più di dieci. Io lo sapevo già.
-NPC_34_00                 | DIALOGO | Le carte le ho salvate tutte. Una sola manca, e lo sapete già quale.
-NPC_34_01                 | DIALOGO | Manca il disegno dell'acquedotto. L'aveva chiesto il capitolo, e non torna.
-NPC_34_02                 | DIALOGO | Ho visto il sigillo dei consoli su una lettera in uscita. Non era per il papa.
-NPC_34_03                 | DIALOGO | Guarda: un gioco inciso dai romani. Mille anni e ancora si gioca.
-NPC_35_00                 | DIALOGO | Stanotte un canonico ha preso la strada di San Girolamo. Verso il monte, da solo.
-NPC_35_01                 | DIALOGO | Botteghe chiuse anche nel borgo. Renzo, quel rotolo lo leggi domani.
-NPC_35_02                 | DIALOGO | Bando dei consoli: chi ha un carro lo porta a Porta Romana. Subito.
-NPC_36_00                 | DIALOGO | Il fuoco ha preso la calcara. La calce no: quella non brucia, è già bruciata.
-NPC_36_01                 | DIALOGO | Il vescovo nella calce, una volta. E ha perdonato. Io non ci riuscirei.
-NPC_36_02                 | DIALOGO | Mia nonna diceva che il fuoco del borgo fu un male che salvò. Non so cosa vuol dire.
-NPC_36_03                 | DIALOGO | Datemi un'ora e questa trave sta sulle mura. Due, se ci metto la calce.
-NPC_37_00                 | DIALOGO | Dormono tutti dentro. Io resto fuori: la mia porta è questa.
-NPC_37_01                 | DIALOGO | Hanno bruciato tre case. Ne abbiamo salvate dieci. Ho contato.
-NPC_37_02                 | DIALOGO | Porta Romana è mia finché c'è luce. Poi è di Dio, e un po' anche mia.
-NPC_37_03                 | DIALOGO | Le mura qui sono basse. Il borgo è ancora più basso, monsignore.
-NPC_38_00                 | DIALOGO | Nell'angolo del foglio ho dipinto il monte con tre lumi. Piccoli, ma chi guarda li vede.
-NPC_38_01                 | DIALOGO | Queste lenti le ha molate Michelino da due berilli. Ci vedo fino al pelo del pennello.
-NPC_38_02                 | DIALOGO | Disegno ogni chiesa, pietra per pietra. Se bruciano, qualcuno saprà com'erano.
-NPC_39_00                 | DIALOGO | Un giorno farò un uomo di legno che cammina da solo. Stanotte mi basta che giri la ruota.
-NPC_39_01                 | DIALOGO | Sulla mia ruota ho inciso tre triangoli d'oro. Saggezza, forza e coraggio, diceva la nonna.
-NPC_39_02                 | DIALOGO | Ogni dente di questa ruota l'ho disegnato io. Ciotto dice che conto male: lui conta i denari.
+NPC_17_00                 | DIALOGO | Gualdo e Nocera vogliono solo er pedaggio. Gli fate lo sconto e tornano a casa.
+NPC_17_01                 | DIALOGO | Da fuori, Gubbio è quella che s'allarga. Da dentro, ve lo giuro, è più carina.
+NPC_17_02                 | DIALOGO | A Roma 'sto grifo lo famo arrosto. Co' le patate no, che non ci stanno.
+NPC_18_00                 | DIALOGO | Stanotte ho ritratto le ragazze di guardia. Tutte più belle del Grifo, s'intende.
+NPC_18_01                 | DIALOGO | A Bergamo cavo denti da dieci anni. Qui li cavo gratis, finché dura l'assedio.
+NPC_18_02                 | DIALOGO | Torno da Bergamo per mia madre e trovo undici eserciti. Gubbio sa accogliere.
+NPC_19_00                 | DIALOGO | È tornata su. Tre spanne. Non so chi siate, ma vi offro da bere.
+NPC_19_01                 | DIALOGO | Stanotte la vasca è calata di due spanne. Il condotto ha una ferita.
+NPC_19_02                 | DIALOGO | Quest'acqua viene dal Bottaccione, tre miglia di pietra. Dolce come il latte.
+NPC_20_00                 | DIALOGO | All'alba, se il Campanone chiama, San Pietro risponde. Parola.
+NPC_20_01                 | DIALOGO | Campane mute per tre giorni. Le dita mi tremano da sole.
+NPC_20_02                 | DIALOGO | Senti i tamburi? Tre colpi e una pausa: sono di Foligno.
+NPC_21_00                 | DIALOGO | Il frate dice che il concilio vieta la balestra. Tiro ai perugini, pregano male.
+NPC_21_01                 | DIALOGO | La pietra nera della gola si sbriciola come pane secco. Lì scava chiunque.
+NPC_21_02                 | DIALOGO | Cecco dice che tira meglio lui. Cecco dice tante cose.
+NPC_22_00                 | DIALOGO | La Rosa la donò Perugia, in un anno di pace. L'abate se lo ricorda.
+NPC_22_01                 | DIALOGO | I soldati di Gualdo cantano che il soldo non arriva. In tre dialetti.
+NPC_22_02                 | DIALOGO | Ho tradotto molte lettere oggi. Di quali, monsignore, non chiedetemelo.
+NPC_23_00                 | DIALOGO | Ho insegnato una parola nuova: «alba». La scrivono tutti, storta ma la scrivono.
+NPC_23_01                 | DIALOGO | I bambini sono nel chiostro. Imparano le lettere, così non sentono i tamburi.
+NPC_23_02                 | DIALOGO | Giambono dice che tira meglio di Cecco. Io dico che parlano meglio di come tirano.
+NPC_24_00                 | DIALOGO | Tutti al loro posto, stanotte. Anche quelli che avevano la febbre. Contati.
+NPC_24_01                 | DIALOGO | Un pellegrino si era messo nei turni di guardia. Mai visto alla torre. Strano.
+NPC_24_02                 | DIALOGO | Febo al tamburo, Giambono sulle mura, gli altri a turno. Il ruolo è fatto.
+NPC_25_00                 | DIALOGO | Le carte le ho salvate tutte. Una sola manca, e lo sapete già quale.
+NPC_25_01                 | DIALOGO | Manca il disegno dell'acquedotto. L'aveva chiesto il capitolo, e non torna.
+NPC_25_02                 | DIALOGO | Ho visto il sigillo dei consoli su una lettera in uscita. Non era per il papa.
+NPC_25_03                 | DIALOGO | Guarda: un gioco inciso dai romani. Mille anni e ancora si gioca.
+NPC_26_00                 | DIALOGO | Stanotte un canonico ha preso la strada di San Girolamo. Verso il monte, da solo.
+NPC_26_01                 | DIALOGO | Botteghe chiuse anche nel borgo. Renzo, quel rotolo lo leggi domani.
+NPC_26_02                 | DIALOGO | Bando dei consoli: chi ha un carro lo porta a Porta Romana. Subito.
+NPC_27_00                 | DIALOGO | Il fuoco ha preso la calcara. La calce no: quella non brucia, è già bruciata.
+NPC_27_01                 | DIALOGO | Il vescovo nella calce, una volta. E ha perdonato. Io non ci riuscirei.
+NPC_27_02                 | DIALOGO | Mia nonna diceva che il fuoco del borgo fu un male che salvò. Non so cosa vuol dire.
+NPC_27_03                 | DIALOGO | Datemi un'ora e questa trave sta sulle mura. Due, se ci metto la calce.
+NPC_28_00                 | DIALOGO | Dormono tutti dentro. Io resto fuori: la mia porta è questa.
+NPC_28_01                 | DIALOGO | Hanno bruciato tre case. Ne abbiamo salvate dieci. Ho contato.
+NPC_28_02                 | DIALOGO | Porta Romana è mia finché c'è luce. Poi è di Dio, e un po' anche mia.
+NPC_28_03                 | DIALOGO | Le mura qui sono basse. Il borgo è ancora più basso, monsignore.
+NPC_29_00                 | DIALOGO | Nell'angolo del foglio ho dipinto il monte con tre lumi. Piccoli, ma chi guarda li vede.
+NPC_29_01                 | DIALOGO | Queste lenti le ha molate Michelino da due berilli. Ci vedo fino al pelo del pennello.
+NPC_29_02                 | DIALOGO | Disegno ogni chiesa, pietra per pietra. Se bruciano, qualcuno saprà com'erano.
+NPC_30_00                 | DIALOGO | Un giorno farò un uomo di legno che cammina da solo. Stanotte mi basta che giri la ruota.
+NPC_30_01                 | DIALOGO | Sulla mia ruota ho inciso tre triangoli d'oro. Saggezza, forza e coraggio, diceva la nonna.
+NPC_30_02                 | DIALOGO | Ogni dente di questa ruota l'ho disegnato io. Ciotto dice che conto male: lui conta i denari.
+NPC_31_00                 | DIALOGO | All'alba riapro. Il primo bicchiere lo offro io, chiunque vinca la piazza.
+NPC_31_01                 | DIALOGO | Renzo cercava una carta e non la trovava. Renzo non perde mai niente.
+NPC_31_02                 | DIALOGO | Giordano stamattina guardava la vasca come si guarda un malato.
+NPC_31_03                 | DIALOGO | Giambono dice che certe pietre non reggono. Chiedetegli quali.
+NPC_31_04                 | DIALOGO | Taverna chiusa, voci aperte. Dicono che al Bottaccione l'acqua parla strano.
+NPC_31_05                 | DIALOGO | Monsignore! Il solito? Ah no, oggi niente vino. Allora il solito di domani.
+NPC_32_00                 | DIALOGO | Ho ritratto chi passava stanotte. Uno aveva l'abito da canonico.
+NPC_32_01                 | DIALOGO | Quest'acqua sa di veratro, l'elleboro bianco. Agnese lo sa curare.
+NPC_32_02                 | DIALOGO | Fermi un momento. Così. Vi ritraggo, che domani chissà.
+NPC_33_00                 | DIALOGO | La popolana mi ha portato mezza crescia per gli altri. Viene da voi?
+NPC_33_01                 | DIALOGO | Gabrione ha ritratto anche me, stanotte. Dice che ho la faccia dell'alba.
+NPC_33_02                 | DIALOGO | Il pane dei poveri basta per oggi. Domani lo dividiamo per due.
+NPC_33_03                 | DIALOGO | Tano dice che i matti veri stanno fuori le mura. Qui ci sono solo i miei.
+NPC_34_00                 | DIALOGO | Ho salvato il tavoliere. Le pedine no: le ha mangiate un mulo.
+NPC_34_01                 | DIALOGO | La bottega l'hanno rovesciata. Il tavoliere l'avevo sotto il mantello.
+NPC_34_02                 | DIALOGO | Niente pane, niente vino. Una partita a filetto, almeno?
+NPC_34_03                 | DIALOGO | Undici contro uno? In tre mosse la vinco, se le pedine stanno ferme.
+NPC_35_00                 | DIALOGO | La bottega l'hanno rovesciata. Le serrature le ho salvate: senza, la porta non regge.
+NPC_35_01                 | DIALOGO | Ho unto i cardini e pulito la chiarina. All'alba, se serve, suono io il segnale.
+NPC_35_02                 | DIALOGO | La porta si apre e si richiude in un fiato. L'argano l'ho fatto io.
+NPC_35_03                 | DIALOGO | Se tirate questa leva, la porta scende. Se non la tirate, no. Facile.
+NPC_36_00                 | DIALOGO | Stanotte eravamo nella pieve, con Renzo e le carte. Nicoluccio ha dormito tutta la notte.
+NPC_36_01                 | DIALOGO | Nicoluccio dorme sulle pedine di Ciotto. Le ha contate tutte prima di chiudere gli occhi.
+NPC_36_02                 | DIALOGO | Sei giorni di grano, per tutti. Li ho contati tre volte: bastano, se nessuno ruba.
+NPC_36_03                 | DIALOGO | Sette giorni di grano, dentro. Per noi del borgo, quello che c'è nella madia.
+NPC_36_04                 | DIALOGO | Ho rifatto il conto tre volte. Dentro: sei giorni di grano. Fuori: sette, e il borgo.
+NPC_36_05                 | DIALOGO | Settanta bocche nel borgo. Con il grano dei consoli, un giorno in meno per tutti.
+NPC_37_00                 | DIALOGO | Ho visto tre luci sul monte. Le ho contate: sono tre.
+NPC_37_01                 | DIALOGO | Ciotto mi ha insegnato il filetto. Gli ho vinto tre volte. Quasi.
+NPC_37_02                 | DIALOGO | Mamma dice che undici è più di dieci. Io lo sapevo già.
+NPC_38_00                 | DIALOGO | Finito l'assedio, si rifà la corsa dei carri giù per la piana. Il mio è già unto.
+NPC_38_01                 | DIALOGO | Da vent'anni cerchio le ruote col ferro. Nessun ferro è stregato: col calore si apre.
+NPC_38_02                 | DIALOGO | Undici eserciti e nemmeno un carro decente. Il mio arriva a Perugia prima di loro.
+NPC_39_00                 | DIALOGO | Undici eserciti mangiano la piana in due settimane. Monaldo ha fretta.
+NPC_39_01                 | DIALOGO | Nel 1140 cacciammo i Valmarcola. Chi è cacciato prima o poi torna.
+NPC_39_02                 | DIALOGO | Cento assedi ho studiato. Novanta finiscono con la fame, gli altri peggio.
 NPC_40_00                 | DIALOGO | Stanotte non ho niente da gridare. È la prima volta in vent'anni.
 NPC_40_01                 | DIALOGO | Udite... ma piano. Il vescovo ha chiesto silenzio, e io grido sottovoce.
 NPC_40_02                 | DIALOGO | Udite! Per ordine dei consoli, chi ha un'arma la porti in piazza entro il vespro!
