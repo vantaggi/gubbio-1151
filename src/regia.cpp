@@ -20,6 +20,7 @@
 #include "bn_sprite_palettes.h"
 #include "bn_window.h"
 
+#include "audio.h"
 #include "game_state.h"
 #include "regia_logica.h"
 #include "tabella.h"
@@ -146,6 +147,8 @@ bool recita_cutscene(int cutscene, const bn::sprite_palette_ptr& palette_testo, 
     const Cutscene& c = GUBBIO_VOCE(CUTSCENE_DATI, cutscene);
     BN_LOG("Cutscene ", c.codice);
     bool saltata = false;
+    // il brano della cutscene (include/colonna_sonora.h) e l'effetto del primo quadro (il Campanone in C4)
+    audio::cutscene(cutscene);
 
     {
         bn::rect_window quadro = bn::rect_window::internal();
@@ -157,6 +160,7 @@ bool recita_cutscene(int cutscene, const bn::sprite_palette_ptr& palette_testo, 
         int battuta = -2;
         int frame = 0;
         bool avanti = true;
+        bool lampo_prima = false;
 
         while(avanti)
         {
@@ -187,6 +191,14 @@ bool recita_cutscene(int cutscene, const bn::sprite_palette_ptr& palette_testo, 
                 bn::blending::set_transparency_alpha(trasparenza(l.inquadratura().frame, frame));
             }
             bn::fixed buio = bn::fixed(l.buio()) / FRAME_DISSOLVENZA;
+
+            // il colpo suona quando il lampo parte
+            if(l.lampo() && ! lampo_prima)
+            {
+                audio::effetto(colonna::Effetto::COLPO);
+            }
+
+            lampo_prima = l.lampo() != 0;
 
             if(l.lampo())
             {
@@ -221,6 +233,7 @@ bool recita_cutscene(int cutscene, const bn::sprite_palette_ptr& palette_testo, 
         bn::window::outside().set_show_all();
     }
 
+    audio::fine_cutscene(cutscene);
     attendi(1);
     segna_vista(g_game_state, cutscene);
     BN_LOG("Cutscene ", c.codice, saltata ? " saltata" : " finita");

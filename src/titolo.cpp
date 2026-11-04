@@ -11,6 +11,7 @@
 #include "bn_sram.h"
 #include "bn_vector.h"
 
+#include "audio.h"
 #include "esplorazione.h"
 #include "game_state.h"
 #include "save_data.h"
@@ -78,6 +79,9 @@ int titolo(const bn::sprite_palette_ptr& palette_testo, bool istantanea)
     constexpr TestoId VOCI[3] = { TestoId::TITOLO_NUOVA, TestoId::TITOLO_SLOT_1, TestoId::TITOLO_SLOT_2 };
     StatoSlot stati[2] = { salvataggio::stato(0), salvataggio::stato(1) };
 
+    // il titolo ha il suo brano: il Campanone apre, poi il Tema di Gubbio
+    audio::brano(colonna::BRANO_TITOLO);
+
     // si parte da "Continua" se c'e' un salvataggio valido, se no da "Nuova partita"
     int scelta = stati[0] == StatoSlot::VALIDO ? 1 : (stati[1] == StatoSlot::VALIDO ? 2 : 0);
     aiuto.mostra(TestoId::TITOLO_AIUTO);
@@ -115,19 +119,25 @@ int titolo(const bn::sprite_palette_ptr& palette_testo, bool istantanea)
         {
             if(scelta == 0)
             {
+                audio::suona(colonna::Suono::CONFERMA);
                 attendi(1);
                 return -1;
             }
 
             if(stati[scelta - 1] == StatoSlot::VALIDO && salvataggio::carica(scelta - 1, g_game_state))
             {
+                audio::suona(colonna::Suono::CONFERMA);
                 attendi(1);
                 return scelta - 1;
             }
+
+            // uno slot vuoto o rovinato non si apre
+            audio::suona(colonna::Suono::ANNULLA);
         }
         else
         {
             scelta = (scelta + (bn::keypad::down_pressed() ? 1 : 2)) % 3;
+            audio::suona(colonna::Suono::CURSORE);
         }
 
         attendi(1);
@@ -179,6 +189,7 @@ void pausa(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_tes
 
         if(bn::keypad::start_pressed() || (bn::keypad::a_pressed() && scelta == 0))
         {
+            audio::suona(bn::keypad::start_pressed() ? colonna::Suono::ANNULLA : colonna::Suono::CONFERMA);
             break;
         }
 
@@ -186,6 +197,7 @@ void pausa(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_tes
         {
             annota_posizione(esplorazione);
             bool fatto = salvataggio::salva(scelta - 1, g_game_state);
+            audio::suona(fatto ? colonna::Suono::SALVA : colonna::Suono::ANNULLA);
             nota.mostra(fatto ? TestoId::PAUSA_SALVATO : TestoId::PAUSA_NON_SALVATO);
             nota.rivela_tutto();
             attendi(FRAME_MESSAGGIO);
@@ -194,6 +206,7 @@ void pausa(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_tes
         else
         {
             scelta = (scelta + (bn::keypad::down_pressed() ? 1 : 2)) % 3;
+            audio::suona(colonna::Suono::CURSORE);
         }
 
         attendi(1);
