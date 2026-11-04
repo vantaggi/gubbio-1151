@@ -117,8 +117,8 @@ Nessun NPC d'ambiente nella fase ULTIMATUM: al Teatro Romano c'è la scena A1-04
 **Venditore delle Logge dei Tiratori**. Se F5 prevede un negozio, è qui; altrimenti diventa un dono una tantum.
 
 - NOTTE: VENDITORE: Non dovrei vendere, col digiuno. Ma voi non digiunate, vero? Avvicinatevi.
-- DIGIUNO (se BORGO_DENTRO): VENDITORE: Il borgo mangia anche lui. Una crescia in meno per voi, mi spiace.
-- DIGIUNO: VENDITORE: Crescia, biscotti all'anice, un fiasco di rosso. Per chi combatte, il vescovo ha detto.
+- DIGIUNO (se BORGO_DENTRO): VENDITORE: Il borgo mangia anche lui. Una fetta di Crescia in meno per voi, mi spiace.
+- DIGIUNO: VENDITORE: Crescia, Biscotti all'anice, e poco altro. Per chi combatte, il vescovo ha detto.
 - ULTIMATUM: VENDITORE: Comprate oggi, che domani non so se ci sarà ancora una loggia.
 
 **Fra' Matteo il Pescatore**. Dona un Baccalà alla Ceraiola una sola volta: la battuta del DIGIUNO imposta `DONO_MATTEO`. La prima volta parla la variante «se non `DONO_MATTEO`», che dà il baccalà (il dono dell'oggetto è da collegare nel codice degli NPC: oggi una battuta d'ambiente non dà oggetti); dopo, la riga senza condizione.
