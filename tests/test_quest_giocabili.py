@@ -1,7 +1,7 @@
 """Le quest giocabili (SV2c): Q-SM01, Q-SA01 e Q-SP01 si prendono, si compiono sulla mappa e si consegnano.
 
 - le bandiere nuove (quest presa, un bit per pezzo dell'obiettivo) stanno nell'intervallo quest 64-127 di
-  GameState::quest: nessun campo nuovo, il salvataggio resta v3; i pezzi di una quest sono consecutivi;
+  GameState::quest: nessun campo nuovo per le quest (il salvataggio e' v4 per MOB); i pezzi di una quest sono consecutivi;
 - ogni oggetto da raccogliere sta nell'area che dice il copione, su una cella dove il gioco cammina
   (MIASMA compreso, che nel gioco blocca), raggiungibile dallo spawn 0; le radici della gola si raggiungono
   dalla citta' anche dopo B-05, da Porta Metauro;
@@ -115,7 +115,7 @@ class Bandiere(unittest.TestCase):
         for b in NUOVE:
             self.assertIn(b, GS.BANDIERE_QUEST)
             self.assertIn(f"inline constexpr uint8_t {b} = {GS.indice(b)};", STORIA_H)
-        self.assertIn("inline constexpr uint16_t VERSIONE = 3;", SAVE_H)
+        self.assertIn("inline constexpr uint16_t VERSIONE = 4;", SAVE_H)     # v4 da MOB: le quest stanno ancora in quest[8]
         self.assertEqual(pezzi_non_consecutivi(GS.QUEST), [])
 
     def test_negativa_troppe_bandiere(self):
