@@ -6,19 +6,40 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 import bilanciamento as B  # noqa: E402
 
-VECCHIA_ESPERIENZA = [15, 25, 200, 12, 30]      # prima di F8: a Corrado si arrivava al livello 3
+VECCHIA_ESPERIENZA = [15, 25, 200, 12, 30, 0, 0]  # prima di F8 (i nemici di F10 non c'erano): a Corrado al livello 3
 
 
 class Bilanciamento(unittest.TestCase):
     def test_livelli_lungo_la_storia(self):
-        self.assertEqual(B.livelli_lungo_la_storia(), {0: 1, 1: 3, 3: 4, 2: 5})
+        self.assertEqual(B.livelli_lungo_la_storia(), {0: 1, 1: 3, 3: 4, 4: 5, 2: 5})
+        # con le tre quest e tutte le facoltative (le guardie delle fornaci, l'infiltrato): 6, mai 7
         self.assertEqual(B.livelli_lungo_la_storia(con_quest=True)[2], 6)
+
+    def test_negativa_facoltative_troppo_generose(self):
+        # se una guardia della fornace desse quanto un Fante (35), con tutto si arriverebbe a Corrado al 7
+        xp = B.leggi_tabella("ESPERIENZA_NEMICO")
+        xp[5] = 35
+        self.assertEqual(B.livelli_lungo_la_storia(xp, con_quest=True)[2], 7)
+        self.assertEqual(B.livelli_lungo_la_storia(xp)[2], 5, "senza quest le facoltative non contano")
+
+    def test_negativa_guerrieri_troppo_generosi(self):
+        # se i Guerrieri di B-03 dessero 80 ciascuno, senza quest si arriverebbe a Corrado al 6
+        xp = B.leggi_tabella("ESPERIENZA_NEMICO")
+        xp[5] = 80
+        self.assertEqual(B.livelli_lungo_la_storia(xp)[2], 6)
+
+    def test_facoltative_al_livello_piu_basso(self):
+        for i, liv in B.LIVELLO_FACOLTATIVI.items():
+            for p in ("forte", "medio"):
+                v, r = B.misura(i, liv, p, semi=100)
+                self.assertGreaterEqual(v, 90, (i, p))
+                self.assertTrue(3 <= r <= 6, (i, p, r))
 
     def test_negativa_vecchia_esperienza(self):
         self.assertEqual(B.livelli_lungo_la_storia(VECCHIA_ESPERIENZA)[2], 3)
 
     def test_scontri_normali(self):
-        for i in (0, 1, 3):
+        for i in (0, 1, 3, 4):
             liv = B.livelli_lungo_la_storia()[i]
             for p in ("forte", "medio"):
                 v, r = B.misura(i, liv, p, semi=100)

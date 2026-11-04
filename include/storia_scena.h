@@ -41,6 +41,8 @@ private:
     // false se la cutscene era gia' vista e non e' ripartita
     bool recita_regia(int regia, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo,
                       bool automatica);
+    void recita_tratto(int da, int a, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo,
+                       bool automatica);
 
     // gli NPC d'ambiente (indice in NPC_AMBIENTE), i datori delle quest (NPC + quest) e l'infiltrato
     // (NPC + QUEST); poi gli oggetti da raccogliere (indice in RACCOLTA)
@@ -48,8 +50,8 @@ private:
     bn::vector<bn::sprite_ptr, PERSONE_MAX> _npc;
     bn::vector<int, PERSONE_MAX> _indici;
     bn::vector<bn::sprite_ptr, storia::RACCOLTE> _raccolte;
-    // la gola (T2): i soldati di B-03 e i forzieri (chiusi o aperti)
-    bn::vector<bn::sprite_ptr, storia::SENTINELLE + storia::FORZIERI> _gola;
+    // la gola (T2): i soldati di B-03 e i forzieri (chiusi o aperti); le guardie delle fornaci (F10)
+    bn::vector<bn::sprite_ptr, storia::SENTINELLE + storia::FORZIERI + storia::GUARDIE_FORNACE> _gola;
     int _area = -1;
     int _respiro = 0;           // i frame di fila di corsa nella nebbia (storia::respira_i_miasmi)
     uint32_t _ultimo_urto = 0;  // il frame dell'ultimo avviso dell'uscita chiusa (uno ogni due secondi)
@@ -57,6 +59,7 @@ private:
     void _prepara_npc(const Esplorazione& esplorazione);
     void _parla_col_datore(int quest, const bn::sprite_palette_ptr& palette_testo);
     void _affronta_l_infiltrato(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
+    void _affronta_la_guardia(int guardia, Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
 };
 
 // GUBBIO_AVVIO=8: la storia intera senza camminare, dalla prima battuta ai titoli di coda; una riga di

@@ -60,7 +60,8 @@ def scritte_non_lette(scene, lette_dal_gioco):
 
 def codice_che_legge():
     """Il codice che legge le bandiere: la logica della storia, la scena, e le tabelle delle quest di storia.h
-    (QUEST_V1; e, per le quest giocabili, QUEST_GIOCO, RACCOLTA e INDIZIO; per la gola, FORZIERE)."""
+    (QUEST_V1; e, per le quest giocabili, QUEST_GIOCO, RACCOLTA e INDIZIO; per la gola, FORZIERE; per F10,
+    GUARDIA_FORNACE e BATTAGLIA_A_META)."""
     codice = "".join(open(os.path.join(RADICE, p), encoding="utf-8").read()
                      for p in ("include/storia_logica.h", "src/storia_scena.cpp"))
     storia_h = open(GS.USCITA_H, encoding="utf-8").read()
@@ -68,7 +69,8 @@ def codice_che_legge():
                r"inline constexpr QuestGioco QUEST_GIOCO\[QUEST\] = \{.*?\n\};",
                r"inline constexpr Raccolta RACCOLTA\[RACCOLTE\] = \{.*?\n\};",
                r"inline constexpr Indizio INDIZIO\[INDIZI\] = \{.*?\n\};",
-               r"inline constexpr Forziere FORZIERE\[FORZIERI\] = \{.*?\n\};"]
+               r"inline constexpr Forziere FORZIERE\[FORZIERI\] = \{.*?\n\};",
+               r"inline constexpr GuardiaFornace GUARDIA_FORNACE\[GUARDIE_FORNACE\] = \{.*?\n\};"]
     return codice + "".join(re.search(r, storia_h, re.S).group(0) for r in tabelle)
 
 

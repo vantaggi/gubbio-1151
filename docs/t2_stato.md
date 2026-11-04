@@ -29,7 +29,7 @@ Le istantanee dei fondali usano la palette cupa per le stanze della gola, come l
 Le regole e le bandiere sono in `docs/bandiere_da_fare.md` (sezione «La gola del Bottaccione»). In breve: la cella
 `MIASMA` (e il `PONTE`) ora è calpestabile anche nel gioco (le celle calpestabili stanno tutte prima di
 `PRIMA_CELLA_SOLIDA`, `genera_mondo.controlla_ordine_celle`); B-02 parte sulla prima nebbia col lampo verde, B-03
-sotto l'arco; i miasmi feriscono chi corre (poco, mai a morte) e le ferite pesano sulla battaglia dopo; i soldati di
+sotto l'arco (da F10 con la battaglia breve contro i due Guerrieri della Roccia a metà scena, ramo `f10-b03`); i miasmi feriscono chi corre (poco, mai a morte) e le ferite pesano sulla battaglia dopo; i soldati di
 B-03 ci sono fino al piano di Corrado; nel duello l'uscita del Condotto è chiusa; due forzieri presi una volta.
 
 Prove: `src/autotest_gola.cpp`, `tests/test_gola.py`, e le prove di sempre (`test_mondo`, `test_quest_giocabili`,

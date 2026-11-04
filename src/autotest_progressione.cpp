@@ -92,9 +92,13 @@ namespace
     // Il passo dell'atto: vinti i tre scontri della mappa, i Santi sono al livello 4.
     static_assert(esperienza_incontro(0) == 115 && esperienza_incontro(1) == 81 && esperienza_incontro(2) == 200 &&
                   esperienza_incontro(3) == 120, "l'esperienza degli scontri (F8, docs/bilanciamento.md)");
+    // F10: i Guerrieri della Roccia di B-03, la guardia di una fornace, l'infiltrato con le sue due spie.
+    static_assert(esperienza_incontro(battaglia::INCONTRO_GUERRIERI) == 40 && esperienza_incontro(battaglia::INCONTRO_FORNACE) == 20 &&
+                  esperienza_incontro(battaglia::INCONTRO_INFILTRATO) == 84, "l'esperienza degli scontri di F10 (docs/bilanciamento.md)");
 
-    // Nell'ordine della storia (Pattuglia, Imboscata, Spettri) i Santi arrivano a Corrado al livello 5.
-    consteval int livello_prima_di_corrado()
+    // Nell'ordine della storia (Pattuglia, Imboscata, Spettri, i Guerrieri di B-03) i Santi arrivano a Corrado al
+    // livello 5, con o senza i Guerrieri ('b03'): i Guerrieri in piu' non portano al 6 (316 + 40 = 356, il 6 e' a 470).
+    consteval int livello_prima_di_corrado(bool b03 = true)
     {
         GameState p = {};
         partita_nuova(p);
@@ -102,18 +106,39 @@ namespace
         assegna_esperienza(p, 0, saliti);
         assegna_esperienza(p, 1, saliti);
         assegna_esperienza(p, 3, saliti);
+
+        if(b03)
+        {
+            assegna_esperienza(p, battaglia::INCONTRO_GUERRIERI, saliti);
+        }
+
         return p.livello[0];
     }
 
-    static_assert(livello_prima_di_corrado() == 5, "a Corrado si arriva al livello 5 senza quest");
+    static_assert(livello_prima_di_corrado() == 5 && livello_prima_di_corrado(false) == 5,
+                  "a Corrado si arriva al livello 5 senza quest");
 
-    consteval int livello_dopo_i_tre_scontri()
+    // Negativa: se i Guerrieri dessero quanto la Pattuglia e l'Imboscata insieme (196), a Corrado si arriverebbe al 6.
+    consteval int livello_con_guerrieri_generosi()
     {
         GameState p = {};
         partita_nuova(p);
         bool saliti[EROI] = {};
+        assegna_esperienza_fissa(p, 316 + esperienza_incontro(0) + esperienza_incontro(1), saliti);
+        return p.livello[0];
+    }
 
-        for(int i = 0; i < battaglia::INCONTRI; ++i)
+    static_assert(livello_con_guerrieri_generosi() == 6, "negativa: il margine della battaglia di B-03 non e' quello atteso");
+
+    // Gli scontri della storia, tutti (Corrado compreso, niente facoltativi): livello 6.
+    consteval int livello_dopo_gli_scontri_della_storia()
+    {
+        GameState p = {};
+        partita_nuova(p);
+        bool saliti[EROI] = {};
+        const int storia[5] = { 0, 1, 3, battaglia::INCONTRO_GUERRIERI, 2 };
+
+        for(int i : storia)
         {
             assegna_esperienza(p, i, saliti);
         }
@@ -121,8 +146,7 @@ namespace
         return p.livello[0];
     }
 
-    // dopo i quattro scontri, Corrado compreso: livello 6
-    static_assert(livello_dopo_i_tre_scontri() == 6, "dopo i quattro scontri i Santi devono essere al livello 6");
+    static_assert(livello_dopo_gli_scontri_della_storia() == 6, "dopo gli scontri della storia i Santi devono essere al livello 6");
 
     // I livelli contano: col pilota debole (solo l'Attacco), la Pattuglia Perugina batte i Santi al
     // livello 1 ma non all'8, almeno per un seme. La negativa e' il livello 1 stesso. (Con Corrado

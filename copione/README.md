@@ -94,14 +94,18 @@ Meccanica nuova: durante il DIGIUNO Ubaldo non può usare il cibo fino al rientr
 
 ## Battaglie richieste
 
-| Battaglia | Dove | In `enemy_data.h` oggi |
+Nel gioco le battaglie sono in `include/battaglia_dati.h` (`INCONTRO`), con il gemello Python in `tools/battaglia_mirror.py`.
+
+| Battaglia | Dove | Nel gioco |
 | :-- | :-- | :-- |
-| Pattuglia perugina (tutorial) | Teatro Romano, A1-04 | Sì, `PATTUGLIA_PERUGINA` |
-| Falchi corrotti, spie umbre | Stradoni, nemici visibili | No: da aggiungere |
-| Imboscata | Stradoni, A1-07 | No: spie umbre |
-| Spettri del Dubbio (boss tutorial) | Basilica, A1-08 | No: da aggiungere, deboli alla Fede |
-| Guerrieri della Roccia di Spoleto | Bottaccione, nemici visibili | No: da aggiungere (Sez. 8D) |
-| Corrado di Spoleto | Il Condotto, B-04 | Sì, `DUELLO_CORRADO` |
+| Pattuglia perugina (tutorial) | Teatro Romano, A1-04 | Sì, la Pattuglia Perugina (incontro 0) |
+| Falchi corrotti, spie umbre | Stradoni, nemici visibili | Le spie sì (l'Imboscata); i falchi no |
+| Imboscata | Stradoni, A1-07 | Sì, tre spie umbre (incontro 1) |
+| Spettri del Dubbio (boss tutorial) | Basilica, A1-08 | Sì, due Spettri, deboli alla Fede (incontro 3) |
+| Guerrieri della Roccia di Spoleto | Bottaccione, B-03 (battaglia breve a metà scena) | Sì, due Guerrieri della Roccia, deboli alla Fiamma (incontro 4) |
+| Guerrieri della Roccia alle fornaci | Teatro Romano, Q-SM01, nemici visibili | Sì, uno per fornace (incontro 5) |
+| L'infiltrato | Logge dei Tiratori, Q-SP01 | Sì, l'infiltrato e due spie umbre (incontro 6) |
+| Corrado di Spoleto | Il Condotto, B-04 | Sì, il Duello con Corrado (incontro 2) |
 
 ## Decisioni di trama (prese il 1 novembre 2026)
 

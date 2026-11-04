@@ -57,14 +57,27 @@ class Grafica(unittest.TestCase):
         with self.assertRaises(Exception):
             fuori_guida([("magenta", 0)])
 
-    def test_quattro_sfondi_entro_i_tile(self):
+    def test_sfondi_entro_i_tile(self):
+        """Uno sfondo per incontro (7); la guardia della fornace e l'infiltrato riusano quelli della Pattuglia e
+        del Duello (F10, SFONDO_DI): cinque sfondi diversi, la gola di B-03 compresa."""
         tile, mappe = GB.tile_e_mappe()
         self.assertLessEqual(len(tile), 512)
-        self.assertEqual(len(mappe), 4)
-        self.assertEqual(len({tuple(m) for m in mappe}), 4, "uno sfondo diverso per incontro")
+        self.assertEqual(len(mappe), 7)
+        self.assertEqual(len({tuple(m) for m in mappe}), 5, "uno sfondo diverso per incontro, tranne i riusati")
+        self.assertEqual(mappe[5], mappe[0])
+        self.assertEqual(mappe[6], mappe[2])
+
+    def test_negativa_sfondo_riusato_diverso(self):
+        riusi = dict(GB.SFONDO_DI)
+        try:
+            GB.SFONDO_DI.clear()
+            _, mappe = GB.tile_e_mappe()
+            self.assertNotEqual(mappe[5], mappe[0], "senza il riuso la fornace non ha le mura della Pattuglia")
+        finally:
+            GB.SFONDO_DI.update(riusi)
 
     def test_pannello_dei_comandi(self):
-        for i in range(4):
+        for i in range(len(GB.INCONTRI)):
             t = GB.sfondo(i)
             scuri = sum(1 for y in range(GB.PANNELLO_Y + 4, 156) for x in range(4, 236) if t.px[y][x] in (0, 15))
             self.assertGreater(scuri, 0.95 * (156 - GB.PANNELLO_Y - 4) * 232)
@@ -122,7 +135,8 @@ class ScontriSullaMappa(unittest.TestCase):
     def test_le_prove_a_tempo_di_compilazione(self):
         autotest = open(os.path.join(RADICE, "src", "autotest_progressione.cpp"), encoding="utf-8").read()
         for prova in ("curva_buona(ESPERIENZA_PER_LIVELLO)", "! curva_buona(CURVA_SBAGLIATA)", "crescita_buona()",
-                      "livello_dopo_i_tre_scontri() == 6", "livello_prima_di_corrado() == 5", "i_livelli_contano()", "posti_dei_nemici()", "contatto()"):
+                      "livello_dopo_gli_scontri_della_storia() == 6", "livello_prima_di_corrado() == 5",
+                      "livello_con_guerrieri_generosi() == 6", "i_livelli_contano()", "posti_dei_nemici()", "contatto()"):
             self.assertIn("static_assert(" + prova, autotest)
 
 

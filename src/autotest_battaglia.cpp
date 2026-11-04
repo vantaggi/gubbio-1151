@@ -31,6 +31,48 @@ namespace
 
     static_assert(verifica_battaglie() > 0, "autotest della battaglia");
 
+    // Ogni incontro, anche quelli di F10 (i Guerrieri della Roccia, la guardia della fornace, l'infiltrato), ha le
+    // sue 100 firme confrontate: 50 semi per due piloti.
+    consteval bool ogni_incontro_confrontato()
+    {
+        for(int incontro = 0; incontro < battaglia::INCONTRI; ++incontro)
+        {
+            int quante = 0;
+
+            for(int i = 0; i < battaglia::ATTESE_CONTEGGIO; ++i)
+            {
+                quante += battaglia::ATTESE[i].incontro == incontro;
+            }
+
+            if(quante != 100)
+            {
+                return false;
+            }
+        }
+
+        return battaglia::ATTESE_CONTEGGIO == 100 * battaglia::INCONTRI;
+    }
+
+    static_assert(ogni_incontro_confrontato(), "un incontro non ha le sue firme del mirror");
+
+    // Negativa: una firma attesa alterata (un nemico di F10) non torna con il C++.
+    consteval bool firma_torna(const battaglia::Attesa& a)
+    {
+        battaglia::Firma f = battaglia::gioca(a.incontro, a.seme, a.pilota_debole);
+        return f.hash == a.hash && f.eventi == a.eventi && f.round == a.round && f.esito == a.esito && f.tipi == a.tipi;
+    }
+
+    consteval battaglia::Attesa alterata(int i)
+    {
+        battaglia::Attesa a = battaglia::ATTESE[i];
+        a.hash ^= 1u;
+        return a;
+    }
+
+    static_assert(battaglia::ATTESE[600].incontro == battaglia::INCONTRO_INFILTRATO && firma_torna(battaglia::ATTESE[600]) &&
+                  ! firma_torna(alterata(600)) && battaglia::ATTESE[400].incontro == battaglia::INCONTRO_GUERRIERI &&
+                  ! firma_torna(alterata(400)), "negativa: una firma alterata torna lo stesso");
+
     // Il duello con Corrado con uno scudo in meno (Q-SM01 o RUFINO_ASCOLTATO): le firme del C++ con
     // scudi_in_meno = 1 sono quelle del mirror con la stessa manopola.
     void scudo_in_meno_diverso_dal_mirror(int indice);

@@ -47,7 +47,10 @@ BANDIERE_QUEST = ["INDIZIO_CARTA", "INDIZIO_ACQUA", "INDIZIO_ROCCIA", "RICCIARDO
          "Q_SM01_PRESA", "Q_SA01_PRESA", "Q_SP01_PRESA", "FERRO_1", "FERRO_2", "FERRO_3",
          "ELLEBORO_1", "ELLEBORO_2", "ELLEBORO_3", "ELLEBORO_4", "ROSA_RIPRESA",
          # T2, la gola: i due forzieri negli slarghi, presi una volta (88-89)
-         "FORZIERE_CRESCIA", "FORZIERE_BISCOTTI"]
+         "FORZIERE_CRESCIA", "FORZIERE_BISCOTTI",
+         # F10, i nemici che mancavano: la battaglia breve di B-03 vinta (90), le tre guardie delle fornaci di
+         # Q-SM01 battute (91-93). Ogni scontro si gioca una volta sola; il salvataggio resta v3
+         "GUERRIERI_VINTI", "GUARDIA_FORNACE_1", "GUARDIA_FORNACE_2", "GUARDIA_FORNACE_3"]
 PRIMA_QUEST = 64
 TUTTE = BANDIERE + [None] * (PRIMA_QUEST - len(BANDIERE)) + BANDIERE_QUEST
 
@@ -83,6 +86,11 @@ LETTE_DAL_GIOCO = {
                           "le battute di B-04 dette una volta",
     "FORZIERE_CRESCIA": "storia::forziere_chiuso(): il forziere dello slargo della striscia nera, preso una volta",
     "FORZIERE_BISCOTTI": "storia::forziere_chiuso(): il forziere dello slargo dell'arco, preso una volta",
+    # F10, i nemici che mancavano (storia_logica.h, GUARDIA_FORNACE di storia.h)
+    "GUERRIERI_VINTI": "storia::guerrieri_da_battere(): la battaglia breve di B-03 si gioca una volta sola",
+    "GUARDIA_FORNACE_1": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
+    "GUARDIA_FORNACE_2": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
+    "GUARDIA_FORNACE_3": "storia::guardia_presente() e storia::raccolta_libera(): la guardia non torna, il blocco si prende",
 }
 
 # Quelle che il gioco non legge ancora: sono in docs/bandiere_da_fare.md, con cosa dovranno fare.
@@ -122,7 +130,13 @@ INSERTI = {"A1-01": {1: "C3U", 2: "C3G", 4: "C2", 8: "C2P"}, "A1-04": {1: "C3A"}
 
 # Le battaglie delle scene (battaglia::INCONTRO). Quelle con un nemico sulla mappa partono toccandolo;
 # gli Spettri del Dubbio di A1-08 compaiono durante il rito: la scena parte entrando nella Basilica.
-BATTAGLIE = {"A1-04": 0, "A1-07": 1, "B-04": 2, "A1-08": 3}
+BATTAGLIE = {"A1-04": 0, "A1-07": 1, "B-04": 2, "A1-08": 3, "B-03": 4}
+# Le battaglie a meta' scena: prima della battuta k (nell'ordine della scena) si combatte, poi la scena va avanti.
+# In B-03 i Guerrieri della Roccia si battono dopo l'ascolto, prima del ragazzo eugubino (la regia del dilemma D2:
+# «il gruppo esce dall'arco. Battaglia breve con i due Guerrieri»). Le altre scene combattono alla fine.
+BATTAGLIA_A_META = {"B-03": 8}
+# La bandiera (64-127) che una battaglia a meta' scena accende quando e' vinta: non si rigioca.
+VINTA_A_META = {"B-03": "GUERRIERI_VINTI"}
 
 PARLANTI = {"UBALDO": "Sant'Ubaldo", "GIORGIO": "Giorgio", "ANTONIO": "Antonio", "GUIDO": "Console Guido",
             "ARALDO": "Araldo di Perugia", "CORRADO": "Corrado di Spoleto", "CECCO": "Cecco il Balestriere",
@@ -178,9 +192,17 @@ RACCOLTE = [
 AREE_DELLE_RACCOLTE = {"Q-SM01": {"TEATRO_ROMANO"},
                        "Q-SA01": {"BOTTACCIONE", "GOLA_STRISCIA", "GOLA_MIASMI", "GOLA_ARCO"}}
 # L'infiltrato di Q-SP01: sotto le Logge dei Tiratori, con il mantello e il bastone del pellegrino; la battaglia
-# e' quella delle tre spie umbre degli Stradoni (battaglia::INCONTRO 1: nella v1 non c'e' un nemico «infiltrato»).
+# e' la sua (F10, battaglia::INCONTRO 6): l'infiltrato e due spie umbre, come dice il copione.
 INFILTRATO = {"area": "PIAZZA_QUARANTA_MARTIRI", "ancora": "loggia_tiratori", "figura": ("mercante", "lanterna_bastone"),
-              "incontro": 1}
+              "incontro": 6}
+# F10: le guardie delle fornaci di Q-SM01, una per blocco di ferro («ognuna guardata da un Guerriero della Roccia
+# visibile sulla mappa. Battuto il guerriero, il blocco si raccoglie toccando la fornace»). Ogni guardia sta a due
+# celle dal suo blocco, dalla parte dello spawn 0 (chi arriva la incontra prima del ferro); la battaglia e' la
+# guardia della fornace (battaglia::INCONTRO 5); vinta, la bandiera della guardia si accende e il blocco si prende.
+GUARDIE_FORNACE = [{"raccolta": "FERRO_1", "bandiera": "GUARDIA_FORNACE_1"},
+                   {"raccolta": "FERRO_2", "bandiera": "GUARDIA_FORNACE_2"},
+                   {"raccolta": "FERRO_3", "bandiera": "GUARDIA_FORNACE_3"}]
+INCONTRO_FORNACE = 5
 
 # --- T2, la gola del Bottaccione ------------------------------------------------------------------------------
 # Le scene che partono su una cella dell'area invece che entrando: B-02 sulla prima nebbia dei miasmi («primo
@@ -950,7 +972,7 @@ def maschera(bandiere):
     return v
 
 
-def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None):
+def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None, posti_guardie=None):
     codici = [s["codice"] for s in scene]
     out = ["// GENERATO da tools/genera_storia.py dal copione v1 (copione/*.md): non modificare a mano.",
            "#ifndef GUBBIO_STORIA_H", "#define GUBBIO_STORIA_H", "", "#include <cstdint>", "",
@@ -1024,6 +1046,23 @@ def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None)
             "struct Inserto", "{", "    uint16_t battuta;", "    int8_t regia;", "    uint8_t copre;", "};", "",
             f"inline constexpr int INSERTI = {len(inserti)};",
             "inline constexpr Inserto INSERTO[INSERTI > 0 ? INSERTI : 1] = {"] + (inserti or ["    { 0xFFFF, -1, 0 },"]) + ["};", ""]
+    a_meta = []
+    for s in scene:
+        if s["codice"] not in BATTAGLIA_A_META:
+            continue
+        k = BATTAGLIA_A_META[s["codice"]]
+        if s["codice"] not in BATTAGLIE or not 0 < k < len(s["battute"]):
+            raise ValueError(f"battaglia a meta' di {s['codice']}:{k}: scena senza battaglia o battuta che non c'e'")
+        prima = sum(len(t["battute"]) for t in scene[:scene.index(s)])
+        a_meta.append(f"    {{ {codici.index(s['codice'])}, {prima + k}, {TUTTE.index(VINTA_A_META[s['codice']])} }},  "
+                      f"// {s['codice']} prima della battuta {k}")
+    out += ["// Le battaglie a meta' scena: la battaglia della scena si combatte prima della battuta (indice in BATTUTA),",
+            "// non alla fine; vinta, accende la bandiera (64-127) e non si rigioca. B-03: dopo l'ascolto, prima del ragazzo.",
+            "struct BattagliaAMeta", "{", "    int8_t scena;                 // indice in SCENA", "    uint16_t battuta;",
+            "    uint8_t vinta;", "};", "",
+            f"inline constexpr int BATTAGLIE_A_META = {len(a_meta)};",
+            "inline constexpr BattagliaAMeta BATTAGLIA_A_META[BATTAGLIE_A_META > 0 ? BATTAGLIE_A_META : 1] = {"] + (
+                a_meta or ["    { -1, 0xFFFF, 255 },"]) + ["};", ""]
     # NPC
     out += ["enum class Fase : uint8_t", "{"] + [f"    {f}," for f in FASI] + ["};", "",
             "struct Npc", "{", "    int8_t area;", "    uint8_t tx;", "    uint8_t ty;",
@@ -1077,6 +1116,7 @@ def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None)
             for q in QUEST] + ["};", ""]
     out += blocco_quest
     out += parte_gola(codici, posti_raccolte, figure) if posti_raccolte else []
+    out += parte_fornaci(posti_guardie) if posti_guardie else []
     out += ["// Le figure degli NPC, 16x32 (8 tile in mappatura 1D) con la palette dei popolani: quelle dei",
             "// mestieri (tools/figure_npc.py) e quelle degli amici (base e accessorio, dati/amici.json).",
             f"inline constexpr int FIGURE_NPC = {len(figure)};",
@@ -1219,6 +1259,23 @@ def parte_gola(codici, posti_raccolte, figure):
             f"inline constexpr int FIGURA_FORZIERE_APERTO = {FN.ORDINE_RACCOLTE.index('forziere_aperto')};", ""]
 
 
+def parte_fornaci(posti_guardie):
+    """Le righe di storia.h delle guardie delle fornaci (F10, Q-SM01)."""
+    righe = []
+    for gd, (tx, ty) in zip(GUARDIE_FORNACE, posti_guardie):
+        k = next(i for i, r in enumerate(RACCOLTE) if r["bandiera"] == gd["raccolta"])
+        righe.append(f"    {{ int8_t(mondo::AreaId::{RACCOLTE[k]['area']}), {tx}, {ty}, {gd['bandiera']}, {k} }},  "
+                     f"// davanti a {gd['raccolta']}")
+    return ["// --- Le guardie delle fornaci (F10, Q-SM01) -----------------------------------------------------",
+            "// Un Guerriero della Roccia davanti a ogni blocco di ferro, visibile sulla mappa: toccarlo avvia la battaglia",
+            "// (INCONTRO_FORNACE); vinta, la sua bandiera (64-127) si accende, non torna e il blocco si puo' prendere.",
+            "struct GuardiaFornace", "{", "    int8_t area;                  // mondo::AreaId", "    uint8_t tx;",
+            "    uint8_t ty;", "    uint8_t bandiera;", "    uint8_t raccolta;             // il blocco che guarda (RACCOLTA)",
+            "};", "", f"inline constexpr int INCONTRO_FORNACE = {INCONTRO_FORNACE};     // battaglia::INCONTRO",
+            f"inline constexpr int GUARDIE_FORNACE = {len(righe)};",
+            "inline constexpr GuardiaFornace GUARDIA_FORNACE[GUARDIE_FORNACE] = {"] + righe + ["};", ""]
+
+
 def testi_delle_quest(quest):
     righe = []
     for d in QUEST:
@@ -1230,13 +1287,55 @@ def testi_delle_quest(quest):
     return righe
 
 
-def posti_della_quest(npc, quest):
-    """I posti dei datori (nell'ordine di QUEST) e dell'infiltrato, poi quelli degli oggetti da raccogliere."""
+def posti_della_quest(npc, quest, con_guardie=False):
+    """I posti dei datori (nell'ordine di QUEST) e dell'infiltrato, poi quelli degli oggetti da raccogliere (e, con
+    'con_guardie', quelli delle guardie delle fornaci)."""
     occupati = {}
     altri = [(quest[d["id"]]["datore"], d["consegna"], d["ancora"]) for d in QUEST]
     altri.append(("infiltrato", INFILTRATO["area"], INFILTRATO["ancora"]))
     posti, posti_quest = posti_degli_npc(npc, altri, occupati)
-    return posti, posti_quest, posti_delle_raccolte(RACCOLTE, occupati)
+    posti_raccolte = posti_delle_raccolte(RACCOLTE, occupati)
+    if con_guardie:
+        return posti, posti_quest, posti_raccolte, posti_delle_guardie(posti_raccolte, occupati)
+    return posti, posti_quest, posti_raccolte
+
+
+def posti_delle_guardie(posti_raccolte, occupati):
+    """La cella di ogni guardia di fornace (GUARDIE_FORNACE): a due celle esatte dal suo blocco (Chebyshev), la piu'
+    vicina allo spawn 0, raggiungibile, con le otto celle intorno calpestabili e senza varchi (come
+    progressione::posto_valido), a 4 celle almeno dagli spawn, a 3 da varchi, NPC, nemici sulla mappa e dagli altri
+    oggetti, a 4 dalle altre guardie."""
+    import genera_mondo as G  # noqa: E402
+    aree = aree_del_mondo()
+    nemici = scontri_sulla_mappa()
+    posti = []
+    for gd in GUARDIE_FORNACE:
+        k = next(i for i, r in enumerate(RACCOLTE) if r["bandiera"] == gd["raccolta"])
+        area_id = RACCOLTE[k]["area"]
+        a = aree[area_id]
+        g = a["griglia"]
+        bx, by = posti_raccolte[k]
+        varchi = [(x, y) for y, riga in enumerate(g) for x, c in enumerate(riga) if c in G.VARCHI]
+        altri = [p for i, (r, p) in enumerate(zip(RACCOLTE, posti_raccolte)) if r["area"] == area_id and i != k]
+        lontani = varchi + occupati.get(area_id, []) + nemici.get(area_id, []) + altri
+        raggiunte = raggiungibili_da(a, *a["spawn"][0], G)
+        sx, sy = a["spawn"][0]
+        scelto = None
+        candidati = [(bx + i, by + j) for i in range(-2, 3) for j in range(-2, 3) if max(abs(i), abs(j)) == 2]
+        for x, y in sorted(candidati, key=lambda xy: ((xy[0] - sx) ** 2 + (xy[1] - sy) ** 2, xy[1], xy[0])):
+            libero = (x, y) in raggiunte and all(
+                0 <= y + j < a["altezza"] and 0 <= x + i < a["larghezza"] and
+                not solida_nel_gioco(g[y + j][x + i], G) and g[y + j][x + i] not in G.VARCHI
+                for i in (-1, 0, 1) for j in (-1, 0, 1))
+            if (libero and all(max(abs(x - u), abs(y - v)) >= 4 for u, v in a["spawn"].values()) and
+                    all(max(abs(x - u), abs(y - v)) >= 3 for u, v in lontani) and
+                    all(max(abs(x - u), abs(y - v)) >= 4 for u, v in posti)):
+                scelto = (x, y)
+                break
+        if not scelto:
+            raise ErroreStoria(f"nessun posto per la guardia di {gd['raccolta']} in {area_id}")
+        posti.append(scelto)
+    return posti
 
 
 def leggi_le_quest():
@@ -1247,8 +1346,8 @@ def genera():
     scene, npc = leggi_copione()
     controlla(scene)
     quest = leggi_le_quest()
-    posti, posti_quest, posti_raccolte = posti_della_quest(npc, quest)
-    return (header(scene, npc, posti, quest, posti_quest, posti_raccolte),
+    posti, posti_quest, posti_raccolte, posti_guardie = posti_della_quest(npc, quest, con_guardie=True)
+    return (header(scene, npc, posti, quest, posti_quest, posti_raccolte, posti_guardie),
             testi_del_copione(scene, npc) + "\n".join(testi_delle_quest(quest)) + "\n")
 
 
