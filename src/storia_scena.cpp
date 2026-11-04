@@ -1193,6 +1193,7 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
 
     // la notte (dal rientro da Porta Metauro): anche i fondali con le rampe notte, come la gente (pezzo EDI)
     esplorazione.imposta_notte(fase_npc(g_game_state) == Fase::NOTTE);
+    esplorazione.imposta_variante(variante_dell_area(g_game_state, int(e.area)));
 
     _anima_npc();
     _folla.aggiorna(esplorazione, e.x, e.y, int(g_game_state.frames));
@@ -1208,7 +1209,8 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     if(esplorazione.urto_al_varco_chiuso() && g_game_state.frames - _ultimo_urto > 120)
     {
         _ultimo_urto = g_game_state.frames;
-        di_sistema(testi::TestoId::CONDOTTO_CHIUSO, &esplorazione, palette_testo);
+        di_sistema(e.area == mondo::AreaId::SANT_AGOSTINO ? testi::TestoId::BOTTEGA_SBARRATA
+                                                          : testi::TestoId::CONDOTTO_CHIUSO, &esplorazione, palette_testo);
         return true;
     }
 

@@ -117,6 +117,9 @@ public:
         return _e;
     }
 
+    // La variante di fase della stanza (mondo::VARIANTE, -1 nessuna): se cambia, il fondale si ricarica.
+    void imposta_variante(int variante);
+
     // L'area del fondale caricato: durante la dissolvenza resta quella vecchia (la nuova si carica a meta').
     [[nodiscard]] mondo::AreaId area_caricata() const
     {
@@ -167,6 +170,8 @@ private:
     bool _aiuti = false;
     mondo::Esploratore _e;
     mondo::AreaId _area_caricata = mondo::AreaId(0);
+    int _variante = -1;             // mondo::VARIANTE da usare se vale per l'area (la sceglie la storia)
+    int _variante_caricata = -1;    // quella del fondale caricato, -1 se e' il fondale dell'area
     int _mezza_larghezza_mappa = 0;
     int _mezza_altezza_mappa = 0;
     int _dissolvenza = 0;           // >0 in uscita, <0 in entrata
