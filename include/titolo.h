@@ -31,6 +31,10 @@ void annota_posizione(const Esplorazione& esplorazione);
 // tests/test_save_system.py.
 void prova_salvataggio();
 
+// GUBBIO_AVVIO=15: scrive due slot di prova per le foto degli aiuti (tools/banco.sh): il primo nel digiuno in
+// Piazza Grande, il secondo all'ingresso del Condotto prima del duello con Corrado. Poi si va al titolo.
+void prepara_slot_di_prova();
+
 }
 
 #endif

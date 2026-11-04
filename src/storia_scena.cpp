@@ -998,6 +998,8 @@ bool Storia::_dopo_il_duello_perso(Esplorazione& esplorazione, const bn::sprite_
 
     while(true)
     {
+        // per i copioni del banco (tools/banco.sh): da qui il menu aspetta i tasti
+        BN_LOG("Duello perso: il menu");
         dialogo_inizio(&esplorazione);
         int voce;
 
@@ -1246,7 +1248,8 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         }
     }
 
-    if(! a_portata)
+    // nessuno a portata: il cartello del varco, se e' a portata, accende lo stesso fumetto (STANDARD I2)
+    if(! a_portata && ! esplorazione.segnala_cartello())
     {
         esplorazione.spegni_segnale();
     }

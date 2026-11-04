@@ -77,6 +77,12 @@ public:
     // breve per la meta (include/aiuti.h). Senza obiettivo, una riga che lo dice.
     void promemoria();
 
+    // Il fumetto sopra il cartello del varco (STANDARD I2: vale anche per i cartelli): se gli aiuti sono attivi,
+    // il cartello e' a schermo e la sua cella sta a portata (aiuti::cartello_a_portata, 14 px come il tasto A),
+    // chiama segnala() e dice true. Niente lettera «A». La storia lo chiama quando nessuna persona e' a portata,
+    // e spegne il fumetto se dice false.
+    bool segnala_cartello();
+
     // Da pixel dell'area a pixel dello schermo (0, 0 in alto a sinistra), con la camera di adesso.
     [[nodiscard]] int schermo_x(int x) const;
     [[nodiscard]] int schermo_y(int y) const;
@@ -125,15 +131,17 @@ private:
     bn::vector<bn::sprite_ptr, 6> _cartiglio;  // creato per primo: sta sotto il testo
     VistaTesto _ombra;              // creata prima: i suoi sprite stanno sotto quelli dell'etichetta
     VistaTesto _etichetta;
-    // MAI: il promemoria (testo con ombra e freccia) e il cartello del varco vicino (due righe con ombra)
+    // MAI: il promemoria (testo con ombra e freccia) e il cartello del varco vicino (due righe con ombra). Si
+    // creano solo mentre si vedono: con i loro sprite sempre allocati (78 tile su 128) «Dove eravamo» e i
+    // dialoghi finivano gli elementi di tile degli sprite di Butano.
     bn::sprite_palette_ptr _palette_testo;
-    VistaTesto _promemoria_ombra;
-    VistaTesto _promemoria;
+    bn::optional<VistaTesto> _promemoria_ombra;
+    bn::optional<VistaTesto> _promemoria;
     bn::optional<bn::sprite_ptr> _freccia;
-    VistaTesto _cartello_ombra;
-    VistaTesto _cartello;
-    VistaTesto _oltre_ombra;
-    VistaTesto _oltre;
+    bn::optional<VistaTesto> _cartello_ombra;
+    bn::optional<VistaTesto> _cartello;
+    bn::optional<VistaTesto> _oltre_ombra;
+    bn::optional<VistaTesto> _oltre;
     int _attesa_promemoria = 0;
     int _varco_cartello = -1;       // il varco del cartello a schermo, -1 nessuno
     bool _aiuti = false;
@@ -167,6 +175,9 @@ private:
     void _dopo_evento(mondo::Evento evento);
     void _anima_giocatore();
     void _aggiorna_aiuti();
+    // Crea la vista se non c'e' e ci scrive il testo tutto rivelato; _nascondi_aiuti() le distrugge.
+    void _mostra_aiuto(bn::optional<VistaTesto>& vista, testo::Contesto contesto, int x, int y, int inchiostro,
+                       testo::TestoId testo);
     void _nascondi_aiuti();
 };
 

@@ -231,9 +231,65 @@ inline constexpr int FASCIA_PROMEMORIA = 32;
 
 inline constexpr int FRAME_PROMEMORIA = 180;        // 3 secondi
 
+// Il disegno della freccia 16x16 verso destra, giu', sinistra o su: un triangolo con la base sulla colonna 2
+// (righe 1-14) e la punta sulla colonna 14; gli altri versi lo ruotano. dentro_la_freccia dice se il pixel
+// (x, y) e' nel triangolo.
+[[nodiscard]] constexpr bool dentro_la_freccia(Verso verso, int x, int y)
+{
+    if(x < 0 || y < 0 || x > 15 || y > 15)
+    {
+        return false;
+    }
+
+    int u = verso == Verso::DESTRA ? x : (verso == Verso::SINISTRA ? 15 - x : (verso == Verso::GIU ? y : 15 - y));
+    int v = verso == Verso::DESTRA || verso == Verso::SINISTRA ? y : x;
+    int distanza = v < 8 ? 7 - v : v - 8;           // dalla mezzeria, 0..7
+    return u >= 2 && distanza <= 6 && u <= 14 - distanza * 12 / 7;
+}
+
+// I toni della freccia nella palette del testo (stile/dati/cornice.json, ruoli): 0 trasparente, 1 il piombo
+// (quasi nero, `neutri` 0) per il contorno, 2 il fondo chiaro per il pieno. Nessun colore nuovo.
+inline constexpr int TONO_FRECCIA_CONTORNO = 1;
+inline constexpr int TONO_FRECCIA_PIENO = 2;
+
+// Il tono del pixel (x, y). Il contorno (STANDARD P1, P3) e' ogni pixel del triangolo con uno degli 8 vicini
+// fuori: cosi' il pieno chiaro non tocca mai il lastrico chiaro, nemmeno in diagonale lungo i lati obliqui.
+// vicini_in_croce = true e' il contorno vecchio, coi soli 4 vicini in croce: lo usa solo la prova negativa.
+[[nodiscard]] constexpr int tono_della_freccia(Verso verso, int x, int y, bool vicini_in_croce = false)
+{
+    if(! dentro_la_freccia(verso, x, y))
+    {
+        return 0;
+    }
+
+    for(int dy = -1; dy <= 1; ++dy)
+    {
+        for(int dx = -1; dx <= 1; ++dx)
+        {
+            if((vicini_in_croce && dx != 0 && dy != 0) || (dx == 0 && dy == 0))
+            {
+                continue;
+            }
+
+            if(! dentro_la_freccia(verso, x + dx, y + dy))
+            {
+                return TONO_FRECCIA_CONTORNO;
+            }
+        }
+    }
+
+    return TONO_FRECCIA_PIENO;
+}
+
 // --- I cartelli ai varchi --------------------------------------------------------------------------------
 
 inline constexpr int CELLE_CARTELLO = 3;
+// Il fumetto d'interazione (STANDARD I2) sopra il cartello: alla stessa portata del tasto A con le persone
+// (DISTANZA_PAROLA in src/storia_scena.cpp, 14 px fra i piedi). Il cartello non ha uno sprite: la «cosa» e' la
+// soglia del varco, alta 0: il fumetto sta 2 px sopra i piedi della riga del varco piu' vicina, in mezzo al
+// varco (con un'altezza da persona coprirebbe Ubaldo, che sta proprio li' davanti).
+inline constexpr int PORTATA_CARTELLO = 14;
+inline constexpr int ALTEZZA_CARTELLO = 0;
 
 // Il varco piu' vicino al giocatore entro CELLE_CARTELLO celle (distanza di Chebyshev fra le celle), -1 se
 // nessuno. Sul varco stesso no: ci si sta passando.
@@ -267,6 +323,48 @@ inline constexpr int CELLE_CARTELLO = 3;
     }
 
     return scelto;
+}
+
+// Dove sta il fumetto del cartello del varco k: in mezzo al varco (centro_del_varco, come la freccia) sulla riga
+// delle sue celle piu' vicina al giocatore, cioe' sulla soglia. Si accende se una cella del varco ha i piedi
+// (piedi_x, piedi_y) a meno di PORTATA_CARTELLO px dai suoi, in orizzontale e in verticale, come per le persone;
+// se no (-1, -1). In mezzo al varco, e non sulla cella sotto i piedi, il fumetto non sta sotto Ubaldo.
+[[nodiscard]] constexpr Punto cartello_a_portata(const mondo::Esploratore& e, int k)
+{
+    const mondo::Area& a = mondo::area(e.area);
+
+    if(k < 0 || k >= a.varchi)
+    {
+        return { -1, -1 };
+    }
+
+    int soglia = -1;
+    int migliore = 0;
+
+    for(int ty = 0; ty < a.altezza; ++ty)
+    {
+        for(int tx = 0; tx < a.larghezza; ++tx)
+        {
+            if(a.griglia[tx + ty * a.larghezza] != mondo::PRIMO_VARCO + k)
+            {
+                continue;
+            }
+
+            int dx = e.x - mondo::piedi_x(tx);
+            int dy = e.y - mondo::piedi_y(ty);
+            int ax = dx < 0 ? -dx : dx;
+            int ay = dy < 0 ? -dy : dy;
+            int d = ax > ay ? ax : ay;
+
+            if(ax < PORTATA_CARTELLO && ay < PORTATA_CARTELLO && (soglia < 0 || d < migliore))
+            {
+                soglia = mondo::piedi_y(ty);
+                migliore = d;
+            }
+        }
+    }
+
+    return soglia < 0 ? Punto{ -1, -1 } : Punto{ centro_del_varco(a, k).x, soglia };
 }
 
 // Il cartello del varco dall'area 'da' all'area 'verso' (indice in cartelli::CARTELLO), -1 se non c'e' (un

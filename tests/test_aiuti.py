@@ -100,12 +100,72 @@ class Testi(unittest.TestCase):
             self.assertTrue(re.search(rf"^{t}\s*\| SCELTA\s*\|", partita, re.M), t)
 
 
+MODI_CON_AIUTI = {0, 14, 15}    # il gioco vero e le due partite di prova che servono a fotografarli
+MODI_COL_TITOLO = {0, 15}       # titolo e «Dove eravamo»: il gioco vero e la partita con gli slot di prova
+
+
+def modi_di(main, nome):
+    """I modi GUBBIO_AVVIO (0-15) in cui vale la costante 'nome' di main.cpp: ne valuta l'espressione."""
+    m = re.search(rf"constexpr bool {nome} = ([^;]+);", main)
+    if not m:
+        return None
+    espressione = m.group(1).replace("||", " or ").replace("&&", " and ")
+    if not re.fullmatch(r"[\sA-Z_0-9=!()orand]+", espressione):
+        return None
+    return {modo for modo in range(16) if eval(espressione, {"GUBBIO_AVVIO": modo})}
+
+
 class Agganci(unittest.TestCase):
+
+    def test_aiuti_nei_modi_di_prova(self):
+        main = leggi("src", "main.cpp")
+        self.assertEqual(modi_di(main, "AIUTI_ATTIVI"), MODI_CON_AIUTI)
+        self.assertEqual(modi_di(main, "COL_TITOLO"), MODI_COL_TITOLO)
+        self.assertIn("esplorazione.attiva_aiuti(AIUTI_ATTIVI);", main)
+        self.assertIn("bn::keypad::select_pressed() && AIUTI_ATTIVI", main)
+        # «Dove eravamo» col titolo; il prologo resta del solo gioco vero
+        prima = main[main.index("gubbio::dove_eravamo(") - 120:main.index("gubbio::dove_eravamo(")]
+        self.assertIn("if(COL_TITOLO)", prima)
+        prologo = main[main.index("prologo.prologo(palette);") - 120:main.index("prologo.prologo(palette);")]
+        self.assertIn("if(GUBBIO_AVVIO == 0)", prologo)
+        # il modo 15 scrive gli slot prima del titolo
+        self.assertLess(main.index("gubbio::prepara_slot_di_prova();"), main.index("gubbio::titolo(palette)"))
+
+    def test_aiuti_nei_modi_di_prova_negativa(self):
+        main = leggi("src", "main.cpp")
+        espressione = re.search(r"constexpr bool AIUTI_ATTIVI = ([^;]+);", main).group(1)
+        solo_zero = main.replace(espressione, "GUBBIO_AVVIO == 0")
+        self.assertNotEqual(modi_di(solo_zero, "AIUTI_ATTIVI"), MODI_CON_AIUTI)
+        troppi = main.replace(espressione, "GUBBIO_AVVIO != 7")
+        self.assertNotEqual(modi_di(troppi, "AIUTI_ATTIVI"), MODI_CON_AIUTI)
+        self.assertIsNone(modi_di(main.replace("constexpr bool AIUTI_ATTIVI", "bool aiuti"), "AIUTI_ATTIVI"))
+        self.assertIsNone(modi_di(main.replace(espressione, "__import__('os')"), "AIUTI_ATTIVI"))
+
+    @staticmethod
+    def update_fra_titolo_ed_esplorazione(main):
+        """Fra il titolo e l'esplorazione passa un bn::core::update(): Butano rende i tile degli sprite del titolo
+        solo li', e senza «Dove eravamo» li finiva (No more sprite tiles items available)."""
+        titolo = main.find("gubbio::titolo(palette, true)")
+        esplorazione = main.find("gubbio::Esplorazione esplorazione(palette);")
+        return 0 <= titolo < esplorazione and "bn::core::update();" in main[titolo:esplorazione]
+
+    def test_tile_del_titolo_resi_prima_dell_esplorazione(self):
+        self.assertTrue(self.update_fra_titolo_ed_esplorazione(leggi("src", "main.cpp")))
+        # gli aiuti si creano solo mentre si vedono: niente VistaTesto sempre allocate nell'esplorazione
+        esp_h = leggi("include", "esplorazione.h")
+        for nome in ("_promemoria", "_promemoria_ombra", "_cartello", "_cartello_ombra", "_oltre", "_oltre_ombra"):
+            self.assertRegex(esp_h, rf"bn::optional<VistaTesto> {nome};", nome)
+
+    def test_tile_del_titolo_resi_prima_dell_esplorazione_negativa(self):
+        main = leggi("src", "main.cpp")
+        titolo = main.index("gubbio::titolo(palette, true)")
+        esplorazione = main.index("gubbio::Esplorazione esplorazione(palette);")
+        senza = main[:titolo] + main[titolo:esplorazione].replace("bn::core::update();", "") + main[esplorazione:]
+        self.assertFalse(self.update_fra_titolo_ed_esplorazione(senza))
 
     def test_main(self):
         main = leggi("src", "main.cpp")
         self.assertIn("esplorazione.promemoria();", main)
-        self.assertIn("esplorazione.attiva_aiuti(GUBBIO_AVVIO == 0);", main)
         self.assertIn("gubbio::dove_eravamo(esplorazione, palette);", main)
         self.assertLess(main.index("storia::dopo_il_caricamento(gubbio::g_game_state);"),
                         main.index("gubbio::dove_eravamo(esplorazione, palette);"))
@@ -114,9 +174,13 @@ class Agganci(unittest.TestCase):
         esp = leggi("src", "esplorazione.cpp")
         self.assertIn("aiuti::varco_vicino(", esp)
         self.assertIn("aiuti::varco_verso_la_meta(", esp)
+        # il cartello accende il fumetto (STANDARD I2) dove la storia spegnerebbe quello delle persone
+        self.assertIn("aiuti::cartello_a_portata(", esp)
+        self.assertIn("aiuti::tono_della_freccia(", esp)
         storia = leggi("src", "storia_scena.cpp")
         self.assertIn("aiuti::riprova_dopo_la_sconfitta(k)", storia)
         self.assertIn("aiuti::ritirata_della_scena(k)", storia)
+        self.assertIn("if(! a_portata && ! esplorazione.segnala_cartello())", storia)
 
     def test_genera_cartelli_nei_controlli(self):
         # il generatore ha la sua prova di aggiornamento qui sopra; la tabella la legge aiuti.h
