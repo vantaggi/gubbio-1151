@@ -53,6 +53,18 @@ class CopioneVero(unittest.TestCase):
             self.assertIn("EPILOGO_A_PIEDI", codici(VERO, GT.AVVISO))
 
 
+class Mappa(unittest.TestCase):
+    def test_camminando_si_sentono_le_stesse_battute(self):
+        # Il modello veloce teletrasporta il giocatore; quello con la mappa (mondo/varchi.json) lo fa camminare,
+        # e ogni area attraversata puo' far partire la sua scena. Le battute raggiungibili devono essere le stesse.
+        m = GT.carica_v1(COPIONE)
+        veloce, mappa = GT.esplora(m), GT.esplora_mappa(m, GT.vicini())
+        # le battute della vetrata (E-02, l'ultima scena) contano a parte: il controllo le esclude comunque
+        finale = {b["id"] for x in m["scene"] if GT.FINE in x["imposta"] for b in x["battute"]}
+        self.assertEqual(veloce["dette_trama"] - finale, mappa["dette_trama"] - finale)
+        self.assertTrue(any(GT.FINE in s[0] for s in mappa["stati"]))
+
+
 class CopioneRotto(unittest.TestCase):
     """Ogni prova copia il copione, ne rompe un punto e controlla che l'errore giusto esca."""
 
