@@ -32,8 +32,8 @@ STORIA_H = leggi("include", "storia.h")
 
 class Tabella(unittest.TestCase):
 
-    def test_nove_della_cronaca_e_tre_degli_incarichi(self):
-        self.assertEqual(sum(1 for r in RIGHE if r["quest"] < 0), 9)
+    def test_dieci_della_cronaca_e_tre_degli_incarichi(self):
+        self.assertEqual(sum(1 for r in RIGHE if r["quest"] < 0), 10)   # B-01: la gola fino al Condotto
         self.assertEqual(sorted(r["quest"] for r in RIGHE if r["quest"] >= 0), [0, 1, 2])
         self.assertIn(f"inline constexpr int OBIETTIVI = {len(RIGHE)};", STORIA_H)
 
