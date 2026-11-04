@@ -410,27 +410,29 @@ inline constexpr int ALTEZZA_CARTELLO = 0;
     return scelto;
 }
 
-// Dove sta il fumetto del cartello del varco k: in mezzo al varco (centro_del_varco, come la freccia) sulla riga
-// delle sue celle piu' vicina al giocatore, cioe' sulla soglia. Si accende se una cella del varco ha i piedi
-// (piedi_x, piedi_y) a meno di PORTATA_CARTELLO px dai suoi, in orizzontale e in verticale, come per le persone;
-// se no (-1, -1). In mezzo al varco, e non sulla cella sotto i piedi, il fumetto non sta sotto Ubaldo.
-[[nodiscard]] constexpr Punto cartello_a_portata(const mondo::Esploratore& e, int k)
+// La soglia del varco k a portata dei piedi: la riga (piedi_y) della cella del varco piu' vicina, -1 se nessuna.
+// Basta guardare le celle intorno al giocatore (PORTATA_CARTELLO px in orizzontale e in verticale): prima si
+// scorreva tutta la griglia a ogni frame, fino a 16 mila celle, e vicino a un varco il gioco perdeva frame.
+[[nodiscard]] constexpr int soglia_a_portata(const mondo::Esploratore& e, int k)
 {
     const mondo::Area& a = mondo::area(e.area);
 
     if(k < 0 || k >= a.varchi)
     {
-        return { -1, -1 };
+        return -1;
     }
 
+    constexpr int R = PORTATA_CARTELLO / mondo::TILE_PX + 2;
+    int cx = mondo::cella_x(e);
+    int cy = mondo::cella_y(e);
     int soglia = -1;
     int migliore = 0;
 
-    for(int ty = 0; ty < a.altezza; ++ty)
+    for(int ty = cy - R; ty <= cy + R; ++ty)
     {
-        for(int tx = 0; tx < a.larghezza; ++tx)
+        for(int tx = cx - R; tx <= cx + R; ++tx)
         {
-            if(a.griglia[tx + ty * a.larghezza] != mondo::PRIMO_VARCO + k)
+            if(mondo::cella(a, tx, ty) != mondo::PRIMO_VARCO + k)
             {
                 continue;
             }
@@ -449,7 +451,24 @@ inline constexpr int ALTEZZA_CARTELLO = 0;
         }
     }
 
-    return soglia < 0 ? Punto{ -1, -1 } : Punto{ centro_del_varco(a, k).x, soglia };
+    return soglia;
+}
+
+// Dove sta il fumetto del cartello del varco k: in mezzo al varco (centro_del_varco, come la freccia) sulla riga
+// delle sue celle piu' vicina al giocatore, cioe' sulla soglia. Si accende se una cella del varco ha i piedi
+// (piedi_x, piedi_y) a meno di PORTATA_CARTELLO px dai suoi, in orizzontale e in verticale, come per le persone;
+// se no (-1, -1). In mezzo al varco, e non sulla cella sotto i piedi, il fumetto non sta sotto Ubaldo.
+// Col centro del varco gia' calcolato (l'esplorazione lo tiene per l'area caricata).
+[[nodiscard]] constexpr Punto cartello_a_portata(const mondo::Esploratore& e, int k, int centro_x)
+{
+    int soglia = soglia_a_portata(e, k);
+    return soglia < 0 ? Punto{ -1, -1 } : Punto{ centro_x, soglia };
+}
+
+[[nodiscard]] constexpr Punto cartello_a_portata(const mondo::Esploratore& e, int k)
+{
+    int soglia = soglia_a_portata(e, k);
+    return soglia < 0 ? Punto{ -1, -1 } : Punto{ centro_del_varco(mondo::area(e.area), k).x, soglia };
 }
 
 // Il cartello del varco dall'area 'da' all'area 'verso' (indice in cartelli::CARTELLO), -1 se non c'e' (un

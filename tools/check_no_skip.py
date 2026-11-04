@@ -34,9 +34,13 @@ def main():
             codice = riga.split("#", 1)[0]
             if VIETATI.search(codice):
                 trovati.append(f"{percorso}:{numero}: {riga.strip()}")
+            # una funzione test_ fuori da una classe TestCase (stile pytest): unittest non la raccoglie,
+            # quindi non gira mai e non fallisce mai (succedeva a test_icone_menu.py)
+            if re.match(r"(async\s+)?def test_", riga):
+                trovati.append(f"{percorso}:{numero}: {riga.strip()}  <- fuori da una classe TestCase, non gira")
 
     if trovati:
-        print("[no-skip] FALLITO: test che si saltano da soli:", file=sys.stderr)
+        print("[no-skip] FALLITO: test che si saltano da soli o non girano:", file=sys.stderr)
         for t in trovati:
             print("  " + t, file=sys.stderr)
         return 1

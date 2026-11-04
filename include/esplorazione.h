@@ -36,6 +36,14 @@ public:
     // nasconde; ricompari() rimette tutto com'era.
     void sospendi();
 
+    // I compagni che seguono Ubaldo in fila (0 nessuno, 1 Giorgio, 2 Giorgio e Antonio): lo decide la storia a ogni
+    // frame (GIORGIO_NEL_GRUPPO, ANTONIO_NEL_GRUPPO). Camminano sulle orme di Ubaldo, COMPAGNO_DISTANZA px l'uno
+    // dietro l'altro; entrando in un'area escono da dietro di lui.
+    void imposta_compagni(int quanti);
+
+    // I compagni si tolgono (i loro sprite servono alla pausa); tornano da se' al prossimo aggiorna().
+    void togli_compagni();
+
     // La citta' di notte (storia::fase_npc NOTTE): i fondali con le rampe di notte, fiaccole e drappi caldi (L5).
     void imposta_notte(bool notte);
     void ricompari();
@@ -132,6 +140,32 @@ public:
     }
 
 private:
+    static constexpr int COMPAGNI_MAX = 2;
+    // la distanza fra uno e il seguente, in orme: 18 px in orizzontale, 21 in verticale (le figure sono alte 32:
+    // in colonna con 18 le teste coprivano il busto di chi sta davanti). Un passo di lato costa 7, uno in su o in
+    // giu' 6: COMPAGNO_DISTANZA e' il costo fra due della fila.
+    static constexpr int COSTO_LATO = 7;
+    static constexpr int COSTO_SU = 6;
+    static constexpr int COMPAGNO_DISTANZA = 18 * COSTO_LATO;
+    static constexpr int ORME = COMPAGNI_MAX * (COMPAGNO_DISTANZA / COSTO_SU + 1) + 2;
+
+    struct Orma
+    {
+        int16_t x;
+        int16_t y;
+    };
+
+    struct Compagno
+    {
+        bn::sprite_ptr sprite;
+        int x = 0;
+        int y = 0;
+        int direzione = 0;
+        int passo = 0;
+        int fermo = 0;
+        int mostrato = -1;
+    };
+
     bn::optional<bn::regular_bg_tiles_ptr> _tiles;
     bn::bg_palette_ptr _palette;
     bn::camera_ptr _camera;
@@ -166,7 +200,19 @@ private:
     int _cartello_y = 0;
     int _cartello_k = -1;           // il passo dell'entrata o dell'uscita (A2), -1 nessun cartello
     bool _cartello_esce = false;
+    int _cartello_scrivi = 0;       // le righe del cartello ancora da scrivere (una per frame)
+    testi::TestoId _cartello_dove = testi::TestoId(0);
+    int _cartello_oltre = -1;
     int _varco_cartello = -1;       // il varco del cartello a schermo, -1 nessuno
+    int _compagni = 0;
+    bool _scura = false;
+    bn::vector<Compagno, COMPAGNI_MAX> _fila;
+    Orma _orme[ORME];               // le orme di Ubaldo, un pixel l'una: _orme[_orma] e' la piu' recente
+    int _orma = 0;
+    int _orme_n = 0;
+    // il centro di ogni varco dell'area caricata (aiuti::centro_del_varco scorre tutta la griglia: si fa una
+    // volta al caricamento, a schermo nero, e non a ogni frame vicino al varco)
+    aiuti::Punto _centri[mondo::VARCHI_MAX];
     bool _aiuti = false;
     mondo::Esploratore _e;
     mondo::AreaId _area_caricata = mondo::AreaId(0);
@@ -180,6 +226,8 @@ private:
     bool _urto_al_varco = false;
     bool _notte = false;
     int _attesa_etichetta = 0;
+    int _etichetta_passo = 0;       // 2, 1: l'ombra e la scritta da preparare (una per frame)
+    testi::TestoId _testo_etichetta = testi::TestoId(0);
     // la figura del giocatore (tools/sagome_mappa.py): direzione, passo, respiro
     enum Direzione { GIU, SU, DESTRA, SINISTRA };
     int _direzione = GIU;
@@ -199,6 +247,9 @@ private:
     void _mostra_cartiglio(bool visibile);
     void _dopo_evento(mondo::Evento evento);
     void _anima_giocatore();
+    void _azzera_orme();
+    void _segna_orme();
+    void _anima_compagni();
     void _aggiorna_aiuti();
     // Crea la vista se non c'e' e ci scrive il testo tutto rivelato; _nascondi_aiuti() le distrugge.
     void _mostra_aiuto(bn::optional<VistaTesto>& vista, testo::Contesto contesto, int x, int y, int inchiostro,

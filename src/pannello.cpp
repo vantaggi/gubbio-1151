@@ -121,11 +121,49 @@ void Pannello::_punto(int x, int y, int colore)
 
 void Pannello::rett(int x0, int y0, int x1, int y1, int colore)
 {
-    for(int y = y0; y <= y1; ++y)
+    // a parole intere di 8 pixel, non pixel per pixel: il cartello (fino a 240 x 24) costava quattro frame
+    x0 = x0 < 0 ? 0 : x0;
+    y0 = y0 < 0 ? 0 : y0;
+    x1 = x1 >= _larghezza ? _larghezza - 1 : x1;
+    y1 = y1 >= _altezza ? _altezza - 1 : y1;
+
+    if(x0 > x1 || y0 > y1)
     {
-        for(int x = x0; x <= x1; ++x)
+        return;
+    }
+
+    uint32_t pieno = uint32_t(colore & 0xF) * 0x11111111u;
+
+    for(int i = 0; i < _sprite.size(); ++i)
+    {
+        int sx0 = (i % _colonne) * SPRITE_L;
+        int sy0 = (i / _colonne) * SPRITE_A;
+        int ax = x0 > sx0 ? x0 : sx0;
+        int bx = x1 < sx0 + SPRITE_L - 1 ? x1 : sx0 + SPRITE_L - 1;
+        int ay = y0 > sy0 ? y0 : sy0;
+        int by = y1 < sy0 + SPRITE_A - 1 ? y1 : sy0 + SPRITE_A - 1;
+
+        if(ax > bx || ay > by)
         {
-            _punto(x, y, colore);
+            continue;
+        }
+
+        bn::span<bn::tile> vram = *_tiles[i].vram();
+
+        for(int y = ay; y <= by; ++y)
+        {
+            int py = y - sy0;
+
+            for(int tx = (ax - sx0) / 8; tx <= (bx - sx0) / 8; ++tx)
+            {
+                int da = ax - sx0 - tx * 8;
+                int a = da > 0 ? da : 0;
+                int db = bx - sx0 - tx * 8;
+                int b = db < 7 ? db : 7;
+                uint32_t maschera = b - a == 7 ? 0xFFFFFFFFu : ((uint32_t(1) << (4 * (b - a + 1))) - 1) << (4 * a);
+                uint32_t& parola = vram[(py / 8) * (SPRITE_L / 8) + tx].data[py % 8];
+                parola = (parola & ~maschera) | (pieno & maschera);
+            }
         }
     }
 }
