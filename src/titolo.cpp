@@ -11,6 +11,7 @@
 #include "bn_sram.h"
 #include "bn_vector.h"
 
+#include "aiuti.h"
 #include "audio.h"
 #include "esplorazione.h"
 #include "game_state.h"
@@ -31,6 +32,29 @@ namespace
 
     // il record vuoto della prova del salvataggio: in EWRAM, non sullo stack
     BN_DATA_EWRAM_BSS salvataggio::SaveData s_vuota;
+
+    // MAI: lo stato di ogni slot valido, per l'anteprima del titolo
+    BN_DATA_EWRAM_BSS GameState s_anteprima[salvataggio::SLOT];
+
+    TestoId testo_della_fase(aiuti::FaseCronaca f)
+    {
+        constexpr TestoId FASI[4] = { TestoId::FASE_ULTIMATUM, TestoId::FASE_DIGIUNO, TestoId::FASE_NOTTE,
+                                      TestoId::FASE_DOPO_L_ALBA };
+        return FASI[int(f)];
+    }
+
+    TestoId testo_dell_area(const GameState& p)
+    {
+        int a = p.area < mondo::AREE_CONTEGGIO ? p.area : 0;
+        return mondo::area(mondo::AreaId(a)).etichetta;
+    }
+
+    // L'anteprima di uno slot sotto la voce «Continua» (mockup 10): area e livelli, fase e tempo di gioco.
+    constexpr int ANTEPRIMA_X = 24;
+    constexpr int ANTEPRIMA_Y = 110;
+    constexpr int ANTEPRIMA_PASSO = 12;
+    constexpr int ANTEPRIMA_LIV_X = 140;
+    constexpr int ANTEPRIMA_NUMERI_X = 158;
 
     void attendi(int frame)
     {
@@ -65,6 +89,10 @@ namespace
 
         s.oggetti[0] = uint8_t(n);
         s.scontri_vinti[0] = uint8_t(n);
+        // v4 (MOB): i campi nuovi, riconoscibili anche loro
+        s.obiettivo = uint8_t(n);
+        s.aree_viste[0] = uint8_t(n);
+        s.denari = uint16_t(10 * n);
         return s;
     }
 }
@@ -78,6 +106,23 @@ int titolo(const bn::sprite_palette_ptr& palette_testo, bool istantanea)
     VistaTesto aiuto(Contesto::DIALOGO, 8, 140, INCHIOSTRO_CHIARO, palette_testo);
     constexpr TestoId VOCI[3] = { TestoId::TITOLO_NUOVA, TestoId::TITOLO_SLOT_1, TestoId::TITOLO_SLOT_2 };
     StatoSlot stati[2] = { salvataggio::stato(0), salvataggio::stato(1) };
+    VistaTesto anteprima_area(Contesto::AREA, ANTEPRIMA_X, ANTEPRIMA_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto anteprima_fase(Contesto::AREA, ANTEPRIMA_X, ANTEPRIMA_Y + ANTEPRIMA_PASSO, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto anteprima_liv(Contesto::HUD, ANTEPRIMA_LIV_X, ANTEPRIMA_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaNumero livelli(ANTEPRIMA_NUMERI_X, ANTEPRIMA_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaNumero tempo(ANTEPRIMA_NUMERI_X, ANTEPRIMA_Y + ANTEPRIMA_PASSO, INCHIOSTRO_CHIARO, palette_testo);
+
+    for(int k = 0; k < salvataggio::SLOT; ++k)
+    {
+        if(stati[k] == StatoSlot::VALIDO && salvataggio::carica(k, s_anteprima[k]))
+        {
+            storia::dopo_il_caricamento(s_anteprima[k]);
+        }
+        else if(stati[k] == StatoSlot::VALIDO)
+        {
+            stati[k] = StatoSlot::CORROTTO;
+        }
+    }
 
     // il titolo ha il suo brano: il Campanone apre, poi il Tema di Gubbio
     audio::brano(colonna::BRANO_TITOLO);
@@ -92,7 +137,9 @@ int titolo(const bn::sprite_palette_ptr& palette_testo, bool istantanea)
         voce.mostra(VOCI[scelta]);
         voce.rivela_tutto();
 
-        if(scelta > 0 && stati[scelta - 1] != StatoSlot::VALIDO)
+        bool anteprima = scelta > 0 && stati[scelta - 1] == StatoSlot::VALIDO;
+
+        if(scelta > 0 && ! anteprima)
         {
             nota.mostra(testo_dello_stato(stati[scelta - 1]));
             nota.rivela_tutto();
@@ -100,6 +147,29 @@ int titolo(const bn::sprite_palette_ptr& palette_testo, bool istantanea)
         else
         {
             nota.nascondi();
+        }
+
+        if(anteprima)
+        {
+            const GameState& p = s_anteprima[scelta - 1];
+            anteprima_area.mostra(testo_dell_area(p));
+            anteprima_area.rivela_tutto();
+            anteprima_fase.mostra(testo_della_fase(aiuti::fase_della_cronaca(p)));
+            anteprima_fase.rivela_tutto();
+            anteprima_liv.mostra(TestoId::TITOLO_LIVELLI);
+            anteprima_liv.rivela_tutto();
+            livelli.mostra_livelli(p.livello[0], p.livello[1], p.livello[2]);
+            livelli.colloca(ANTEPRIMA_NUMERI_X, ANTEPRIMA_Y);
+            tempo.mostra_tempo(int(p.tempo_frames / 60));
+            tempo.colloca(ANTEPRIMA_NUMERI_X, ANTEPRIMA_Y + ANTEPRIMA_PASSO);
+        }
+        else
+        {
+            anteprima_area.nascondi();
+            anteprima_fase.nascondi();
+            anteprima_liv.nascondi();
+            livelli.nascondi();
+            tempo.nascondi();
         }
 
         if(istantanea)
@@ -150,6 +220,65 @@ void annota_posizione(const Esplorazione& esplorazione)
     g_game_state.area = uint8_t(e.area);
     g_game_state.x = int16_t(e.x);
     g_game_state.y = int16_t(e.y);
+}
+
+void dove_eravamo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo, bool istantanea)
+{
+    // «Dove eravamo» (MAI, mockup 08): dopo «Continua», una volta, sullo sfondo scurito come nei dialoghi
+    constexpr int X = 8;
+    constexpr int TITOLO_Y = 92;
+    constexpr int LUOGO_Y = 106;
+    constexpr int FASE_X = 120;
+    constexpr int OBIETTIVO_Y = 120;
+    constexpr int CONTI_Y = 144;
+    constexpr int INCARICHI_N_X = 80;
+    constexpr int TEMPO_X = 160;
+    constexpr int TEMPO_N_X = 192;
+    const GameState& p = g_game_state;
+    esplorazione.nascondi_etichetta();
+    bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.65));
+    VistaTesto titolo_r(Contesto::HUD, X, TITOLO_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto luogo(Contesto::AREA, X, LUOGO_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto fase(Contesto::AREA, FASE_X, LUOGO_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto obiettivo(Contesto::DIALOGO, X, OBIETTIVO_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto incarichi(Contesto::HUD, X, CONTI_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaNumero incarichi_n(INCARICHI_N_X, CONTI_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaTesto tempo(Contesto::HUD, TEMPO_X, CONTI_Y, INCHIOSTRO_CHIARO, palette_testo);
+    VistaNumero tempo_n(TEMPO_N_X, CONTI_Y, INCHIOSTRO_CHIARO, palette_testo);
+    titolo_r.mostra(TestoId::DOVE_ERAVAMO);
+    luogo.mostra(testo_dell_area(p));
+    fase.mostra(testo_della_fase(aiuti::fase_della_cronaca(p)));
+    obiettivo.mostra(storia::area_dell_obiettivo(p) >= 0 ? storia::OBIETTIVO[p.obiettivo].testo : TestoId::PROMEMORIA_NESSUNO);
+    incarichi.mostra(TestoId::DOVE_ERAVAMO_INCARICHI);
+    tempo.mostra(TestoId::DOVE_ERAVAMO_TEMPO);
+
+    for(VistaTesto* v : { &titolo_r, &luogo, &fase, &obiettivo, &incarichi, &tempo })
+    {
+        v->rivela_tutto();
+    }
+
+    incarichi_n.mostra(aiuti::incarichi_aperti(p));
+    incarichi_n.colloca(INCARICHI_N_X, CONTI_Y);
+    tempo_n.mostra_tempo(int(p.tempo_frames / 60));
+    tempo_n.colloca(TEMPO_N_X, CONTI_Y);
+    attendi(1);
+
+    if(istantanea)
+    {
+        attendi(30);
+        BN_LOG("Istantanea dove_eravamo");
+        attendi(30);
+    }
+    else
+    {
+        while(! bn::keypad::a_pressed() && ! bn::keypad::b_pressed() && ! bn::keypad::start_pressed())
+        {
+            attendi(1);
+        }
+    }
+
+    bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
+    attendi(1);
 }
 
 void pausa(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo, bool istantanea)
@@ -259,8 +388,20 @@ void prova_salvataggio()
     // dopo una corruzione si torna a salvare: la scrittura va su una banca e lo slot torna valido
     esito("risalva", salva(0, a) && carica(0, letto) && stessi_byte(letto, a));
 
+    // v4 (MOB): un salvataggio v3 nello slot 1 si carica aggiornato. I 59 byte comuni restano, il residuo
+    // nei byte che erano riservati non diventa un obiettivo; la banca 1 vuota
+    s_vuota = SaveData{};
+    bn::sram::write_offset(s_vuota, (1 * BANCHE + 1) * int(sizeof(SaveData)));
+    s_vuota = componi_v3(stato_di_prova(5), 1, 0x77);
+    bn::sram::write_offset(s_vuota, (1 * BANCHE + 0) * int(sizeof(SaveData)));
+    GameState atteso = stato_di_prova(5);
+    atteso.obiettivo = NESSUN_OBIETTIVO;
+    atteso.aree_viste[0] = 0;
+    atteso.denari = 0;
+    esito("v3 aggiornato", stato(1) == StatoSlot::VALIDO && carica(1, letto) && stessi_byte(letto, atteso));
+
     // gli slot finali per tests/test_save_system.py: slot 0 = stato 3 (due banche, l'ultima e' 3),
-    // slot 1 = stato 4
+    // slot 1 = stato 4 (nella banca 1: nella banca 0 resta il record v3, piu' vecchio)
     esito("slot finali", salva(0, stato_di_prova(3)) && salva(1, stato_di_prova(4)) &&
           carica(0, letto) && stessi_byte(letto, stato_di_prova(3)) && carica(1, letto) &&
           stessi_byte(letto, stato_di_prova(4)));

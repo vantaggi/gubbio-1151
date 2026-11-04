@@ -204,7 +204,7 @@ class Bandiere(unittest.TestCase):
     def test_nel_salvataggio(self):
         gs = open(os.path.join(RADICE, "include", "game_state.h"), encoding="utf-8").read()
         self.assertIn("uint8_t quest[8];", gs)
-        self.assertIn("VERSIONE = 3;", open(os.path.join(RADICE, "include", "save_data.h"), encoding="utf-8").read())
+        self.assertIn("VERSIONE = 4;", open(os.path.join(RADICE, "include", "save_data.h"), encoding="utf-8").read())  # MOB
 
 
 class C1(unittest.TestCase):

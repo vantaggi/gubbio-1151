@@ -107,7 +107,7 @@ constexpr void assegna_esperienza(GameState& partita, int incontro, bool (&salit
     assegna_esperienza_fissa(partita, esperienza_incontro(incontro), saliti);
 }
 
-// La partita nuova: livello 1, nessuna esperienza, nessuno scontro vinto, qualche consumabile.
+// La partita nuova: livello 1, nessuna esperienza, nessuno scontro vinto, qualche consumabile, nessun obiettivo.
 constexpr void partita_nuova(GameState& partita)
 {
     for(int e = 0; e < battaglia::EROI; ++e)
@@ -130,6 +130,17 @@ constexpr void partita_nuova(GameState& partita)
     }
 
     partita.tempo_frames = 0;
+
+    // v4 (MOB): nessun obiettivo prima della prima riga OBIETTIVO, nessuna area vista, niente denari
+    partita.obiettivo = NESSUN_OBIETTIVO;
+
+    for(uint8_t& a : partita.aree_viste)
+    {
+        a = 0;
+    }
+
+    partita.scorte_comprate = 0;
+    partita.denari = 0;
 }
 
 // --- Gli scontri sulla mappa ----------------------------------------------------------------------

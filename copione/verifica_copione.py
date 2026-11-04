@@ -83,6 +83,8 @@ def a_capo(testo, maxw):
     return righe
 
 
+META_OBIETTIVO = re.compile(r"\s*\(area: [A-Z_]+\)\s*$")
+
 RE_BATTUTA = re.compile(
     r"(?P<chi>[A-Z][A-Z']*(?: [A-Z][A-Z']*)?)(?: \((?P<espr>[a-z]+)\))?: (?P<testo>.+)$")
 
@@ -113,6 +115,9 @@ def battute(percorso):
             testo = cand.group("testo").rstrip()
             if testo.endswith("|"):
                 testo = testo[:-1].rstrip()
+            # l'area meta di un OBIETTIVO, «(area: ID)» in fondo alla riga, non va a schermo (MOB)
+            if cand.group("chi") == "OBIETTIVO":
+                testo = META_OBIETTIVO.sub("", testo)
             yield n, cand.group("chi"), cand.group("espr"), testo
 
 
