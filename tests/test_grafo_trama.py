@@ -94,6 +94,14 @@ class CopioneRotto(unittest.TestCase):
         self.assertTrue({"BANDIERA_SCONOSCIUTA", "NESSUN_FINALE"} & codici(r))
 
 
+    def test_regola_dei_nomi(self):
+        # «Sant'Ubaldo» detto come persona fuori dalla Basilica; «di Sant'Ubaldo» (cose e luoghi) va bene
+        r = self.rompi("02_bottaccione_epilogo.md", "- SCELTA: Sì, è ora / Non ancora",
+                       "- GUIDO: Sant'Ubaldo, la piazza aspetta. I biscotti di Sant'Ubaldo sono pronti.\n- SCELTA: Sì, è ora / Non ancora")
+        nomi = [p for p in r["problemi"] if p["codice"] == "REGOLA_NOMI" and "B-05" in p["dove"]]
+        self.assertEqual(len(nomi), 1, nomi)
+
+
 SCALETTA = """# Atto II di prova
 
 ## 4. Scaletta
