@@ -2,6 +2,7 @@
 
 #include "bn_bg_palette_item.h"
 #include "bn_bg_palette_ptr.h"
+#include "bn_blending.h"
 #include "bn_color.h"
 #include "bn_core.h"
 #include "bn_keypad.h"
@@ -19,6 +20,7 @@
 #include "bn_sprite_shape_size.h"
 #include "bn_sprite_tiles_item.h"
 #include "bn_sprite_tiles_ptr.h"
+#include "bn_tile.h"
 #include "bn_vector.h"
 
 #include "animazione_battaglia.h"
@@ -237,13 +239,78 @@ namespace
         }
     }
 
+    // Chi deve fare qualcosa a ogni frame mentre la scena aspetta (le ombre che seguono le figure).
+    void (*g_ogni_frame)(void*) = nullptr;
+    void* g_ogni_frame_di = nullptr;
+
     void attendi(int frame)
     {
         for(int f = 0; f < frame; ++f)
         {
             ++g_game_state.frames;
+
+            if(g_ogni_frame)
+            {
+                g_ogni_frame(g_ogni_frame_di);
+            }
+
             bn::core::update();
         }
+    }
+
+    // L'ombra portata sotto i piedi (STANDARD L4, giro 9): un'ellisse scura in trasparenza, che scurisce il
+    // suolo del fondale invece di dipingerci sopra del nero; spostata di 3 px a destra (luce da sinistra).
+    // Uno sprite 32x8: l'ellisse e' larga 20 px sotto le figure 32x32, 32 sotto Corrado; alta 5.
+    constexpr int OMBRA_DX = 3;
+    constexpr int OMBRA_ALFA_DECIMI = 5;
+    constexpr int OMBRA_MEZZA_RIGA[5] = { 6, 9, 10, 9, 6 };     // mezza larghezza di ogni riga, sotto una figura
+
+    constexpr bool ombra_piena(int x, int y, int larga)
+    {
+        // x 0-31 nello sprite, y 0-4 nell'ellisse; 'larga' in ventesimi della figura piccola
+        return y >= 0 && y < 5 && 2 * (x - 16) + 1 > -2 * OMBRA_MEZZA_RIGA[y] * larga / 20 &&
+               2 * (x - 16) + 1 < 2 * OMBRA_MEZZA_RIGA[y] * larga / 20;
+    }
+
+    static_assert(ombra_piena(16, 2, 20) && ombra_piena(6, 2, 20) && ! ombra_piena(5, 2, 20) && ! ombra_piena(16, 5, 20));
+    static_assert(ombra_piena(0, 2, 32) && ! ombra_piena(0, 2, 20));
+
+    bn::sprite_ptr crea_ombra(int larga, const bn::sprite_palette_ptr& palette)
+    {
+        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(4, bn::bpp_mode::BPP_4);
+        bn::span<bn::tile> vram = *tiles.vram();
+
+        for(int t = 0; t < 4; ++t)
+        {
+            for(int r = 0; r < 8; ++r)
+            {
+                uint32_t riga = 0;
+
+                for(int c = 0; c < 8; ++c)
+                {
+                    // l'ellisse nelle righe 2-6: il centro dello sprite (riga 4) sta sui piedi
+                    if(ombra_piena(t * 8 + c, r - 2, larga))
+                    {
+                        riga |= 1u << (c * 4);
+                    }
+                }
+
+                vram[t].data[r] = riga;
+            }
+        }
+
+        bn::sprite_ptr ombra = bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(32, 8), bn::move(tiles), palette);
+        ombra.set_blending_enabled(true);
+        ombra.set_z_order(2);                   // dietro alle figure
+        return ombra;
+    }
+
+    bn::sprite_palette_ptr crea_palette_ombra()
+    {
+        bn::color colori[16];
+        colori[1] = bn::color(0, 0, 0);
+        return bn::sprite_palette_ptr::create(bn::sprite_palette_item(bn::span<const bn::color>(colori),
+                                                                      bn::bpp_mode::BPP_4));
     }
 
     // La scena vera e propria: gli oggetti di Butano vivono finche' vive lei.
@@ -339,6 +406,46 @@ namespace
                     _pv[e].nascondi();
                     _fervore[e].nascondi();
                     _numeri_pv[e].nascondi();
+                }
+            }
+
+            // le ombre sotto i piedi, che seguono le figure a ogni frame
+            bn::blending::set_transparency_alpha(bn::fixed(OMBRA_ALFA_DECIMI) / 10);
+
+            for(int s = 0; s < SLOT_VISTA; ++s)
+            {
+                if(_sprite[s])
+                {
+                    _ombra[s] = crea_ombra(_sprite[s]->shape_size().width() > 32 ? 32 : 20, _palette_ombra);
+                }
+            }
+
+            segui_le_ombre();
+            g_ogni_frame = [](void* scena) { static_cast<Scena*>(scena)->segui_le_ombre(); };
+            g_ogni_frame_di = this;
+        }
+
+        ~Scena()
+        {
+            g_ogni_frame = nullptr;
+            g_ogni_frame_di = nullptr;
+            bn::blending::set_transparency_alpha(1);
+        }
+
+        Scena(const Scena&) = delete;
+        Scena& operator=(const Scena&) = delete;
+
+        // L'ombra resta sul suolo (la fila della figura) e segue solo la x: chi corre all'attacco se la porta
+        // dietro, chi sobbalza o cade non la stacca da terra.
+        void segui_le_ombre()
+        {
+            for(int s = 0; s < SLOT_VISTA; ++s)
+            {
+                if(_ombra[s] && _sprite[s])
+                {
+                    int piedi = _y[s] + _sprite[s]->shape_size().height() / 2 - 2;
+                    _ombra[s]->set_position(_sprite[s]->x().integer() + OMBRA_DX, piedi);
+                    _ombra[s]->set_visible(_sprite[s]->visible());
                 }
             }
         }
@@ -482,6 +589,8 @@ namespace
         VistaBattaglia _vista;
         bn::optional<bn::sprite_tiles_item> _figure[SLOT_VISTA];
         bn::optional<bn::sprite_ptr> _sprite[SLOT_VISTA];
+        bn::sprite_palette_ptr _palette_ombra = crea_palette_ombra();
+        bn::optional<bn::sprite_ptr> _ombra[SLOT_VISTA];
         bn::optional<bn::sprite_palette_ptr> _palette[SLOT_VISTA];
         A::Effetto _colpo[SLOT_VISTA] = {};
         bool _mischia[SLOT_VISTA] = {};
