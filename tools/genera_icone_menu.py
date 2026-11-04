@@ -44,6 +44,15 @@ ICONE = {
     "INDIZIO": [".kkkkk..", ".kssskk.", ".ksnnsk.", ".kssssk.", ".ksnnsk.", ".kssssk.", ".kkkkkk.", "........"],
     # un pezzo non ancora raccolto: il solo contorno, in grigio
     "VUOTO": ["........", "........", ".nnnnnn.", "n......n", "n......n", ".nnnnnn.", "........", "........"],
+    # i segnalini della mappa (MMA, mockup 03 e 03c); la bottega ha la porta in legno 2 (il mockup usava due
+    # colori fuori da questa palette, legno 1 e un nero diverso)
+    "SEI_QUI": ["...kk...", "..kwwk..", ".kwOOwk.", ".kwOOwk.", "kwwwwwwk", "kwrrrrwk", "kwwwwwwk", ".kkkkkk."],
+    "VENDITORE": ["........", "..kkkk..", ".kCCCCk.", "kCyyyyCk", "kCyyyyCk", "kCCCCCCk", ".kkkkkk.", "........"],
+    "TAVERNA": ["..k.....", ".kgk....", "kgGgk...", ".kgk....", "..k.....", ".kllk...", ".kllk...", "..kk...."],
+    "BOTTEGA": ["........", ".kkkkkk.", "kcccccck", "kCcCcCck", ".kssssk.", ".ksllsk.", ".ksllsk.", ".kkkkkk."],
+    "PORTA": [".k.k.k..", ".kkkkk..", ".kSsSk..", ".kSSSk..", ".kSkSk..", ".kk.kk..", ".k...k..", "........"],
+    # un angolo del cursore della mappa (quello in alto a sinistra; gli altri sono lo stesso, ribaltato)
+    "ANGOLO": ["kkkkk...", "krrrk...", "krkkk...", "krk.....", "kkk.....", "........", "........", "........"],
 }
 for q, x in QUARTIERI.items():
     ICONE["INCARICO_" + q] = [r.replace("X", x) for r in BANDIERA]
@@ -88,6 +97,12 @@ def header():
             "inline constexpr uint32_t ICONE_MENU_TILE[ICONE_MENU * 8] = {"]
     for n in nomi:
         out.append("    " + ", ".join("0x%08X" % w for w in tile(n, ICONE[n])) + ",  // " + n)
+    out += ["};", "", "// Il rettangolo dei pixel pieni di ogni icona: x0, y0, x1, y1 compresi (i segnalini della mappa non si",
+            "// devono toccare: src/menu_mappa.cpp).", "inline constexpr uint8_t ICONE_MENU_PIENO[ICONE_MENU * 4] = {"]
+    for n in nomi:
+        pieni = [(x, y) for y, r in enumerate(ICONE[n]) for x, ch in enumerate(r) if ch != "."]
+        out.append("    %d, %d, %d, %d,  // %s" % (min(p[0] for p in pieni), min(p[1] for p in pieni),
+                                                    max(p[0] for p in pieni), max(p[1] for p in pieni), n))
     out += ["};", "", "}", "", "#endif", ""]
     return "\n".join(out)
 

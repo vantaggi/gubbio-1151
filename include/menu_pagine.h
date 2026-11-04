@@ -113,6 +113,10 @@ public:
     Pagina(int indice, testo::TestoId aiuto_a, testo::TestoId aiuto_b, const bn::sprite_palette_ptr& palette);
     Pagina(int indice, testo::TestoId aiuto, const bn::sprite_palette_ptr& palette);
 
+    // La pagina della mappa (MMA, mockup 03): due riquadri che si toccano, in alto la mappa (l'interno senza tile,
+    // si vede il fondo della mappa) con 'alto' righe di tile, in basso la scheda.
+    void con_mappa(int alto);
+
 private:
     Riquadri _riquadri;
     VistaTesto _titolo;
@@ -121,6 +125,7 @@ private:
     VistaTesto _r;
     Striscia _filo;
     Striscia _tessere;
+    int _indice = 0;
 
     void _componi(int indice);
 };
@@ -129,6 +134,7 @@ private:
 // ritorna subito.
 [[nodiscard]] Esito pagina_salva(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette, bool istantanea);
 [[nodiscard]] Esito pagina_diario(const bn::sprite_palette_ptr& palette, bool istantanea);
+[[nodiscard]] Esito pagina_mappa(const bn::sprite_palette_ptr& palette, bool istantanea);
 [[nodiscard]] Esito pagina_bisaccia(const bn::sprite_palette_ptr& palette, bool istantanea);
 [[nodiscard]] Esito pagina_compagni(const bn::sprite_palette_ptr& palette, bool istantanea);
 [[nodiscard]] Esito pagina_opzioni(const bn::sprite_palette_ptr& palette, bool istantanea);

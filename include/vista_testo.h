@@ -164,6 +164,8 @@ public:
     void cornice(int x, int y, int colonne, int righe);
     void cartiglio(int x, int y, int colonne);
     void svuota();
+    // Toglie i tile da un rettangolo (in pixel, sulla griglia): lascia vedere il fondo sotto, come la mappa (MMA).
+    void buca(int x, int y, int colonne, int righe);
     void set_visible(bool visibile);
     [[nodiscard]] const bn::regular_bg_ptr& bg() const { return _bg; }
 

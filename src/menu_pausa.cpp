@@ -216,11 +216,10 @@ namespace
     using testo::TestoId;
     using namespace menu;
 
-    // le pagine gia' costruite; le altre arrivano coi loro pezzi (MMA, MBI, MOP)
+    // tutte le sei pagine sono costruite (MDI, MMA, MBI, MOP e Salva); la funzione resta per le prossime
     constexpr bool pagina_pronta(int p)
     {
-        return p == PAGINA_SALVA || p == PAGINA_DIARIO || p == PAGINA_BISACCIA || p == PAGINA_COMPAGNI ||
-               p == PAGINA_OPZIONI;
+        return p >= 0 && p < PAGINE;
     }
 
     // ------------------------------------------------------------------ la pausa (mockup 01)
@@ -389,6 +388,9 @@ namespace
             case PAGINA_DIARIO:
                 return pagina_diario(palette, istantanea);
 
+            case PAGINA_MAPPA:
+                return pagina_mappa(palette, istantanea);
+
             case PAGINA_BISACCIA:
                 return pagina_bisaccia(palette, istantanea);
 
@@ -448,6 +450,15 @@ void partita_d_esempio(GameState& p)
     // due blocchi di ferro su tre (Q-SM01)
     storia::accendi_una(p, int(storia::QUEST_GIOCO[0].primo_pezzo));
     storia::accendi_una(p, int(storia::QUEST_GIOCO[0].primo_pezzo) + 1);
+    // le aree viste del mockup 03: la citta' dentro le mura e il Teatro, non ancora il Duomo, il monte e la gola
+    for(mondo::AreaId a : { mondo::AreaId::PIAZZA_GRANDE, mondo::AreaId::VIA_DEI_CONSOLI, mondo::AreaId::LARGO_BARGELLO,
+                            mondo::AreaId::SAN_MARTINO, mondo::AreaId::TEATRO_ROMANO, mondo::AreaId::PIAZZA_QUARANTA_MARTIRI,
+                            mondo::AreaId::VIA_XX_SETTEMBRE, mondo::AreaId::SANT_ANDREA, mondo::AreaId::SAN_PIETRO,
+                            mondo::AreaId::SANT_AGOSTINO })
+    {
+        storia::segna_area_vista(p, int(a));
+    }
+
     // un indizio sul falso pellegrino, e i viveri del mockup 04: 2 Crescia, 1 Biscotto
     storia::accendi_una(p, int(storia::INDIZIO[0].bandiera));
     p.oggetti[int(battaglia::OggettoId::CRESCIA)] = 2;

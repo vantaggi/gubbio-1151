@@ -125,3 +125,17 @@ OPZ_SI                    | HUD     | Sì
 OPZ_NO                    | HUD     | No
 OPZ_NOTA                  | AREA    | Valgono per tutti e due gli slot.
 OPZ_AIUTO                 | AREA    | Destra e sinistra: cambia
+# MMA: la mappa della città (mockup 03 e 03c); le righe e le quote delle aree sono in testi/mappa_menu.testi
+MAPPA_SEI_QUI             | HUD     | , sei qui
+MAPPA_NON_VISTA           | AREA    | Qui non ci siete ancora stati.
+MAPPA_AIUTO_SELECT        | HUD     | Select: legenda
+MAPPA_AIUTO_A             | HUD     | A: libro
+LEGENDA_TITOLO            | HUD     | Legenda
+LEGENDA_SEI_QUI           | AREA    | Sei qui
+LEGENDA_CRONACA           | AREA    | La cronaca: dove andare
+LEGENDA_INCARICO          | AREA    | Incarico: dove si fa
+LEGENDA_VENDITORE         | AREA    | Il venditore delle Logge
+LEGENDA_BOTTEGA           | AREA    | Bottega di un amico
+LEGENDA_TAVERNA           | AREA    | Taverna
+LEGENDA_PORTA             | AREA    | Porta delle mura
+LEGENDA_GRIGIO            | AREA    | Grigio: aree non ancora viste.

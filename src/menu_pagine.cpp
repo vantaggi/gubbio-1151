@@ -162,8 +162,17 @@ Pagina::Pagina(int indice, TestoId aiuto, const bn::sprite_palette_ptr& palette)
     _componi(indice);
 }
 
+void Pagina::con_mappa(int alto)
+{
+    _riquadri.cornice(0, 0, 30, alto);
+    _riquadri.cornice(0, alto * 8, 30, 20 - alto);
+    _riquadri.buca(8, 8, 28, alto - 2);
+    _riquadri.cartiglio(8, CARTIGLIO_Y, colonne_titolo(VOCI[_indice]));
+}
+
 void Pagina::_componi(int indice)
 {
+    _indice = indice;
     _riquadri.cornice(0, 0, 30, 20);
     _riquadri.cartiglio(8, CARTIGLIO_Y, colonne_titolo(VOCI[indice]));
     _titolo.mostra(VOCI[indice]);

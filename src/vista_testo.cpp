@@ -426,6 +426,19 @@ void Riquadri::svuota()
     }
 }
 
+void Riquadri::buca(int x, int y, int colonne, int righe)
+{
+    BN_ASSERT(x % 8 == 0 && y % 8 == 0, "Riquadri: la buca va sulla griglia dei tile");
+
+    for(int cy = 0; cy < righe; ++cy)
+    {
+        for(int cx = 0; cx < colonne; ++cx)
+        {
+            _cella(x / 8 + cx, y / 8 + cy, { TILE_VUOTO, false, false });
+        }
+    }
+}
+
 void Riquadri::cornice(int x, int y, int colonne, int righe)
 {
     BN_ASSERT(x % 8 == 0 && y % 8 == 0, "Riquadri: la cornice va sulla griglia dei tile");
