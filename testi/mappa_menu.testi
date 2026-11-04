@@ -26,7 +26,7 @@ MAPPA_RIGA_MONTE_INGINO   | AREA    | Nove stradoni a zig zag fino in cima.
 MAPPA_QUOTA_MONTE_INGINO  | HUD     | +100 a +350 m
 MAPPA_RIGA_BASILICA       | AREA    | La basilica in cima al Monte Ingino.
 MAPPA_QUOTA_BASILICA      | HUD     | +380 m
-MAPPA_RIGA_BOTTACCIONE    | AREA    | La strada nella gola, sotto l'acquedotto.
+MAPPA_RIGA_BOTTACCIONE    | AREA    | La strada nella gola, sotto il condotto.
 MAPPA_QUOTA_BOTTACCIONE   | HUD     | +30 a +300 m
 MAPPA_RIGA_GOLA_STRISCIA  | AREA    | La roccia con la striscia nera.
 MAPPA_QUOTA_GOLA_STRISCIA | HUD     | +310 m
@@ -34,5 +34,5 @@ MAPPA_RIGA_GOLA_MIASMI    | AREA    | L'aria cattiva: meglio non correre.
 MAPPA_QUOTA_GOLA_MIASMI   | HUD     | +325 m
 MAPPA_RIGA_GOLA_ARCO      | AREA    | Il grande arco di contrafforte.
 MAPPA_QUOTA_GOLA_ARCO     | HUD     | +340 m
-MAPPA_RIGA_CONDOTTO       | AREA    | Dentro il condotto dell'acquedotto.
+MAPPA_RIGA_CONDOTTO       | AREA    | Dentro il condotto, dove corre l'acqua.
 MAPPA_QUOTA_CONDOTTO      | HUD     | +355 m

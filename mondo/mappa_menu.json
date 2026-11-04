@@ -34,11 +34,11 @@
     "SANT_AGOSTINO": "Porta Romana, la calcara, la bottega.",
     "MONTE_INGINO": "Nove stradoni a zig zag fino in cima.",
     "BASILICA": "La basilica in cima al Monte Ingino.",
-    "BOTTACCIONE": "La strada nella gola, sotto l'acquedotto.",
+    "BOTTACCIONE": "La strada nella gola, sotto il condotto.",
     "GOLA_STRISCIA": "La roccia con la striscia nera.",
     "GOLA_MIASMI": "L'aria cattiva: meglio non correre.",
     "GOLA_ARCO": "Il grande arco di contrafforte.",
-    "CONDOTTO": "Dentro il condotto dell'acquedotto."
+    "CONDOTTO": "Dentro il condotto, dove corre l'acqua."
   },
   "mura": [[66, 34], [96, 28], [128, 14], [152, 18], [150, 36], [142, 58], [138, 74], [128, 92], [100, 108], [70, 112], [40, 114], [34, 100], [10, 82], [8, 58], [30, 52], [60, 36]],
   "porte": {
