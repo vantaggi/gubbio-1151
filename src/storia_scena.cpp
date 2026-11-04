@@ -11,6 +11,10 @@
 #include "bn_sprite_palettes.h"
 #include "bn_sprite_shape_size.h"
 #include "bn_sprite_tiles_ptr.h"
+#include "bn_sprite_items_ritratto_antonio.h"
+#include "bn_sprite_items_ritratto_giorgio.h"
+#include "bn_sprite_items_ritratto_guido.h"
+#include "bn_sprite_items_ritratto_ubaldo.h"
 
 #include "aiuti.h"
 #include "audio.h"
@@ -99,6 +103,56 @@ namespace
         bn::sprite_ptr cursore = bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(8, 8), bn::move(tiles), palette_testo);
         cursore.set_bg_priority(PRIORITA_RIQUADRI);
         return cursore;
+    }
+
+    // RITc: il ritratto 32x32 di chi parla (Ubaldo, Giorgio, Antonio, Guido), nella sua cornice 5x5 a destra,
+    // appoggiata al bordo del riquadro: sopra quando il dialogo e' in basso, sotto quando e' in alto (I3).
+    // Il testo non si sposta: le righe restano da 216 px. Un fotogramma per espressione (calmo, preoccupato,
+    // deciso, come stile/dati/ritratti.json e l'enum Espressione).
+    constexpr int RITRATTO_CORNICE_X = 200;
+    constexpr int RITRATTO_CORNICE = 5;     // tile per lato: 32 px di ritratto e 4 px di respiro per parte
+
+    int ritratto_cornice_y()
+    {
+        return s_dialogo_in_alto ? stile::DIALOGO_Y + su() + stile::DIALOGO_RIGHE * 8
+                                 : stile::DIALOGO_Y - RITRATTO_CORNICE * 8;
+    }
+
+    static_assert(RITRATTO_CORNICE_X + RITRATTO_CORNICE * 8 <= stile::DIALOGO_X + stile::DIALOGO_COLONNE * 8,
+                  "la cornice del ritratto esce dal riquadro del dialogo");
+    static_assert(stile::DIALOGO_Y - RITRATTO_CORNICE * 8 >= 0 &&
+                  DIALOGO_IN_ALTO_Y + stile::DIALOGO_RIGHE * 8 + RITRATTO_CORNICE * 8 <= 160,
+                  "la cornice del ritratto esce dallo schermo");
+    static_assert(int(Espressione::CALMO) == 0 && int(Espressione::PREOCCUPATO) == 1 && int(Espressione::DECISO) == 2,
+                  "i fotogrammi dei ritratti non seguono l'ordine delle espressioni");
+
+    const bn::sprite_item* ritratto_di(testi::TestoId parlante)
+    {
+        switch(parlante)
+        {
+            case testi::TestoId::PARLANTE_UBALDO: return &bn::sprite_items::ritratto_ubaldo;
+            case testi::TestoId::PARLANTE_GIORGIO: return &bn::sprite_items::ritratto_giorgio;
+            case testi::TestoId::PARLANTE_ANTONIO: return &bn::sprite_items::ritratto_antonio;
+            case testi::TestoId::PARLANTE_GUIDO: return &bn::sprite_items::ritratto_guido;
+            default: return nullptr;
+        }
+    }
+
+    void mostra_ritratto(Riquadri& riquadri, bn::optional<bn::sprite_ptr>& ritratto, const bn::sprite_item* item,
+                         Espressione espressione)
+    {
+        ritratto.reset();
+
+        if(! item)
+        {
+            return;
+        }
+
+        int y = ritratto_cornice_y();
+        riquadri.cornice(RITRATTO_CORNICE_X, y, RITRATTO_CORNICE, RITRATTO_CORNICE);
+        int fotogramma = int(espressione) < item->tiles_item().graphics_count() ? int(espressione) : 0;
+        ritratto = item->create_sprite(RITRATTO_CORNICE_X + 4 + 16 - 120, y + 4 + 16 - 80, fotogramma);
+        ritratto->set_bg_priority(PRIORITA_RIQUADRI);
     }
 
     // Il riquadro del dialogo; con un nome, il cartiglio largo quanto il nome sopra il bordo.
@@ -234,6 +288,7 @@ namespace
         bn::optional<Riquadri> riquadri;
         bn::optional<VistaTesto> nome;
         bn::optional<VistaTesto> testo;
+        bn::optional<bn::sprite_ptr> ritratto;
         int scelta = -1;
 
         // un NPC: la prima variante "(se BANDIERA)" che vale parla da sola, se no le altre righe
@@ -259,6 +314,7 @@ namespace
                 // il menu ha il suo riquadro: quello del dialogo si toglie, per non averne due uno sull'altro
                 nome.reset();
                 testo.reset();
+                ritratto.reset();
                 riquadri.reset();
                 scelta = menu_scelta(b, palette_testo, automatica);
                 scegli(g_game_state, b, scelta);
@@ -280,6 +336,8 @@ namespace
             bool obiettivo = b.tipo != TipoBattuta::PERSONAGGIO && obiettivo_del_testo(b.testo) >= 0;
             componi_dialogo(*riquadri, nome, obiettivo ? testi::TestoId::ETICHETTA_OBIETTIVO : b.parlante,
                             b.tipo == TipoBattuta::PERSONAGGIO || obiettivo, palette_testo);
+            mostra_ritratto(*riquadri, ritratto, b.tipo == TipoBattuta::PERSONAGGIO ? ritratto_di(b.parlante) : nullptr,
+                            b.espressione);
 
             if(! testo)
             {
