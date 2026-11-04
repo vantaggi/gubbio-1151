@@ -18,6 +18,7 @@ _spec.loader.exec_module(GB)
 
 _spec_sb = importlib.util.spec_from_file_location("sagome_battaglia", os.path.join(RADICE, "tools", "sagome_battaglia.py"))
 SB = importlib.util.module_from_spec(_spec_sb)
+FB = GB.FB
 _spec_sb.loader.exec_module(SB)
 
 PALETTE = S.carica("palette")
@@ -62,35 +63,54 @@ class Grafica(unittest.TestCase):
             fuori_guida([("magenta", 0)])
 
     def test_sfondi_entro_i_tile(self):
-        """Uno sfondo per incontro (7); la guardia della fornace e l'infiltrato riusano quelli della Pattuglia e
-        del Duello (F10, SFONDO_DI): cinque sfondi diversi, la gola di B-03 compresa."""
-        tile, mappe = GB.tile_e_mappe()
-        self.assertLessEqual(len(tile), 512)
-        self.assertEqual(len(mappe), 7)
-        self.assertEqual(len({tuple(m) for m in mappe}), 5, "uno sfondo diverso per incontro, tranne i riusati")
-        self.assertEqual(mappe[5], mappe[0])
-        self.assertEqual(mappe[6], mappe[2])
+        """Cinque fondali (tools/fondali_battaglia.py), ognuno coi suoi tile e la sua palette di 16 colori della
+        Guida; la guardia della fornace e l'infiltrato riusano quelli della Pattuglia e del Duello (SFONDO_DI)."""
+        fondali = GB.tile_e_mappe()
+        self.assertEqual(len(fondali), 5)
+        for tile, mappa in fondali:
+            self.assertLessEqual(len(tile), GB.TILE_SFONDO_MAX)
+            self.assertEqual(len(mappa), 1024)
+        self.assertEqual(GB.FONDALE_DI, (0, 1, 2, 3, 4, 0, 2))
+        for k in range(5):
+            palette = FB.fondale(k)[1]
+            self.assertEqual(len(palette), 16)
+            self.assertEqual(fuori_guida(palette), [])
+            self.assertEqual(palette[:3], FB.PANNELLO, "le voci del pannello sono le stesse in ogni fondale")
 
     def test_negativa_sfondo_riusato_diverso(self):
-        riusi = dict(GB.SFONDO_DI)
-        try:
-            GB.SFONDO_DI.clear()
-            _, mappe = GB.tile_e_mappe()
-            self.assertNotEqual(mappe[5], mappe[0], "senza il riuso la fornace non ha le mura della Pattuglia")
-        finally:
-            GB.SFONDO_DI.update(riusi)
+        """Senza il riuso (SFONDO_DI) la fornace e l'infiltrato chiederebbero fondali che non esistono."""
+        senza_riuso = tuple(range(len(GB.INCONTRI)))
+        self.assertTrue(any(k >= len(FB.PITTORI) for k in senza_riuso))
+        self.assertFalse(any(k >= len(FB.PITTORI) for k in GB.FONDALE_DI))
+
+    def test_le_file_poggiano_sul_suolo(self):
+        """Lo standard (fondali): le tre file di figure stanno sul suolo, non sul cielo o sulle mura: i piedi
+        della fila piu' alta (centro y 22, piedi a +14) sono sotto l'orizzonte del fondale."""
+        piedi_fila_alta = 80 - 58 + 14
+        self.assertLess(FB.ORIZZONTE, piedi_fila_alta)
+
+    def test_negativa_orizzonte_alto(self):
+        self.assertFalse(76 < 80 - 58 + 14, "con l'orizzonte di prima (76) la fila alta stava sulle mura")
+
+    def test_fondali_luce_da_sinistra(self):
+        """Lo standard L1 sui fondali: lo spigolo sinistro di un muro a conci e' in luce, il destro in ombra."""
+        t = FB.Tela()
+        FB.conci(t, 10, 10, 30, 12, (FB.PIETRA[2], FB.PIETRA[3], FB.PIETRA[4]), FB.random.Random(1))
+        self.assertTrue(all(t.px[y][10] == FB.PIETRA[4] for y in range(10, 22)))
+        self.assertTrue(all(t.px[y][39] == FB.PIETRA[2] for y in range(10, 22)))
+        self.assertNotIn(FB.NERO, {c for riga in t.px for c in riga}, "i giunti non sono neri (C4)")
 
     def test_pannello_dei_comandi(self):
         for i in range(len(GB.INCONTRI)):
             t = GB.sfondo(i)
-            scuri = sum(1 for y in range(GB.PANNELLO_Y + 4, 156) for x in range(4, 236) if t.px[y][x] in (0, 15))
+            scuri = sum(1 for y in range(GB.PANNELLO_Y + 4, 156) for x in range(4, 236) if t.px[y][x] in (0, 1))
             self.assertGreater(scuri, 0.95 * (156 - GB.PANNELLO_Y - 4) * 232)
 
     def test_negativa_pannello_mancante(self):
         t = GB.sfondo(0)
         for y in range(GB.PANNELLO_Y, 160):
             t.px[y] = [8] * 256
-        scuri = sum(1 for y in range(GB.PANNELLO_Y + 4, 156) for x in range(4, 236) if t.px[y][x] in (0, 15))
+        scuri = sum(1 for y in range(GB.PANNELLO_Y + 4, 156) for x in range(4, 236) if t.px[y][x] in (0, 1))
         self.assertEqual(scuri, 0)
 
     def test_figure_riconoscibili(self):

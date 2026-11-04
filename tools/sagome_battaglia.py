@@ -960,6 +960,29 @@ def polvere(k):
     return t
 
 
+def dardo(k):
+    """Il verrettone della balestra in volo, verso destra (a sinistra lo specchia il gioco): la punta di ferro,
+    l'asta, le alette vermiglie; dietro, due fili d'aria che si allungano e si accorciano (k)."""
+    t = _tela()
+    y = 15
+    for x in range(10, 23):                     # l'asta: luce sopra, ombra sotto
+        _punto(t, x, y, E_POLVERE_L)
+        _punto(t, x, y + 1, E_POLVERE)
+    for x, dy in ((23, 0), (24, 0), (25, 0), (23, -1), (23, 2), (24, 1)):
+        _punto(t, x, y + dy, E_GRIGIO_L if dy <= 0 else E_GRIGIO)
+    _punto(t, 26, y, E_BIANCO)
+    for x in (9, 10, 11):                       # le alette
+        _punto(t, x, y - 1, E_ROSSO)
+        _punto(t, x, y + 2, E_ROSSO_S)
+    contorna_effetto(t)
+    scia = 3 + (k % 2) * 3 + k // 2
+    for x in range(8 - scia, 8):                # i fili d'aria, senza contorno: sono aria
+        if (x + k) % 2 == 0:
+            _punto(t, x, y - 2, E_BIANCO)
+        _punto(t, x + 1, y + 3, E_GRIGIO_L if (x + k) % 3 else 0)
+    return t
+
+
 def contorna_effetto(t, colore=CONTORNO):
     """Gli effetti di luce non hanno contorno (sono luce); le schegge e la polvere si'."""
     pieni = {(x, y) for y in range(32) for x in range(32) if t[y][x]}
@@ -972,7 +995,7 @@ def contorna_effetto(t, colore=CONTORNO):
 
 
 EFFETTI = (("SCIA", scia), ("SCINTILLA", scintilla), ("RAGGIO", raggio), ("FIAMMA", fiamma), ("AURA", aura),
-           ("SCUDO", scudo), ("SCHEGGE", lambda k: contorna_effetto(schegge(k))), ("POLVERE", polvere))
+           ("SCUDO", scudo), ("SCHEGGE", lambda k: contorna_effetto(schegge(k))), ("POLVERE", polvere), ("DARDO", dardo))
 
 
 def effetti():

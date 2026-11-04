@@ -42,6 +42,7 @@ enum class Effetto : uint8_t
     SCUDO,          // il Muro della Fede, il Bastione: un alone azzurro
     SCHEGGE,        // lo scudo che si rompe
     POLVERE,        // la polvere del passo
+    DARDO,          // il verrettone della balestra in volo
     CONTEGGIO,
 };
 
@@ -70,6 +71,7 @@ struct Quadro
     int fotogramma_bersaglio = 0;
     bool bersaglio_visibile = true;
     int scossa = 0;                 // pixel di tremito verticale dello schermo
+    int volo = -1;                  // il proiettile in volo: 0..VOLO-1 (la scena lo porta da chi tira al bersaglio)
     bool numero = false;
     int su_numero = 0;              // pixel sopra la posizione di riposo del numero
 };
@@ -81,12 +83,14 @@ struct Stile
     Effetto colpo = Effetto::SCINTILLA;
     bool forte = false;
     bool resta_a_terra = false;     // CADUTA: un eroe resta in ginocchio, un nemico svanisce
+    Effetto proiettile = Effetto::NESSUNO;  // chi tira da lontano: il verrettone, il fuoco che vola (VOLO)
 };
 
 // --- i tempi, in vblank (1/60 s) ---------------------------------------------------------------
 inline constexpr int CORSA = 10;            // il passo verso il nemico
 inline constexpr int ANTICIPA = 10;         // la posa caricata, tenuta
 inline constexpr int SCATTO = 3;            // il colpo
+inline constexpr int VOLO = 10;             // il colpo da lontano: il proiettile attraversa il campo
 inline constexpr int FERMO = 8;             // il fermo sull'impatto
 inline constexpr int FERMO_FORTE = 12;
 inline constexpr int RINCULO = 14;          // il bersaglio arretra e torna
@@ -115,14 +119,19 @@ inline constexpr int SALTO_FOTOGRAMMI = int(sizeof(SALTO_NUMERO) / sizeof(SALTO_
     return CORSA + ANTICIPA;
 }
 
-[[nodiscard]] constexpr int impatto()
+[[nodiscard]] constexpr int scatto(const Stile& s = {})
 {
-    return CORSA + ANTICIPA + SCATTO;
+    return s.proiettile == Effetto::NESSUNO ? SCATTO : VOLO;
+}
+
+[[nodiscard]] constexpr int impatto(const Stile& s = {})
+{
+    return CORSA + ANTICIPA + scatto(s);
 }
 
 [[nodiscard]] constexpr int inizio_ritorno(const Stile& s)
 {
-    return impatto() + fermo(s) + RINCULO;
+    return impatto(s) + fermo(s) + RINCULO;
 }
 
 [[nodiscard]] constexpr int durata(Gesto g, const Stile& s = {})
@@ -183,7 +192,7 @@ inline constexpr int SALTO_FOTOGRAMMI = int(sizeof(SALTO_NUMERO) / sizeof(SALTO_
 {
     Quadro q;
     int t_scatto = inizio_scatto();
-    int t_impatto = impatto();
+    int t_impatto = impatto(s);
     int t_ritorno = inizio_ritorno(s);
     int fe = fermo(s);
 
@@ -224,8 +233,18 @@ inline constexpr int SALTO_FOTOGRAMMI = int(sizeof(SALTO_NUMERO) / sizeof(SALTO_
         q.avanti_attore = parte(da, f - t_ritorno + 1, RITORNO);
     }
 
-    // l'effetto del colpo: parte con lo scatto, due vblank per fotogramma
-    int fx = f - t_scatto;
+    // il proiettile in volo: chi tira resta nella posa del colpo
+    bool tira = s.proiettile != Effetto::NESSUNO;
+
+    if(tira && f >= t_scatto && f < t_impatto)
+    {
+        q.effetto_attore = s.proiettile;
+        q.fotogramma_attore = ((f - t_scatto) / 2) % FOTOGRAMMI_EFFETTO;
+        q.volo = f - t_scatto;
+    }
+
+    // l'effetto del colpo: parte con lo scatto (con l'arrivo del proiettile), due vblank per fotogramma
+    int fx = f - (tira ? t_impatto : t_scatto);
 
     if(fx >= 0 && fx < 2 * FOTOGRAMMI_EFFETTO)
     {

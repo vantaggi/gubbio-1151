@@ -46,11 +46,13 @@ private:
     void _pulisci();
 };
 
-// Un numero a 16 bit con segno in un solo sprite 32x16, scritto da formatta_intero.
+// Un numero a 16 bit con segno in un solo sprite 32x16, scritto da formatta_intero. Con 'contorno' (un
+// indice della palette, -1 = nessuno) ogni cifra ha intorno un pixel scuro: si legge su ogni fondo
+// (STANDARD_GRAFICO P1, C6), come i numeri del danno e i PV in battaglia.
 class VistaNumero
 {
 public:
-    VistaNumero(int x, int y, int inchiostro, const bn::sprite_palette_ptr& palette);
+    VistaNumero(int x, int y, int inchiostro, const bn::sprite_palette_ptr& palette, int contorno = -1);
 
     void mostra(int valore);
     void colloca(int x, int y);     // angolo in alto a sinistra, in pixel dello schermo
@@ -58,6 +60,7 @@ public:
 
 private:
     int _inchiostro;
+    int _contorno;
     bn::sprite_tiles_ptr _tiles;
     bn::sprite_ptr _sprite;
 };

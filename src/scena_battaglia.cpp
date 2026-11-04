@@ -50,13 +50,20 @@ namespace
     // L'ordine dei tre (regola di Cioti, 4 nov 2026): Ubaldo al centro e davanti, Giorgio secondo,
     // Antonio terzo. Nell'ordine degli eroi (UBALDO, GIORGIO, ANTONIO): la fila e il posto.
     constexpr int FILA_EROE[EROI] = { 1, 0, 2 };
-    constexpr int X_EROI[EROI] = { -44, -56, -60 };
+    constexpr int X_EROI[EROI] = { -34, -46, -50 };     // a destra delle targhe (barre e PV)
     constexpr int X_NEMICI[FILE] = { 54, 64, 54 };     // i nemici sfalsati: quello di mezzo piu' indietro
     constexpr int X_CORRADO = 40;
     constexpr int X_BARRA_EROE = -100;
     constexpr int X_BARRA_NEMICO = 100;
     constexpr int LARGHEZZA_BARRA = 30;                 // pixel pieni possibili, dentro il bordo
     constexpr int INCHIOSTRO_CHIARO = 2;                // sul pannello scuro e sulla scena
+    constexpr int INCHIOSTRO_CONTORNO = 1;              // il contorno scuro dei numeri sulla scena (STANDARD C6)
+    // La targa di un Santo, a sinistra della sua fila: la barra dei PV, sotto quella del Fervore (il bordo
+    // in comune), e i PV in cifre a destra delle barre, alla loro altezza.
+    constexpr int TARGA_PV_DY = -4;
+    constexpr int TARGA_FERVORE_DY = 1;
+    constexpr int TARGA_CIFRE_X = 120 + -100 + 17;      // subito a destra delle barre
+    constexpr int TARGA_CIFRE_DY = -11;                 // le cifre (righe 2-8 del glifo) accanto alla barra dei PV
     constexpr int PANNELLO_Y = 104;                     // il pannello dei comandi nello sfondo (genera_battaglia.py)
     constexpr int FRAME_ESITO = 150;
     constexpr int FRAME_LIVELLO = 75;
@@ -85,7 +92,11 @@ namespace
         return c;
     }
 
-    constexpr Colori COLORI_SFONDO = colori(G::PALETTE_SFONDO);
+    // i fondali (tools/fondali_battaglia.py): ognuno con la sua palette; l'incontro sceglie il suo (FONDALE_DI)
+    constexpr Colori COLORI_SFONDO[G::FONDALI] = {
+        colori(GUBBIO_VOCE(G::PALETTE_SFONDO, 0)), colori(GUBBIO_VOCE(G::PALETTE_SFONDO, 1)), colori(GUBBIO_VOCE(G::PALETTE_SFONDO, 2)),
+        colori(GUBBIO_VOCE(G::PALETTE_SFONDO, 3)), colori(GUBBIO_VOCE(G::PALETTE_SFONDO, 4)) };
+    static_assert(G::FONDALI == 5, "COLORI_SFONDO: una voce per fondale");
     constexpr Colori COLORI_SANTI = colori(G::PALETTE_SANTI);
     constexpr Colori COLORI_EFFETTI = colori(G::PALETTE_EFFETTI);
     // i lampi, nell'ordine di animazione::Lampo (NESSUNO escluso)
@@ -130,6 +141,11 @@ namespace
     constexpr TestoId NOMI_INCONTRI[INCONTRI] = {
         TestoId::BATT_PATTUGLIA, TestoId::BATT_IMBOSCATA, TestoId::BATT_DUELLO, TestoId::BATT_RITO,
         TestoId::BATT_GUERRIERI, TestoId::BATT_FORNACE, TestoId::BATT_INFILTRATO };
+
+    int fondale(int incontro)
+    {
+        return GUBBIO_VOCE(G::FONDALE_DI, incontro);
+    }
 
     bn::sprite_palette_ptr crea_palette(const Colori& c)
     {
@@ -241,11 +257,14 @@ namespace
             _guida(guida),
             _istantanee(istantanee),
             _palette_sfondo(bn::bg_palette_ptr::create(
-                bn::bg_palette_item(bn::span<const bn::color>(COLORI_SFONDO.colori), bn::bpp_mode::BPP_4))),
+                bn::bg_palette_item(bn::span<const bn::color>(GUBBIO_VOCE(COLORI_SFONDO, fondale(incontro)).colori),
+                                    bn::bpp_mode::BPP_4))),
             _tiles_sfondo(bn::regular_bg_tiles_ptr::create(bn::regular_bg_tiles_item(
-                bn::span<const bn::tile>(G::TILE_SFONDO, G::TILE_SFONDO_CONTEGGIO), bn::bpp_mode::BPP_4))),
+                bn::span<const bn::tile>(GUBBIO_VOCE(G::TILE_SFONDO, fondale(incontro)),
+                                         GUBBIO_VOCE(G::TILE_SFONDO_CONTEGGIO, fondale(incontro))),
+                bn::bpp_mode::BPP_4))),
             _sfondo(bn::regular_bg_ptr::create(128 - 120, 128 - 80, bn::regular_bg_map_ptr::create(
-                bn::regular_bg_map_item(GUBBIO_VOCE(G::SFONDO, incontro)[0], bn::size(32, 32)),
+                bn::regular_bg_map_item(GUBBIO_VOCE(G::SFONDO, fondale(incontro))[0], bn::size(32, 32)),
                 _tiles_sfondo, _palette_sfondo))),
             _palette_santi(crea_palette(COLORI_SANTI)),
             _palette_effetti(crea_palette(COLORI_EFFETTI)),
@@ -260,7 +279,7 @@ namespace
             _voce(Contesto::DIALOGO, 16, PANNELLO_Y + 20, INCHIOSTRO_CHIARO, palette_testo),
             _aiuto(Contesto::DIALOGO, 8, PANNELLO_Y + 36, INCHIOSTRO_CHIARO, palette_testo),
             _immune(Contesto::HUD, 120 + X_CORRADO - 20, 80 - 30 - 40, INCHIOSTRO_CHIARO, palette_testo),
-            _numero(0, 0, INCHIOSTRO_CHIARO, palette_testo),
+            _numero(0, 0, INCHIOSTRO_CHIARO, palette_testo, INCHIOSTRO_CONTORNO),
             _freccia_tiles(bn::sprite_tiles_item(bn::span<const bn::tile>(G::SPRITE_FRECCIA, 2 * G::TILE_PER_POSA_FRECCIA),
                                                  bn::bpp_mode::BPP_4, 2)),
             _freccia(bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 16), _freccia_tiles.create_tiles(0),
@@ -286,10 +305,11 @@ namespace
                 _y[e] = GUBBIO_VOCE(Y_FILA, GUBBIO_VOCE(FILA_EROE, e));
                 _sprite[e] = bn::sprite_ptr::create(_x[e], _y[e], bn::sprite_shape_size(f.lato, f.lato),
                                                     _figure[e]->create_tiles(0), *_palette[e]);
-                _pv.emplace_back(X_BARRA_EROE, _y[e] - 4, BARRA_PV, _palette_santi);
-                _fervore.emplace_back(X_BARRA_EROE, _y[e] + 6, BARRA_FERVORE, _palette_santi);
-                // i PV in cifre accanto al Santo, dalla vista come le barre
-                _numeri_pv.emplace_back(120 + X_BARRA_EROE - 14, 80 + _y[e] + 11, INCHIOSTRO_CHIARO, palette_testo);
+                _pv.emplace_back(X_BARRA_EROE, _y[e] + TARGA_PV_DY, BARRA_PV, _palette_santi);
+                _fervore.emplace_back(X_BARRA_EROE, _y[e] + TARGA_FERVORE_DY, BARRA_FERVORE, _palette_santi);
+                // i PV in cifre accanto alle barre, col contorno scuro: si leggono su ogni fondale
+                _numeri_pv.emplace_back(TARGA_CIFRE_X, 80 + _y[e] + TARGA_CIFRE_DY, INCHIOSTRO_CHIARO, palette_testo,
+                                        INCHIOSTRO_CONTORNO);
             }
 
             for(int n = 0; n < nemici; ++n)
@@ -802,6 +822,14 @@ namespace
             }
 
             st.resta_a_terra = m.bersaglio >= 0 && m.bersaglio < EROI;
+
+            // chi tira da lontano manda il colpo in volo: il fuoco di Antonio, il verrettone della balestra
+            if(m.attore >= 0 && m.bersaglio >= 0 && m.attore != m.bersaglio && ! _mischia[m.attore] &&
+               (m.gesto == Gesto::COLPO || m.gesto == Gesto::IMMUNE))
+            {
+                st.proiettile = _colpo[m.attore] == A::Effetto::FIAMMA ? A::Effetto::FIAMMA : A::Effetto::DARDO;
+            }
+
             return st;
         }
 
@@ -827,7 +855,7 @@ namespace
             int verso = m.attore >= EROI ? -1 : 1;          // verso il nemico di chi agisce
             int via = m.bersaglio >= EROI ? 1 : -1;         // lontano da chi colpisce
             bool colpo = m.gesto == Gesto::COLPO || m.gesto == Gesto::IMMUNE;
-            int scatto_foto = colpo ? A::impatto() + 1 : 12;
+            int scatto_foto = colpo ? A::impatto(stile) + 1 : 12;
             bool su_se_stesso = m.attore == m.bersaglio;
             // Dove arriva il passo: chi colpisce da vicino corre fino davanti al bersaglio, coi piedi alla
             // sua altezza; chi colpisce da lontano (la balestra, il fuoco, la luce della Verga) fa un passo.
@@ -871,7 +899,21 @@ namespace
                     lampo(m.attore, q.lampo_attore);
                     _sprite[m.attore]->set_x(lungo_la_corsa(_x[m.attore], meta_x, q.avanti_attore, verso));
                     _sprite[m.attore]->set_z_order(-1);
-                    effetto(_effetto_attore, m.attore, q.effetto_attore, q.fotogramma_attore, false, 0, 0);
+                    if(q.volo >= 0 && m.bersaglio >= 0 && _sprite[m.bersaglio])
+                    {
+                        // il proiettile: dalla mano di chi tira al petto del bersaglio
+                        int a_x = lungo_la_corsa(_x[m.attore], meta_x, q.avanti_attore, verso) + verso * 12;
+                        int b_x = _x[m.bersaglio] - verso * 6;
+                        int piedi_a = _y[m.attore] + _sprite[m.attore]->shape_size().height() / 2;
+                        int piedi_b = _y[m.bersaglio] + _sprite[m.bersaglio]->shape_size().height() / 2;
+                        int k = q.volo + 1;
+                        effetto(_effetto_attore, m.attore, q.effetto_attore, q.fotogramma_attore, verso < 0,
+                                a_x - _x[m.attore] + (b_x - a_x) * k / A::VOLO, (piedi_b - piedi_a) * k / A::VOLO - 6);
+                    }
+                    else
+                    {
+                        effetto(_effetto_attore, m.attore, q.effetto_attore, q.fotogramma_attore, false, 0, 0);
+                    }
                 }
 
                 if(m.bersaglio >= 0 && _sprite[m.bersaglio])
