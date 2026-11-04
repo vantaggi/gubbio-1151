@@ -2298,7 +2298,7 @@ def ridipingi(a, celle, tile_di, mondo, elementi):
             while y1 + 1 < y + profondo and all((k, y1 + 1) in case_celle and (k, y1 + 1) not in coperte for k in range(x, x1 + 1)):
                 y1 += 1
             sotto_via = any(calpestabile(k, y1 + 1) for k in range(x, x1 + 1))
-            tono = (2, 3, 3, 3, 3, 3, 3, 3, 3, 4)[int(PC.h32(x, y, 52) * 10)]
+            tono = 2 if PC.h32(x, y, 52) < 0.12 else 3     # i tetti di riempimento: due toni (M2: i tile servono alle facciate)
             PC.dipingi_tetto(q, x * 8, x1 * 8 + 7, y * 8, y1 * 8 + 7, tono, n, gronda=sotto_via or y1 - y >= 1)
             q.livella(x * 8, x1 * 8 + 7, y * 8, y1 * 8 + 7, int(PC.h32(x, y, 58) < 0.45))
             if y1 - y >= 1 and PC.h32(x, y, 53) < 0.3:
