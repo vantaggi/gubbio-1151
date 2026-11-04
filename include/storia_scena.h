@@ -38,7 +38,8 @@ public:
     void svuota();
 
 private:
-    void recita_regia(int regia, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo,
+    // false se la cutscene era gia' vista e non e' ripartita
+    bool recita_regia(int regia, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo,
                       bool automatica);
 
     // gli NPC d'ambiente (indice in NPC_AMBIENTE), i datori delle quest (NPC + quest) e l'infiltrato

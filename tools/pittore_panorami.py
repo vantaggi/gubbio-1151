@@ -15,6 +15,7 @@ import random
 
 from genera_battaglia import Tela
 import stendardi as ST
+from pennelli import ACCESO      # la voce ACCESO, la stessa per i pittori di C5-C7
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 W, H = 512, 256
@@ -28,8 +29,8 @@ PALETTE_CIELO = [("neutri", 0), ("cielo e acqua", 0), ("cielo e acqua", 1), ("ci
                  ("neutri", 4), ("cotto e coppi", 4)]
 # panorama: 0 trasparente, poi contorno, pietra, cotto, vermiglio, verde, l'alone e l'oro dei fuochi.
 # Le luci non si trasformano: un colore segnato ACCESO resta col tono del giorno anche di notte (i fuochi,
-# le finestre accese), cosi' e' il punto di luce della scena. Solo l'alone e l'oro dei panorami lo sono.
-ACCESO = "acceso"
+# le finestre accese), cosi' e' il punto di luce della scena. Nei panorami solo l'alone e l'oro lo sono; nelle
+# scene di notte di C5 e C6 (LUCI_ACCESE, in fondo) anche le candele, i Ceri, il ferro e la maiolica.
 PALETTE_PANORAMA = [("neutri", 0), ("neutri", 0), ("pietra calcarea", 1), ("pietra calcarea", 2), ("pietra calcarea", 3),
                     ("pietra calcarea", 4), ("pietra calcarea", 5), ("cotto e coppi", 1), ("cotto e coppi", 2),
                     ("cotto e coppi", 3), ("vermiglio comunale", 2), ("verde dei monti", 0), ("verde dei monti", 1),
@@ -733,3 +734,17 @@ CON_PASSO = C2.CON_PASSO
 import pittore_c3 as C3  # noqa: E402
 
 PITTORI.update(C3.PITTORI)
+
+# i piani di C5 (il risveglio dei Ceri), C6 (la visione nel vetro) e C7 (le presentazioni dei luoghi):
+# tools/pittore_c5.py, pittore_c6.py, pittore_c7.py. I Ceri e la fila in ferro hanno il passo.
+import pittore_c5 as C5  # noqa: E402
+import pittore_c6 as C6  # noqa: E402
+import pittore_c7 as C7  # noqa: E402
+
+PITTORI.update(C5.PITTORI)
+PITTORI.update(C6.PITTORI)
+PITTORI.update(C7.PITTORI)
+CON_PASSO = C2.CON_PASSO | C5.CON_PASSO | C6.CON_PASSO
+# i piani di notte dove la luce della scena e' piu' di un fuoco: la navata coi Ceri accesi, la brocca alla
+# luce delle candele, la visione nel vetro (ferro, rosso e oro accesi)
+LUCI_ACCESE = (set(C5.PITTORI) | set(C6.PITTORI)) - {"c6_vetro_scuro"}

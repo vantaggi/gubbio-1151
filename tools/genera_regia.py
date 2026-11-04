@@ -44,6 +44,11 @@ FRAME_PER_SECONDO = 60
 PIANI_MAX = 4
 W, H = 512, 256                  # un piano: mappa 64x32 tile, piu' largo dello schermo per scorrere
 TILE_MAX_PER_PIANO = 600
+# La VRAM dei BG: 64 KB in blocchi da 2 KB (come li conta Butano, bn_bg_blocks_manager). In un'inquadratura
+# ogni piano tiene i suoi tile (arrotondati al blocco) e la sua mappa 64x32 (4 KB, 2 blocchi).
+BLOCCO = 2048
+VRAM_BLOCCHI = 32
+MAPPA_BLOCCHI = (W // 8) * (H // 8) * 2 // BLOCCO
 ORIZZONTE = 104                  # nel quadro (240x112 fra le bande) l'orizzonte sta qui, in pixel di mappa
 
 
@@ -209,6 +214,20 @@ def dipingi_piani(usati):
     return out
 
 
+def blocchi_vram(tile_per_piano):
+    """I blocchi da 2 KB di VRAM che un'inquadratura occupa: i tile di ogni piano e le loro mappe."""
+    return sum(-(-n * 32 // BLOCCO) + MAPPA_BLOCCHI for n in tile_per_piano)
+
+
+def controlla_vram(cutscene, dipinti):
+    for c in cutscene:
+        for i in c["inquadrature"]:
+            usati = blocchi_vram([len(dipinti[p][0]) for p in i["piani"]])
+            if usati > VRAM_BLOCCHI:
+                raise ErroreRegia(f"{i['dove']}: l'inquadratura occupa {usati} blocchi di VRAM (tile e mappe), "
+                                  f"il massimo e' {VRAM_BLOCCHI}")
+
+
 def id_c(piano):
     return piano.upper().replace(":", "_")
 
@@ -219,6 +238,7 @@ def genera(sorgenti, palette_stile):
     controlla(cutscene, contesti)
     usati = sorted({p for c in cutscene for i in c["inquadrature"] for p in i["piani"]})
     dipinti = dipingi_piani(usati)
+    controlla_vram(cutscene, dipinti)
     out = ["// GENERATO da tools/genera_regia.py dai copioni di regia (regia/*.regia): non modificare a mano.",
            "#ifndef GUBBIO_REGIA_H", "#define GUBBIO_REGIA_H", "", "#include <cstdint>", "", "#include \"bn_tile.h\"", "",
            "#include \"testi.h\"", "", "namespace gubbio::regia", "{", "",

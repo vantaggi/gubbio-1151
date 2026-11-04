@@ -80,12 +80,25 @@ class Regia(unittest.TestCase):
                 self.assertTrue(accesi <= giorno, (nome, momento))
                 self.assertTrue({c for riga in tela.px for c in riga} <= set(range(16)), nome)
 
+    def accesi(self):
+        return {(nome, i) for nome, pittore in GR.PIANI.items()
+                for i, r in enumerate(pittore("notte")[1]) if GR.PP.ACCESO in r[2:]}
+
     def test_accesi_solo_l_alone_e_l_oro(self):
-        """Le luci che di notte restano col tono del giorno sono solo l'alone e l'oro dei panorami."""
-        accesi = {(nome, i) for nome, pittore in GR.PIANI.items()
-                  for i, r in enumerate(pittore("notte")[1]) if GR.PP.ACCESO in r[2:]}
-        self.assertEqual({i for _, i in accesi}, {GR.PP.ALONE, GR.PP.ORO})
-        self.assertTrue({n for n, _ in accesi} <= {"monte", "gubbio", "campo", "gubbio_fede"})
+        """Le luci che di notte restano col tono del giorno: nei panorami solo l'alone e l'oro; le altre solo
+        nelle scene di notte di C5 e C6 (LUCI_ACCESE: le candele, i Ceri, il ferro, la maiolica)."""
+        panorami = {(n, i) for n, i in self.accesi() if n not in GR.PP.LUCI_ACCESE}
+        self.assertEqual({i for _, i in panorami}, {GR.PP.ALONE, GR.PP.ORO})
+        self.assertTrue({n for n, _ in panorami} <= {"monte", "gubbio", "campo", "gubbio_fede"})
+        self.assertTrue(GR.PP.LUCI_ACCESE <= set(GR.PP.C5.PITTORI) | set(GR.PP.C6.PITTORI))
+        for nome in GR.PP.LUCI_ACCESE:
+            self.assertTrue(GR.PIANI[nome]("notte")[2], nome)                  # sono scene di notte
+
+    def test_negativa_luci_accese_fuori_dalle_scene_di_notte(self):
+        """Un piano di C7 (di giorno) o la bifora del prologo non sono fra le scene con le luci accese."""
+        self.assertNotIn("c7_monte", GR.PP.LUCI_ACCESE)
+        self.assertNotIn("c6_vetro_scuro", GR.PP.LUCI_ACCESE)
+        self.assertFalse(any(n.startswith("c7_") for n, _ in self.accesi()))
 
     def test_negativa_un_colore_non_acceso_si_trasforma(self):
         oro = ("oro e bronzo", 3)
@@ -275,7 +288,7 @@ class C2(unittest.TestCase):
     def test_le_due_pose_dei_fanti(self):
         """Le gambe di una posa sono nel colore 13, quelle dell'altra nel 14, che ha il colore del prato
         (12); ogni gamba della posa B ha il prato dietro, cosi' scambiando 13 e 14 sparisce."""
-        for nome in GR.PP.CON_PASSO:
+        for nome in GR.PP.C2.CON_PASSO:
             tela, palette, _ = GR.PP.PITTORI[nome]("giorno")
             self.assertEqual(palette[14], palette[12])
             self.assertNotEqual(palette[13], palette[12])
@@ -414,6 +427,122 @@ class SagomeX3(unittest.TestCase):
     def test_negativa_il_maialino_pesce(self):
         sopra, _, _ = self.maialino(V.antonio_a_blocchi)
         self.assertLess(sopra, 4)
+
+
+class C5C6C7(unittest.TestCase):
+    """F10: C5 Il risveglio dei Ceri, C6 La visione nel vetro, C7S e C7B le presentazioni dei luoghi
+    (cutscene/v2/SCHEDE.md; tools/pittore_c5.py, pittore_c6.py, pittore_c7.py)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.c = {GR.leggi(n, t)["codice"]: GR.leggi(n, t) for n, t in GR.sorgenti_del_repo()}
+
+    def battute(self, codice):
+        return [b for i in self.c[codice]["inquadrature"] for b in i["battute"]]
+
+    def test_come_nelle_schede(self):
+        durate = {"C5": 22, "C6": 20, "C7S": 11, "C7B": 12.5}
+        inquadrature = {"C5": 7, "C6": 5, "C7S": 2, "C7B": 2}
+        for codice, secondi in durate.items():
+            q = self.c[codice]["inquadrature"]
+            self.assertEqual(sum(i["frame"] for i in q), secondi * 60, codice)
+            self.assertEqual(len(q), inquadrature[codice], codice)
+        self.assertEqual(self.battute("C5"), ["R_A1_08_09"])                  # la battuta del copione
+        self.assertEqual(self.battute("C6"), [])                              # muta
+        self.assertEqual(self.battute("C7S"), ["R_C7S_00", "R_C7S_01"])
+        self.assertEqual(self.battute("C7B"), ["R_C7B_00", "R_C7B_01", "R_C7B_02"])
+        # C6 parte e finisce sulla bifora del prologo; i colpi dove li vuole la scheda
+        self.assertEqual(self.c["C6"]["inquadrature"][0]["piani"], ["vetrata"])
+        self.assertEqual([i["colpo"] for i in self.c["C5"]["inquadrature"]], [False, True, True, False, False, True, False])
+        self.assertTrue(self.c["C6"]["inquadrature"][1]["dissolvi"])
+
+    def test_negativa_c6_con_una_battuta(self):
+        n, t = next((n, t) for n, t in GR.sorgenti_del_repo() if "c6_" in n)
+        parlata = GR.leggi(n, t + "narratore R_C7B_00\n")
+        self.assertNotEqual([b for i in parlata["inquadrature"] for b in i["battute"]], [])
+
+    def test_didascalie_in_una_riga(self):
+        """Le battute nuove del narratore stanno in una riga da 224 px (col font vero)."""
+        font = S.carica("font")
+        testi = {r.split("|")[0].strip(): r.split("|", 2)[2].strip()
+                 for r in open(os.path.join(RADICE, "testi", "regia.testi"), encoding="utf-8")
+                 if r.startswith("R_C7")}
+        self.assertEqual(len(testi), 5)
+        for ident, testo in testi.items():
+            self.assertEqual(len(S.a_capo(font, S.normalizza(font, testo), 224)), 1, ident)
+
+    def test_negativa_didascalia_troppo_lunga(self):
+        font = S.carica("font")
+        lunga = "Gli Stradoni: nove tornanti di ghiaia fino alla Basilica, e poi ancora."
+        self.assertGreater(len(S.a_capo(font, S.normalizza(font, lunga), 224)), 1)
+
+    def test_i_ceri_girano_e_la_fila_sale(self):
+        """Il passo: i Ceri hanno le facce nei colori 13 e 14, tutti e due visibili e diversi (scambiandoli il
+        Cero gira); la fila in ferro ha il 14 del colore della roccia del sentiero, come i fanti di C2 il prato."""
+        PP = GR.PP
+        self.assertTrue({"c5_ceri", "c6_fanti"} <= PP.CON_PASSO)
+        tela, palette, _ = PP.PITTORI["c5_ceri"]("giorno")
+        self.assertNotEqual(palette[13], palette[14])
+        self.assertGreater(sum(r.count(13) for r in tela.px), 200)
+        self.assertGreater(sum(r.count(14) for r in tela.px), 200)
+        tela, palette, _ = PP.PITTORI["c6_fanti"]("giorno")
+        self.assertEqual(palette[14], PP.C6.PALETTE_VISIONE[PP.C6.VI_ROCCIA])
+        self.assertNotEqual(palette[13], palette[14])
+        self.assertGreater(sum(r.count(13) for r in tela.px), 30)
+        self.assertGreater(sum(r.count(14) for r in tela.px), 30)
+
+    def test_negativa_senza_passo(self):
+        for nome in ("c5_navata", "c5_raggi", "c6_corrado", "c7_monte"):
+            self.assertNotIn(nome, GR.PP.CON_PASSO)
+
+    def test_il_vetro_scuro_e_quello_dell_epilogo(self):
+        """C6 scurisce lo stesso vetro della lancetta destra che all'epilogo prende colore: le differenze
+        dalla bifora chiara stanno tutte li' dentro."""
+        chiara, scura = GR.PP.vetrata("giorno")[0], GR.PP.PITTORI["c6_vetro_scuro"]("giorno")[0]
+        diversi = [(x, y) for y in range(112) for x in range(240) if chiara.px[y][x] != scura.px[y][x]]
+        self.assertGreater(len(diversi), 300)
+        self.assertTrue(all(122 <= x < 158 and 70 <= y < 100 for x, y in diversi))
+
+    def test_negativa_la_bifora_chiara_non_e_scura(self):
+        chiara = GR.PP.vetrata("giorno")[0]
+        self.assertEqual(sum(1 for y in range(74, 100) for x in range(124, 156) if chiara.px[y][x] == GR.PP.V_BLU), 0)
+
+    def test_la_striscia_nera_una_volta(self):
+        """Nella parete vicina della gola la riga scura c'e' e, in ogni colonna, e' una fascia sola; il fondo
+        lontano non ce l'ha."""
+        C7 = GR.PP.C7
+        tela = C7.c7_gola_parete("giorno")[0]
+        colonne = 0
+        for x in range(0, 336):
+            ys = [y for y in range(112) if tela.px[y][x] == C7.G_NERA]
+            if ys:
+                colonne += 1
+                self.assertEqual(ys, list(range(ys[0], ys[-1] + 1)), x)
+        self.assertGreater(colonne, 200)
+        striscia = C7.c7_striscia("giorno")[0]
+        self.assertGreater(sum(r[:240].count(C7.G_NERA) for r in striscia.px[:112]), 300)
+
+    def test_negativa_il_fondo_senza_striscia(self):
+        C7 = GR.PP.C7
+        self.assertEqual(sum(r.count(C7.G_NERA) for r in C7.c7_gola_fondo("giorno")[0].px), 0)
+
+    def test_nel_budget_della_vram(self):
+        """Ogni inquadratura del repo sta nei 32 blocchi da 2 KB della VRAM dei BG (genera_regia lo
+        controlla); la piu' piena delle nuove e' la gola dentro il vetro di C6."""
+        usati = sorted({p for c in self.c.values() for i in c["inquadrature"] for p in i["piani"]})
+        dipinti = GR.dipingi_piani(usati)
+        GR.controlla_vram(list(self.c.values()), dipinti)
+        nuove = [GR.blocchi_vram([len(dipinti[p][0]) for p in i["piani"]])
+                 for k in ("C5", "C6", "C7S", "C7B") for i in self.c[k]["inquadrature"]]
+        self.assertLessEqual(max(nuove), GR.VRAM_BLOCCHI)
+        self.assertLessEqual(max(len(dipinti[p][0]) for p in usati), GR.TILE_MAX_PER_PIANO)
+
+    def test_negativa_inquadratura_oltre_la_vram(self):
+        c = GR.leggi("pieno.regia", "cutscene CX | x\ninquadratura 2 | c6_cielo c6_parete c6_sentiero c6_fanti | 16\n")
+        finti = {p: ([None] * 590, None, None, None) for p in c["inquadrature"][0]["piani"]}
+        with self.assertRaisesRegex(GR.ErroreRegia, "blocchi di VRAM"):
+            GR.controlla_vram([c], finti)
+        self.assertEqual(GR.blocchi_vram([590] * 4), 4 * (10 + 2))
 
 
 if __name__ == "__main__":

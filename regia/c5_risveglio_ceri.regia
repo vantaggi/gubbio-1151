@@ -1,0 +1,14 @@
+# C5 Il risveglio dei Ceri (cutscene/v2/SCHEDE.md, approvata): dentro A1-08, al posto della regia in prosa
+# «Il risveglio dei Ceri» (cinematica 2 del GDD), dopo «Seconda notte». I tre ceri dell'altare si accendono,
+# dalla loro luce salgono i tre Ceri di legno e girano (il passo), la brocca cade e i cocci brillano, la luce
+# scende sui tre. La battuta del narratore e' quella del copione: nella vista di gioco non si ripete
+# (tools/genera_storia.py, Inserto.copre). Poi le righe di SISTEMA, Giorgio e Ubaldo, senza bande.
+cutscene C5 | Il risveglio dei Ceri
+inquadratura 4 | c5_navata | 0
+inquadratura 2 | c5_accese | 0 | colpo
+inquadratura 2 | c5_sorgono | 0 | colpo
+inquadratura 6 | c5_ceri | 0
+narratore R_A1_08_09
+inquadratura 1 | c5_brocca | 0
+inquadratura 2.5 | c5_cocci | 0 | colpo
+inquadratura 4.5 | c5_ceri c5_raggi | 0

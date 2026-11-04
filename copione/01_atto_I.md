@@ -236,6 +236,8 @@ Regia: un canonico del Duomo sta sul varco. Il dialogo parte quando il giocatore
 
 ### Ingresso (primo tornante)
 
+Regia: prima delle battute, la presentazione del luogo: la cutscene C7S «Gli Stradoni del Monte» (`regia/c7s_stradoni.regia`), solo la prima volta.
+
 - ANTONIO (calmo): Due chilometri di sterrato. E il vescovo ha le gambe di un mulo.
 - UBALDO (calmo): E il mulo ti sente.
 - GIORGIO (deciso): Così lassù ci arriviamo a notte, padre!
@@ -300,7 +302,7 @@ Regia: dissolvenze. Tre ceri spenti sull'altare. Etichette «Prima notte», «Se
 
 ### Il risveglio dei Ceri (cinematica 2, Sez. 34B)
 
-Regia: tre pilastri di legno e luce si alzano dall'altare, ruotano e si ergono. Sul primo brilla una mitra, sul secondo un elmo e una lancia, sul terzo una fiamma. I tre non hanno colori propri: sono legno e luce. Una brocca di maiolica cade dall'altare e si spezza: i cocci brillano.
+Regia: tre pilastri di legno e luce si alzano dall'altare, ruotano e si ergono. Sul primo brilla una mitra, sul secondo un elmo e una lancia, sul terzo una fiamma. I tre non hanno colori propri: sono legno e luce. Una brocca di maiolica cade dall'altare e si spezza: i cocci brillano. È la cutscene C5 «Il risveglio dei Ceri» (`regia/c5_risveglio_ceri.regia`): la riga del narratore la dice nelle bande, e nella vista di gioco non si ripete.
 
 - NARRATORE: E il legno si fece luce.
 - SISTEMA: Il Cero della mitra si accende sopra Ubaldo. La sua verga risplende.
@@ -350,7 +352,7 @@ Se almeno due indizi:
 - ANTONIO (deciso): E la spia che rideva della nostra acqua. È il condotto, Ubaldo.
 - UBALDO (calmo): Allora il vetro ci dirà soltanto quando.
 
-Regia: uno dei vetri chiari si scurisce e mostra un'immagine che si muove: uomini in ferro salgono una gola stretta dietro il monte, verso gli archi di un acquedotto. Uno di loro, enorme, porta un martello.
+Regia: uno dei vetri chiari si scurisce e mostra un'immagine che si muove: uomini in ferro salgono una gola stretta dietro il monte, verso gli archi di un acquedotto. Uno di loro, enorme, porta un martello. È la cutscene C6 «La visione nel vetro» (`regia/c6_visione_vetro.regia`), muta; le battute dopo, senza bande.
 
 - UBALDO (preoccupato): Il Bottaccione... Salgono dalla gola, dietro il monte.
 - ANTONIO (preoccupato): Vogliono il condotto. Se lo tagliano, la città beve fango in due giorni.

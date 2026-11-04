@@ -390,14 +390,14 @@ namespace
 }
 
 // Una cutscene del copione di regia: usa tutti e quattro i BG, lo sfondo dell'area si libera e torna
-// dopo. Una gia' vista non riparte da sola.
-void Storia::recita_regia(int regia, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo,
+// dopo. Una gia' vista non riparte da sola (e ritorna false).
+bool Storia::recita_regia(int regia, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo,
                           bool automatica)
 {
     if(regia::vista(g_game_state, regia))
     {
         BN_LOG("Cutscene ", GUBBIO_VOCE(regia::CUTSCENE_DATI, regia).codice, " gia' vista");
-        return;
+        return false;
     }
 
     if(esplorazione)
@@ -414,6 +414,8 @@ void Storia::recita_regia(int regia, Esplorazione* esplorazione, const bn::sprit
     {
         esplorazione->ricompari();
     }
+
+    return true;
 }
 
 bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo, bool automatica,
@@ -476,7 +478,13 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
             {
                 recita_battute(BATTUTA, da, n.battuta - da, palette_testo, automatica);
                 da = n.battuta;
-                recita_regia(n.regia, esplorazione, palette_testo, automatica);
+
+                // le battute del narratore che la cutscene ha detto nelle bande non si ripetono; se era gia'
+                // vista (la scena rigiocata dopo una battaglia persa) si leggono nella vista di gioco
+                if(recita_regia(n.regia, esplorazione, palette_testo, automatica))
+                {
+                    da += n.copre;
+                }
 
                 if(esplorazione)
                 {

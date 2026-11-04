@@ -249,7 +249,7 @@ class Inserti(unittest.TestCase):
         self.assertEqual(self.parlante("A1-01", 7), "ARALDO")
         h = open(os.path.join(RADICE, "include", "storia.h"), encoding="utf-8").read()
         prima = sum(len(s["battute"]) for s in SCENE[:[s["codice"] for s in SCENE].index("A1-01")])
-        self.assertIn(f"{{ {prima + 4}, {GS.codici_regia().index('C2')} }},", h)
+        self.assertIn(f"{{ {prima + 4}, {GS.codici_regia().index('C2')}, 0 }},", h)
 
     def test_sul_gba_c2_e_c2p_dentro_a1_01(self):
         """Nei log di mGBA (storia intera e prologo giocabile) C2 e poi C2P si recitano dentro A1-01,
@@ -284,6 +284,63 @@ class Inserti(unittest.TestCase):
 
     def test_negativa_presentazione_dopo_la_prima_battuta(self):
         self.assertNotEqual(self.prima_volta("A1-04", "ANTONIO") + 1, [k for k, c in GS.INSERTI["A1-04"].items() if c == "C3A"][0])
+
+    def test_c5_c6_c7_dove_dicono_le_schede(self):
+        """F10: C5 prima del narratore di A1-08 (che la cutscene dice nelle bande: copre 1), C6 in A1-09 dopo
+        lo scambio dei due indizi e prima che Ubaldo nomini il Bottaccione, C7S e C7B all'inizio di A1-07 e
+        B-01; in storia.h col numero di battute coperte."""
+        self.assertEqual(GS.INSERTI["A1-08"], {9: "C5"})
+        self.assertEqual(self.parlante("A1-08", 9), "NARRATORE")
+        self.assertEqual(self.parlante("A1-08", 8), "UBALDO")
+        a109 = next(s for s in SCENE if s["codice"] == "A1-09")["battute"]
+        self.assertEqual(GS.INSERTI["A1-09"], {3: "C6"})
+        self.assertTrue(all(b["guardia"][0] == "ALMENO_DUE" for b in a109[:3]))
+        self.assertEqual(a109[3]["guardia"][0], "SEMPRE")
+        self.assertIn("Bottaccione", a109[3][2])
+        self.assertEqual(GS.INSERTI["A1-07"], {0: "C7S"})
+        self.assertEqual(GS.INSERTI["B-01"], {0: "C7B"})
+        h = open(os.path.join(RADICE, "include", "storia.h"), encoding="utf-8").read()
+        codici = [s["codice"] for s in SCENE]
+        for scena, k, cut, copre in (("A1-08", 9, "C5", 1), ("A1-09", 3, "C6", 0), ("A1-07", 0, "C7S", 0), ("B-01", 0, "C7B", 0)):
+            prima = sum(len(s["battute"]) for s in SCENE[:codici.index(scena)])
+            self.assertIn(f"{{ {prima + k}, {GS.codici_regia().index(cut)}, {copre} }},", h, cut)
+        self.assertEqual(GS.coperte(next(s for s in SCENE if s["codice"] == "A1-08"), 9, "C5"), 1)
+
+    def test_negativa_c5_fuori_posto(self):
+        """C5 dice nelle bande la battuta 9 di A1-08: inserita prima della 8 la si sentirebbe in anticipo."""
+        vecchi = GS.INSERTI
+        try:
+            GS.INSERTI = {"A1-08": {8: "C5"}}
+            with self.assertRaisesRegex(ValueError, "non vengono subito dopo l'inserto"):
+                GS.genera()
+            GS.INSERTI = {"A1-08": {10: "C5"}}
+            with self.assertRaisesRegex(ValueError, "non vengono subito dopo l'inserto"):
+                GS.genera()
+        finally:
+            GS.INSERTI = vecchi
+
+    def test_negativa_inserto_su_una_battuta_gia_detta(self):
+        """Un inserto su una battuta che la cutscene prima ha gia' detto nelle bande e' rifiutato."""
+        vecchi, vecchia = GS.INSERTI, GS.narratore_della_regia
+        try:
+            GS.narratore_della_regia = lambda c: ["R_A1_08_09", "R_A1_08_10"] if c == "C5" else []
+            GS.INSERTI = {"A1-08": {9: "C5", 10: "C3U"}}
+            with self.assertRaisesRegex(ValueError, "l'ha gia' detta la cutscene prima"):
+                GS.genera()
+        finally:
+            GS.INSERTI, GS.narratore_della_regia = vecchi, vecchia
+
+    def test_le_battute_coperte_non_si_ripetono(self):
+        """Nel lettore: dopo una cutscene recitata le battute coperte si saltano; una cutscene gia' vista
+        (la scena rigiocata dopo una battaglia persa) le lascia alla vista di gioco."""
+        cpp = open(os.path.join(RADICE, "src", "storia_scena.cpp"), encoding="utf-8").read()
+        self.assertRegex(cpp, r"if\(recita_regia\(n\.regia[^)]*\)\)\s*\{\s*da \+= n\.copre;")
+        self.assertIn("return false;", cpp[cpp.index("bool Storia::recita_regia"):cpp.index("bool Storia::recita(")])
+
+    def test_negativa_lettore_che_ripete(self):
+        cpp = open(os.path.join(RADICE, "src", "storia_scena.cpp"), encoding="utf-8").read()
+        senza = cpp.replace("da += n.copre;", "")
+        self.assertNotRegex(senza, r"if\(recita_regia\(n\.regia[^)]*\)\)\s*\{\s*da \+= n\.copre;")
 
     def test_negativa_inserto_su_una_battuta_che_non_c_e(self):
         vecchi = GS.INSERTI

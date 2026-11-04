@@ -372,21 +372,27 @@ inline constexpr Scena SCENA[SCENE] = {
     { "E-02", testi::TestoId::SCENA_E_02, true, 8, NESSUNA_AREA, 0x80000u, 0x0u, 0x100000u, -1, -1, 226, 3 },
 };
 
-// Le cutscene dentro le scene: prima della battuta (indice in BATTUTA), la cutscene.
+// Le cutscene dentro le scene: prima della battuta (indice in BATTUTA), la cutscene; le battute del
+// narratore che la cutscene dice nelle bande (copre, dalla battuta in poi) non si ripetono nella vista di gioco.
 struct Inserto
 {
     uint16_t battuta;
     int8_t regia;
+    uint8_t copre;
 };
 
-inline constexpr int INSERTI = 6;
+inline constexpr int INSERTI = 10;
 inline constexpr Inserto INSERTO[INSERTI > 0 ? INSERTI : 1] = {
-    { 11, 7 },  // A1-01 prima della battuta 1: C3U
-    { 12, 6 },  // A1-01 prima della battuta 2: C3G
-    { 14, 2 },  // A1-01 prima della battuta 4: C2
-    { 18, 3 },  // A1-01 prima della battuta 8: C2P
-    { 45, 4 },  // A1-04 prima della battuta 1: C3A
-    { 172, 5 },  // B-04 prima della battuta 0: C3C
+    { 11, 7, 0 },  // A1-01 prima della battuta 1: C3U
+    { 12, 6, 0 },  // A1-01 prima della battuta 2: C3G
+    { 14, 2, 0 },  // A1-01 prima della battuta 4: C2
+    { 18, 3, 0 },  // A1-01 prima della battuta 8: C2P
+    { 45, 4, 0 },  // A1-04 prima della battuta 1: C3A
+    { 93, 12, 0 },  // A1-07 prima della battuta 0: C7S
+    { 118, 9, 1 },  // A1-08 prima della battuta 9: C5
+    { 137, 10, 0 },  // A1-09 prima della battuta 3: C6
+    { 146, 11, 0 },  // B-01 prima della battuta 0: C7B
+    { 172, 5, 0 },  // B-04 prima della battuta 0: C3C
 };
 
 enum class Fase : uint8_t

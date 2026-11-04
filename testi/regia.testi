@@ -5,3 +5,10 @@ R_C3_UBALDO               | NARRATORE | Ubaldo, vescovo di Gubbio. Non alza mai 
 R_C3_GIORGIO              | NARRATORE | Giorgio, giovane cavaliere. Prima sguaina la spada, poi chiede perché.
 R_C3_ANTONIO              | NARRATORE | Antonio, l'eremita del fuoco. Da vent'anni Gubbio gli tiene chiuse le porte.
 R_C3_CORRADO              | NARRATORE | Corrado di Spoleto, il Colosso delle Forge. Monaldo lo manda a spezzare l'acqua di Gubbio.
+
+# Le didascalie delle presentazioni dei luoghi (C7S, C7B, cutscene/v2/SCHEDE.md): una riga ciascuna.
+R_C7S_00                  | NARRATORE | Gli Stradoni: nove tornanti di ghiaia fino alla Basilica.
+R_C7S_01                  | NARRATORE | Tre cappelle lungo la salita, una per ciascuno.
+R_C7B_00                  | NARRATORE | Dietro il monte, la gola del Bottaccione.
+R_C7B_01                  | NARRATORE | Di qui passa l'acqua della città, lungo la roccia.
+R_C7B_02                  | NARRATORE | Nella pietra, una riga scura più antica di ogni città.

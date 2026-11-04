@@ -24,7 +24,7 @@ Nella v1 il Bottaccione chiude l'Atto I invece di aprire l'Atto II, come deciso 
 | Condizione | `VISIONE_BOTTACCIONE` e non `BOTTACCIONE_ENTRATI` |
 | Imposta | `BOTTACCIONE_ENTRATI`, palette del Bottaccione (scelta di stile 1: cupo) |
 
-Regia: la gola si stringe. Sulla parete calcarea corre una sottile striscia scura.
+Regia: la gola si stringe. Sulla parete calcarea corre una sottile striscia scura. Prima delle battute, la presentazione del luogo: la cutscene C7B «La gola del Bottaccione» (`regia/c7b_bottaccione.regia`), solo la prima volta.
 
 - ANTONIO (calmo): Guarda la roccia, ragazzo. Quella striscia nera.
 - ANTONIO (calmo): Berto il tagliapietre dice che lì la terra non dorme.

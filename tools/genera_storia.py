@@ -114,7 +114,11 @@ REGIA_DENTRO = -2           # la scena e' gia' recitata dalla cutscene della sce
 # C2 (le undici bandiere) entra prima che parli l'araldo, C2P (il pastorale) prima che risponda Ubaldo.
 # Le presentazioni a fermo immagine (C3) entrano prima che il personaggio parli la prima volta: Ubaldo
 # dopo il cartello della piazza, Giorgio, Antonio, Corrado.
-INSERTI = {"A1-01": {1: "C3U", 2: "C3G", 4: "C2", 8: "C2P"}, "A1-04": {1: "C3A"}, "B-04": {0: "C3C"}}
+# F10: C5 (il risveglio dei Ceri) prima del narratore di A1-08, che la cutscene dice nelle bande; C6 (la visione
+# nel vetro) in A1-09 dopo lo scambio dei due indizi e prima che Ubaldo nomini il Bottaccione; le presentazioni
+# dei luoghi all'inizio della scena: C7S in A1-07 (prima di «Ingresso»), C7B in B-01 (prima di Antonio).
+INSERTI = {"A1-01": {1: "C3U", 2: "C3G", 4: "C2", 8: "C2P"}, "A1-04": {1: "C3A"}, "B-04": {0: "C3C"},
+           "A1-07": {0: "C7S"}, "A1-08": {9: "C5"}, "A1-09": {3: "C6"}, "B-01": {0: "C7B"}}
 
 # Le battaglie delle scene (battaglia::INCONTRO). Quelle con un nemico sulla mappa partono toccandolo;
 # gli Spettri del Dubbio di A1-08 compaiono durante il rito: la scena parte entrando nella Basilica.
@@ -637,6 +641,33 @@ def codici_regia():
     return codici
 
 
+def narratore_della_regia(codice):
+    """Le battute del narratore che la cutscene 'codice' dice nelle bande (regia/*.regia), nell'ordine."""
+    import glob
+    for p in sorted(glob.glob(os.path.join(RADICE, "regia", "*.regia"))):
+        with open(p, encoding="utf-8") as f:
+            righe = [r.split("#", 1)[0].strip() for r in f]
+        if any(r.startswith("cutscene ") and r.split()[1] == codice for r in righe):
+            return [r.split()[1] for r in righe if r.startswith("narratore ")]
+    return []
+
+
+def coperte(scena, k, codice):
+    """Quante battute della scena, dalla k in poi, la cutscene inserita prima della k ha gia' detto nelle bande
+    (le battute del NARRATORE del copione, R_<scena>_<k>): nella vista di gioco non si ripetono. Una battuta
+    della scena detta dalla cutscene ma non subito dopo l'inserto e' un errore: si sentirebbe due volte, o
+    prima del suo momento."""
+    prefisso = id_narratore(scena["codice"], 0)[:-2]          # R_A1_08_
+    proprie = [b for b in narratore_della_regia(codice) if b.startswith(prefisso)]
+    n = 0
+    while k + n < len(scena["battute"]) and id_narratore(scena["codice"], k + n) in proprie:
+        n += 1
+    if n != len(proprie):
+        raise ValueError(f"inserto {scena['codice']}:{k} {codice}: la cutscene dice {', '.join(proprie)}, "
+                         f"che non vengono subito dopo l'inserto")
+    return n
+
+
 def indice_regia(codice):
     if codice in DENTRO_LA_PRECEDENTE:
         return REGIA_DENTRO
@@ -978,15 +1009,21 @@ def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None)
     inserti = []
     regie = codici_regia()
     for s in scene:
+        libera = 0                  # la prima battuta che una cutscene della scena non ha gia' detto
         for k, codice in sorted(INSERTI.get(s["codice"], {}).items()):
             if not 0 <= k < len(s["battute"]) or codice not in regie:
                 raise ValueError(f"inserto {s['codice']}:{k} {codice}: battuta o cutscene che non c'e'")
+            if k < libera:
+                raise ValueError(f"inserto {s['codice']}:{k} {codice}: la battuta l'ha gia' detta la cutscene prima")
             prima = sum(len(t["battute"]) for t in scene[:scene.index(s)])
-            inserti.append(f"    {{ {prima + k}, {regie.index(codice)} }},  // {s['codice']} prima della battuta {k}: {codice}")
-    out += ["// Le cutscene dentro le scene: prima della battuta (indice in BATTUTA), la cutscene.",
-            "struct Inserto", "{", "    uint16_t battuta;", "    int8_t regia;", "};", "",
+            copre = coperte(s, k, codice)
+            libera = k + copre
+            inserti.append(f"    {{ {prima + k}, {regie.index(codice)}, {copre} }},  // {s['codice']} prima della battuta {k}: {codice}")
+    out += ["// Le cutscene dentro le scene: prima della battuta (indice in BATTUTA), la cutscene; le battute del",
+            "// narratore che la cutscene dice nelle bande (copre, dalla battuta in poi) non si ripetono nella vista di gioco.",
+            "struct Inserto", "{", "    uint16_t battuta;", "    int8_t regia;", "    uint8_t copre;", "};", "",
             f"inline constexpr int INSERTI = {len(inserti)};",
-            "inline constexpr Inserto INSERTO[INSERTI > 0 ? INSERTI : 1] = {"] + (inserti or ["    { 0xFFFF, -1 },"]) + ["};", ""]
+            "inline constexpr Inserto INSERTO[INSERTI > 0 ? INSERTI : 1] = {"] + (inserti or ["    { 0xFFFF, -1, 0 },"]) + ["};", ""]
     # NPC
     out += ["enum class Fase : uint8_t", "{"] + [f"    {f}," for f in FASI] + ["};", "",
             "struct Npc", "{", "    int8_t area;", "    uint8_t tx;", "    uint8_t ty;",

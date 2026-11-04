@@ -1,0 +1,8 @@
+# C7S Gli Stradoni del Monte (cutscene/v2/SCHEDE.md, approvata): la cartolina del luogo all'inizio di A1-07,
+# prima di «Ingresso (primo tornante)»; solo la prima volta (una cutscene vista non riparte). Il cielo e'
+# quello di C4, gia' in ROM: Giorgio dice «lassu' ci arriviamo a notte».
+cutscene C7S | Gli Stradoni del Monte
+inquadratura 6 | cielo:alba c7_monte c7_fronde | 10
+narratore R_C7S_00
+inquadratura 5 | c7_cappella | 0
+narratore R_C7S_01
