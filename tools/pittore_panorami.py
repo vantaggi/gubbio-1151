@@ -501,6 +501,8 @@ def vetrata_disegno(vetri):
                 t.rett(x + 1, y0 + 1, largo - 2, 7, V_PILASTRO)        # i conci vicini alla luce
             t.rett(x, y0, largo - 1, 1, filo)
             t.rett(x, y0, 1, 8, filo)
+            if d < 46 and y0 > 4:                              # la faccia a sinistra un tono piu' su (L1)
+                t.rett(x + 1, y0 + 1, 1, 7, V_SPIGOLO)
             x += largo
     # i pilastri ai lati come solidi (L2): la faccia in penombra, lo spigolo verso la finestra preso
     # dalla luce, i rocchi; il fianco lontano nel buio

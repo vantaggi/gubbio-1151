@@ -34,6 +34,10 @@ PALETTE_STRADONI = [("neutri", 0), ("neutri", 0), ("verde dei monti", 0), ("verd
                     ("neutri", 4), ("oro e bronzo", 3), ("vermiglio comunale", 2), ("cielo e acqua", 2)]
 ST_C, ST_V0, ST_V1, ST_V2, ST_V3, ST_P2, ST_GHIAIA, ST_GHIAIA_L = 1, 2, 3, 4, 5, 6, 7, 8
 ST_COTTO_S, ST_COTTO, ST_LEGNO, ST_BIANCO, ST_ORO, ST_ROSSO, ST_AZZURRO = 9, 10, 11, 12, 13, 14, 15
+# il primo piano della cappelletta: la ghiaia nel tono medio della pietra, come gli stradoni della mappa
+# (tools/pittore_citta.py, area monte_ingino: fondo pietra 3, sassolini pietra 4, ombre pietra 2; C5)
+PALETTE_CAPPELLA = PALETTE_STRADONI[:8] + [("pietra calcarea", 3)] + PALETTE_STRADONI[9:]
+ST_GHIAIA_M = 8
 CAPPELLE = {3: "Sant'Ubaldo", 6: "San Giorgio", 7: "Sant'Antonio"}
 
 
@@ -151,11 +155,11 @@ def c7_cappella(m):
         x, y = r.randrange(0, 130), r.randrange(42, 60)
         t.rett(x, y, r.randint(3, 6), 2, ST_COTTO)
         t.rett(x, y + 2, 3, 1, ST_P2)
-    poligono(t, [(0, 112), (0, 80), (60, 72), (140, 70), (240, 78), (240, 112)], ST_GHIAIA)
+    poligono(t, [(0, 112), (0, 80), (60, 72), (140, 70), (240, 78), (240, 112)], ST_GHIAIA_M)
     for x in range(0, 140, 7):                                                    # il muretto a secco
         y = 64 + x // 40
         t.rett(x, y, 6, 4, ST_P2)
-        t.rett(x, y, 5, 1, ST_GHIAIA_L)                                           # la luce sopra (L1)
+        t.rett(x, y, 5, 1, ST_GHIAIA)                                           # la luce sopra (L1)
         t.rett(x + 6, y, 1, 4, ST_V0)
         t.rett(x, y + 4, 7, 1, ST_P2)                                             # l'ombra sulla ghiaia
     cx = 150
@@ -163,11 +167,18 @@ def c7_cappella(m):
     poligono(t, [(cx + 40, 72), (cx + 62, 72), (cx + 70, 78), (cx + 40, 78)], ST_P2)
     # la ghiaia: sassolini di 2 px con la luce sopra e l'ombra sotto (niente pixel orfani, P3); piu'
     # radi e piu' piccoli lontano, piu' grossi davanti
+    # l'erba che invade la ghiaia lungo il bordo in alto, a ciuffi di 2 px, come sugli stradoni della mappa
+    for x in range(0, 240, 2):
+        for y in range(68, 82):
+            if t.px[y][x] == ST_GHIAIA_M and t.px[y - 1][x] != ST_GHIAIA_M:
+                n = 1 + (x * 7 % 5 < 2) + (x * 13 % 7 < 2)
+                t.rett(x, y, 2, n, ST_V2 if (x // 2) % 3 else ST_V1)
+                break
     for _ in range(260):
         x, y = r.randrange(240), r.randrange(73, 112)
-        if t.px[y][x] == ST_GHIAIA and t.px[y + 1][x] == ST_GHIAIA:
+        if t.px[y][x] == ST_GHIAIA_M and t.px[y + 1][x] == ST_GHIAIA_M:
             largo = 2 if y < 95 else 3
-            t.rett(x, y, largo, 1, ST_GHIAIA_L)
+            t.rett(x, y, largo, 1, ST_GHIAIA)
             t.rett(x, y + 1, largo, 1, ST_P2)
     # la cappella intonacata: il fronte in luce, il fianco destro in ombra, lo zoccolo piu' scuro, la
     # nicchia incassata con lo strombo, il tetto a coppi; il bordo e' il tono scuro del materiale, non
@@ -202,7 +213,7 @@ def c7_cappella(m):
             if w > 2:
                 t.rett(x - w + 1, 44 + yy, 1, 1, ST_V2)                           # la luce a sinistra
         t.rett(x + 2, 72, 6, 2, ST_P2)                                            # l'ombra a terra
-    return t, PALETTE_STRADONI, False
+    return t, PALETTE_CAPPELLA, False
 
 
 # ======================================================================================================
