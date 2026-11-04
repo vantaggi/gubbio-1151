@@ -9849,6 +9849,13 @@ inline constexpr uint16_t PALETTE_GIOCATORE[16] = {
     0x26B8, 0x4FBD, 0x2529, 0x41EF, 0x1085, 0x190A, 0x2D8D, 0x18D4,
 };
 
+// Il segnale d'interazione (STANDARD I2, tools/sagome_mappa.py): un tile 8x8 con la palette del
+// giocatore; oscilla di un pixel ogni FUMETTO_OSCILLA vblank.
+inline constexpr int FUMETTO_OSCILLA = 20;
+inline constexpr uint32_t TILE_FUMETTO[8] = {
+    0x01111110, 0x15555551, 0x1B5B5B51, 0x15555551, 0x01111551, 0x00000151, 0x00000011, 0x00000000,
+};
+
 }
 
 #endif

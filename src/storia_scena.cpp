@@ -242,6 +242,7 @@ namespace
     }
 
     constexpr int ALTEZZA_NPC = 30;      // lo sprite e' 16x32: i piedi due pixel sopra il bordo in basso
+    constexpr int ALTEZZA_PERSONA = 24;  // la persona dentro lo sprite (STANDARD M2): il fumetto le sta sopra
 
     // Un NPC con la sua figura (FIGURA_NPC, 16x32) e i colori dei popolani.
     bn::sprite_ptr crea_npc(const bn::sprite_palette_ptr& palette, int figura)
@@ -941,6 +942,28 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         dialogo_fine();
         svuota();       // l'oggetto sparisce: si rifa' tutto al prossimo frame
         return true;
+    }
+
+    // il fumetto coi tre puntini (STANDARD I2) sopra la prima persona a portata di parola: e' la stessa
+    // che risponde ad A qui sotto.
+    bool a_portata = false;
+
+    for(int j = 0; j < _indici.size() && ! a_portata; ++j)
+    {
+        Posto qui = posto_di(_indici[j]);
+        int dx = e.x - mondo::piedi_x(qui.tx);
+        int dy = e.y - mondo::piedi_y(qui.ty);
+
+        if(dx > -DISTANZA_PAROLA && dx < DISTANZA_PAROLA && dy > -DISTANZA_PAROLA && dy < DISTANZA_PAROLA)
+        {
+            esplorazione.segnala(mondo::piedi_x(qui.tx), mondo::piedi_y(qui.ty), ALTEZZA_PERSONA);
+            a_portata = true;
+        }
+    }
+
+    if(! a_portata)
+    {
+        esplorazione.spegni_segnale();
     }
 
     if(! bn::keypad::a_pressed())

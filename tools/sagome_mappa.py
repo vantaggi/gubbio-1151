@@ -178,6 +178,27 @@ def destra(f):
 PITTORI = {"giu": giu, "su": su, "destra": destra}
 
 
+# Il segnale d'interazione (STANDARD I2): un fumetto 8x8 bianco (neutri 4) col contorno quasi nero, la punta
+# in basso a sinistra e tre puntini scuri; usa la palette del giocatore. "1" contorno, "w" bianco, "d" puntino.
+FUMETTO_DISEGNO = (
+    ".111111.",
+    "1wwwwww1",
+    "1wdwdwd1",
+    "1wwwwww1",
+    "1ww1111.",
+    "1w1.....",
+    "11......",
+    "........",
+)
+FUMETTO_OSCILLA = 20          # vblank fra un pixel su e uno giu'
+
+
+def fumetto():
+    """La griglia 8x8 di indici della palette del giocatore."""
+    colore = {".": 0, "1": 1, "w": INDICI["bianco"][1], "d": INDICI["camice"][1]}
+    return [[colore[c] for c in riga] for riga in FUMETTO_DISEGNO]
+
+
 def fotogramma(direzione, f):
     """La griglia 16x32 di indici del fotogramma f (0-7) della direzione, con l'ombra sotto i piedi."""
     px = PITTORI[direzione](f).pixel()
