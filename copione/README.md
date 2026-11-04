@@ -12,12 +12,12 @@ Bozza del 1 novembre 2026, per la fase F6 del [piano di ripartenza](https://clau
 | [01_atto_I.md](01_atto_I.md) | Dall'ultimatum al rito della Basilica e alla visione; il borgo (D1) | 136 |
 | [02_bottaccione_epilogo.md](02_bottaccione_epilogo.md) | Il dungeon, il ragazzo esule (D2), Corrado, il rientro, la terza alba (D4), la vetrata | 90 |
 | [03_npc_ambiente.md](03_npc_ambiente.md) | NPC d'ambiente delle 14 aree, per fase; il pane (D3) | 59 |
-| [04_quest.md](04_quest.md) | Le 3 quest scelte: il Ferro (San Martino), le Erbe (Sant'Andrea), la Rosa (San Pietro) | 69 |
+| [04_quest.md](04_quest.md) | Le 3 quest scelte: il Ferro (San Martino), le Erbe (Sant'Andrea), la Rosa (San Pietro) | 74 |
 | [05_npc_amici.md](05_npc_amici.md) | Gli amici di Cioti e le loro famiglie come NPC del 1151, per area e fase | 84 |
 | [verifica_copione.py](verifica_copione.py) | Controllo di caratteri e righe | |
 | [v1/](v1/) | Copia del copione v1 (297 battute), prima della storia v2 | |
 
-`python3 verifica_copione.py` dalla cartella `copione/`: oggi 448 battute, 0 errori (dopo la revisione indipendente, 4 nov 2026), con la misura v2 (2 righe da 224 px). La v1 misurava 3 righe da 180 px. Prova negativa fatta: una «ñ», una battuta da 10 righe e un'espressione inventata danno 3 errori e uscita 1.
+`python3 verifica_copione.py` dalla cartella `copione/`: oggi 453 battute, 0 errori (dopo la revisione indipendente, 4 nov 2026, e le battute di attesa e di dopo delle quest giocabili, SV2c), con la misura v2 (2 righe da 224 px). La v1 misurava 3 righe da 180 px. Prova negativa fatta: una «ñ», una battuta da 10 righe e un'espressione inventata danno 3 errori e uscita 1.
 
 ## La storia della v1 in breve
 
@@ -42,6 +42,7 @@ Ogni scena ha un codice (`P-`, `A1-`, `B-`, `E-`), una tabella con luogo, condiz
 - Variante con bandiera: `- NOTTE (se BORGO_DENTRO): GUIDO: ...` (o `se non BANDIERA`), sempre sopra la riga senza condizione della stessa fase. La variante che vale parla da sola; per aggiungere una battuta alle altre si usa un blocco `Se `BANDIERA`:` sotto la riga di fase.
 - **Righe di battaglia**: le battute che si dicono dentro uno scontro, la prima volta che succede un evento, si scrivono `- IN BATTAGLIA (evento): PARLANTE (espressione): testo` (B-04). `tools/genera_storia.py` le mette da parte e non le recita nel dialogo della scena; `verifica_copione.py` le misura come le altre.
 - **Note di regia** in prosa, mai in forma di battuta: una riga che comincia con `- ` e un nome in maiuscolo è una battuta.
+- **Le quest** (`04_quest.md`, letto da `tools/genera_storia.py`, SV2c): per ogni `## Q-XXNN · titolo` il datore è il primo nome in grassetto; le sezioni `###` sono Proposta, Attesa (quest presa, obiettivo a metà), Consegna, Dopo (righe con la fase, come gli NPC: serve una riga per ogni fase in cui la quest si può consegnare), la sezione di raccolta (titolo con i due punti, «Teatro Romano: le fornaci»), Gli indizi e L'infiltrato. Nella raccolta più righe SISTEMA in cima valgono una per pezzo, nell'ordine (una sola vale a ogni pezzo); «Al primo blocco, una volta sola[, ... (`BANDIERA`)]:» vale al primo pezzo; «Se la quest non è attiva, alla prima radice:» al primo pezzo senza la quest presa. Negli indizi, «**Nome** (...). Imposta `BANDIERA`.» apre l'indizio di quell'NPC d'ambiente; «Con i tre indizi...» la riga che segue il terzo. Nell'infiltrato, «Dopo la vittoria:» separa le battute di prima da quelle dopo la battaglia.
 
 ## Regole decise con la revisione (4 novembre 2026)
 
@@ -78,7 +79,7 @@ Intervallo 0-63 di `story_flags.h` (storia principale). In ordine di comparsa:
 
 `PROLOGO_VISTO`, `ULTIMATUM_RICEVUTO`, `GIORGIO_NEL_GRUPPO`, `CHIACCHIERA_CONSOLI`, `POSTIERLA_APERTA`, `ANTONIO_NEL_GRUPPO`, `CITTA_IN_DIGIUNO`, `PORTA_DEL_MONTE`, `IMBOSCATA_STRADONI`, `SPIA_CATTURATA`, `CERI_RISVEGLIATI`, `SPETTRI_VINTI`, `VISIONE_BOTTACCIONE`, `BOTTACCIONE_ENTRATI`, `MIASMI_VISTI`, `PIANO_DI_CORRADO`, `CORRADO_INCONTRATO`, `CONDOTTO_SALVO`, `RIENTRO_PORTA_METAURO`, `ATTO_I_COMPLETATO`, `CRONACA_V1_FINITA`.
 
-Nell'intervallo boss (128-159): `CORRADO_SCONFITTO`, già presente nel prototipo. Nell'intervallo quest (64-127): `DONO_MATTEO` e gli indizi di Q-SP01 (`INDIZIO_LUCIA`, `INDIZIO_VENDITORE`, `INDIZIO_FONTANIERE`, che nella v2 sostituisce `INDIZIO_MENDICANTE`); stato e contatori delle quest stanno in `quest_state` e `quest_counter`. Le fasi degli NPC (ULTIMATUM, DIGIUNO, NOTTE) si ricavano dalle bandiere, non sono bandiere nuove: ULTIMATUM fino a `CITTA_IN_DIGIUNO`, DIGIUNO fino a `RIENTRO_PORTA_METAURO`, poi NOTTE.
+Nell'intervallo boss (128-159): `CORRADO_SCONFITTO`, già presente nel prototipo. Nell'intervallo quest (64-127): `DONO_MATTEO` e gli indizi di Q-SP01 (`INDIZIO_LUCIA`, `INDIZIO_VENDITORE`, `INDIZIO_FONTANIERE`, che nella v2 sostituisce `INDIZIO_MENDICANTE`); stato e contatori delle quest sono bandiere dello stesso intervallo (SV2c): `Q_SM01_PRESA`, `Q_SA01_PRESA`, `Q_SP01_PRESA` per la quest presa e un bit per pezzo dell'obiettivo (`FERRO_1`...`FERRO_3`, `ELLEBORO_1`...`ELLEBORO_4`, `ROSA_RIPRESA`); il contatore è quanti sono accesi. Nessun campo nuovo in `GameState`. Le fasi degli NPC (ULTIMATUM, DIGIUNO, NOTTE) si ricavano dalle bandiere, non sono bandiere nuove: ULTIMATUM fino a `CITTA_IN_DIGIUNO`, DIGIUNO fino a `RIENTRO_PORTA_METAURO`, poi NOTTE.
 
 Bandiere nuove della v2 (intervallo quest, 64-127):
 

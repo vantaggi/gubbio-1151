@@ -6,7 +6,8 @@ Regole comuni:
 
 - **Niente equipaggiamento nella v1**: le ricompense della Sez. 31A (corazza, balsamo, spilla) diventano consumabili della Sez. 8E più una conseguenza di trama. Il Quartiere guadagna reputazione come in `quest_data.h`, anche se il suo effetto (Atto III) è fuori dalla v1.
 - **Nessuna quest si perde.** Ognuna si può prendere e consegnare fino all'epilogo (la conferma in Piazza Grande alla fine di B-05). Gli oggetti da raccogliere ci sono anche se la quest non è stata presa, e i luoghi dove si raccolgono restano raggiungibili fino alla fine: anche la Strada del Bottaccione dopo B-05 (vedi Q-SA01).
-- Stato e contatore usano `quest_state` e `quest_counter` di `GameState`, come nel prototipo. Le bandiere nuove stanno nell'intervallo quest (64-127).
+- Stato e contatori sono bandiere dell'intervallo quest (64-127) di `GameState::quest`, senza campi nuovi (il salvataggio resta v3): una bandiera per la quest presa (`Q_SM01_PRESA`, `Q_SA01_PRESA`, `Q_SP01_PRESA`), una per ogni oggetto raccolto (`FERRO_1`...`FERRO_3`, `ELLEBORO_1`...`ELLEBORO_4`, `ROSA_RIPRESA`); il contatore è quante di quelle bandiere sono accese.
+- Ogni datore ha quattro momenti: la proposta (la quest non è presa), l'attesa (presa, obiettivo non finito), la consegna (obiettivo finito: chiama `storia::consegna_quest()`, una volta sola) e il dopo, per fase. Se l'obiettivo è già finito quando si prende la quest, la consegna segue subito la proposta.
 
 | Quest | Datore e luogo | Si prende | Obiettivo | Ricompensa |
 | :-- | :-- | :-- | :-- | :-- |
@@ -29,21 +30,25 @@ Regole comuni:
 - RANIERO: Pesano, cavaliere. Non è come dire «fatto».
 - OBIETTIVO: Recupera 3 blocchi di ferro alle fornaci del Teatro Romano.
 
+### Attesa (presa, meno di 3 blocchi)
+
+- RANIERO: Tre blocchi, ragazzo. Nelle fornaci basse del Teatro Romano, sotto le arcate.
+
 ### Teatro Romano: le fornaci
 
-Regia: tre fornaci basse sotto le arcate, ognuna guardata da un Guerriero della Roccia visibile sulla mappa. Battuto il guerriero, il blocco si raccoglie toccando la fornace. Il contatore sale di 1.
+Regia: tre fornaci basse sotto le arcate, ognuna guardata da un Guerriero della Roccia visibile sulla mappa. Battuto il guerriero, il blocco si raccoglie toccando la fornace. Il contatore sale di 1. Nella v1 i guerrieri non ci sono ancora (manca il nemico, Sez. 8D): il blocco si raccoglie toccandolo. Le tre righe di SISTEMA valgono una per blocco, nell'ordine.
 
 - SISTEMA: Hai preso un blocco di ferro. Ancora 2.
 - SISTEMA: Hai preso un blocco di ferro. Ancora 1.
 - SISTEMA: Hai preso l'ultimo blocco di ferro. Riportalo a Raniero.
 
-Al primo blocco, una volta sola:
+Al primo blocco, una volta sola, se Antonio è nel gruppo (`ANTONIO_NEL_GRUPPO`):
 
 - ANTONIO (calmo): Ferro buono. Peccato per chi l'ha rubato: sapeva rubare, non fondere.
 
 ### La postierla dopo la chiusura
 
-Dopo `CITTA_IN_DIGIUNO` la postierla di San Martino è chiusa. Se Q-SM01 è attiva e non ancora pronta, Cecco la apre per questa sola ragione:
+Dopo `CITTA_IN_DIGIUNO` la postierla di San Martino è chiusa. Se Q-SM01 è attiva e non ancora pronta, Cecco la apre per questa sola ragione (nella v1 nessun varco si chiude, quindi la battuta non serve ancora e il gioco non la recita):
 
 - CECCO: Il ferro di Raniero? Va bene, apro. Ma se tornate con mezza Spoleto alle spalle, chiudo lo stesso.
 
@@ -64,6 +69,7 @@ Regia: la fornace di Raniero si riaccende. Da qui la sua battuta cambia.
 
 - NOTTE: RANIERO: Ho riacceso la fornace. Lavoro di notte, per non rompere il digiuno con il rumore di giorno.
 - DIGIUNO: RANIERO: Le fornaci tornano a fumare. È il fumo più bello che si veda in città.
+- ULTIMATUM: RANIERO: La fornace è accesa. Spoleto si tenga pure il suo passo.
 
 > Nota v2. Con Q-SM01 consegnata (o con `RUFINO_ASCOLTATO`), in B-04 Corrado entra con uno scudo in meno: il ferro di Raniero torna alle fornaci della città e non alle sue corazze.
 
@@ -86,11 +92,18 @@ Regia: la fornace di Raniero si riaccende. Da qui la sua battuta cambia.
 - FERITO: ...acqua...
 - OBIETTIVO: Raccogli 4 radici di elleboro nel Bottaccione.
 
+### Attesa (presa, meno di 4 radici)
+
+- AGNESE: Quattro radici di elleboro, monsignore. Sulle rocce umide del Bottaccione.
+
 ### Strada del Bottaccione: le radici
 
 Regia: quattro ciuffi di elleboro sulle rocce bagnate, ben visibili (fiore verde chiaro sulla pietra cupa). Uno è dentro una zona di miasmi, uno vicino agli archi di B-03. Si raccolgono anche se la quest non è stata presa: in quel caso il messaggio è diverso.
 
 - SISTEMA: Hai raccolto una radice di elleboro.
+
+Alla prima radice, una volta sola:
+
 - ANTONIO (calmo): Elleboro. Cura e veleno nella stessa radice: dipende da chi lo usa.
 
 Se la quest non è attiva, alla prima radice:
@@ -109,7 +122,7 @@ Si consegna in qualunque momento fino alla conferma di E-01; di solito in fase N
 - SISTEMA: Ricevi 3 Biscotti all'Anice di Sant'Ubaldo.
 - SISTEMA: Sant'Andrea ti è grato.
 
-Se la consegna avviene dopo `CONDOTTO_SALVO`, una battuta in più:
+Se `CONDOTTO_SALVO` (la consegna avviene dopo il Condotto), una battuta in più:
 
 - AGNESE: E l'acqua stanotte è tornata chiara. Questo, monsignore, non l'ha fatto l'elleboro.
 
@@ -117,6 +130,7 @@ Se la consegna avviene dopo `CONDOTTO_SALVO`, una battuta in più:
 
 - NOTTE: FERITO: Agnese dice che ho sputato veleno verde. Io dico che ho sputato Cagli.
 - NOTTE: AGNESE: Dormono. Tutti e sei. Domani si alzano, se Dio vuole e se l'alba è nostra.
+- DIGIUNO: AGNESE: Le radici bollono già. Stanotte i feriti dormiranno, se Dio vuole.
 
 ---
 
@@ -132,6 +146,10 @@ Se la consegna avviene dopo `CONDOTTO_SALVO`, una battuta in più:
 - FRA' BERNARDO: Un pellegrino, diceva. Parlava come noi, ma pregava male. Ha preso la Rosa ed è sparito.
 - UBALDO (deciso): Se è ancora in città, lo troveremo. Le porte sono chiuse anche per lui.
 - OBIETTIVO: Trova chi ha rubato la Rosa d'Argento. Chiedi in giro.
+
+### Attesa (presa, la Rosa non ancora ripresa)
+
+- FRA' BERNARDO: La Rosa, Vescovo Ubaldo. Chiedete in giro: qualcuno avrà visto quel pellegrino.
 
 ### Gli indizi
 
@@ -158,7 +176,7 @@ Con i tre indizi, sotto le Logge compare l'infiltrato:
 
 ### L'infiltrato
 
-Regia: un uomo avvolto in un mantello da pellegrino, la mano sotto il mantello. Battaglia: l'infiltrato e due spie umbre. Non si fugge.
+Regia: un uomo avvolto in un mantello da pellegrino, la mano sotto il mantello. Battaglia: l'infiltrato e due spie umbre. Non si fugge. Nella v1 la battaglia è quella delle tre spie umbre degli Stradoni (manca un nemico «infiltrato»); vinta, si accende `ROSA_RIPRESA`. Persa, l'infiltrato resta sotto le Logge.
 
 - INFILTRATO: Il vescovo in persona. Dovevo immaginarlo: in questa città ficcate il naso dappertutto.
 - GIORGIO (deciso): Ridacci la Rosa.

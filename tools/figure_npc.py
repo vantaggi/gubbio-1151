@@ -346,7 +346,7 @@ def figura_composta(base, accessorio):
     return ["".join(r) for r in g]
 
 # il mestiere dal nome dell'NPC nel copione
-MESTIERI = [(r"Popolana|Lavandaia|Tessitrice", "popolana"), (r"Fra'|Frate|Canonico", "frate"),
+MESTIERI = [(r"Popolana|Lavandaia|Tessitrice|Monna", "popolana"), (r"Fra'|Frate|Canonico", "frate"),
             (r"Balestriere|Sentinella", "soldato"), (r"console|Merciaio|Venditore", "mercante"),
             (r"Vecchio|Mastro|Tagliapietre", "anziano")]
 
@@ -370,6 +370,67 @@ def parole(figura):
     px = pixel(figura)
     out = []
     for ty in range(ALTO // 8):
+        for tx in range(2):
+            for riga in px[ty * 8:ty * 8 + 8]:
+                parola = 0
+                for x, v in enumerate(riga[tx * 8:tx * 8 + 8]):
+                    parola |= v << (4 * x)
+                out.append(parola)
+    return out
+
+
+# Gli oggetti da raccogliere sulla mappa (le quest, copione/04_quest.md): 16x16, stessa palette dei popolani,
+# stesso contorno scuro delle figure. Il blocco di ferro delle fornaci (Q-SM01) e il ciuffo di elleboro sulla
+# pietra (Q-SA01: «fiore verde chiaro sulla pietra cupa»).
+FIGURE_RACCOLTE = {
+    "ferro": [
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "....11111111....",
+        "...1ddddddddc1..",
+        "..1ddddddddcc1..",
+        "..1cccccccccc1..",
+        "..1cccccccccc1..",
+        "..1ccc7ccccc11..",
+        "...1111111111...",
+        "................",
+        "................",
+        "................",
+    ],
+    "elleboro": [
+        "................",
+        "................",
+        "....11....11....",
+        "...1ff1..1ff1...",
+        "...1fef11fef1...",
+        "....1ff11ff1....",
+        ".....1f11f1.....",
+        "..11..1ff1..11..",
+        ".1ff1.1ff1.1ff1.",
+        "..1ff11ff11ff1..",
+        "...1fffffff11...",
+        "....1ffffff1....",
+        "...1899999981...",
+        "..189999999981..",
+        "...1111111111...",
+        "................",
+    ],
+}
+ORDINE_RACCOLTE = ["ferro", "elleboro"]
+
+
+def parole_16(nome):
+    """Le 4 tile 8x8 di un oggetto 16x16 (mappatura 1D: in alto a sinistra, in alto a destra, poi sotto)."""
+    righe = FIGURE_RACCOLTE[nome]
+    if len(righe) != 16 or any(len(r) != 16 for r in righe):
+        raise ValueError(f"oggetto '{nome}': servono 16 righe da 16")
+    px = [[int(c, 16) if c != "." else 0 for c in riga] for riga in righe]
+    out = []
+    for ty in range(2):
         for tx in range(2):
             for riga in px[ty * 8:ty * 8 + 8]:
                 parola = 0

@@ -33,6 +33,6 @@ Ogni quest dà **55 punti** a ogni Santo (`progressione::ESPERIENZA_QUEST`, data
 Obiettivi: scontri normali vinti oltre il 90% in 3-6 round (forte e medio); Corrado 55-75% per il pilota medio al livello atteso; nessun livello in cui Corrado si batte con il solo Attacco. Tutti rispettati. Lo scudo in meno (Q-SM01 o Rufino) vale circa 10 punti di percentuale al livello 5.
 
 ## Da rifare dopo
-- Quando le quest diventano giocabili (SV2c): ricontrollare con le quest fatte una alla volta e non tutte all'inizio.
+- Le quest ora sono giocabili (SV2c): ricontrollare con le quest fatte una alla volta e non tutte all'inizio. Q-SP01 aggiunge una battaglia (l'infiltrato, con le tre spie umbre degli Stradoni: 81 punti): con le tre quest e l'infiltrato si arriva a Corrado con 316 + 165 + 81 = 562 punti, ancora al livello 6 (il 7 è a 680); lo prova `livello_con_l_infiltrato()` in `src/autotest_quest.cpp`.
 - La regola "Ubaldo non usa il cibo da DIGIUNO a B-05" (ora nel codice, `storia::a_digiuno()`) tocca solo gli oggetti, che i piloti non usano: nessun effetto qui.
 - Prova a mano di Cioti: se Corrado risulta troppo duro o troppo facile, si tocca solo la sua scheda in `battaglia_dati.h` e si rigenera.

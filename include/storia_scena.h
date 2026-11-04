@@ -15,7 +15,9 @@ class Esplorazione;
 // La storia a schermo (F6 parte 1): le scene del copione recitate battuta per battuta (nome di chi
 // parla, testo a macchina da scrivere, A per andare avanti), il nodo segnaposto delle cutscene (per
 // ora un cartello col titolo), le battaglie delle scene, gli NPC d'ambiente che parlano secondo la
-// fase della storia. Le decisioni sono di include/storia_logica.h.
+// fase della storia. Le quest (SV2c): i datori (proposta, attesa, consegna, dopo), gli oggetti da
+// raccogliere sulla mappa (si prendono toccandoli), gli indizi di Q-SP01 e l'infiltrato con la sua
+// battaglia. Le decisioni sono di include/storia_logica.h.
 class Storia
 {
 public:
@@ -38,11 +40,17 @@ private:
     void recita_regia(int regia, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo,
                       bool automatica);
 
-    bn::vector<bn::sprite_ptr, storia::NPC> _npc;
-    bn::vector<int, storia::NPC> _indici;
+    // gli NPC d'ambiente (indice in NPC_AMBIENTE), i datori delle quest (NPC + quest) e l'infiltrato
+    // (NPC + QUEST); poi gli oggetti da raccogliere (indice in RACCOLTA)
+    static constexpr int PERSONE_MAX = storia::NPC + storia::QUEST + 1;
+    bn::vector<bn::sprite_ptr, PERSONE_MAX> _npc;
+    bn::vector<int, PERSONE_MAX> _indici;
+    bn::vector<bn::sprite_ptr, storia::RACCOLTE> _raccolte;
     int _area = -1;
 
     void _prepara_npc(const Esplorazione& esplorazione);
+    void _parla_col_datore(int quest, const bn::sprite_palette_ptr& palette_testo);
+    void _affronta_l_infiltrato(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
 };
 
 // GUBBIO_AVVIO=8: la storia intera senza camminare, dalla prima battuta ai titoli di coda; una riga di

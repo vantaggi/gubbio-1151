@@ -42,7 +42,22 @@ ACCESE_DAL_GIOCO = {"BORGO_FUORI": "storia::all_ingresso(): salire agli Stradoni
                     # le consegne delle quest (04_quest.md): le accende storia::consegna_quest()
                     "Q_SM01_CONSEGNATA": "storia::consegna_quest(): Q-SM01 consegnata a Raniero",
                     "Q_SA01_CONSEGNATA": "storia::consegna_quest(): Q-SA01 consegnata ad Agnese",
-                    "Q_SP01_CONSEGNATA": "storia::consegna_quest(): Q-SP01 consegnata a Fra' Bernardo"}
+                    "Q_SP01_CONSEGNATA": "storia::consegna_quest(): Q-SP01 consegnata a Fra' Bernardo",
+                    # SV2c, le quest giocabili: la proposta del datore, gli oggetti raccolti, gli indizi, la Rosa
+                    "Q_SM01_PRESA": "storia::prendi_quest(): la proposta di Raniero",
+                    "Q_SA01_PRESA": "storia::prendi_quest(): la proposta di Agnese",
+                    "Q_SP01_PRESA": "storia::prendi_quest(): la proposta di Fra' Bernardo",
+                    "FERRO_1": "storia::raccogli(): un blocco di ferro alle fornaci del Teatro Romano",
+                    "FERRO_2": "storia::raccogli(): un blocco di ferro alle fornaci del Teatro Romano",
+                    "FERRO_3": "storia::raccogli(): un blocco di ferro alle fornaci del Teatro Romano",
+                    "ELLEBORO_1": "storia::raccogli(): una radice di elleboro sulla Strada del Bottaccione",
+                    "ELLEBORO_2": "storia::raccogli(): una radice di elleboro nella gola",
+                    "ELLEBORO_3": "storia::raccogli(): una radice di elleboro nei miasmi",
+                    "ELLEBORO_4": "storia::raccogli(): una radice di elleboro sotto gli archi di B-03",
+                    "ROSA_RIPRESA": "storia::riprendi_la_rosa(): la battaglia con l'infiltrato vinta",
+                    "INDIZIO_LUCIA": "storia::trova_indizio(): Lucia, con Q-SP01 presa",
+                    "INDIZIO_VENDITORE": "storia::trova_indizio(): il Venditore delle Logge, con Q-SP01 presa",
+                    "INDIZIO_FONTANIERE": "storia::trova_indizio(): Giordano, con Q-SP01 presa"}
 
 
 def problema(gravita, codice, dove, testo, proposta=""):

@@ -59,11 +59,16 @@ def scritte_non_lette(scene, lette_dal_gioco):
 
 
 def codice_che_legge():
-    """Il codice che legge le bandiere: la logica della storia, la scena, e la tabella delle quest di storia.h."""
+    """Il codice che legge le bandiere: la logica della storia, la scena, e le tabelle delle quest di storia.h
+    (QUEST_V1; e, per le quest giocabili, QUEST_GIOCO, RACCOLTA e INDIZIO)."""
     codice = "".join(open(os.path.join(RADICE, p), encoding="utf-8").read()
                      for p in ("include/storia_logica.h", "src/storia_scena.cpp"))
     storia_h = open(GS.USCITA_H, encoding="utf-8").read()
-    return codice + re.search(r"inline constexpr Quest QUEST_V1\[QUEST\] = \{.*?\n\};", storia_h, re.S).group(0)
+    tabelle = [r"inline constexpr Quest QUEST_V1\[QUEST\] = \{.*?\n\};",
+               r"inline constexpr QuestGioco QUEST_GIOCO\[QUEST\] = \{.*?\n\};",
+               r"inline constexpr Raccolta RACCOLTA\[RACCOLTE\] = \{.*?\n\};",
+               r"inline constexpr Indizio INDIZIO\[INDIZI\] = \{.*?\n\};"]
+    return codice + "".join(re.search(r, storia_h, re.S).group(0) for r in tabelle)
 
 
 def lette_dal_gioco_senza_codice(lette, codice):
