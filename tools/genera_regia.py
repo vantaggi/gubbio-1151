@@ -101,7 +101,7 @@ def prato():
     t = Tela(W, H)
     for y in range(ORIZZONTE + 2, H):
         for x in range(W):
-            t.punto(x, y, 11 if (x * 3 + y * 5) % 7 else 12)
+            t.punto(x, y, 11 if ((x // 2) * 3 + y * 5) % 7 else 12)     # ciuffi di 2 px (P3)
     for k in range(10):
         cx = (k * 53) % W
         t.ellisse(cx, ORIZZONTE - 4, 9, 12, 10)

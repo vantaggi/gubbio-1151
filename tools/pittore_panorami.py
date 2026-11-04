@@ -15,7 +15,7 @@ import random
 
 from genera_battaglia import Tela
 import stendardi as ST
-from pennelli import ACCESO      # la voce ACCESO, la stessa per i pittori di C5-C7
+from pennelli import ACCESO, chioma      # la voce ACCESO, la stessa per i pittori di C5-C7
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 W, H = 512, 256
@@ -68,20 +68,27 @@ def monte(momento):
     t = Tela(W, H)
     r = random.Random(11)
     cima = 330
-    for x in range(W):
+
+    def profilo(x):
         d = abs(x - cima) / 260.0
-        top = int(14 + 50 * d * d + 3 * math.sin(x / 13.0))
+        return int(14 + 50 * d * d + 3 * math.sin(x / 13.0))
+    # il fianco a sinistra della vetta prende la luce (L1), quello a destra sta in ombra: il fondo e' a
+    # macchie grandi (niente righe e niente pixel orfani, P3), il crinale ha il bordo chiaro solo dove sale
+    for x in range(W):
+        top = profilo(x)
         for y in range(top, QUADRO):
-            t.punto(x, y, VERDE_S if (x * 7 + y * 3) % 11 else VERDE_M)
-        if x > 0:
-            # la luce da sinistra sul fianco che sale
-            if top < 14 + 50 * (abs(x - 1 - cima) / 260.0) ** 2:
-                t.punto(x, top, VERDE)
-    for _ in range(160):
-        cx, cy = r.randrange(W), r.randrange(30, QUADRO)
-        d = abs(cx - cima) / 260.0
-        if cy > 18 + 50 * d * d:
-            t.ellisse(cx, cy, 3, 2, VERDE_M if r.random() < 0.6 else VERDE)
+            luce = x < cima + (y - 14) * 1.4 + 6 * math.sin(y / 7.0)    # il costolone scende a destra
+            t.punto(x, y, VERDE_M if luce else VERDE_S)
+        if x > 0 and top < profilo(x - 1) + 1 and x < cima:
+            t.punto(x, top, VERDE)
+    # il bosco: chiome tonde di 3 toni (luce in alto a sinistra, ombra portata in basso a destra, L1 e L4)
+    for _ in range(340):
+        cx, cy = r.randrange(W), r.randrange(24, QUADRO + 4)
+        if cy < profilo(cx) + 5:
+            continue
+        rx, ry = r.choice((3, 3, 4)), r.choice((2, 3))
+        luce = cx < cima + (cy - 14) * 1.4
+        chioma(t, cx, cy, rx, ry, VERDE if luce else VERDE_M, VERDE_M if luce else VERDE_S, VERDE_S)
     # la Basilica in cima, un po' sotto la vetta, col campanile; la Rocca piu' su
     bx, by = cima - 30, 30
     t.rett(bx, by - 8, 18, 9, PIETRA_C)
@@ -153,12 +160,23 @@ def finestra(t, x, y, tipo, notte, r):
 
 
 def tetto(t, x0, y, largo, falde=False):
-    """Il tetto a coppi: la fila dei coppi a righe, la gronda che fa ombra sul muro sotto."""
+    """Il tetto a coppi (F1): i coppi in colonne di tre toni (luce a sinistra, base, ombra fra un coppo
+    e l'altro), a file di due righe sfalsate; il colmo piu' chiaro; la gronda che fa ombra sul muro
+    sotto. Ogni tono tiene almeno due pixel in verticale (niente pixel orfani, P3)."""
+    righe = [(y, x0 - 1, x0 + largo + 1), (y + 1, x0 - 1, x0 + largo + 1)]
     if falde:
-        t.trapezio(x0 + largo // 2, y - 3, y, largo - 4, largo + 2, COTTO)
-    t.rett(x0 - 1, y, largo + 2, 2, COTTO)
-    for k in range(x0 - 1, x0 + largo + 1, 2):
-        t.punto(k, y, COTTO_C)
+        for k, yy in enumerate((y - 1, y - 2, y - 3)):
+            m = (largo + 2 - (largo - 4)) * (3 - k) / 6.0
+            righe.append((yy, int(x0 - 1 + (largo + 2) / 2 - (largo - 4) / 2 - m / 2 + 0.5) - 1,
+                          int(x0 - 1 + (largo + 2) / 2 + (largo - 4) / 2 + m / 2 + 0.5) + 1))
+    for yy, a, b in righe:
+        fila = (y + 1 - yy) // 2
+        for x in range(a, b):
+            if yy == y - 3:
+                c = COTTO_C                                    # il colmo
+            else:
+                c = (COTTO_C, COTTO, COTTO_S)[(x + fila) % 3]
+            t.punto(x, yy, c)
     t.rett(x0, y + 2, largo, 1, PIETRA_S)
 
 
@@ -354,7 +372,13 @@ def campo(momento):
     for k in range(22):
         x = 12 + k * 23 + r.randint(-4, 4)
         y = QUADRO - 6 + r.randint(-4, 2)
-        t.trapezio(x, y - 7, y, 1, 11, PIETRA_C if k % 3 else VERMIGLIO)
+        tela_c, tela_s = (PIETRA_C, PIETRA) if k % 3 else (VERMIGLIO, COTTO_S)
+        for dy in range(7):                                  # la tenda come un solido (L1, L2, L4)
+            m = int((1 + 10 * dy / 6) / 2)
+            t.rett(x + m + 1, y - 7 + dy, 3, 1, VERDE_S)     # l'ombra portata a destra, sul prato
+            t.rett(x - m, y - 7 + dy, m + 1, 1, tela_c)      # la falda a sinistra prende la luce
+            t.rett(x + 1, y - 7 + dy, m, 1, tela_s)          # quella a destra sta in ombra
+        t.rett(x, y - 3, 2, 3, CONTORNO)                     # l'ingresso, il vano scuro
         t.rett(x, y - 9, 1, 3, CONTORNO)
         if notte and k % 2 == 0:
             fuoco(t, x + 9, y - 3)
@@ -463,19 +487,43 @@ def vetrata_disegno(vetri):
     che entra di sbieco, la cornice di pietra, i piombi neri. vetri: "chiari" (il prologo), "uno" (un
     solo vetro ha preso colore, l'epilogo), "storia" (la vetrata come la si vede oggi)."""
     t = Tela(W, H, V_BUIO)
-    # i pilastri ai lati e l'arco della navata, lo spigolo verso la finestra preso dalla luce
-    for px0, spigolo in ((14, 42), (196, 196)):
+    # il muro di fondo in penombra, a conci (F2): lontano dalla finestra solo il filo dei conci sul buio,
+    # vicino i conci prendono la luce che entra (il tono piu' scuro della pietra, il filo chiaro in alto e
+    # a sinistra, L1). I giunti non sono mai neri dove c'e' luce (C4); il nero resta il buio vero.
+    r = random.Random(23)
+    for y0 in range(0, QUADRO, 9):
+        x = -r.randint(0, 20)
+        while x < W:
+            largo = r.randint(16, 26)
+            d = abs(x + largo / 2 - V_CENTRO)
+            filo = V_SPIGOLO if d < 58 and y0 > 4 else V_PILASTRO
+            if d < 46 and y0 > 4:
+                t.rett(x + 1, y0 + 1, largo - 2, 7, V_PILASTRO)        # i conci vicini alla luce
+            t.rett(x, y0, largo - 1, 1, filo)
+            t.rett(x, y0, 1, 8, filo)
+            if d < 46 and y0 > 4:                              # la faccia a sinistra un tono piu' su (L1)
+                t.rett(x + 1, y0 + 1, 1, 7, V_SPIGOLO)
+            x += largo
+    # i pilastri ai lati come solidi (L2): la faccia in penombra, lo spigolo verso la finestra preso
+    # dalla luce, i rocchi; il fianco lontano nel buio
+    for px0, luce_a_destra in ((14, True), (196, False)):
+        t.rett(px0 - 1, 0, 32, QUADRO, V_BUIO)
         t.rett(px0, 0, 30, QUADRO, V_PILASTRO)
-        t.rett(spigolo, 0, 2, QUADRO, V_SPIGOLO)
+        t.rett(px0 + (26 if luce_a_destra else 0), 0, 4, QUADRO, V_SPIGOLO)
+        t.rett(px0 + (28 if luce_a_destra else 0), 0, 1, QUADRO, V_PIETRA)
+        for y in range(9, QUADRO, 18):           # i rocchi del pilastro: il giunto e il filo di luce sopra
+            t.rett(px0 + 4, y, 22, 1, V_BUIO)
+            t.rett(px0 + 4, y + 1, 22, 1, V_SPIGOLO)
     for x in range(14, 226):
         y = int(14 - 14 * (1 - ((x - 120) / 106) ** 2) ** 0.5) if abs(x - 120) < 106 else 14
-        t.rett(x, y, 1, 3, V_PILASTRO)
+        t.rett(x, y, 1, 3, V_SPIGOLO)
+        t.punto(x, y + 3, V_BUIO)
     # la luce che entra: fasci a scacchiera che scendono a destra dalla finestra fino al pavimento
     for y in range(V_SOGLIA - 30, QUADRO):
         for x in range(V_CENTRO - 30, 196):
             fascio = (x - V_CENTRO - (y - V_SOGLIA + 30) * 1.1) % 26 < 8
             if fascio and not nella_finestra(x, y, 5) and (x + y) % 2 == 0:
-                t.punto(x, y, V_PILASTRO)
+                t.punto(x, y, V_SPIGOLO if t.px[y][x] != V_BUIO else V_PILASTRO)
     # la cornice di pietra (4 px, il bordo in alto a sinistra in luce) e il timpano fra le lancette
     for y in range(QUADRO):
         for x in range(V_CENTRO - V_LARGA, V_CENTRO + V_LARGA):
@@ -483,6 +531,11 @@ def vetrata_disegno(vetri):
                 t.punto(x, y, V_PIETRA_L if x < V_CENTRO and not nella_finestra(x + 1, y + 1, 4) else V_PIETRA)
             elif nella_finestra(x, y):
                 t.punto(x, y, V_PIETRA)
+    # il timpano fra le lancette a conci (F2): i giunti nel tono d'ombra della pietra
+    for y in range(QUADRO):
+        for x in range(V_CENTRO - V_LARGA // 2, V_CENTRO + V_LARGA // 2):
+            if nella_finestra(x, y) and t.px[y][x] == V_PIETRA and (y % 7 == 0 or (x + (y // 7) * 6) % 13 == 0):
+                t.punto(x, y, V_SPIGOLO)
     t.rett(V_CENTRO - V_LARGA // 2 - 6, V_SOGLIA, V_LARGA + 12, 3, V_PIETRA_L)
     t.rett(V_CENTRO - V_LARGA // 2 - 6, V_SOGLIA + 3, V_LARGA + 12, 1, V_PILASTRO)
     # i vetri
@@ -519,6 +572,16 @@ def vetrata_disegno(vetri):
                         for u, v in ((x + 1, y), (x, y + 1)))
             if bordo or y % 12 == 0 or (vetri != "storia" and (x - 82) % 9 == 0 and y > 46):
                 t.punto(x, y, V_BUIO)
+    # lo strombo (F5): la pietra intorno ai vetri in ombra in alto e a destra, in luce in basso e a
+    # sinistra, cosi' le lancette e l'oculo si leggono incassati nella pietra
+    for y in range(2, QUADRO - 2):
+        for x in range(2, W - 2):
+            if vetro[y][x] or not nella_finestra(x, y, 4):
+                continue
+            if vetro[y + 2][x] or vetro[y][x - 2] or vetro[y + 1][x] or vetro[y][x - 1]:
+                t.punto(x, y, V_SPIGOLO)
+            elif vetro[y - 2][x] or vetro[y][x + 2] or vetro[y - 1][x] or vetro[y][x + 1]:
+                t.punto(x, y, V_PIETRA_L)
     # il piombo di contorno: il primo pixel di pietra intorno a ogni vetro
     for y in range(1, QUADRO - 1):
         for x in range(1, W - 1):
@@ -656,10 +719,18 @@ def pergamena_con(battute):
     alla loro citta'; il nome compare accanto quando il narratore lo dice (le battute date). Gubbio e'
     segnata d'oro, col suo drappo piu' grande."""
     t = Tela(W, H, P_CARTA)
-    for y in range(H):
-        for x in range(W):
-            if (x % 8, y % 8) in ((3, 5), (7, 1)):
-                t.punto(x, y, P_CARTA_S)
+    r = random.Random(13)
+    for _ in range(520):                       # le fibre della pergamena: tratti di 2-4 px, mai un punto (P3)
+        x, y = r.randrange(W), r.randrange(3, QUADRO - 3)
+        t.rett(x, y, r.choice((2, 3, 4)), 1, P_CARTA_S)
+    # la pergamena ingiallita e un po' imbarcata (L2): il bordo in alto e quello in basso piu' scuri,
+    # a lembi irregolari, cosi' il chiaro resta al centro, dove stanno i segni (C5)
+    for x in range(W):
+        sopra = 4 + int(2 * math.sin(x / 11.0) + 1.5 * math.sin(x / 4.3))
+        sotto = 5 + int(2 * math.sin(x / 9.0 + 1) + 1.5 * math.sin(x / 3.7))
+        t.rett(x, 2, 1, sopra, P_CARTA_S)
+        t.rett(x, QUADRO - 2 - sotto, 1, sotto, P_CARTA_S)
+        t.rett(x, QUADRO - 4, 1, 2, P_RILIEVO)
     t.rett(0, 0, W, 2, P_INCHIOSTRO)
     t.rett(0, QUADRO - 2, W, 2, P_INCHIOSTRO)
     # l'Appennino: colline lungo il crinale, il Monte Ingino dietro Gubbio
@@ -688,8 +759,9 @@ def pergamena_con(battute):
         t.rett(asta, fy - 2, 1, BANDIERA + 5, P_ASTA)
         ax, ay = asta, fy + BANDIERA + 2
         n = max(abs(cx - ax), abs(cy - ay), 1)
-        for i in range(0, n, 2):
-            t.punto(round(ax + (cx - ax) * i / n), round(ay + (cy - ay) * i / n), P_INCHIOSTRO)
+        for i in range(0, n, 4):                              # il filo a trattini di 2 px (P3)
+            for j in (i, i + 1):
+                t.punto(round(ax + (cx - ax) * j / n), round(ay + (cy - ay) * j / n), P_INCHIOSTRO)
         t.rett(cx - 1, cy - 1, 3, 3, ST.indici_o(INDICI_PERGAMENA, ST.CONTORNO))
         ST.drappo(t, fx, fy, ST.per_id(ident)["gioco"], INDICI_PERGAMENA, BANDIERA, BANDIERA)
         if ident in nomi:

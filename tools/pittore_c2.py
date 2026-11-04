@@ -71,8 +71,8 @@ def fila(nome):
     t = Tela(W, H)
     gambe = alto - max(2, alto // 5) - alto * 2 // 5
     t.rett(0, piedi - gambe, W, gambe + 3, F_PRATO)
-    for x in range(0, W, 5):
-        t.punto(x + (x // 5) % 3, piedi + 1, F_FERRO_S if alto >= 12 else F_PRATO)
+    for x in range(0, W, 5):                                   # i sassi del prato, di 2 px (P3)
+        t.rett(x + (x // 5) % 3, piedi + 1, 2, 1, F_FERRO_S if alto >= 12 else F_PRATO)
     r = random.Random(len(nome))
     citta = ST.COALIZIONE
     k = 0
@@ -130,7 +130,9 @@ def colli(momento):
     for y in range(66, QUADRO):
         for x in range(W):
             campo = (x // 34 + (y - 66) // 9) % 3
-            t.punto(x, y, (7, 8, 9)[campo] if (x + y) % 5 else 6)
+            # i campi arati: i solchi orizzontali (niente tratteggio sul suolo, P5); il prato senza solchi
+            solco = campo != 2 and (y - 66) % 3 == 2
+            t.punto(x, y, (6, 7, 8)[campo] if solco else (7, 8, 9)[campo])
     for y in range(66, QUADRO):
         x = int(250 + (y - 66) * 2.2)
         t.rett(x, y, 3 + (y - 66) // 10, 1, 14)
@@ -169,6 +171,10 @@ def araldo(momento):
             t.rett(zx - 1, suolo - 2, 4, 2, F_NERO)
     # il corpo, il collo, la testa, la coda
     t.ellisse(cx, suolo - 32, 22, 10, bruno)
+    for y in range(suolo - 27, suolo - 21):                    # la pancia in ombra (L2): il cavallo e' un solido
+        for x in range(cx - 22, cx + 23):
+            if t.px[y][x] == bruno:
+                t.punto(x, y, bruno_s)
     t.linea(cx - 16, suolo - 36, cx - 25, suolo - 52, bruno, 9)          # il collo, inclinato in avanti
     t.linea(cx - 22, suolo - 56, cx - 21, suolo - 40, bruno_s, 2)        # la criniera
     t.linea(cx - 27, suolo - 54, cx - 37, suolo - 45, bruno, 6)          # la testa, il muso in basso
@@ -181,10 +187,16 @@ def araldo(momento):
     # la gualdrappa rossa col bordo d'oro e il grifo bianco
     t.rett(cx - 14, suolo - 40, 34, 18, rosso)
     t.rett(cx - 14, suolo - 23, 34, 1, oro)
+    luce_rossa = INDICI_FANTI[("vermiglio comunale", 2)]
+    t.rett(cx - 14, suolo - 40, 34, 1, luce_rossa)                 # la luce sul bordo alto e sinistro (L1)
+    t.rett(cx - 14, suolo - 40, 1, 17, luce_rossa)
+    t.rett(cx + 19, suolo - 39, 1, 16, F_NERO)                     # e l'ombra sul destro
     grifo(t, cx + 2, suolo - 37, bianco, oro)
     # il cavaliere: la gamba, il sopravveste rosso col grifo, il braccio, l'elmo
     t.rett(cx - 4, suolo - 44, 5, 16, F_FERRO)
     t.rett(cx - 6, suolo - 64, 13, 22, rosso)
+    t.rett(cx - 6, suolo - 64, 1, 22, luce_rossa)
+    t.rett(cx + 6, suolo - 64, 1, 22, F_NERO)
     grifo(t, cx - 3, suolo - 60, bianco, oro)
     t.rett(cx - 10, suolo - 60, 6, 4, F_FERRO)
     t.rett(cx - 3, suolo - 73, 8, 9, F_FERRO)
@@ -221,33 +233,74 @@ def loggiato(momento):
             elif y >= 18:
                 t.punto(x, y, L_CIELO_C)
     x0, x1, cima = 0, 330, 30
-    t.rett(x0, cima, x1 - x0, QUADRO - cima, L_PIETRA_M)
-    for y in range(cima, QUADRO - 14, 5):
-        for x in range(x0 + (y // 5 % 2) * 6, x1, 12):
-            t.rett(x, y, 1, 5, L_PIETRA)
-        t.rett(x0, y, x1 - x0, 1, L_PIETRA)
+    # la facciata a conci irregolari in tre toni del calcare (F2): i giunti nel tono d'ombra, mai nel
+    # nero; lo spigolo destro in ombra, lo zoccolo piu' scuro (L1); i toni medi, il chiaro resta ai
+    # bordi in luce (C5)
+    r = random.Random(41)
+    y = cima
+    while y < QUADRO - 6:
+        alto = r.choice((5, 6, 6, 7))
+        x = x0 - r.randint(0, 10)
+        while x < x1:
+            largo = r.randint(9, 16)
+            tono = r.choice((L_PIETRA, L_PIETRA_M, L_PIETRA_M, L_PIETRA_M))
+            t.rett(x, y, largo, alto, tono)
+            t.rett(x + 1, y + 1, largo - 2, 1, min(L_PIETRA_L, tono + 1) if r.random() < 0.3 else tono)
+            t.rett(x, y, largo, 1, L_PIETRA_S)
+            t.rett(x, y, 1, alto, L_PIETRA_S)
+            x += largo
+        y += alto
+    t.rett(x0, QUADRO - 14, x1 - x0, 8, L_PIETRA)                       # lo zoccolo
+    t.rett(x0, QUADRO - 14, x1 - x0, 1, L_PIETRA_S)
     t.rett(x1 - 14, cima, 14, QUADRO - cima, L_PIETRA)
-    for k in range(x0, x1, 8):
+    t.rett(x1 - 3, cima, 3, QUADRO - cima, L_PIETRA_S)
+    for k in range(x0, x1, 8):                                          # i merli guelfi, luce a sinistra
         t.rett(k, cima - 5, 5, 5, L_PIETRA_M)
+        t.rett(k, cima - 5, 1, 5, L_PIETRA_L)
         t.rett(k + 4, cima - 5, 1, 5, L_PIETRA)
-    # le bifore della fila alta
+    t.rett(x0, cima, x1 - x0, 2, L_PIETRA)                              # l'ombra sotto i merli
+    # le bifore della fila alta: la cornice di pietra con la luce sul bordo alto e sinistro, lo strombo
+    # d'ombra in alto e a destra dentro il vano (F5)
+    def vano(x, y, w, h, arco):
+        t.rett(x, y, w, h, L_BUIO)
+        t.ellisse(x + w / 2, y, w / 2, arco, L_BUIO)
+        t.rett(x + w - 1, y, 1, h, L_PIETRA_S)
+        for xx in range(x, x + w):
+            for yy in range(int(y - arco), y + 1):
+                if t.px[yy][xx] == L_BUIO and t.px[yy - 1][xx] != L_BUIO:
+                    t.punto(xx, yy, L_PIETRA_S)
     for bx in range(x0 + 22, x1 - 30, 48):
-        t.rett(bx - 1, cima + 7, 16, 22, L_PIETRA_L)
+        t.rett(bx - 1, cima + 7, 16, 22, L_PIETRA)
+        t.rett(bx - 1, cima + 7, 16, 1, L_PIETRA_L)
+        t.rett(bx - 1, cima + 7, 1, 22, L_PIETRA_L)
+        t.rett(bx - 1, cima + 28, 16, 1, L_PIETRA_S)
         for lx in (bx + 1, bx + 8):
-            t.rett(lx, cima + 12, 5, 14, L_BUIO)
-            t.ellisse(lx + 2.5, cima + 12, 2.5, 3, L_BUIO)
+            vano(lx, cima + 12, 5, 14, 3)
         t.rett(bx + 6, cima + 10, 2, 16, L_PIETRA_L)
-    # il portale ad arco e la scala a ventaglio
+        t.rett(bx + 7, cima + 10, 1, 16, L_PIETRA)
+    # il portale ad arco col portone di legno e il battente d'oro, e la scala a ventaglio
     px = 96
-    t.rett(px - 14, cima + 40, 28, QUADRO - cima - 54, L_PIETRA_L)
-    t.rett(px - 10, cima + 46, 20, QUADRO - cima - 60, L_BUIO)
+    t.rett(px - 14, cima + 40, 28, QUADRO - cima - 54, L_PIETRA)
+    t.rett(px - 14, cima + 40, 1, QUADRO - cima - 54, L_PIETRA_L)
+    t.ellisse(px, cima + 46, 14, 10, L_PIETRA)
     t.ellisse(px, cima + 46, 10, 7, L_BUIO)
+    t.rett(px - 10, cima + 46, 20, QUADRO - cima - 60, L_BUIO)
+    t.rett(px - 9, cima + 47, 18, QUADRO - cima - 61, 1)               # il portone (legno scuro)
+    t.rett(px, cima + 47, 1, QUADRO - cima - 61, L_BUIO)
+    t.rett(px - 3, cima + 56, 2, 2, 14)                                # i battenti d'oro
+    t.rett(px + 2, cima + 56, 2, 2, 14)
+    t.rett(px + 9, cima + 40, 1, QUADRO - cima - 54, L_PIETRA_S)
     for k in range(5):
-        t.rett(px - 18 - k * 8, QUADRO - 14 + k * 3 - 15 + 15, 36 + k * 16, 3, L_PIETRA_L if k % 2 else L_PIETRA_M)
+        yk = QUADRO - 14 + k * 3
+        t.rett(px - 18 - k * 8, yk, 36 + k * 16, 3, L_PIETRA_M)
+        t.rett(px - 18 - k * 8, yk, 36 + k * 16, 1, L_PIETRA_L)        # l'alzata in luce, la pedata
+        t.rett(px - 18 - k * 8, yk + 2, 36 + k * 16, 1, L_PIETRA)      # in ombra (L4, gradini)
     # il campaniletto a vela e il drappo di Gubbio sull'asta
     vx = x0 + 150
     t.rett(vx, cima - 20, 16, 16, L_PIETRA_M)
     t.trapezio(vx + 8, cima - 26, cima - 20, 2, 16, L_PIETRA_M)
+    t.rett(vx, cima - 20, 1, 16, L_PIETRA_L)
+    t.rett(vx + 14, cima - 20, 2, 16, L_PIETRA)
     t.rett(vx + 5, cima - 16, 6, 9, L_BUIO)
     t.ellisse(vx + 8, cima - 16, 3, 3, L_BUIO)
     t.rett(vx + 7, cima - 11, 2, 3, 14)                              # la campana
@@ -256,9 +309,12 @@ def loggiato(momento):
     ST.drappo(t, ax + 1, 3, ST.GUBBIO["gioco"], {("vermiglio comunale", 2): L_ROSSO, ("neutri", 4): L_BIANCO,
                                                 ST.CONTORNO: 1}, 17, 11)
     # il lastricato
+    # il lastricato in scorcio: lastre di due toni a file sfalsate, i giunti nel tono d'ombra (F3)
     for y in range(QUADRO - 6, H):
+        fila = (y - QUADRO + 6) // 3
         for x in range(W):
-            t.punto(x, y, L_PIETRA_S if (x // 10 + y // 3) % 2 else L_PIETRA)
+            giunto = (y - QUADRO + 6) % 3 == 0 or (x + fila * 7) % 19 == 0
+            t.punto(x, y, L_PIETRA_S if giunto else (L_PIETRA if ((x + fila * 7) // 19 + fila) % 3 else L_PIETRA_M))
     return t, PALETTE_LOGGIATO, False
 
 
@@ -280,7 +336,14 @@ def lastricato(t, r):
         x = -r.randint(0, 20)
         while x < W:
             largo = r.randint(28, 48)
-            t.rett(x, y, largo, alto, r.choice((D_LASTRA_S, D_LASTRA, D_LASTRA, D_LASTRA_L)))
+            tono = r.choice((D_LASTRA_S, D_LASTRA, D_LASTRA, D_LASTRA_L))
+            t.rett(x, y, largo, alto, tono)
+            # lo smusso della lastra (L1, L2): il bordo alto e sinistro in luce, quello basso e destro in
+            # ombra; il giunto nel tono piu' scuro della pietra, mai nel nero (F2, C4)
+            t.rett(x + 1, y + 1, largo - 2, 1, min(D_LASTRA_L, tono + 1))
+            t.rett(x + 1, y + 1, 1, alto - 2, min(D_LASTRA_L, tono + 1))
+            t.rett(x + 1, y + alto - 2, largo - 2, 1, max(D_LASTRA_S, tono - 1))
+            t.rett(x + largo - 2, y + 1, 1, alto - 2, max(D_LASTRA_S, tono - 1))
             t.rett(x, y, largo, 1, D_GIUNTO)
             t.rett(x, y, 1, alto, D_GIUNTO)
             x += largo
@@ -302,9 +365,16 @@ def pergamena_a_terra(momento):
     t = Tela(W, H)
     lastricato(t, random.Random(2))
     cx, cy = 120, 64
+    for k in range(60):                                   # l'ombra portata sulle lastre, in basso a destra (L4)
+        t.rett(cx - 38 + k, cy - 9 + k // 3, 1, 22, D_GIUNTO)
+    t.ellisse(cx + 28, cy + 16, 7, 13, D_GIUNTO)
+    t.rett(178, 2, 4, 80, D_GIUNTO)                        # e quella dell'asta
     for k in range(60):
         y = cy - 12 + k // 3
         t.rett(cx - 40 + k, y, 1, 22, D_CARTA)
+    for k in range(60):                                   # la carta arrotolata prende la luce in alto
+        t.punto(cx - 40 + k, cy - 12 + k // 3, D_LASTRA_L if k % 7 else D_CARTA)
+        t.rett(cx - 40 + k, cy + 8 + k // 3, 1, 2, D_CARTA_S)
     for k in range(4):
         t.linea(cx - 32, cy - 4 + k * 4, cx + 10, cy + 10 + k * 4, D_INCHIOSTRO)
     t.ellisse(cx + 26, cy + 14, 7, 13, D_CARTA_S)
