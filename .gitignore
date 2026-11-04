@@ -25,3 +25,6 @@ Thumbs.db
 desktop.ini
 .DS_Store
 *.swp
+build_banco/
+banco_obj*/
+banco_rom*

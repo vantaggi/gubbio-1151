@@ -6,6 +6,7 @@
 #include "bn_vector.h"
 
 #include "storia.h"
+#include "storia_logica.h"
 
 namespace gubbio
 {
