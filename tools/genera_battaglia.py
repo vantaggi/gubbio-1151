@@ -4,8 +4,8 @@
 - Tre sfondi 32x32 tile (uno per incontro: le mura della citta' per la Pattuglia Perugina, il bosco
   degli stradoni per l'Imboscata, Piazza Grande col Palazzo dei Consoli per il Duello con Corrado):
   cielo a fasce, il profilo lontano, il suolo; tile condivisi e deduplicati.
-- Gli sprite dei tre Santi (32x32, due pose: ferma e in azione) e dei nemici (Fante di Perugia,
-  Balestriere Pesante, Spia umbra a 32x32, Corrado di Spoleto a 64x64), disegnati con forme semplici.
+- Gli sprite dei tre protagonisti e dei nemici (32x32, Corrado di Spoleto 64x64) con sette pose e una
+  palette ciascuno, gli effetti e i lampi: li disegna tools/sagome_battaglia.py (pezzo SAG).
 I colori vengono tutti dalla palette della Guida di stile (stile/dati/palette.json).
 
     python tools/genera_battaglia.py            # controlla che l'header sia aggiornato
@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(RADICE, "tools"))
 sys.path.insert(0, os.path.join(RADICE, "stile"))
 
 import stile as S  # noqa: E402
+import sagome_battaglia as SB  # noqa: E402
 
 USCITA = os.path.join(RADICE, "include", "battaglia_grafica.h")
 INCONTRI = ("pattuglia", "imboscata", "duello", "rito", "guerrieri", "fornace", "infiltrato")
@@ -112,219 +113,9 @@ class Tela:
         return out
 
 
-# --- i Santi (guardano a destra) -------------------------------------------------------------------
-def corpo_santo(t, veste, veste_l, azione):
-    t.trapezio(15, 13, 30, 8, 16, veste)            # la veste che si allarga
-    t.rett(15, 14, 2, 15, veste_l)                  # la piega di luce
-    t.rett(9, 29, 14, 2, veste)
-    t.ellisse(15.5, 9.5, 3.6, 3.8, PELLE)           # la testa
-    t.rett(17, 9, 1, 1, C)                          # l'occhio, verso destra
-    t.rett(12, 11, 2, 2, PELLE_S)
-    braccio_y = 15 if azione else 18
-    t.rett(17, braccio_y, 6, 3, veste)
-    t.rett(22, braccio_y, 2, 3, PELLE)
-    return braccio_y
-
-
-def ubaldo(azione):
-    """Sant'Ubaldo vescovo: cappa bianca e oro, la mitria, il pastorale."""
-    t = Tela(32, 32)
-    y = corpo_santo(t, BIANCO, ORO, azione)
-    t.rett(11, 20, 10, 2, ORO)                      # il bordo d'oro della cappa
-    t.trapezio(15.5, 1, 7, 3, 7, BIANCO)            # la mitria
-    t.rett(15, 1, 1, 6, ORO)
-    t.rett(12, 6, 8, 1, ORO)
-    x = 24 if not azione else 26
-    t.linea(x, y - 12 if azione else y - 10, x, 30, ORO_S, 1)   # il pastorale
-    t.ellisse(x - 1, y - 13 if azione else y - 11, 2.5, 2.5, ORO)
-    t.punto(x - 1, y - 13 if azione else y - 11, 0)
-    return t.contorno()
-
-
-def giorgio(azione):
-    """San Giorgio cavaliere: armatura, la sopravveste bianca con la croce rossa, scudo e spada."""
-    t = Tela(32, 32)
-    y = corpo_santo(t, ACCIAIO, ACCIAIO_L, azione)
-    t.rett(12, 15, 7, 9, BIANCO)                    # la sopravveste
-    t.rett(15, 15, 1, 9, ROSSO)
-    t.rett(12, 18, 7, 1, ROSSO)
-    t.ellisse(15.5, 7.5, 4, 3, ACCIAIO)             # l'elmo
-    t.rett(15, 3, 2, 3, ROSSO)                      # il pennacchio
-    t.ellisse(9, 20, 4, 5, AZZURRO)                 # lo scudo, a sinistra
-    t.rett(8, 17, 2, 7, BIANCO)
-    t.rett(7, 19, 5, 2, BIANCO)
-    if azione:
-        t.linea(23, y + 1, 31, y - 7, ACCIAIO_L, 2)   # la spada alta
-    else:
-        t.linea(23, y + 1, 29, y + 9, ACCIAIO_L, 2)
-    return t.contorno()
-
-
-def antonio(azione):
-    """Sant'Antonio abate: il saio col cappuccio, il bastone a tau col campanello, la fiamma."""
-    t = Tela(32, 32)
-    y = corpo_santo(t, SAIO, SAIO_L, azione)
-    t.ellisse(14.5, 8, 4.6, 4.8, SAIO)              # il cappuccio
-    t.ellisse(16, 9.5, 3, 3.4, PELLE)
-    t.rett(17, 9, 1, 1, C)
-    t.rett(14, 12, 3, 2, BIANCO)                    # la barba
-    t.linea(25, y - 9, 25, 30, SAIO_L, 1)           # il tau
-    t.rett(23, y - 9, 5, 1, SAIO_L)
-    t.ellisse(27.5, y - 6, 1.5, 1.5, ORO)           # il campanello
-    if azione:
-        t.ellisse(28, y - 3, 2.5, 3.5, ROSSO)       # la fiamma in mano
-        t.ellisse(28, y - 2, 1.4, 2, ORO)
-    return t.contorno()
-
-
-# --- i nemici (guardano a sinistra: si disegnano a destra e si specchiano) -------------------------
-def soldato(t, tunica, tunica_l, azione):
-    t.trapezio(15, 13, 29, 9, 13, tunica)
-    t.rett(15, 14, 2, 14, tunica_l)
-    t.rett(10, 28, 4, 3, N_SCURO)
-    t.rett(17, 28, 4, 3, N_SCURO)
-    t.ellisse(15.5, 9.5, 3.6, 3.8, 3)
-    t.rett(17, 9, 1, 1, C)
-    braccio = 15 if azione else 18
-    t.rett(17, braccio, 6, 3, tunica)
-    t.rett(22, braccio, 2, 3, 3)
-    return braccio
-
-
-def fante(azione):
-    """Fante di Perugia: elmo, la tunica rossa e bianca del grifo, la lancia."""
-    t = Tela(32, 32)
-    b = soldato(t, N_ROSSO_S, N_BIANCO, azione)
-    t.rett(12, 14, 4, 13, N_ROSSO)
-    t.ellisse(15.5, 7, 4, 2.6, N_ACCIAIO)
-    t.rett(11, 8, 9, 1, N_ACCIAIO_L)
-    if azione:
-        t.linea(14, b + 1, 31, b - 1, N_LEGNO_L, 1)
-        t.linea(29, b - 2, 31, b - 1, N_ACCIAIO_L, 2)
-    else:
-        t.linea(24, 2, 24, 30, N_LEGNO_L, 1)
-        t.rett(23, 0, 3, 3, N_ACCIAIO_L)
-    return t.contorno().specchia()
-
-
-def balestriere(azione):
-    """Balestriere Pesante: corazza, il cappello di ferro, la balestra di legno."""
-    t = Tela(32, 32)
-    b = soldato(t, N_ACCIAIO, N_ACCIAIO_L, azione)
-    t.rett(11, 14, 9, 4, N_ROSSO)
-    t.ellisse(15.5, 7, 5.5, 2.2, N_ACCIAIO)
-    t.rett(14, 4, 3, 3, N_ACCIAIO)
-    x = 24 if not azione else 26
-    t.rett(x - 6, b - 1, 10, 2, N_LEGNO)            # il fusto
-    t.linea(x + 3, b - 6, x + 3, b + 5, N_LEGNO_L, 1)  # l'arco
-    t.linea(x + 3, b - 6, x - 2, b, N_GRIGIO, 1)    # la corda
-    t.linea(x + 3, b + 5, x - 2, b, N_GRIGIO, 1)
-    return t.contorno().specchia()
-
-
-def spia(azione):
-    """Spia umbra: il mantello scuro col cappuccio, il pugnale."""
-    t = Tela(32, 32)
-    b = soldato(t, N_SCURO, N_MEDIO, azione)
-    t.trapezio(14, 12, 30, 10, 18, N_VERDE)         # il mantello
-    t.ellisse(15, 8.5, 4.8, 5, N_SCURO)             # il cappuccio
-    t.ellisse(16.5, 10, 2.6, 2.8, 3)
-    t.rett(17, 10, 1, 1, C)
-    if azione:
-        t.linea(22, b, 30, b - 4, N_ACCIAIO_L, 1)
-    else:
-        t.linea(22, b + 1, 26, b + 4, N_ACCIAIO_L, 1)
-    return t.contorno().specchia()
-
-
-def spettro(azione):
-    """Spettro del Dubbio: un velo grigio e sfrangiato che fluttua, due occhi vuoti, le mani che si
-    allungano (in azione)."""
-    t = Tela(32, 32)
-    alto = 3 if azione else 5
-    t.ellisse(15.5, alto + 8, 7, 8, N_MEDIO)
-    t.trapezio(15.5, alto + 8, 30, 14, 20, N_MEDIO)
-    for x in range(6, 26, 4):
-        t.rett(x, 28, 2, 3 if (x // 4) % 2 else 1, 0)
-    t.rett(9, alto + 12, 14, 10, N_GRIGIO)
-    t.ellisse(12.5, alto + 8, 1.6, 2.2, N_SCURO)
-    t.ellisse(18.5, alto + 8, 1.6, 2.2, N_SCURO)
-    if azione:
-        t.linea(23, alto + 14, 31, alto + 10, N_GRIGIO, 2)
-    return t.contorno().specchia()
-
-
-def guerriero(azione):
-    """Guerriero della Roccia di Spoleto: la corazza di ferro battuto a freddo, a strati (le fasce scure e chiare
-    di Raniero, 04_quest.md), l'elmo tondo col nasale, lo scudo lungo, il piccone da guerra."""
-    t = Tela(32, 32)
-    b = soldato(t, N_ACCIAIO, N_ACCIAIO_L, azione)
-    t.trapezio(15, 13, 27, 11, 14, N_ACCIAIO)       # la corazza piu' larga della tunica
-    for y in range(14, 27, 3):                      # gli strati del ferro
-        t.rett(9, y, 13, 1, N_MEDIO)
-    t.rett(10, 22, 11, 2, N_ROSSO_S)                # la fascia di Spoleto
-    t.ellisse(15.5, 7.5, 4.6, 3.6, N_ACCIAIO)       # l'elmo tondo
-    t.rett(11, 8, 10, 1, N_SCURO)
-    t.rett(17, 8, 1, 4, N_ACCIAIO_L)                # il nasale
-    t.rett(5, 14, 6, 14, N_SCURO)                   # lo scudo lungo, a sinistra
-    t.rett(6, 15, 4, 12, N_MEDIO)
-    t.rett(7, 15, 1, 12, N_ROSSO)
-    if azione:
-        t.linea(22, b + 1, 29, b - 9, N_LEGNO, 2)   # il piccone alzato
-        t.linea(25, b - 11, 31, b - 7, N_ACCIAIO_L, 2)
-    else:
-        t.linea(23, b + 2, 27, b + 12, N_LEGNO, 2)
-        t.linea(24, b + 12, 30, b + 10, N_ACCIAIO_L, 2)
-    return t.contorno().specchia()
-
-
-def infiltrato(azione):
-    """L'infiltrato delle Logge (Q-SP01): il mantello da pellegrino, il cappello a tesa larga con la conchiglia, il
-    bordone; la mano sotto il mantello, e in azione il pugnale che ne esce."""
-    t = Tela(32, 32)
-    b = soldato(t, N_LEGNO, N_LEGNO_L, azione)
-    t.trapezio(15, 12, 30, 11, 18, N_LEGNO)         # il mantello fino ai piedi
-    t.rett(15, 13, 1, 16, N_LEGNO_L)
-    t.ellisse(15.5, 9.5, 3.4, 3.6, 3)               # il viso
-    t.rett(17, 9, 1, 1, C)
-    t.rett(13, 11, 4, 2, N_SCURO)                   # la barba
-    t.ellisse(15.5, 6, 7.5, 1.6, N_LEGNO)           # la tesa del cappello
-    t.ellisse(15.5, 4.5, 3.5, 2.5, N_LEGNO)
-    t.rett(14, 5, 3, 2, N_BIANCO)                   # la conchiglia
-    t.linea(9, 4, 9, 30, N_LEGNO_L, 1)              # il bordone, dietro
-    t.rett(8, 9, 3, 2, N_ORO)                       # la zucca del pellegrino
-    if azione:
-        t.rett(17, b, 5, 3, N_LEGNO)                # il braccio fuori dal mantello
-        t.rett(22, b, 2, 3, 3)
-        t.linea(23, b, 30, b - 5, N_ACCIAIO_L, 1)   # il pugnale
-    else:
-        t.rett(17, b, 7, 3, N_LEGNO)                # la mano resta sotto il mantello
-    return t.contorno().specchia()
-
-
-def corrado(azione):
-    """Corrado di Spoleto, 64x64: armatura scura, l'elmo col cimiero, lo scudo, il martello d'assedio."""
-    t = Tela(64, 64)
-    t.trapezio(30, 24, 58, 18, 30, N_ACCIAIO)       # il corpo corazzato
-    t.rett(29, 26, 4, 30, N_ACCIAIO_L)
-    t.rett(20, 34, 22, 3, N_ORO)                    # la cintura
-    t.rett(19, 58, 9, 6, N_SCURO)
-    t.rett(34, 58, 9, 6, N_SCURO)
-    t.ellisse(31, 17, 8, 8.5, N_ACCIAIO)            # l'elmo
-    t.rett(26, 16, 14, 2, N_SCURO)                  # la feritoia
-    t.trapezio(31, 3, 10, 3, 9, N_ROSSO)            # il cimiero
-    t.ellisse(15, 40, 9, 12, N_ROSSO_S)             # lo scudo, a sinistra
-    t.rett(14, 30, 3, 20, N_ORO)
-    t.rett(8, 38, 15, 3, N_ORO)
-    braccio = 28 if azione else 36
-    t.rett(36, braccio, 13, 6, N_ACCIAIO)
-    if azione:
-        t.linea(48, braccio + 2, 58, 4, N_LEGNO, 3)     # il martello alzato
-        t.rett(52, 0, 12, 9, N_ACCIAIO_L)
-    else:
-        t.linea(48, braccio + 2, 56, 60, N_LEGNO, 3)
-        t.rett(51, 54, 12, 9, N_ACCIAIO_L)
-    return t.contorno().specchia()
+# --- le figure: in tools/sagome_battaglia.py (pezzo SAG) -------------------------------------------
+# I Santi e i nemici di prima (forme piatte, due pose) sono stati ridisegnati con lo scheletro della
+# Guida (scelta 11), l'ombreggiatura con la luce da sinistra e sette pose; qui resta la freccia.
 
 
 def freccia(azione):
@@ -338,9 +129,7 @@ def freccia(azione):
     return t.contorno()
 
 
-SANTI = (("UBALDO", ubaldo), ("GIORGIO", giorgio), ("ANTONIO", antonio))
-NEMICI = (("FANTE", fante), ("BALESTRIERE", balestriere), ("CORRADO", corrado), ("SPIA", spia),
-          ("SPETTRO", spettro), ("GUERRIERO", guerriero), ("INFILTRATO", infiltrato))
+SANTI, NEMICI = SB.SANTI, SB.NEMICI
 ALTRI = (("FRECCIA", freccia),)
 
 
@@ -462,6 +251,12 @@ def tile_e_mappe():
 
 
 # --- l'header ----------------------------------------------------------------------------------------
+def tile_di(px):
+    """I tile 8x8 di una griglia di indici, riga per riga di tile (l'ordine degli sprite)."""
+    lato = len(px)
+    return [[px[ty * 8 + y][tx * 8:tx * 8 + 8] for y in range(8)] for ty in range(lato // 8) for tx in range(lato // 8)]
+
+
 def parole(pixel):
     out = []
     for riga in pixel:
@@ -497,17 +292,47 @@ def genera(palette_stile):
     for m in mappe:
         out += ["    {", blocchi(m, 32, str).replace("\n    ", "\n        ").replace("    ", "        ", 1), "    },"]
     out += ["};", ""]
-    for gruppo in (SANTI, NEMICI, ALTRI):
+    # le sagome (pezzo SAG, tools/sagome_battaglia.py): ogni figura con la sua palette e le sue pose
+    out += [f"inline constexpr int POSE_PER_FIGURA = {len(SB.POSE)};", ""]
+    for gruppo, nemico in ((SB.SANTI, False), (SB.NEMICI, True)):
         for nome, pittore in gruppo:
-            pose = [pittore(False), pittore(True)]
-            lato = pose[0].w
-            tiles = [parola for p in pose for t_ in p.tile() for parola in parole(t_)]
-            out += [f"inline constexpr int LATO_{nome} = {lato};",
-                    f"inline constexpr int TILE_PER_POSA_{nome} = {len(pose[0].tile())};",
-                    f"inline constexpr bn::tile SPRITE_{nome}[{2 * len(pose[0].tile())}] = {{"]
-            out += ["    { { " + ", ".join(f"0x{v:08X}" for v in tiles[k:k + 8]) + " } },"
-                    for k in range(0, len(tiles), 8)]
+            pose = SB.pose_di(pittore, nemico)
+            lato = len(pose[0][1])
+            pal = pose[0][0]
+            tile_posa = (lato // 8) ** 2
+            parole_tile = [parola for _, px in pose for t_ in tile_di(px) for parola in parole(t_)]
+            out += [f"inline constexpr uint16_t PALETTE_{nome}[16] = {{",
+                    blocchi([colore(r) for r in pal], 8, lambda v: f"0x{v:04X}"), "};",
+                    f"inline constexpr int LATO_{nome} = {lato};",
+                    f"inline constexpr int TILE_PER_POSA_{nome} = {tile_posa};",
+                    f"inline constexpr bn::tile SPRITE_{nome}[{len(SB.POSE) * tile_posa}] = {{"]
+            out += ["    { { " + ", ".join(f"0x{v:08X}" for v in parole_tile[k:k + 8]) + " } },"
+                    for k in range(0, len(parole_tile), 8)]
             out += ["};", ""]
+    # gli effetti: 32x32, FOTOGRAMMI_EFFETTO ciascuno, nell'ordine di animazione::Effetto
+    fot = SB.effetti()
+    parole_tile = [parola for px in fot for t_ in tile_di(px) for parola in parole(t_)]
+    out += ["inline constexpr uint16_t PALETTE_EFFETTI[16] = {",
+            blocchi([colore(r) for r in SB.PALETTE_EFFETTI], 8, lambda v: f"0x{v:04X}"), "};",
+            f"inline constexpr int EFFETTI_FOTOGRAMMI = {len(fot)};",
+            f"inline constexpr bn::tile SPRITE_EFFETTI[{len(fot) * 16}] = {{"]
+    out += ["    { { " + ", ".join(f"0x{v:08X}" for v in parole_tile[k:k + 8]) + " } },"
+            for k in range(0, len(parole_tile), 8)]
+    out += ["};", ""]
+    # i lampi, nell'ordine di animazione::Lampo (NESSUNO escluso)
+    for nome, chiaro, scuro in SB.LAMPI:
+        out += [f"inline constexpr uint16_t PALETTE_LAMPO_{nome}[16] = {{",
+                blocchi([colore(r) for r in SB.palette_lampo(chiaro, scuro)], 8, lambda v: f"0x{v:04X}"), "};", ""]
+    for nome, pittore in ALTRI:
+        pose = [pittore(False), pittore(True)]
+        lato = pose[0].w
+        tiles = [parola for p in pose for t_ in p.tile() for parola in parole(t_)]
+        out += [f"inline constexpr int LATO_{nome} = {lato};",
+                f"inline constexpr int TILE_PER_POSA_{nome} = {len(pose[0].tile())};",
+                f"inline constexpr bn::tile SPRITE_{nome}[{2 * len(pose[0].tile())}] = {{"]
+        out += ["    { { " + ", ".join(f"0x{v:08X}" for v in tiles[k:k + 8]) + " } },"
+                for k in range(0, len(tiles), 8)]
+        out += ["};", ""]
     out += ["}", "", "#endif", ""]
     return "\n".join(out)
 

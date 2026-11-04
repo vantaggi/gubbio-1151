@@ -21,6 +21,7 @@
 #include "bn_sprite_tiles_ptr.h"
 #include "bn_vector.h"
 
+#include "animazione_battaglia.h"
 #include "battaglia_grafica.h"
 #include "game_state.h"
 #include "progressione.h"
@@ -42,22 +43,24 @@ namespace
     // Una sola battaglia a schermo, riavviata sul posto: sta in EWRAM, non sullo stack.
     constinit BN_DATA_EWRAM Battaglia g_scena(0, 1);
 
+    namespace A = battaglia::animazione;
+
     constexpr int FILE = 3;
     constexpr int Y_FILA[FILE] = { -58, -30, -2 };     // centri degli sprite, sopra il pannello
-    constexpr int X_EROE = -64;
-    constexpr int X_NEMICO = 56;
+    // L'ordine dei tre (regola di Cioti, 4 nov 2026): Ubaldo al centro e davanti, Giorgio secondo,
+    // Antonio terzo. Nell'ordine degli eroi (UBALDO, GIORGIO, ANTONIO): la fila e il posto.
+    constexpr int FILA_EROE[EROI] = { 1, 0, 2 };
+    constexpr int X_EROI[EROI] = { -44, -56, -60 };
+    constexpr int X_NEMICI[FILE] = { 54, 64, 54 };     // i nemici sfalsati: quello di mezzo piu' indietro
     constexpr int X_CORRADO = 40;
     constexpr int X_BARRA_EROE = -100;
     constexpr int X_BARRA_NEMICO = 100;
     constexpr int LARGHEZZA_BARRA = 30;                 // pixel pieni possibili, dentro il bordo
     constexpr int INCHIOSTRO_CHIARO = 2;                // sul pannello scuro e sulla scena
     constexpr int PANNELLO_Y = 104;                     // il pannello dei comandi nello sfondo (genera_battaglia.py)
-    constexpr int FRAME_EVENTO = 28;
-    constexpr int FRAME_FERVORE = 6;
     constexpr int FRAME_ESITO = 150;
     constexpr int FRAME_LIVELLO = 75;
     constexpr int FRECCIA_Y_MIN = -72;                  // la freccia del bersaglio resta tutta sullo schermo
-    constexpr int PASSO_SCATTO = 2;                     // pixel per frame dello scatto verso il bersaglio
 
     // Indici della palette dei Santi usati dalle barre (tools/genera_battaglia.py).
     constexpr int BARRA_BORDO = 1;
@@ -84,30 +87,43 @@ namespace
 
     constexpr Colori COLORI_SFONDO = colori(G::PALETTE_SFONDO);
     constexpr Colori COLORI_SANTI = colori(G::PALETTE_SANTI);
-    constexpr Colori COLORI_NEMICI = colori(G::PALETTE_NEMICI);
+    constexpr Colori COLORI_EFFETTI = colori(G::PALETTE_EFFETTI);
+    // i lampi, nell'ordine di animazione::Lampo (NESSUNO escluso)
+    constexpr Colori COLORI_LAMPI[3] = {
+        colori(G::PALETTE_LAMPO_BIANCO), colori(G::PALETTE_LAMPO_FUOCO), colori(G::PALETTE_LAMPO_LUCE) };
 
+    // Una figura della battaglia (tools/sagome_battaglia.py): le sue pose, una dopo l'altra, e la sua
+    // palette; l'effetto del suo colpo.
     struct Figura
     {
         const bn::tile* tile;
         int tile_per_posa;
         int lato;
+        Colori colori;
+        A::Effetto colpo;
+        bool mischia;       // colpisce da vicino: corre fino al bersaglio (no la balestra, no il fuoco)
     };
 
     constexpr Figura FIGURE_SANTI[EROI] = {
-        { G::SPRITE_UBALDO, G::TILE_PER_POSA_UBALDO, G::LATO_UBALDO },
-        { G::SPRITE_GIORGIO, G::TILE_PER_POSA_GIORGIO, G::LATO_GIORGIO },
-        { G::SPRITE_ANTONIO, G::TILE_PER_POSA_ANTONIO, G::LATO_ANTONIO },
+        { G::SPRITE_UBALDO, G::TILE_PER_POSA_UBALDO, G::LATO_UBALDO, colori(G::PALETTE_UBALDO), A::Effetto::SCINTILLA, true },
+        { G::SPRITE_GIORGIO, G::TILE_PER_POSA_GIORGIO, G::LATO_GIORGIO, colori(G::PALETTE_GIORGIO), A::Effetto::SCIA, true },
+        { G::SPRITE_ANTONIO, G::TILE_PER_POSA_ANTONIO, G::LATO_ANTONIO, colori(G::PALETTE_ANTONIO), A::Effetto::FIAMMA, false },
     };
+
+    // Il Giudizio della Verga: con il Fervore il colpo di Ubaldo diventa la colonna di luce.
+    constexpr A::Effetto COLPO_FORTE_SANTI[EROI] = { A::Effetto::RAGGIO, A::Effetto::SCIA, A::Effetto::FIAMMA };
 
     // Nell'ordine di NemicoId.
     constexpr Figura FIGURE_NEMICI[int(NemicoId::CONTEGGIO)] = {
-        { G::SPRITE_FANTE, G::TILE_PER_POSA_FANTE, G::LATO_FANTE },
-        { G::SPRITE_BALESTRIERE, G::TILE_PER_POSA_BALESTRIERE, G::LATO_BALESTRIERE },
-        { G::SPRITE_CORRADO, G::TILE_PER_POSA_CORRADO, G::LATO_CORRADO },
-        { G::SPRITE_SPIA, G::TILE_PER_POSA_SPIA, G::LATO_SPIA },
-        { G::SPRITE_SPETTRO, G::TILE_PER_POSA_SPETTRO, G::LATO_SPETTRO },
-        { G::SPRITE_GUERRIERO, G::TILE_PER_POSA_GUERRIERO, G::LATO_GUERRIERO },
-        { G::SPRITE_INFILTRATO, G::TILE_PER_POSA_INFILTRATO, G::LATO_INFILTRATO },
+        { G::SPRITE_FANTE, G::TILE_PER_POSA_FANTE, G::LATO_FANTE, colori(G::PALETTE_FANTE), A::Effetto::SCIA, true },
+        { G::SPRITE_BALESTRIERE, G::TILE_PER_POSA_BALESTRIERE, G::LATO_BALESTRIERE, colori(G::PALETTE_BALESTRIERE),
+          A::Effetto::SCINTILLA, false },
+        { G::SPRITE_CORRADO, G::TILE_PER_POSA_CORRADO, G::LATO_CORRADO, colori(G::PALETTE_CORRADO), A::Effetto::SCINTILLA, true },
+        { G::SPRITE_SPIA, G::TILE_PER_POSA_SPIA, G::LATO_SPIA, colori(G::PALETTE_SPIA), A::Effetto::SCIA, true },
+        { G::SPRITE_SPETTRO, G::TILE_PER_POSA_SPETTRO, G::LATO_SPETTRO, colori(G::PALETTE_SPETTRO), A::Effetto::SCINTILLA, true },
+        { G::SPRITE_GUERRIERO, G::TILE_PER_POSA_GUERRIERO, G::LATO_GUERRIERO, colori(G::PALETTE_GUERRIERO), A::Effetto::SCIA, true },
+        { G::SPRITE_INFILTRATO, G::TILE_PER_POSA_INFILTRATO, G::LATO_INFILTRATO, colori(G::PALETTE_INFILTRATO),
+          A::Effetto::SCIA, true },
     };
 
     constexpr TestoId NOMI_SANTI[EROI] = { TestoId::BATT_UBALDO, TestoId::BATT_GIORGIO, TestoId::BATT_ANTONIO };
@@ -123,7 +139,8 @@ namespace
 
     bn::sprite_tiles_item tiles_di(const Figura& f)
     {
-        return bn::sprite_tiles_item(bn::span<const bn::tile>(f.tile, 2 * f.tile_per_posa), bn::bpp_mode::BPP_4, 2);
+        return bn::sprite_tiles_item(bn::span<const bn::tile>(f.tile, G::POSE_PER_FIGURA * f.tile_per_posa),
+                                     bn::bpp_mode::BPP_4, G::POSE_PER_FIGURA);
     }
 
     // Una barra di 32x8: bordo scuro, i pixel pieni nel colore della barra, il resto grigio. Si
@@ -231,7 +248,14 @@ namespace
                 bn::regular_bg_map_item(GUBBIO_VOCE(G::SFONDO, incontro)[0], bn::size(32, 32)),
                 _tiles_sfondo, _palette_sfondo))),
             _palette_santi(crea_palette(COLORI_SANTI)),
-            _palette_nemici(crea_palette(COLORI_NEMICI)),
+            _palette_effetti(crea_palette(COLORI_EFFETTI)),
+            _lampi{ crea_palette(COLORI_LAMPI[0]), crea_palette(COLORI_LAMPI[1]), crea_palette(COLORI_LAMPI[2]) },
+            _effetti_tiles(bn::sprite_tiles_item(bn::span<const bn::tile>(G::SPRITE_EFFETTI, 16 * G::EFFETTI_FOTOGRAMMI),
+                                                 bn::bpp_mode::BPP_4, G::EFFETTI_FOTOGRAMMI)),
+            _effetto_attore(bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(32, 32), _effetti_tiles.create_tiles(0),
+                                                   _palette_effetti)),
+            _effetto_bersaglio(bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(32, 32), _effetti_tiles.create_tiles(0),
+                                                      _palette_effetti)),
             _titolo(Contesto::DIALOGO, 8, PANNELLO_Y + 6, INCHIOSTRO_CHIARO, palette_testo),
             _voce(Contesto::DIALOGO, 16, PANNELLO_Y + 20, INCHIOSTRO_CHIARO, palette_testo),
             _aiuto(Contesto::DIALOGO, 8, PANNELLO_Y + 36, INCHIOSTRO_CHIARO, palette_testo),
@@ -243,6 +267,10 @@ namespace
                                             _palette_santi))
         {
             _freccia.set_visible(false);
+            _effetto_attore.set_visible(false);
+            _effetto_bersaglio.set_visible(false);
+            _effetto_attore.set_z_order(-2);
+            _effetto_bersaglio.set_z_order(-2);
             _numero.nascondi();
             int nemici = GUBBIO_VOCE(INCONTRO, incontro).nemici;
             _vista.inizia(g_scena, nemici);
@@ -251,14 +279,17 @@ namespace
             {
                 const Figura& f = GUBBIO_VOCE(FIGURE_SANTI, e);
                 _figure[e] = tiles_di(f);
-                _x[e] = X_EROE;
-                _y[e] = GUBBIO_VOCE(Y_FILA, e);
+                _palette[e] = crea_palette(f.colori);
+                _colpo[e] = f.colpo;
+                _mischia[e] = f.mischia;
+                _x[e] = GUBBIO_VOCE(X_EROI, e);
+                _y[e] = GUBBIO_VOCE(Y_FILA, GUBBIO_VOCE(FILA_EROE, e));
                 _sprite[e] = bn::sprite_ptr::create(_x[e], _y[e], bn::sprite_shape_size(f.lato, f.lato),
-                                                    _figure[e]->create_tiles(0), _palette_santi);
+                                                    _figure[e]->create_tiles(0), *_palette[e]);
                 _pv.emplace_back(X_BARRA_EROE, _y[e] - 4, BARRA_PV, _palette_santi);
                 _fervore.emplace_back(X_BARRA_EROE, _y[e] + 6, BARRA_FERVORE, _palette_santi);
                 // i PV in cifre accanto al Santo, dalla vista come le barre
-                _numeri_pv.emplace_back(120 + X_EROE + 18, 80 + _y[e] - 4, INCHIOSTRO_CHIARO, palette_testo);
+                _numeri_pv.emplace_back(120 + X_BARRA_EROE - 14, 80 + _y[e] + 11, INCHIOSTRO_CHIARO, palette_testo);
             }
 
             for(int n = 0; n < nemici; ++n)
@@ -266,11 +297,14 @@ namespace
                 int s = EROI + n;
                 const Figura& f = GUBBIO_VOCE(FIGURE_NEMICI, int(GUBBIO_VOCE(INCONTRO, incontro).schieramento[n]));
                 _figure[s] = tiles_di(f);
+                _palette[s] = crea_palette(f.colori);
+                _colpo[s] = f.colpo;
+                _mischia[s] = f.mischia;
                 bool grande = f.lato > 32;
-                _x[s] = grande ? X_CORRADO : X_NEMICO;
+                _x[s] = grande ? X_CORRADO : GUBBIO_VOCE(X_NEMICI, n);
                 _y[s] = grande ? GUBBIO_VOCE(Y_FILA, 1) : GUBBIO_VOCE(Y_FILA, n);
                 _sprite[s] = bn::sprite_ptr::create(_x[s], _y[s], bn::sprite_shape_size(f.lato, f.lato),
-                                                    _figure[s]->create_tiles(0), _palette_nemici);
+                                                    _figure[s]->create_tiles(0), *_palette[s]);
                 _pv.emplace_back(X_BARRA_NEMICO, _y[s] + (grande ? 0 : 6), BARRA_PV, _palette_santi);
             }
 
@@ -311,9 +345,9 @@ namespace
                     _aiuto.rivela_tutto();
                     _freccia.set_position(_x[s], bn::max(_y[s] - _sprite[s]->shape_size().height() / 2 - 6, FRECCIA_Y_MIN));
                     _freccia.set_visible(true);
-                    attendi(20);
+                    aspetta(20);
                     scatta(nome_istantanea("menu"), true);
-                    attendi(40);
+                    aspetta(40);
                     _freccia.set_visible(false);
                     nascondi_menu();
                 }
@@ -340,6 +374,16 @@ namespace
                     {
                         immune_fotografato = true;
                         fotografa = true;
+                    }
+
+                    // chi spende Fervore colpisce forte finche' agisce lui
+                    if(evento.kind == EventKind::FERVOR_SPEND)
+                    {
+                        _forte_di = slot_vista(evento.attore_nemico, evento.attore);
+                    }
+                    else if(m.attore >= 0 && m.attore != _forte_di)
+                    {
+                        _forte_di = -1;
                     }
 
                     anima(m, fotografa);
@@ -374,17 +418,17 @@ namespace
                     {
                         _voce.mostra(GUBBIO_VOCE(SALE, e));
                         _voce.rivela_tutto();
-                        attendi(FRAME_LIVELLO);
+                        aspetta(FRAME_LIVELLO);
                     }
                 }
             }
 
-            attendi(30);
+            aspetta(30);
             scatta(nome_istantanea("esito"), _istantanee);
 
             for(int f = 0; f < FRAME_ESITO && ! (_guida == Guida::GIOCATORE && bn::keypad::a_pressed()); ++f)
             {
-                attendi(1);
+                aspetta(1);
             }
 
             return esito;
@@ -401,7 +445,11 @@ namespace
         bn::regular_bg_tiles_ptr _tiles_sfondo;
         bn::regular_bg_ptr _sfondo;
         bn::sprite_palette_ptr _palette_santi;
-        bn::sprite_palette_ptr _palette_nemici;
+        bn::sprite_palette_ptr _palette_effetti;
+        bn::sprite_palette_ptr _lampi[3];
+        bn::sprite_tiles_item _effetti_tiles;
+        bn::sprite_ptr _effetto_attore;
+        bn::sprite_ptr _effetto_bersaglio;
         VistaTesto _titolo;
         VistaTesto _voce;
         VistaTesto _aiuto;
@@ -414,6 +462,12 @@ namespace
         VistaBattaglia _vista;
         bn::optional<bn::sprite_tiles_item> _figure[SLOT_VISTA];
         bn::optional<bn::sprite_ptr> _sprite[SLOT_VISTA];
+        bn::optional<bn::sprite_palette_ptr> _palette[SLOT_VISTA];
+        A::Effetto _colpo[SLOT_VISTA] = {};
+        bool _mischia[SLOT_VISTA] = {};
+        bool _occupato[SLOT_VISTA] = {};    // chi sta recitando un gesto non respira da solo
+        int _tick = 0;
+        int _forte_di = -1;                 // chi ha appena speso Fervore: i suoi colpi sono forti
         int _x[SLOT_VISTA] = {};
         int _y[SLOT_VISTA] = {};
         bn::vector<Barra, SLOT_VISTA> _pv;
@@ -481,9 +535,59 @@ namespace
             return _partita ? _partita->oggetti[int(o)] - _riservati[int(o)] : 0;
         }
 
-        void posa(int s, bool azione)
+        // La posa di una figura; LIBERA e' il respiro (o la figura in ginocchio, se e' un eroe caduto).
+        void posa(int s, A::Posa p)
         {
-            _sprite[s]->set_tiles(*_figure[s], azione ? 1 : 0);
+            if(p == A::Posa::LIBERA)
+            {
+                p = _vista.caduto(s) ? A::Posa::CADUTO : A::respiro(_tick, s);
+            }
+
+            _sprite[s]->set_tiles(*_figure[s], int(p));
+        }
+
+        void lampo(int s, A::Lampo l)
+        {
+            _sprite[s]->set_palette(l == A::Lampo::NESSUNO ? *_palette[s] : _lampi[int(l) - 1]);
+        }
+
+        // Un effetto sopra una figura: centrato sulla figura, coi piedi allineati; specchiato se viene
+        // da un nemico.
+        void effetto(bn::sprite_ptr& sprite, int s, A::Effetto e, int fotogramma, bool specchiato, int dx, int dy)
+        {
+            if(e == A::Effetto::NESSUNO || s < 0)
+            {
+                sprite.set_visible(false);
+                return;
+            }
+
+            int piedi = _y[s] + _sprite[s]->shape_size().height() / 2;
+            sprite.set_tiles(_effetti_tiles, (int(e) - 1) * A::FOTOGRAMMI_EFFETTO + fotogramma);
+            sprite.set_position(_x[s] + dx, piedi - 16 + dy);
+            sprite.set_horizontal_flip(specchiato);
+            sprite.set_visible(true);
+        }
+
+        // Chi non recita respira; un eroe caduto resta in ginocchio, un nemico caduto non c'e' piu'.
+        void respira()
+        {
+            for(int s = 0; s < SLOT_VISTA; ++s)
+            {
+                if(_sprite[s] && ! _occupato[s] && _sprite[s]->visible())
+                {
+                    posa(s, A::Posa::LIBERA);
+                }
+            }
+        }
+
+        void aspetta(int frame)
+        {
+            for(int f = 0; f < frame; ++f)
+            {
+                ++_tick;
+                respira();
+                attendi(1);
+            }
         }
 
         void mostra_menu(int eroe, TestoId voce)
@@ -608,10 +712,10 @@ namespace
 
                         // chi sceglie dondola, per dire di chi e' il turno
                         _sprite[e]->set_y(_y[e] - ((f / 16) % 2));
-                        attendi(1);
+                        aspetta(1);
                     }
 
-                    attendi(1);
+                    aspetta(1);
                     comando = opzioni[scelta].comando;
 
                     if(scegli_bersaglio(e, comando))
@@ -629,7 +733,7 @@ namespace
                 }
 
                 g_scena.imposta_comando(e, comando);
-                attendi(1);
+                aspetta(1);
             }
 
             nascondi_menu();
@@ -670,11 +774,11 @@ namespace
                 _freccia.set_tiles(_freccia_tiles, (f / 12) % 2);
                 _freccia.set_visible(true);
                 _sprite[eroe]->set_y(_y[eroe] - ((f / 16) % 2));
-                attendi(1);
+                aspetta(1);
             }
 
             _freccia.set_visible(false);
-            attendi(1);
+            aspetta(1);
 
             if(confermato)
             {
@@ -684,20 +788,69 @@ namespace
             return confermato;
         }
 
-        void anima(const Mossa& m, bool fotografa)
+        // Lo stile di un gesto: l'effetto del colpo di chi agisce, forte se ha appena speso Fervore (un'abilita',
+        // la Suprema) o se e' Corrado; chi cade resta a terra se e' un eroe.
+        [[nodiscard]] A::Stile stile_di(const Mossa& m) const
         {
-            int durata = m.gesto == Gesto::NESSUNO ? FRAME_FERVORE : FRAME_EVENTO;
-
-            if(_veloce)
-            {
-                durata = 1;
-            }
-
-            int verso = m.attore >= EROI ? -1 : 1;
+            A::Stile st;
 
             if(m.attore >= 0)
             {
-                posa(m.attore, true);
+                bool fervore = m.attore == _forte_di;
+                st.forte = fervore || _sprite[m.attore]->shape_size().width() > 32;
+                st.colpo = fervore && m.attore < EROI ? GUBBIO_VOCE(COLPO_FORTE_SANTI, m.attore) : _colpo[m.attore];
+            }
+
+            st.resta_a_terra = m.bersaglio >= 0 && m.bersaglio < EROI;
+            return st;
+        }
+
+        // Il punto della corsa: 'avanti' fino ad AVANZATA e' la frazione del tragitto da 'da' a 'meta', oltre
+        // sono pixel in piu' nel verso del colpo (l'affondo).
+        [[nodiscard]] static int lungo_la_corsa(int da, int meta, int avanti, int verso)
+        {
+            if(avanti <= A::AVANZATA)
+            {
+                return da + (meta - da) * avanti / A::AVANZATA;
+            }
+
+            return meta + verso * (avanti - A::AVANZATA);
+        }
+
+        // Un evento a schermo, fotogramma per fotogramma dalla tabella di include/animazione_battaglia.h:
+        // chi agisce fa il passo, carica, colpisce e torna; chi subisce lampeggia, arretra, cade.
+        void anima(const Mossa& m, bool fotografa)
+        {
+            A::Stile stile = stile_di(m);
+            int durata = A::durata(m.gesto, stile);
+            int da = _veloce ? durata - 1 : 0;
+            int verso = m.attore >= EROI ? -1 : 1;          // verso il nemico di chi agisce
+            int via = m.bersaglio >= EROI ? 1 : -1;         // lontano da chi colpisce
+            bool colpo = m.gesto == Gesto::COLPO || m.gesto == Gesto::IMMUNE;
+            int scatto_foto = colpo ? A::impatto() + 1 : 12;
+            bool su_se_stesso = m.attore == m.bersaglio;
+            // Dove arriva il passo: chi colpisce da vicino corre fino davanti al bersaglio, coi piedi alla
+            // sua altezza; chi colpisce da lontano (la balestra, il fuoco, la luce della Verga) fa un passo.
+            int meta_x = m.attore >= 0 ? _x[m.attore] + verso * A::AVANZATA : 0;
+            int meta_y = m.attore >= 0 ? _y[m.attore] : 0;
+
+            if(colpo && m.attore >= 0 && m.bersaglio >= 0 && _mischia[m.attore] &&
+               ! (m.attore == UBALDO && stile.colpo == A::Effetto::RAGGIO))
+            {
+                int lato_a = _sprite[m.attore]->shape_size().width();
+                int lato_b = _sprite[m.bersaglio]->shape_size().width();
+                meta_x = _x[m.bersaglio] - verso * (lato_b / 4 + lato_a / 4 + 6);
+                meta_y = _y[m.bersaglio] + (lato_b - lato_a) / 2;
+            }
+
+            if(m.attore >= 0)
+            {
+                _occupato[m.attore] = true;
+            }
+
+            if(m.bersaglio >= 0 && _sprite[m.bersaglio])
+            {
+                _occupato[m.bersaglio] = true;
             }
 
             if(m.gesto == Gesto::IMMUNE)
@@ -708,57 +861,79 @@ namespace
                 _titolo.rivela_tutto();
             }
 
-            for(int f = 0; f < durata; ++f)
+            for(int f = da; f < durata; ++f)
             {
-                // un attore solo si muove: scatta verso il bersaglio e torna
+                A::Quadro q = A::quadro(m.gesto, f, stile);
+
                 if(m.attore >= 0)
                 {
-                    int scatto = f < 8 ? f * PASSO_SCATTO : (f < 20 ? 8 * PASSO_SCATTO : (durata - f) * PASSO_SCATTO);
-                    _sprite[m.attore]->set_x(_x[m.attore] + verso * scatto);
+                    posa(m.attore, q.posa_attore);
+                    lampo(m.attore, q.lampo_attore);
+                    _sprite[m.attore]->set_x(lungo_la_corsa(_x[m.attore], meta_x, q.avanti_attore, verso));
+                    _sprite[m.attore]->set_z_order(-1);
+                    effetto(_effetto_attore, m.attore, q.effetto_attore, q.fotogramma_attore, false, 0, 0);
                 }
 
                 if(m.bersaglio >= 0 && _sprite[m.bersaglio])
                 {
-                    bn::sprite_ptr& b = *_sprite[m.bersaglio];
-                    bool reagisce = f >= 8 && f < 20;
+                    // il potere su se stesso (Bastione, Carica) non ha un secondo effetto sopra il primo
+                    bool sopra = ! (su_se_stesso && m.gesto == Gesto::POTERE);
 
-                    if(m.gesto == Gesto::COLPO || m.gesto == Gesto::USTIONE || m.gesto == Gesto::PARATA ||
-                       m.gesto == Gesto::CADUTA)
+                    if(! su_se_stesso)
                     {
-                        b.set_visible(! reagisce || (f / 2) % 2 == 0);
+                        posa(m.bersaglio, q.posa_bersaglio);
+                        lampo(m.bersaglio, q.lampo_bersaglio);
+                        _sprite[m.bersaglio]->set_x(_x[m.bersaglio] + via * q.indietro_bersaglio);
                     }
-                    else if(m.gesto == Gesto::SCUDO_ROTTO)
+
+                    _sprite[m.bersaglio]->set_visible(q.bersaglio_visibile);
+                    effetto(_effetto_bersaglio, m.bersaglio, sopra ? q.effetto_bersaglio : A::Effetto::NESSUNO,
+                            q.fotogramma_bersaglio, verso < 0, 0, 0);
+                }
+
+                // il tremito: lo sfondo e le figure, insieme
+                _sfondo.set_y(128 - 80 + q.scossa);
+
+                for(int s = 0; s < SLOT_VISTA; ++s)
+                {
+                    if(_sprite[s])
                     {
-                        b.set_x(_x[m.bersaglio] + (reagisce ? ((f % 4) < 2 ? 2 : -2) : 0));
+                        int y = s == m.attore ? lungo_la_corsa(_y[s], meta_y, bn::min(q.avanti_attore, A::AVANZATA), 0) : _y[s];
+                        _sprite[s]->set_y(y + q.scossa);
                     }
                 }
 
-                if(m.numero > 0 && f >= 8 && m.bersaglio >= 0)
+                if(m.numero > 0 && q.numero && m.bersaglio >= 0)
                 {
                     _numero.mostra(m.numero);
-                    _numero.colloca(120 + _x[m.bersaglio] - 16, 80 + _y[m.bersaglio] - 12 - (f - 8) / 2);
+                    _numero.colloca(120 + _x[m.bersaglio] - 8, bn::max(2, 80 + _y[m.bersaglio] - 22 - q.su_numero));
                 }
 
-                if(fotografa && f == 12)
+                if(fotografa && f == scatto_foto)
                 {
                     scatta(nome_istantanea(m.gesto == Gesto::IMMUNE ? "immune" : "colpo"), _istantanee);
                 }
 
-                attendi(1);
+                aspetta(1);
             }
 
-            if(m.attore >= 0)
+            // tutto torna a posto: chi e' caduto resta giu' (un eroe) o sparisce (un nemico)
+            for(int s : { m.attore, m.bersaglio })
             {
-                posa(m.attore, false);
-                _sprite[m.attore]->set_x(_x[m.attore]);
+                if(s >= 0 && _sprite[s])
+                {
+                    _occupato[s] = false;
+                    lampo(s, A::Lampo::NESSUNO);
+                    posa(s, A::Posa::LIBERA);
+                    _sprite[s]->set_position(_x[s], _y[s]);
+                    _sprite[s]->set_z_order(0);
+                    _sprite[s]->set_visible(! _vista.caduto(s) || s < EROI);
+                }
             }
 
-            if(m.bersaglio >= 0 && _sprite[m.bersaglio])
-            {
-                _sprite[m.bersaglio]->set_x(_x[m.bersaglio]);
-                _sprite[m.bersaglio]->set_visible(! _vista.caduto(m.bersaglio));
-            }
-
+            _effetto_attore.set_visible(false);
+            _effetto_bersaglio.set_visible(false);
+            _sfondo.set_y(128 - 80);
             _numero.nascondi();
 
             if(m.gesto == Gesto::IMMUNE)
@@ -843,7 +1018,7 @@ bn::sprite_ptr sprite_sulla_mappa(int incontro)
     const Figura& f = GUBBIO_VOCE(FIGURE_NEMICI, int(GUBBIO_VOCE(INCONTRO, incontro).schieramento[0]));
     bn::sprite_tiles_item tiles = tiles_di(f);
     return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(f.lato, f.lato), tiles.create_tiles(0),
-                                  crea_palette(COLORI_NEMICI));
+                                  crea_palette(f.colori));
 }
 
 void menu_battaglie(const bn::sprite_palette_ptr& palette_testo)

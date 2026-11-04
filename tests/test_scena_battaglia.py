@@ -16,6 +16,10 @@ _spec = importlib.util.spec_from_file_location("genera_battaglia", os.path.join(
 GB = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(GB)
 
+_spec_sb = importlib.util.spec_from_file_location("sagome_battaglia", os.path.join(RADICE, "tools", "sagome_battaglia.py"))
+SB = importlib.util.module_from_spec(_spec_sb)
+_spec_sb.loader.exec_module(SB)
+
 PALETTE = S.carica("palette")
 SCENA = open(os.path.join(RADICE, "src", "scena_battaglia.cpp"), encoding="utf-8").read()
 
@@ -90,22 +94,99 @@ class Grafica(unittest.TestCase):
         self.assertEqual(scuri, 0)
 
     def test_figure_riconoscibili(self):
-        """Ogni figura ha lo sfondo trasparente e il contorno; le due pose sono diverse; nessuna figura
-        e' uguale a un'altra."""
+        """Ogni figura (tools/sagome_battaglia.py) ha sette pose, lo sfondo trasparente e il contorno; le
+        pose sono tutte diverse fra loro; nessuna figura e' uguale a un'altra; Corrado e' 64x64."""
         viste = set()
-        for _, pittore in GB.SANTI + GB.NEMICI:
-            ferma, azione = pittore(False), pittore(True)
-            self.assertEqual(ferma.px[0][0], 0)
-            self.assertIn(GB.C, {c for r in ferma.px for c in r})
-            self.assertNotEqual(ferma.px, azione.px)
-            chiave = tuple(map(tuple, ferma.px))
-            self.assertNotIn(chiave, viste)
-            viste.add(chiave)
-        self.assertEqual(GB.corrado(False).w, 64)
+        for nome, pittore in SB.SANTI + SB.NEMICI:
+            pose = SB.pose_di(pittore, False)
+            self.assertEqual(len(pose), 7, nome)
+            griglie = [tuple(map(tuple, px)) for _, px in pose]
+            self.assertEqual(len(set(griglie)), 7, f"{nome}: due pose uguali")
+            riposo = pose[0][1]
+            self.assertEqual(riposo[0][0], 0)
+            self.assertIn(SB.CONTORNO, {c for r in riposo for c in r})
+            self.assertNotIn(griglie[0], viste)
+            viste.add(griglie[0])
+        self.assertEqual(len(SB.corrado("riposo").pixel()), 64)
 
     def test_negativa_figura_doppia(self):
-        a, b = GB.ubaldo(False), GB.ubaldo(False)
-        self.assertEqual(tuple(map(tuple, a.px)), tuple(map(tuple, b.px)))
+        a, b = SB.ubaldo("riposo").pixel(), SB.ubaldo("riposo").pixel()
+        self.assertEqual(a, b)
+
+    def test_palette_delle_figure_dalla_guida(self):
+        """Ogni figura ha la sua palette di 16 colori della Guida, e la usa tutta dentro i suoi indici."""
+        for nome, pittore in SB.SANTI + SB.NEMICI:
+            for posa in SB.POSE:
+                f = pittore(posa)
+                self.assertEqual(len(f.palette), 16, nome)
+                self.assertEqual(fuori_guida(f.palette), [], nome)
+                usati = {c for r in f.pixel() for c in r}
+                self.assertLessEqual(max(usati), 15)
+        self.assertEqual(fuori_guida(SB.PALETTE_EFFETTI), [])
+        for _, chiaro, scuro in SB.LAMPI:
+            self.assertEqual(fuori_guida(SB.palette_lampo(chiaro, scuro)), [])
+
+    def test_negativa_palette_troppo_lunga(self):
+        troppi = [SB.Materiale(f"m{i}", ("neutri", 1), ("neutri", 2), ("neutri", 3 + i % 2)) for i in range(6)]
+        troppi += [SB.Materiale("v", ("verde dei monti", 0), ("verde dei monti", 1), ("verde dei monti", 2)),
+                   SB.Materiale("c", ("cielo e acqua", 0), ("cielo e acqua", 1), ("cielo e acqua", 2)),
+                   SB.Materiale("o", ("oro e bronzo", 0), ("oro e bronzo", 1), ("oro e bronzo", 2)),
+                   SB.Materiale("l", ("legno e cuoio", 0), ("legno e cuoio", 1), ("legno e cuoio", 2)),
+                   SB.Materiale("r", ("vermiglio comunale", 0), ("vermiglio comunale", 1), ("vermiglio comunale", 2))]
+        with self.assertRaises(ValueError):
+            SB.palette_di(troppi)
+
+    def test_luce_da_sinistra(self):
+        """L'ombreggiatura: nella veste di Ubaldo il bordo sinistro e' piu' chiaro del destro (Guida,
+        scelta 4)."""
+        import stile as St
+        f = SB.ubaldo("riposo")
+        px = f.pixel()
+        lum = lambda i: St.luminanza(St.colore(PALETTE, f.palette[i]))  # noqa: E731
+        riga = px[24]
+        pieni = [x for x, c in enumerate(riga) if c > 1]
+        self.assertGreater(lum(riga[pieni[0]]), lum(riga[pieni[-1]]))
+
+    def test_negativa_luce_da_destra(self):
+        import stile as St
+        f = SB.ubaldo("riposo")
+        px = [list(reversed(r)) for r in f.pixel()]
+        lum = lambda i: St.luminanza(St.colore(PALETTE, f.palette[i]))  # noqa: E731
+        pieni = [x for x, c in enumerate(px[24]) if c > 1]
+        self.assertLess(lum(px[24][pieni[0]]), lum(px[24][pieni[-1]]))
+
+    def test_effetti_quattro_fotogrammi(self):
+        """Gli effetti nell'ordine di animazione::Effetto, quattro fotogrammi non vuoti ciascuno."""
+        anim = open(os.path.join(RADICE, "include", "animazione_battaglia.h"), encoding="utf-8").read()
+        nomi_cpp = re.findall(r"^    ([A-Z]+),", anim[anim.index("enum class Effetto"):anim.index("CONTEGGIO")], re.M)
+        self.assertEqual(nomi_cpp[1:], [n for n, _ in SB.EFFETTI])
+        for nome, pittore in SB.EFFETTI:
+            for k in range(SB.FOTOGRAMMI_EFFETTO):
+                self.assertTrue(any(any(r) for r in pittore(k)), f"{nome} {k} vuoto")
+        pose_cpp = re.findall(r"^    ([A-Z]+),", anim[anim.index("enum class Posa"):anim.index("LIBERA")], re.M)
+        self.assertEqual([p.lower() for p in pose_cpp], list(SB.POSE))
+
+    def test_le_prove_delle_animazioni(self):
+        autotest = open(os.path.join(RADICE, "src", "autotest_animazione.cpp"), encoding="utf-8").read()
+        for prova in ("ordine_del_colpo(NORMALE)", "! fermo_tenuto(NORMALE, colpo_senza_fermo)",
+                      "! tutti_a_posto(Gesto::COLPO, NORMALE, ritorno_monco)", "immune_senza_danno()", "caduta()",
+                      "effetti_validi()", "forte_piu_pesante()"):
+            self.assertIn(prova, autotest)
+
+    def test_ordine_dei_tre(self):
+        """Regola di Cioti (4 nov 2026): Ubaldo al centro e davanti, Giorgio secondo, Antonio terzo."""
+        fila = [int(v) for v in re.search(r"FILA_EROE\[EROI\] = \{ (\d), (\d), (\d) \}", SCENA).groups()]
+        x = [int(v) for v in re.search(r"X_EROI\[EROI\] = \{ (-?\d+), (-?\d+), (-?\d+) \}", SCENA).groups()]
+        self.assertTrue(ordine_buono(fila, x))
+
+    def test_negativa_ordine_sbagliato(self):
+        self.assertFalse(ordine_buono([0, 1, 2], [-64, -52, -60]))
+
+
+def ordine_buono(fila, x):
+    """Ubaldo nella fila di mezzo e piu' avanti di tutti, Giorgio piu' avanti (o pari) di Antonio."""
+    ubaldo, giorgio, antonio = 0, 1, 2
+    return fila[ubaldo] == 1 and x[ubaldo] > x[giorgio] >= x[antonio]
 
 
 PROGRESSIONE = open(os.path.join(RADICE, "include", "progressione.h"), encoding="utf-8").read()
@@ -217,7 +298,7 @@ class Scena(unittest.TestCase):
 
     def test_un_attore_per_volta(self):
         """Nell'animazione di un evento si muove solo m.attore: nessun altro sprite cambia x se non il
-        bersaglio che trema."""
+        bersaglio che arretra (il tremito dello schermo sposta tutti in verticale, insieme)."""
         anima = SCENA[SCENA.index("void anima("):SCENA.index("int scegli_incontro(")]
         mossi = set(re.findall(r"_sprite\[([a-z.]+)\]->set_x", anima))
         self.assertEqual(mossi, {"m.attore", "m.bersaglio"})

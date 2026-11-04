@@ -210,6 +210,23 @@ class Panorami(unittest.TestCase):
         self.assertIn("gubbio:alba", cutscene["C4"]["inquadrature"][0]["piani"])
         self.assertEqual(cutscene["C4"]["inquadrature"][0]["battute"], ["R_E_02_00"])
 
+    def test_c4_i_tre_sulle_mura(self):
+        """C4 (pezzo SAG): dopo la prima battuta, i tre sulle mura davanti alla conca, nell'ordine di Cioti
+        (Antonio a sinistra, Ubaldo al centro, Giorgio a destra); la palette del piano sta in 16 colori."""
+        cutscene = {GR.leggi(n, t)["codice"]: GR.leggi(n, t) for n, t in GR.sorgenti_del_repo()}
+        seconda = cutscene["C4"]["inquadrature"][1]
+        self.assertEqual(seconda["piani"][-1], "mura_trio:alba")
+        self.assertIn("campo:alba", seconda["piani"])
+        T = GR.PP.TRIO
+        self.assertEqual([n for n, _ in T.TRIO], ["antonio", "ubaldo", "giorgio"])
+        self.assertTrue(ordine_sulle_mura(T.TRIO))
+        tela, palette, _ = T.mura_trio("alba")
+        self.assertEqual(len(palette), 16)
+        self.assertLessEqual(max(c for r in tela.px for c in r), 15)
+
+    def test_negativa_ordine_sulle_mura(self):
+        self.assertFalse(ordine_sulle_mura((("ubaldo", 34), ("antonio", 84), ("giorgio", 134))))
+
     def test_negativa_dissolvi_con_un_solo_piano(self):
         with self.assertRaisesRegex(GR.ErroreRegia, "servono 2 piani"):
             GR.leggi("uno.regia", "cutscene C9 | x\ninquadratura 2 | vetrata | 0 | dissolvi\n")
@@ -316,6 +333,20 @@ class C2(unittest.TestCase):
         self.assertLess(tile * 32 + 4 * 2048 * 2, 64 * 1024)
 
 
+def ordine_sulle_mura(trio):
+    """Regola di Cioti: Ubaldo al centro, Giorgio a destra, Antonio a sinistra."""
+    x = dict(trio)
+    return x["antonio"] < x["ubaldo"] < x["giorgio"]
+
+
+def figura_a_colori(tela):
+    """Una figura a colori sul suo piano: almeno 6 indici diversi, alta 70-100 px, i piedi a SUOLO - 1."""
+    righe = [y for y, r in enumerate(tela.px) if any(r[:240])]
+    colori = {c for r in tela.px for c in r[:240] if c}
+    return (len(colori) >= 6 and righe and 70 <= righe[-1] - righe[0] + 1 <= 100 and
+            righe[-1] == GR.PP.C3.SUOLO - 1)
+
+
 class C3(unittest.TestCase):
     """Pezzo X: le presentazioni a fermo immagine (tools/pittore_c3.py, regia/c3_*.regia)."""
 
@@ -340,10 +371,25 @@ class C3(unittest.TestCase):
         c = {GR.leggi(n, t)["codice"]: GR.leggi(n, t) for n, t in GR.sorgenti_del_repo()}
         for codice, chi in self.PERSONAGGI.items():
             q = c[codice]["inquadrature"]
-            self.assertEqual(len(q), 1, codice)
+            # i protagonisti (pezzo SAG): dopo la sagoma lo stacco sulla figura a colori; Corrado resta in ombra
+            self.assertEqual(len(q), 1 if chi == "corrado" else 2, codice)
             self.assertTrue(180 <= q[0]["frame"] <= 240, codice)                     # 3-4 s
             self.assertEqual(q[0]["piani"], [f"ritratto_{chi}"])
             self.assertEqual(q[0]["battute"], [f"R_C3_{chi.upper()}"])
+            if chi != "corrado":
+                self.assertEqual(q[1]["piani"], [f"ritratto_{chi}_sfondo", f"ritratto_{chi}_luce"])
+                self.assertEqual(q[1]["battute"], [])
+                self.assertTrue(90 <= q[1]["frame"] <= 180, codice)
+
+    def test_protagonisti_a_colori(self):
+        """La figura della luce e' a colori (almeno sei colori diversi, il contorno compreso), alta quasi come la
+        sagoma (70-100 px) e coi piedi sul terreno; la negativa: la sagoma ha un colore solo."""
+        for chi in ("ubaldo", "giorgio", "antonio"):
+            tela, palette, _ = GR.PP.PITTORI[f"ritratto_{chi}_luce"]("giorno")
+            self.assertTrue(figura_a_colori(tela), chi)
+        sagoma = GR.PP.C3.Sagoma()
+        GR.PP.C3.ubaldo(sagoma)
+        self.assertFalse(figura_a_colori(sagoma.t))
 
     def test_in_controluce(self):
         for chi in self.PERSONAGGI.values():

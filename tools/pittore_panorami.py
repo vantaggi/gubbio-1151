@@ -735,6 +735,11 @@ import pittore_c3 as C3  # noqa: E402
 
 PITTORI.update(C3.PITTORI)
 
+# il piano dei tre sulle mura, per C4 (pezzo SAG: i protagonisti nelle cutscene)
+import pittore_trio as TRIO  # noqa: E402
+
+PITTORI.update(TRIO.PITTORI)
+
 # i piani di C5 (il risveglio dei Ceri), C6 (la visione nel vetro) e C7 (le presentazioni dei luoghi):
 # tools/pittore_c5.py, pittore_c6.py, pittore_c7.py. I Ceri e la fila in ferro hanno il passo.
 import pittore_c5 as C5  # noqa: E402
