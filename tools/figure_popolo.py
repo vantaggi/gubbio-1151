@@ -130,12 +130,15 @@ def _gambe(f, s, c, direzione):
             f.rett(x - 1, y - 1, 2.5, 2)
 
 
-def _busto(f, s, c, direzione):
+def _busto(f, s, c, direzione, passo=False):
     cx, cy = s.collo
     bx, by = s.bacino
-    mezzo = (2.6 if direzione == "destra" else 3.8) + c.largo
+    # di lato le spalle sono larghe 7-8 px come il profilo di Ubaldo (M2, revisione del custode visivo 4 nov),
+    # la vita un po' meno; di fronte 8 px
+    mezzo = (3.5 if direzione == "destra" else 3.8) + c.largo
+    vita = (2.9 if direzione == "destra" else 3.8) + c.largo
     if direzione == "destra":
-        cx += 1                     # il busto di lato e' inclinato di un pixel in avanti (revisione, 4 nov)
+        cx += 1.5 if passo else 1   # il busto di lato e' inclinato in avanti, un po' di piu' nel passo
     if c.lunga:
         orlo = max(s.piede_a[1], s.piede_b[1]) - 1.5
         largo_orlo = (3.6 if direzione == "destra" else 4.8) + c.largo
@@ -143,14 +146,14 @@ def _busto(f, s, c, direzione):
             # di lato la veste lunga segue il passo: l'orlo va dal piede dietro a quello davanti
             avanti = max(s.piede_a[0], s.piede_b[0]) + 1.5
             dietro = min(s.piede_a[0], s.piede_b[0]) - 1.5
-            punti = [(cx - mezzo, cy), (cx + mezzo, cy), (bx + mezzo, by), (max(avanti, bx + 3), orlo),
-                     (min(dietro, bx - 3), orlo), (bx - mezzo, by)]
+            punti = [(cx - mezzo, cy), (cx + mezzo, cy), (bx + vita, by), (max(avanti, bx + 3), orlo),
+                     (min(dietro, bx - 3), orlo), (bx - vita, by)]
         else:
             punti = [(cx - mezzo, cy), (cx + mezzo, cy), (bx + mezzo, by), (bx + largo_orlo, orlo),
                      (bx - largo_orlo, orlo), (bx - mezzo, by)]
     else:
         orlo = by + 3.5 * s.scala
-        largo_orlo = mezzo + 1
+        largo_orlo = vita + 1
         punti = [(cx - mezzo, cy), (cx + mezzo, cy), (bx + largo_orlo, orlo), (bx - largo_orlo, orlo)]
     f.parte_nuova("veste", c.veste).poligono(punti)
     if c.grembiule and direzione != "su":
@@ -270,7 +273,7 @@ def figura(c, direzione="giu", animazione="riposo", fotogramma=0):
             f.rett(x - 1, y - 1, 2.5, 2)
     if c.accessorio and getattr(c.accessorio, "dietro", False):
         c.accessorio(f, s, direzione)
-    _busto(f, s, c, direzione)
+    _busto(f, s, c, direzione, animazione == "camminata")
     if c.mantello:
         bx, by = s.bacino
         f.parte_nuova("mantello", c.mantello).poligono(
@@ -729,10 +732,10 @@ ACCESSORI_AMICI = {n: globals()[n] for n in (
 
 # --- i costumi ------------------------------------------------------------------------------------------
 POPOLANO = Costume(veste="cuoio", calze="lana", scarpe="scuro", capelli=("cuoio", "corti"), cintura=("cuoio", 0))
-POPOLANA = Costume(veste="rosso", lunga=True, capelli=("lino", "velo"), grembiule="lino")
+POPOLANA = Costume(veste="biondo", lunga=True, capelli=("lino", "velo"), grembiule="lino")
 FRATE = Costume(veste="cuoio", lunga=True, capelli=("cuoio", "cappuccio"), cintura="bianco")
 SOLDATO = Costume(veste="rosso", calze="lana", scarpe="scuro", capelli=("grigio", "berretto"), cintura=("cuoio", 0))
-MERCANTE = Costume(veste="rosso", lunga=True, capelli=("rosso", "berretto"), cintura="oro", maniche="rosso")
+MERCANTE = Costume(veste="cuoio", lunga=True, capelli=("scuro", "berretto"), cintura="oro", maniche="lana")
 ANZIANO = Costume(veste="lana", lunga=True, capelli=("lino", "corti"), barba="lino", cintura=("cuoio", 0))
 
 COSTUMI = {
@@ -745,7 +748,7 @@ COSTUMI = {
     "anziano_glabro": ANZIANO.con(barba=None, capelli=("grigio", "corti")),
     "soldato_nudo": POPOLANO.con(veste="lana", maniche="pelle"),
     "gabrione": POPOLANO.con(veste="lana", lunga=True, capelli=("cuoio", "calvo"), giu=-2),
-    "bambino": POPOLANO.con(veste="rosso", scala=0.68),
+    "bambino": POPOLANO.con(veste="biondo", scala=0.68),
     # i mestieri (copione/06_npc_mestieri.md)
     "banditore": MERCANTE.con(veste="rosso", mantello="lana", accessorio=pergamena_alta),
     "misuratore": POPOLANO.con(veste="lana", lunga=True, capelli=("grigio", "berretto"), accessorio=staio),
@@ -761,7 +764,7 @@ COSTUMI = {
     "lanaiolo": POPOLANO.con(veste="lana", lunga=True, capelli=("cuoio", "berretto"), accessorio=matassa),
     "pastore": POPOLANO.con(veste="lana", mantello="cuoio", capelli=("scuro", "corti"), barba="scuro",
                             accessorio=bastone_pastore),
-    "macellaio": POPOLANO.con(veste="rosso", grembiule="lino", capelli=("cuoio", "corti"), largo=0.6, accessorio=sale),
+    "macellaio": POPOLANO.con(veste="lana", grembiule="lino", capelli=("cuoio", "corti"), largo=0.6, accessorio=sale),
     "fornaia": POPOLANA.con(veste="lana", grembiule="lino", capelli=("lino", "velo"), accessorio=pala_forno),
     "calzolaio": POPOLANO.con(veste="verde", grembiule="cuoio", capelli=("grigio", "calvo"), accessorio=scarpa_lesina),
     "notaio": MERCANTE.con(veste="scuro", capelli=("scuro", "berretto"), accessorio=penna_foglio),
@@ -851,14 +854,15 @@ def animale(nome, fotogramma):
 
 
 # Le tinte delle vesti: chi ha la stessa figura base non veste uguale. La tinta viene dal nome, sempre la stessa
-# (crc32), cosi' una piazza non e' tutta vermiglia (i soldati della milizia restano rossi).
+# (crc32), cosi' una piazza non e' tutta uguale. Il vermiglio comunale e' dei soldati e delle guardie del Comune (C1/C3,
+# revisione del custode visivo 4 nov): la gente veste toni di bottega.
 TINTE = {
-    "mercante": ("rosso", "cuoio", "verde", "scuro", "lana", "biondo"),
-    "popolana": ("rosso", "cuoio", "verde", "lana", "biondo"),
+    "mercante": ("cuoio", "verde", "scuro", "lana", "biondo"),
+    "popolana": ("biondo", "cuoio", "verde", "lana", "lino"),
     "anziano": ("lana", "cuoio", "scuro"),
     "anziano_glabro": ("lana", "cuoio", "scuro", "verde"),
 }
-BERRETTI = ("rosso", "scuro", "verde", "cuoio")
+BERRETTI = ("scuro", "verde", "cuoio", "lana")
 
 
 def costume_npc(base, accessorio=None, nome=None):
