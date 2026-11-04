@@ -16,7 +16,6 @@ import json
 import os
 import sys
 
-from PIL import Image, ImageDraw
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RADICE, "stile"))
@@ -122,6 +121,7 @@ def carica():
 
 def fondo(d):
     """Il fondo della mappa, in indici della palette: quello che non cambia con le aree viste."""
+    from PIL import Image, ImageDraw   # qui e non in cima: i test leggono lo schema anche senza Pillow (CI)
     img = Image.new("P", (W, H), INDICE["prato"])
     dr = ImageDraw.Draw(img)
     dr.polygon(ottolineare([M(p) for p in d["monte"]]), fill=INDICE["monte"])
@@ -250,6 +250,7 @@ def testi(d, aree):
 
 
 def anteprima(d, archi, percorso):
+    from PIL import Image
     P = S.carica("palette")
     img = fondo(d)
     disegna_sopra(img, d, archi, set(d["nodi"]))
