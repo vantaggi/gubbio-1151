@@ -138,6 +138,8 @@ enum class NemicoId : uint8_t
     CORRADO_DI_SPOLETO,
     SPIA_UMBRA,
     SPETTRO_DEL_DUBBIO,
+    GUERRIERO_DELLA_ROCCIA,
+    INFILTRATO,
     CONTEGGIO,
 };
 
@@ -220,6 +222,13 @@ inline constexpr Nemico NEMICI[int(NemicoId::CONTEGGIO)] = {
     // Gli Spettri del Dubbio del rito nella Basilica (copione v1, A1-08): il boss tutorial, deboli
     // alla Fede, il ferro li attraversa. Provvisori come la spia: nel GDD non hanno numeri.
     { { 300, 0, 40, 30, 30, 40, 30, 2, Elemento::FEDE,   Elemento::FISICO },  1, false, SCRIPT_SPIA },    // Spettro del Dubbio
+    // I Guerrieri della Roccia di Spoleto (copione: B-03 sotto l'arco, Q-SM01 davanti alle fornaci; Sez. 8D
+    // del GDD, senza numeri): il ferro battuto a freddo, a strati, regge la lama e si apre col fuoco (Raniero,
+    // 04_quest.md). Lenti e duri: resistono al fisico, deboli alla Fiamma. Tarati con tools/bilanciamento.py.
+    { { 520, 0, 60, 62, 10, 22, 24, 3, Elemento::FIAMMA, Elemento::FISICO },  1, false, SCRIPT_MOB },     // Guerriero della Roccia
+    // L'infiltrato delle Logge (Q-SP01): l'esule dei Valmarcola col mantello da pellegrino, la mano sotto il
+    // mantello. Il capo delle spie umbre: piu' robusto di loro, rapido, colpisce chi ha meno PV come loro.
+    { { 300, 0, 56, 36, 16, 28, 46, 3, Elemento::FEDE,   Elemento::NESSUNO }, 1, false, SCRIPT_SPIA },    // Infiltrato
 };
 
 inline constexpr int NEMICI_MAX = 6;
@@ -230,13 +239,21 @@ struct Incontro
     NemicoId schieramento[NEMICI_MAX];
 };
 
-inline constexpr int INCONTRI = 4;
+inline constexpr int INCONTRI = 7;
 inline constexpr Incontro INCONTRO[INCONTRI] = {
     { 3, { NemicoId::FANTE_DI_PERUGIA, NemicoId::FANTE_DI_PERUGIA, NemicoId::BALESTRIERE_PESANTE } },  // Pattuglia Perugina
     { 3, { NemicoId::SPIA_UMBRA, NemicoId::SPIA_UMBRA, NemicoId::SPIA_UMBRA } },                      // Imboscata agli Stradoni
     { 1, { NemicoId::CORRADO_DI_SPOLETO } },                                                          // Duello con Corrado
     { 2, { NemicoId::SPETTRO_DEL_DUBBIO, NemicoId::SPETTRO_DEL_DUBBIO } },                             // Il rito della Basilica
+    { 2, { NemicoId::GUERRIERO_DELLA_ROCCIA, NemicoId::GUERRIERO_DELLA_ROCCIA } },                     // Guerrieri della Roccia (B-03)
+    { 1, { NemicoId::GUERRIERO_DELLA_ROCCIA } },                                                      // Guardia della fornace (Q-SM01)
+    { 3, { NemicoId::INFILTRATO, NemicoId::SPIA_UMBRA, NemicoId::SPIA_UMBRA } },                       // L'infiltrato delle Logge (Q-SP01)
 };
+
+// Gli incontri per nome, dove il codice li chiama (le scene, le quest, le prove).
+inline constexpr int INCONTRO_GUERRIERI = 4;
+inline constexpr int INCONTRO_FORNACE = 5;
+inline constexpr int INCONTRO_INFILTRATO = 6;
 
 // I consumabili (dal prototipo, include/item_data.h, Sezione 8E del GDD), nell'ordine dei posti
 // di GameState::oggetti. In battaglia per ora si usano la Crescia (cura) e i Biscotti (purificano

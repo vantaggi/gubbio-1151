@@ -83,10 +83,13 @@ NEMICI = [
     ((1520, 0, 95, 60, 20, 30, 22, 4, FIAMMA, FISICO), 2, True, SCRIPT_CORRADO),
     ((180, 0, 50, 30, 10, 22, 44, 2, FEDE, NESSUNO), 1, False, SCRIPT_SPIA),
     ((300, 0, 40, 30, 30, 40, 30, 2, FEDE, FISICO), 1, False, SCRIPT_SPIA),
+    ((520, 0, 60, 62, 10, 22, 24, 3, FIAMMA, FISICO), 1, False, SCRIPT_MOB),
+    ((300, 0, 56, 36, 16, 28, 46, 3, FEDE, NESSUNO), 1, False, SCRIPT_SPIA),
 ]
 NEMICI_MAX = 6
-INCONTRO = [[0, 0, 1], [3, 3, 3], [2], [4, 4]]
-NOMI_INCONTRI = ["Pattuglia Perugina", "Imboscata agli Stradoni", "Duello con Corrado", "Il rito della Basilica"]
+INCONTRO = [[0, 0, 1], [3, 3, 3], [2], [4, 4], [5, 5], [5], [6, 3, 3]]
+NOMI_INCONTRI = ["Pattuglia Perugina", "Imboscata agli Stradoni", "Duello con Corrado", "Il rito della Basilica",
+                 "Guerrieri della Roccia", "Guardia della fornace", "L'infiltrato delle Logge"]
 
 (HIT, SHIELD_BREAK, BARRIER_ABSORB, GUARD_REDIRECT, FERVOR_GAIN, BURN_TICK, DEFEAT, BARRIER_UP, GUARD_UP,
  CHARGE, BREAK_SKIP, IMMUNE, FERVOR_SPEND, DEF_UP) = range(14)
