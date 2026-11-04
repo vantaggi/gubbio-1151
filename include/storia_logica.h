@@ -161,13 +161,21 @@ constexpr void scegli_tutto(GameState& p, int k, int voce, const Scena* tabella 
 }
 
 // Entrando in un'area: chi sale agli Stradoni durante il digiuno senza aver deciso del borgo l'ha
-// lasciato fuori (copione v2, A1-05b).
+// lasciato fuori (copione v2, A1-05b). Fuori dalle stanze della gola le ferite dei miasmi guariscono (T2).
 constexpr void all_ingresso(GameState& p, int area)
 {
     if(area == int(mondo::AreaId::MONTE_INGINO) && accesa(p, Bandiera::CITTA_IN_DIGIUNO) &&
        ! accesa(p, Bandiera::BORGO_DENTRO) && ! accesa(p, Bandiera::BORGO_FUORI))
     {
         accendi(p, uint64_t(1) << int(Bandiera::BORGO_FUORI));
+    }
+
+    if(area >= 0 && area < mondo::AREE_CONTEGGIO && ! mondo::area(mondo::AreaId(area)).cupa)
+    {
+        for(uint8_t& f : p.ferite)
+        {
+            f = 0;
+        }
     }
 }
 
@@ -572,6 +580,180 @@ constexpr int gioca_tutta(GameState& p, const Scena* tabella = SCENA, int quante
     }
 
     return visitate;
+}
+
+// --- La gola del Bottaccione (T2) ----------------------------------------------------------------------
+
+// La cella che fa partire la scena k (INNESCO: B-02 sulla prima nebbia, B-03 sotto l'arco), -1 se la scena
+// parte entrando nell'area come le altre.
+[[nodiscard]] constexpr int cella_dell_innesco(int k)
+{
+    for(int i = 0; i < INNESCHI; ++i)
+    {
+        if(INNESCO[i].scena == k)
+        {
+            return int(INNESCO[i].cella);
+        }
+    }
+
+    return -1;
+}
+
+// La scena k parte adesso, con il giocatore sulla cella 'cella' dell'area? Come pronta(), e per una scena con
+// un innesco anche sulla cella giusta. Il giro senza camminare (gioca_tutta) usa pronta(): le celle d'innesco
+// sbarrano la via (tools/disegna_gola.py), quindi camminando la scena parte comunque.
+[[nodiscard]] constexpr bool pronta_qui(const GameState& p, int k, int area, int cella)
+{
+    int c = cella_dell_innesco(k);
+    return pronta(p, k, area) && (c < 0 || c == cella);
+}
+
+// I soldati di B-03 stanno oltre l'arco finche' il piano di Corrado non e' ascoltato: poi uno e' fuggito al
+// Condotto (dove Corrado aspetta) e l'altro e' il ragazzo del dilemma.
+[[nodiscard]] constexpr bool sentinelle_presenti(const GameState& p)
+{
+    return ! accesa(p, Bandiera::PIANO_DI_CORRADO);
+}
+
+// Il varco chiuso nell'area: dopo l'incontro con Corrado (CORRADO_INCONTRATO, acceso quando parte il duello)
+// l'uscita del Condotto verso la gola resta chiusa finche' Corrado non e' battuto: «il duello da cui non si
+// fugge». Persa la battaglia si torna all'ingresso del Condotto e Corrado e' ancora li': si riprova a PV pieni.
+// -1 se nessun varco e' chiuso.
+[[nodiscard]] constexpr int varco_chiuso(const GameState& p, int area)
+{
+    if(area != int(mondo::AreaId::CONDOTTO) || ! accesa(p, Bandiera::CORRADO_INCONTRATO) ||
+       accesa(p, Bandiera::CORRADO_SCONFITTO))
+    {
+        return -1;
+    }
+
+    return mondo::varco_verso(mondo::AreaId::CONDOTTO, mondo::AreaId::GOLA_ARCO);
+}
+
+// Le bandiere che una scena con battaglia accende gia' quando la battaglia parte, non alla fine: l'incontro
+// con Corrado (B-04). Accese, al secondo tentativo le battute non si ripetono: si torna dritti al duello.
+inline constexpr uint64_t BANDIERE_ALL_INCONTRO = uint64_t(1) << int(Bandiera::CORRADO_INCONTRATO);
+
+[[nodiscard]] constexpr uint64_t incontro_della_scena(int k)
+{
+    return SCENA[k].battaglia >= 0 ? SCENA[k].imposta & BANDIERE_ALL_INCONTRO : 0;
+}
+
+// La scena k e' gia' stata incontrata (le sue bandiere d'incontro accese): le battute si saltano.
+[[nodiscard]] constexpr bool gia_incontrata(const GameState& p, int k)
+{
+    uint64_t m = incontro_della_scena(k);
+    return m != 0 && (bandiere(p) & m) == m;
+}
+
+constexpr void all_incontro(GameState& p, int k)
+{
+    accendi(p, incontro_della_scena(k));
+}
+
+// I miasmi (B-02, «Restate nel mio passo. Finche' mi siete vicini, la benedizione vi copre»). La regola:
+//  - solo dopo l'avviso di Ubaldo (MIASMI_VISTI, la scena B-02 sulla prima nebbia);
+//  - solo sulla nebbia, e solo correndo (B): chi corre lascia indietro Ubaldo e la sua benedizione;
+//  - ogni FRAME_PER_FERITA frame cosi', PV_PER_FERITA PV a Giorgio e ad Antonio (se sono nel gruppo); Ubaldo no;
+//  - mai oltre FERITE_PERCENTO_MAX dei PV al loro livello, e in battaglia mai sotto 1 PV: nessuno muore.
+// Le ferite pesano sulla prossima battaglia (Battaglia::ricomincia(..., ferite)), poi si azzerano; fuori dalla
+// gola (all_ingresso) l'aria pulita le guarisce.
+inline constexpr int FRAME_PER_FERITA = 30;
+inline constexpr int PV_PER_FERITA = 4;
+inline constexpr int FERITE_PERCENTO_MAX = 15;
+
+[[nodiscard]] constexpr int ferite_massime(const GameState& p, int e)
+{
+    if(e == battaglia::UBALDO)
+    {
+        return 0;
+    }
+
+    int livello = p.livello[e] < 1 ? 1 : (p.livello[e] > progressione::LIVELLO_MAX ? progressione::LIVELLO_MAX : p.livello[e]);
+    return progressione::statistiche_al_livello(battaglia::STATISTICHE_EROI[e], livello).pv * FERITE_PERCENTO_MAX / 100;
+}
+
+// Un frame nell'esplorazione: 'cella' quella sotto il giocatore, 'corre' se corre. 'respiro' conta i frame di
+// fila nella nebbia (lo tiene chi chiama). True se i miasmi hanno appena ferito qualcuno (il lampo).
+constexpr bool respira_i_miasmi(GameState& p, int cella, bool corre, int& respiro)
+{
+    if(! accesa(p, Bandiera::MIASMI_VISTI) || cella != int(mondo::Cella::MIASMA) || ! corre)
+    {
+        respiro = 0;
+        return false;
+    }
+
+    if(++respiro < FRAME_PER_FERITA)
+    {
+        return false;
+    }
+
+    respiro = 0;
+    bool ferito = false;
+    uint8_t chi = gruppo(p, -1);
+
+    for(int e = 0; e < battaglia::EROI; ++e)
+    {
+        int massimo = ferite_massime(p, e);
+
+        if(((chi >> e) & 1) && p.ferite[e] < massimo)
+        {
+            int f = p.ferite[e] + PV_PER_FERITA;
+            p.ferite[e] = uint8_t(f > massimo ? massimo : f);
+            ferito = true;
+        }
+    }
+
+    return ferito;
+}
+
+constexpr void guarisci(GameState& p)
+{
+    for(uint8_t& f : p.ferite)
+    {
+        f = 0;
+    }
+}
+
+// I forzieri negli slarghi della gola: ci sono (chiusi) finche' la loro bandiera e' spenta; aperti restano li'.
+[[nodiscard]] constexpr bool forziere_chiuso(const GameState& p, int k)
+{
+    return ! accesa(p, int(FORZIERE[k].bandiera));
+}
+
+// Il forziere chiuso che il giocatore tocca nell'area (come un oggetto da raccogliere), -1 se nessuno.
+[[nodiscard]] constexpr int forziere_toccato(const GameState& p, int area, int x, int y)
+{
+    for(int k = 0; k < FORZIERI; ++k)
+    {
+        const Forziere& f = FORZIERE[k];
+        int dx = x - mondo::piedi_x(f.tx);
+        int dy = y - mondo::piedi_y(f.ty);
+
+        if(f.area == area && forziere_chiuso(p, k) && dx > -DISTANZA_RACCOLTA && dx < DISTANZA_RACCOLTA &&
+           dy > -DISTANZA_RACCOLTA && dy < DISTANZA_RACCOLTA)
+        {
+            return k;
+        }
+    }
+
+    return -1;
+}
+
+// Apre il forziere k: l'oggetto (fino al massimo che se ne porta) e la bandiera. False se era gia' aperto.
+constexpr bool apri_forziere(GameState& p, int k)
+{
+    if(k < 0 || k >= FORZIERI || ! forziere_chiuso(p, k))
+    {
+        return false;
+    }
+
+    const Forziere& f = FORZIERE[k];
+    int quanti = p.oggetti[f.oggetto] + f.quanti;
+    int massimo = battaglia::OGGETTI[f.oggetto].massimo;
+    p.oggetti[f.oggetto] = uint8_t(quanti > massimo ? massimo : quanti);
+    accendi_una(p, f.bandiera);
+    return true;
 }
 
 }

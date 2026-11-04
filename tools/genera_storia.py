@@ -45,7 +45,9 @@ BANDIERE_QUEST = ["INDIZIO_CARTA", "INDIZIO_ACQUA", "INDIZIO_ROCCIA", "RICCIARDO
          # SV2c, le quest giocabili: la quest presa dal datore (la proposta), poi un bit per ogni oggetto
          # dell'obiettivo (il contatore e' quanti sono accesi): i 3 blocchi di ferro, le 4 radici, la Rosa
          "Q_SM01_PRESA", "Q_SA01_PRESA", "Q_SP01_PRESA", "FERRO_1", "FERRO_2", "FERRO_3",
-         "ELLEBORO_1", "ELLEBORO_2", "ELLEBORO_3", "ELLEBORO_4", "ROSA_RIPRESA"]
+         "ELLEBORO_1", "ELLEBORO_2", "ELLEBORO_3", "ELLEBORO_4", "ROSA_RIPRESA",
+         # T2, la gola: i due forzieri negli slarghi, presi una volta (88-89)
+         "FORZIERE_CRESCIA", "FORZIERE_BISCOTTI"]
 PRIMA_QUEST = 64
 TUTTE = BANDIERE + [None] * (PRIMA_QUEST - len(BANDIERE)) + BANDIERE_QUEST
 
@@ -74,10 +76,17 @@ LETTE_DAL_GIOCO = {
     "INDIZIO_LUCIA": "storia::infiltrato_presente(): con i tre indizi l'infiltrato compare sotto le Logge",
     "INDIZIO_VENDITORE": "storia::infiltrato_presente(): con i tre indizi l'infiltrato compare sotto le Logge",
     "INDIZIO_FONTANIERE": "storia::infiltrato_presente(): con i tre indizi l'infiltrato compare sotto le Logge",
+    # T2, la gola del Bottaccione (storia_logica.h, FORZIERE di storia.h)
+    "MIASMI_VISTI": "storia::respira_i_miasmi(): i miasmi feriscono solo dopo l'avviso di Ubaldo (B-02)",
+    "PIANO_DI_CORRADO": "storia::sentinelle_presenti(): i due soldati di B-03 stanno oltre l'arco fino al piano",
+    "CORRADO_INCONTRATO": "storia::varco_chiuso() e storia::gia_incontrata(): l'uscita del Condotto chiusa nel duello, "
+                          "le battute di B-04 dette una volta",
+    "FORZIERE_CRESCIA": "storia::forziere_chiuso(): il forziere dello slargo della striscia nera, preso una volta",
+    "FORZIERE_BISCOTTI": "storia::forziere_chiuso(): il forziere dello slargo dell'arco, preso una volta",
 }
 
 # Quelle che il gioco non legge ancora: sono in docs/bandiere_da_fare.md, con cosa dovranno fare.
-DA_FARE = ["MIASMI_VISTI", "PIANO_DI_CORRADO", "CORRADO_INCONTRATO", "CERI_RISVEGLIATI"]
+DA_FARE = ["CERI_RISVEGLIATI"]
 
 # Dove avviene ogni scena (AreaId), dalla riga Luogo; None per le scene a schermo intero (il prologo, e la
 # vetrata di E-02, che il gioco recita subito dopo E-01 senza risalire alla Basilica).
@@ -168,6 +177,25 @@ AREE_DELLE_RACCOLTE = {"Q-SM01": {"TEATRO_ROMANO"},
 # e' quella delle tre spie umbre degli Stradoni (battaglia::INCONTRO 1: nella v1 non c'e' un nemico «infiltrato»).
 INFILTRATO = {"area": "PIAZZA_QUARANTA_MARTIRI", "ancora": "loggia_tiratori", "figura": ("mercante", "lanterna_bastone"),
               "incontro": 1}
+
+# --- T2, la gola del Bottaccione ------------------------------------------------------------------------------
+# Le scene che partono su una cella dell'area invece che entrando: B-02 sulla prima nebbia dei miasmi («primo
+# ingresso in una zona di miasmi»), B-03 sotto l'arco del contrafforte («il gruppo e' nascosto sotto l'arco»).
+# tools/disegna_gola.py (SBARRANO) controlla che quelle celle sbarrino la via da un varco all'altro: la scena non
+# si salta, e la storia non si ferma.
+INNESCHI = {"B-02": "g", "B-03": "J"}
+# I due soldati di B-03 («stanno di guardia vicino a un fuoco»), con la figura del soldato: oltre l'arco, verso
+# monte, a 'passi' colonne dall'ultima colonna dell'arco, uno in alto e uno in basso sulla via. Ci sono finche'
+# PIANO_DI_CORRADO e' spenta (poi uno e' fuggito al Condotto e l'altro e' il ragazzo del dilemma).
+SENTINELLE = {"area": "GOLA_ARCO", "oltre": "J", "passi": 5, "figura": "soldato", "quanti": 2}
+# I forzieri negli slarghi della gola (tools/disegna_gola.py, SLARGHI): toccarli da' l'oggetto (fino al massimo che
+# se ne porta) e accende la bandiera; non tornano. Le bandiere stanno nell'intervallo quest: il salvataggio resta v3.
+FORZIERI = [
+    {"bandiera": "FORZIERE_CRESCIA", "area": "GOLA_STRISCIA", "slargo": "gola_striscia", "oggetto": "CRESCIA",
+     "quanti": 2, "testo": "FORZIERE_CRESCIA"},
+    {"bandiera": "FORZIERE_BISCOTTI", "area": "GOLA_ARCO", "slargo": "gola_arco", "oggetto": "BISCOTTI",
+     "quanti": 3, "testo": "FORZIERE_BISCOTTI"},
+]
 
 AREE_NPC = {"Piazza Grande": "PIAZZA_GRANDE", "via dei Consoli": "VIA_DEI_CONSOLI",
             "Largo del Bargello": "LARGO_BARGELLO", "San Martino": "SAN_MARTINO", "Teatro Romano": "TEATRO_ROMANO",
@@ -704,12 +732,13 @@ def posti_degli_npc(npc, altri=(), occupati=None):
 
 
 def solida_nel_gioco(c, G):
-    """Una cella solida come la vede il gioco (mondo::solida: indice di Cella da PRIMA_CELLA_SOLIDA in su): il
-    MIASMA, che la .area dice calpestabile, nel gioco blocca. Un oggetto si raccoglie solo dove si cammina davvero."""
+    """Una cella solida come la vede il gioco (mondo::solida: indice di Cella da PRIMA_CELLA_SOLIDA in su). Da T2
+    coincide con la .area (genera_mondo.controlla_ordine_celle: il MIASMA e il PONTE stanno prima di FONTANA), ma
+    resta calcolata dall'indice: un oggetto si raccoglie solo dove si cammina davvero."""
     if c in G.VARCHI:
         return False
-    nomi = list(G.CELLE)
-    return nomi.index(c) >= nomi.index("F")
+    solide = [s for _, s in G.CELLE.values()]
+    return list(G.CELLE).index(c) >= solide.index(True)
 
 
 def raggiungibili_da(a, sx, sy, G):
@@ -764,6 +793,42 @@ def posti_delle_raccolte(raccolte, occupati):
             raise ErroreStoria(f"nessun posto per {r['bandiera']} in {r['area']} accanto a «{r['vicino']}»")
         presi.setdefault(r["area"], []).append(scelto)
         posti.append(scelto)
+    return posti
+
+
+def posti_delle_sentinelle(posti_raccolte):
+    """Le celle dei soldati di B-03: 'passi' colonne oltre l'arco, sulla prima e sull'ultima cella calpestabile
+    della via in quella colonna meno una; raggiungibili dallo spawn 0 e a 3 celle almeno dagli oggetti."""
+    import genera_mondo as G  # noqa: E402
+    a = aree_del_mondo()[SENTINELLE["area"]]
+    g = a["griglia"]
+    x = max(x for riga in g for x, c in enumerate(riga) if c == SENTINELLE["oltre"]) + SENTINELLE["passi"]
+    raggiunte = raggiungibili_da(a, *a["spawn"][0], G)
+    righe = [y for y in range(a["altezza"]) if (x, y) in raggiunte]
+    posti = [(x, min(righe) + 1), (x, max(righe) - 1)]
+    oggetti = [(tx, ty) for r, (tx, ty) in zip(RACCOLTE, posti_raccolte) if r["area"] == SENTINELLE["area"]]
+    for tx, ty in posti:
+        if (tx, ty) not in raggiunte or any(max(abs(tx - u), abs(ty - v)) < 3 for u, v in oggetti):
+            raise ErroreStoria(f"un soldato di B-03 in ({tx}, {ty}) non sta sulla via o sta addosso a una radice")
+    return posti[:SENTINELLE["quanti"]]
+
+
+def posti_dei_forzieri(posti_raccolte):
+    """La cella di ogni forziere: il centro del suo slargo (tools/disegna_gola.py), calpestabile col gioco,
+    raggiungibile dallo spawn 0, a 3 celle almeno da varchi, spawn e oggetti da raccogliere."""
+    import genera_mondo as G  # noqa: E402
+    import disegna_gola as D  # noqa: E402
+    aree = aree_del_mondo()
+    posti = []
+    for f in FORZIERI:
+        a = aree[f["area"]]
+        x, y = D.SLARGHI[f["slargo"]]
+        varchi = [(u, v) for v, riga in enumerate(a["griglia"]) for u, c in enumerate(riga) if c in G.VARCHI]
+        lontani = varchi + list(a["spawn"].values()) + [p for r, p in zip(RACCOLTE, posti_raccolte) if r["area"] == f["area"]]
+        if ((x, y) not in raggiungibili_da(a, *a["spawn"][0], G) or
+                any(max(abs(x - u), abs(y - v)) < 3 for u, v in lontani)):
+            raise ErroreStoria(f"il forziere {f['bandiera']} in ({x}, {y}) non si raggiunge o sta addosso a qualcosa")
+        posti.append((x, y))
     return posti
 
 
@@ -974,6 +1039,7 @@ def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None)
             f"{q['consegnata']}, {OGGETTI.index(q['premio'][0])}, {q['premio'][1]} }},  // {q['premio'][1]} {q['nome_premio']}"
             for q in QUEST] + ["};", ""]
     out += blocco_quest
+    out += parte_gola(codici, posti_raccolte, figure) if posti_raccolte else []
     out += ["// Le figure degli NPC, 16x32 (8 tile in mappatura 1D) con la palette dei popolani: quelle dei",
             "// mestieri (tools/figure_npc.py) e quelle degli amici (base e accessorio, dati/amici.json).",
             f"inline constexpr int FIGURE_NPC = {len(figure)};",
@@ -1079,6 +1145,41 @@ def parte_quest(quest, npc, posti_quest, posti_raccolte, riga_battuta, figure):
             f"inline constexpr Infiltrato INFILTRATO = {{ int8_t(mondo::AreaId::{INFILTRATO['area']}), {ix}, {iy}, "
             f"{figure.index(fig_inf)}, {INFILTRATO['incontro']}, {r['infiltrato_prima']}, {r['infiltrato_dopo']} }};", ""]
     return out
+
+
+def parte_gola(codici, posti_raccolte, figure):
+    """Le righe di storia.h della gola (T2): gli inneschi delle scene, i soldati di B-03, i forzieri."""
+    import genera_mondo as G  # noqa: E402
+    nomi = list(G.CELLE)
+    inneschi = [f"    {{ {codici.index(k)}, mondo::Cella::{G.CELLE[c][0]} }},  // {k}" for k, c in INNESCHI.items()]
+    figura = FN.figura_composta(SENTINELLE["figura"], None)
+    if figura not in figure:
+        figure.append(figura)
+    sentinelle = [f"    {{ int8_t(mondo::AreaId::{SENTINELLE['area']}), {tx}, {ty}, {figure.index(figura)} }},"
+                  for tx, ty in posti_delle_sentinelle(posti_raccolte)]
+    forzieri = [f"    {{ int8_t(mondo::AreaId::{f['area']}), {tx}, {ty}, {f['bandiera']}, {OGGETTI.index(f['oggetto'])}, "
+                f"{f['quanti']}, testi::TestoId::{f['testo']} }},  // {f['quanti']} {f['oggetto']}"
+                for f, (tx, ty) in zip(FORZIERI, posti_dei_forzieri(posti_raccolte))]
+    assert all(c in nomi for c in INNESCHI.values())
+    return ["// --- La gola del Bottaccione (T2) ----------------------------------------------------------------",
+            "// Le scene che partono su una cella dell'area (non entrando): B-02 sulla prima nebbia, B-03 sotto l'arco.",
+            "struct Innesco", "{", "    int8_t scena;                 // indice in SCENA", "    mondo::Cella cella;", "};", "",
+            f"inline constexpr int INNESCHI = {len(inneschi)};", "inline constexpr Innesco INNESCO[INNESCHI] = {"] + inneschi + [
+            "};", "",
+            "// I soldati di B-03 sulla mappa (FIGURA_NPC): ci sono finche' PIANO_DI_CORRADO e' spenta.",
+            "struct Sentinella", "{", "    int8_t area;                  // mondo::AreaId", "    uint8_t tx;", "    uint8_t ty;",
+            "    uint8_t figura;", "};", "",
+            f"inline constexpr int SENTINELLE = {len(sentinelle)};", "inline constexpr Sentinella SENTINELLA[SENTINELLE] = {"] + sentinelle + [
+            "};", "",
+            "// I forzieri negli slarghi: toccarli da' 'quanti' dell'oggetto (battaglia::OggettoId, fino al massimo che se",
+            "// ne porta), accende la bandiera (64-127) e fa dire il testo; preso, non torna.",
+            "struct Forziere", "{", "    int8_t area;                  // mondo::AreaId", "    uint8_t tx;", "    uint8_t ty;",
+            "    uint8_t bandiera;", "    uint8_t oggetto;", "    uint8_t quanti;", "    testi::TestoId testo;", "};", "",
+            f"inline constexpr int FORZIERI = {len(forzieri)};", "inline constexpr Forziere FORZIERE[FORZIERI] = {"] + forzieri + [
+            "};", "",
+            "// Le figure del forziere in FIGURA_RACCOLTA: chiuso, e aperto (preso, resta li').",
+            f"inline constexpr int FIGURA_FORZIERE = {FN.ORDINE_RACCOLTE.index('forziere')};",
+            f"inline constexpr int FIGURA_FORZIERE_APERTO = {FN.ORDINE_RACCOLTE.index('forziere_aperto')};", ""]
 
 
 def testi_delle_quest(quest):

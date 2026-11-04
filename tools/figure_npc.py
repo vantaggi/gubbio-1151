@@ -420,7 +420,45 @@ FIGURE_RACCOLTE = {
         "................",
     ],
 }
-ORDINE_RACCOLTE = ["ferro", "elleboro"]
+# T2: il forziere negli slarghi della gola, chiuso (cuoio scuro e chiaro, fasce di ferro, la serratura d'oro) e
+# aperto, col coperchio alzato e il fondo buio: preso, resta li' aperto.
+FIGURE_RACCOLTE["forziere"] = [
+    "................",
+    "................",
+    "................",
+    "................",
+    "...1111111111...",
+    "..1bbbbbbbbbb1..",
+    ".1bbbbbbbbbbbb1.",
+    ".1aaaaaaaaaaaa1.",
+    ".1ddddd11ddddd1.",
+    ".1aaaaa1e1aaaa1.",
+    ".1bbbbb1e1bbbb1.",
+    ".1bbbbbb11bbbb1.",
+    ".1ccbbbbbbbbcc1.",
+    ".1aaaaaaaaaaaa1.",
+    "..111111111111..",
+    "................",
+]
+FIGURE_RACCOLTE["forziere_aperto"] = [
+    "................",
+    "................",
+    "...1111111111...",
+    "..1bbbbbbbbbb1..",
+    "..1aaaaaaaaaa1..",
+    "..1dddddddddd1..",
+    ".11111111111111.",
+    ".1cc11111111cc1.",
+    ".1aaaaaaaaaaaa1.",
+    ".1aaaaaaaaaaaa1.",
+    ".1bbbbbbbbbbbb1.",
+    ".1bbbbbbbbbbbb1.",
+    ".1ccbbbbbbbbcc1.",
+    ".1aaaaaaaaaaaa1.",
+    "..111111111111..",
+    "................",
+]
+ORDINE_RACCOLTE = ["ferro", "elleboro", "forziere", "forziere_aperto"]
 
 
 def parole_16(nome):

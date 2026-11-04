@@ -6,9 +6,6 @@ Le scene del copione v1 le accendono, ma per ora nessuna scena e nessun sistema 
 
 | Bandiera | Chi la accende | Cosa dovrà fare | Quando |
 | :-- | :-- | :-- | :-- |
-| `MIASMI_VISTI` | B-02 | La nebbia verde del Bottaccione: i miasmi tolgono PV a chi li attraversa, la prima volta parte la scena | Dungeon del Bottaccione (pezzo T) |
-| `PIANO_DI_CORRADO` | B-03 | Le guardie del Condotto in allerta: dopo aver ascoltato il piano, Corrado aspetta al Condotto | Dungeon del Bottaccione (pezzo T) |
-| `CORRADO_INCONTRATO` | B-04 | Il duello da cui non si fugge: dopo l'incontro l'uscita del Condotto resta chiusa finché Corrado non è battuto | Dungeon del Bottaccione (pezzo T) |
 | `CERI_RISVEGLIATI` | A1-08 | I tre Ceri accesi nell'interno della Basilica (la grafica dei ceri che brillano) e il Fervore che parte più alto in battaglia | Rifinitura della Basilica |
 
 Già collegate (in `LETTE_DAL_GIOCO`): `GIORGIO_NEL_GRUPPO` (il gruppo in battaglia), `IMBOSCATA_STRADONI`
@@ -16,7 +13,8 @@ e `CORRADO_SCONFITTO` (il nemico sulla mappa non torna), `CRONACA_V1_FINITA` (il
 `RUFINO_ASCOLTATO` e `Q_SM01_CONSEGNATA` (lo scudo in meno di Corrado), `Q_SA01_CONSEGNATA` e
 `Q_SP01_CONSEGNATA` (una consegna sola), e quelle delle quest giocabili qui sotto (SV2c): `Q_SM01_PRESA`,
 `Q_SA01_PRESA`, `Q_SP01_PRESA`, `FERRO_1`...`FERRO_3`, `ELLEBORO_1`...`ELLEBORO_4`, `ROSA_RIPRESA`,
-`INDIZIO_LUCIA`, `INDIZIO_VENDITORE`, `INDIZIO_FONTANIERE`.
+`INDIZIO_LUCIA`, `INDIZIO_VENDITORE`, `INDIZIO_FONTANIERE`; e quelle della gola qui sotto (T2): `MIASMI_VISTI`,
+`PIANO_DI_CORRADO`, `CORRADO_INCONTRATO`, `FORZIERE_CRESCIA`, `FORZIERE_BISCOTTI`.
 
 ## Regole del copione ora nel codice (F10, quest)
 
@@ -48,3 +46,21 @@ collisione vera fino a ogni oggetto, il giro completo di ogni quest, le negative
 La consegna chiama `storia::consegna_quest()`, che ora rifiuta una quest non presa o con l'obiettivo a metà
 (`storia::quest_pronta()`). Non ancora nel gioco: i Guerrieri della Roccia davanti alle fornaci (il nemico non
 c'è) e la postierla che Cecco apre per Raniero (nessun varco si chiude).
+
+## La gola del Bottaccione (T2)
+
+Le quattro stanze della gola (`tools/disegna_gola.py`) si giocano. Tutto in `include/storia_logica.h`, provato a
+tempo di compilazione in `src/autotest_gola.cpp` (con le negative) e in `tests/test_gola.py`. Le due bandiere nuove
+dei forzieri stanno nell'intervallo quest (88-89, `GameState::quest`); le ferite dei miasmi prendono 3 byte del
+riservato (`GameState::ferite`): `sizeof(GameState)` resta 64 e il salvataggio resta v3.
+
+| Bandiera | Chi la accende | Chi la legge |
+| :-- | :-- | :-- |
+| `MIASMI_VISTI` | B-02, che ora parte sulla **prima nebbia** (non entrando nella stanza): prima un lampo verde, poi l'avviso di Ubaldo e la riga del SISTEMA | `storia::respira_i_miasmi()`: da qui i miasmi feriscono. La regola: solo sulla nebbia e solo **correndo** (B: chi corre lascia indietro Ubaldo, «Restate nel mio passo»); ogni 30 frame 4 PV a Giorgio e ad Antonio (Ubaldo mai), fino al 15% dei loro PV; un lampo leggero a ogni ferita. Le ferite pesano sulla prossima battaglia (i Santi partono con quei PV in meno, mai sotto 1: nessuno muore), poi si azzerano; uscendo dalla gola guariscono |
+| `PIANO_DI_CORRADO` | B-03, che ora parte **sotto l'arco** del contrafforte («il gruppo è nascosto sotto l'arco») | `storia::sentinelle_presenti()`: i due soldati (la figura del soldato) stanno oltre l'arco finché il piano non è ascoltato |
+| `CORRADO_INCONTRATO` | B-04, ma già **quando parte il duello** (`storia::all_incontro()`), non alla fine | `storia::varco_chiuso()`: l'uscita del Condotto verso la gola si urta come un muro finché Corrado non è battuto («Corrado vi sbarra il ritorno»); persa la battaglia si torna all'ingresso del Condotto e si riprova a PV pieni. `storia::gia_incontrata()`: al secondo tentativo le battute di B-04 non si ripetono |
+| `FORZIERE_CRESCIA`, `FORZIERE_BISCOTTI` (88-89) | toccare il forziere nello slargo della striscia nera (2 Crescia) e in quello dell'arco (3 Biscotti) (`storia::apri_forziere()`) | `storia::forziere_chiuso()`: preso una volta, il forziere resta lì aperto |
+
+Le celle che fanno partire B-02 e B-03 (la nebbia, l'arco) sbarrano la via da parete a parete: lo controllano
+`tools/disegna_gola.py` (si rifiuta di scrivere le griglie), `src/autotest_gola.cpp` (`si_passa_senza`) e
+`tests/test_gola.py`. Così le scene non si saltano e la storia non si ferma.

@@ -655,6 +655,8 @@ inline constexpr uint8_t ELLEBORO_2 = 84;
 inline constexpr uint8_t ELLEBORO_3 = 85;
 inline constexpr uint8_t ELLEBORO_4 = 86;
 inline constexpr uint8_t ROSA_RIPRESA = 87;
+inline constexpr uint8_t FORZIERE_CRESCIA = 88;
+inline constexpr uint8_t FORZIERE_BISCOTTI = 89;
 
 // Le tre quest della v1 (copione/04_quest.md): dove si consegnano, da quale bandiera si prendono, entro
 // quale si consegnano, la bandiera della consegna e il premio (indice di GameState::oggetti, come
@@ -804,13 +806,13 @@ inline constexpr Raccolta RACCOLTA[RACCOLTE] = {
     { int8_t(mondo::AreaId::TEATRO_ROMANO), 44, 35, 0, FERRO_2, 0 },
     { int8_t(mondo::AreaId::TEATRO_ROMANO), 34, 51, 0, FERRO_3, 0 },
     { int8_t(mondo::AreaId::BOTTACCIONE), 47, 48, 1, ELLEBORO_1, 1 },
-    { int8_t(mondo::AreaId::GOLA_STRISCIA), 45, 10, 1, ELLEBORO_2, 1 },
-    { int8_t(mondo::AreaId::GOLA_MIASMI), 28, 14, 1, ELLEBORO_3, 1 },
-    { int8_t(mondo::AreaId::GOLA_ARCO), 32, 19, 1, ELLEBORO_4, 1 },
+    { int8_t(mondo::AreaId::GOLA_STRISCIA), 44, 10, 1, ELLEBORO_2, 1 },
+    { int8_t(mondo::AreaId::GOLA_MIASMI), 32, 14, 1, ELLEBORO_3, 1 },
+    { int8_t(mondo::AreaId::GOLA_ARCO), 35, 19, 1, ELLEBORO_4, 1 },
 };
 
 // Le figure degli oggetti da raccogliere, 16x16 (4 tile), con la palette dei popolani (tools/figure_npc.py).
-inline constexpr int FIGURE_RACCOLTA = 2;
+inline constexpr int FIGURE_RACCOLTA = 4;
 inline constexpr uint32_t FIGURA_RACCOLTA[FIGURE_RACCOLTA][4 * 8] = {
     {  // ferro
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x11110000, 0xDDDD1000,
@@ -823,6 +825,18 @@ inline constexpr uint32_t FIGURA_RACCOLTA[FIGURE_RACCOLTA][4 * 8] = {
         0x00000000, 0x00000000, 0x00001100, 0x0001FF10, 0x0001FEF1, 0x00001FF1, 0x000001F1, 0x0011001F,
         0xF101FF10, 0xF11FF100, 0xFFFF1000, 0xFFF10000, 0x99981000, 0x99998100, 0x11111000, 0x00000000,
         0x01FF101F, 0x001FF11F, 0x00011FFF, 0x00001FFF, 0x00018999, 0x00189999, 0x00011111, 0x00000000,
+    },
+    {  // forziere
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x11111000, 0xBBBBB100, 0xBBBBBB10, 0xAAAAAA10,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00011111, 0x001BBBBB, 0x01BBBBBB, 0x01AAAAAA,
+        0x1DDDDD10, 0x1AAAAA10, 0x1BBBBB10, 0xBBBBBB10, 0xBBBBCC10, 0xAAAAAA10, 0x11111100, 0x00000000,
+        0x01DDDDD1, 0x01AAAA1E, 0x01BBBB1E, 0x01BBBB11, 0x01CCBBBB, 0x01AAAAAA, 0x00111111, 0x00000000,
+    },
+    {  // forziere_aperto
+        0x00000000, 0x00000000, 0x11111000, 0xBBBBB100, 0xAAAAA100, 0xDDDDD100, 0x11111110, 0x1111CC10,
+        0x00000000, 0x00000000, 0x00011111, 0x001BBBBB, 0x001AAAAA, 0x001DDDDD, 0x01111111, 0x01CC1111,
+        0xAAAAAA10, 0xAAAAAA10, 0xBBBBBB10, 0xBBBBBB10, 0xBBBBCC10, 0xAAAAAA10, 0x11111100, 0x00000000,
+        0x01AAAAAA, 0x01AAAAAA, 0x01BBBBBB, 0x01BBBBBB, 0x01CCBBBB, 0x01AAAAAA, 0x00111111, 0x00000000,
     },
 };
 
@@ -859,6 +873,58 @@ struct Infiltrato
 };
 
 inline constexpr Infiltrato INFILTRATO = { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 99, 71, 29, 1, { 65, 3 }, { 68, 5 } };
+
+// --- La gola del Bottaccione (T2) ----------------------------------------------------------------
+// Le scene che partono su una cella dell'area (non entrando): B-02 sulla prima nebbia, B-03 sotto l'arco.
+struct Innesco
+{
+    int8_t scena;                 // indice in SCENA
+    mondo::Cella cella;
+};
+
+inline constexpr int INNESCHI = 2;
+inline constexpr Innesco INNESCO[INNESCHI] = {
+    { 14, mondo::Cella::MIASMA },  // B-02
+    { 15, mondo::Cella::ARCO },  // B-03
+};
+
+// I soldati di B-03 sulla mappa (FIGURA_NPC): ci sono finche' PIANO_DI_CORRADO e' spenta.
+struct Sentinella
+{
+    int8_t area;                  // mondo::AreaId
+    uint8_t tx;
+    uint8_t ty;
+    uint8_t figura;
+};
+
+inline constexpr int SENTINELLE = 2;
+inline constexpr Sentinella SENTINELLA[SENTINELLE] = {
+    { int8_t(mondo::AreaId::GOLA_ARCO), 43, 14, 3 },
+    { int8_t(mondo::AreaId::GOLA_ARCO), 43, 20, 3 },
+};
+
+// I forzieri negli slarghi: toccarli da' 'quanti' dell'oggetto (battaglia::OggettoId, fino al massimo che se
+// ne porta), accende la bandiera (64-127) e fa dire il testo; preso, non torna.
+struct Forziere
+{
+    int8_t area;                  // mondo::AreaId
+    uint8_t tx;
+    uint8_t ty;
+    uint8_t bandiera;
+    uint8_t oggetto;
+    uint8_t quanti;
+    testi::TestoId testo;
+};
+
+inline constexpr int FORZIERI = 2;
+inline constexpr Forziere FORZIERE[FORZIERI] = {
+    { int8_t(mondo::AreaId::GOLA_STRISCIA), 40, 21, FORZIERE_CRESCIA, 0, 2, testi::TestoId::FORZIERE_CRESCIA },  // 2 CRESCIA
+    { int8_t(mondo::AreaId::GOLA_ARCO), 20, 22, FORZIERE_BISCOTTI, 3, 3, testi::TestoId::FORZIERE_BISCOTTI },  // 3 BISCOTTI
+};
+
+// Le figure del forziere in FIGURA_RACCOLTA: chiuso, e aperto (preso, resta li').
+inline constexpr int FIGURA_FORZIERE = 2;
+inline constexpr int FIGURA_FORZIERE_APERTO = 3;
 
 // Le figure degli NPC, 16x32 (8 tile in mappatura 1D) con la palette dei popolani: quelle dei
 // mestieri (tools/figure_npc.py) e quelle degli amici (base e accessorio, dati/amici.json).

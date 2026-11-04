@@ -15,7 +15,8 @@ class Esplorazione;
 // La storia a schermo (F6 parte 1): le scene del copione recitate battuta per battuta (nome di chi
 // parla, testo a macchina da scrivere, A per andare avanti), il nodo segnaposto delle cutscene (per
 // ora un cartello col titolo), le battaglie delle scene, gli NPC d'ambiente che parlano secondo la
-// fase della storia. Le quest (SV2c): i datori (proposta, attesa, consegna, dopo), gli oggetti da
+// fase della storia. La gola (T2): le scene che partono su una cella (la nebbia, l'arco), i miasmi che
+// feriscono chi corre, i soldati di B-03, i forzieri, l'uscita del Condotto chiusa nel duello. Le quest (SV2c): i datori (proposta, attesa, consegna, dopo), gli oggetti da
 // raccogliere sulla mappa (si prendono toccandoli), gli indizi di Q-SP01 e l'infiltrato con la sua
 // battaglia. Le decisioni sono di include/storia_logica.h.
 class Storia
@@ -46,7 +47,11 @@ private:
     bn::vector<bn::sprite_ptr, PERSONE_MAX> _npc;
     bn::vector<int, PERSONE_MAX> _indici;
     bn::vector<bn::sprite_ptr, storia::RACCOLTE> _raccolte;
+    // la gola (T2): i soldati di B-03 e i forzieri (chiusi o aperti)
+    bn::vector<bn::sprite_ptr, storia::SENTINELLE + storia::FORZIERI> _gola;
     int _area = -1;
+    int _respiro = 0;           // i frame di fila di corsa nella nebbia (storia::respira_i_miasmi)
+    uint32_t _ultimo_urto = 0;  // il frame dell'ultimo avviso dell'uscita chiusa (uno ogni due secondi)
 
     void _prepara_npc(const Esplorazione& esplorazione);
     void _parla_col_datore(int quest, const bn::sprite_palette_ptr& palette_testo);

@@ -515,7 +515,10 @@ def griglie_e_mappe(header):
 
 TILE_CALPESTABILI = {"SUOLO", "STRADA", "SCALINATA", "PORTONE", "VARCO", "INGRESSO", "SUOLO_OMBRA",
                      "STRADA_OMBRA", "LASTRICO", "LASTRICO_2", "LASTRICO_3", "CORSO", "VIALETTO", "ARCO", "PRATO",
-                     "BRECCIA", "BRECCIA_2", "BRECCIA_SOLCO"}
+                     "BRECCIA", "BRECCIA_2", "BRECCIA_SOLCO",
+                     # la gola (T2): la via di ghiaia e terra, le sponde d'erba, la nebbia, il ponticello
+                     "GHIAIA", "GHIAIA_2", "TERRA", "ERBA", "ERBA_2", "MIASMA", "PONTE", "PONTE_SPONDA",
+                     "PONTE_SPONDA_GIU", "ARCO_GOLA", "ARCO_GOLA_S", "ARCO_GOLA_D"}
 
 
 def errori_fondale(griglia, mappa):
@@ -929,6 +932,30 @@ class TerzoLotto(unittest.TestCase):
         """Il pezzo centrale non ha le volute: e' diverso dai pezzi di estremita'."""
         self.assertNotEqual(G.pixel_cartiglio("centrale"), G.pixel_cartiglio("sinistro"))
         self.assertNotEqual(G.pixel_cartiglio("sinistro"), G.pixel_cartiglio("destro"))
+
+
+class OrdineDelleCelle(unittest.TestCase):
+    """Il gioco dice solida una cella dal suo indice (mondo::solida, da PRIMA_CELLA_SOLIDA in su): le
+    calpestabili devono stare tutte prima della prima solida, o la .area e il gioco non vanno d'accordo
+    (il MIASMA a indice 42 bloccava la via dei miasmi, il PONTE il ponticello)."""
+
+    def test_calpestabili_prima_delle_solide(self):
+        G.controlla_ordine_celle()
+        valori = list(G.CELLE.values())
+        prima = [s for _, s in valori].index(True)
+        self.assertTrue(all(not s for _, s in valori[:prima]) and all(s for _, s in valori[prima:]))
+        with open(G.USCITA, encoding="utf-8") as f:
+            self.assertIn(f"inline constexpr int PRIMA_CELLA_SOLIDA = {prima};", f.read())
+        for c in "g+":
+            self.assertLess(list(G.CELLE).index(c), prima, c)
+
+    def test_negativa_miasma_dopo_le_solide(self):
+        """L'ordine di prima di T2 (MIASMA e PONTE in coda) si rifiuta."""
+        celle = {k: v for k, v in G.CELLE.items() if k not in "g+"}
+        celle["g"], celle["+"] = ("MIASMA", False), ("PONTE", False)
+        with self.assertRaises(G.ErroreMondo) as e:
+            G.controlla_ordine_celle(celle)
+        self.assertIn("MIASMA, PONTE", str(e.exception))
 
 
 class FondaleControGriglia(unittest.TestCase):

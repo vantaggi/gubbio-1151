@@ -84,6 +84,9 @@ COLORI = {
     "~": (60, 110, 170),    # il torrente
     "x": (40, 35, 35),      # la striscia nera nella rupe
     "g": (110, 150, 70),    # la nebbia dei miasmi
+    "i": (210, 205, 190),   # la lapide
+    "+": (150, 110, 60),    # il ponticello
+    "|": (120, 115, 105),   # la diga
 }
 COLORE_VARCO = (230, 60, 60)
 COLORE_SPAWN = (40, 90, 230)
@@ -136,19 +139,20 @@ def griglie(cartella):
     print(f"[istantanee] {len(aree_finali())} griglie in {cartella}")
 
 
-def rgb_palette():
-    """I 16 colori dei fondali in RGB a 8 bit (dal BGR555 del GBA)."""
+def rgb_palette(cupa=False):
+    """I 16 colori dei fondali in RGB a 8 bit (dal BGR555 del GBA); cupa: quelli delle stanze della gola
+    (PALETTE_FONDALI_CUPA, le rampe di notte), come le vede il giocatore."""
     palette = G.S.carica("palette")
     out = []
-    for rif in G.PALETTE_FONDALI:
-        c = G.S.colore(palette, rif)
+    for rif in (G.palette_cupa(palette) if cupa else G.PALETTE_FONDALI):
+        c = G.S.colore(palette, rif, cupa)
         out.append(((c & 31) * 255 // 31, ((c >> 5) & 31) * 255 // 31, ((c >> 10) & 31) * 255 // 31))
     return out
 
 
 def fondale(cartella, nome, scala=1):
     """Il fondale intero di un'area, con i tile e i colori della ROM: fondale_<area>[_xN].png."""
-    colori = rgb_palette()
+    colori = rgb_palette(nome in G.AREE_GOLA)
     a = [x for x in aree_finali() if x["id"] == nome][0]
     w, h = a["larghezza"], a["altezza"]
     righe = []
