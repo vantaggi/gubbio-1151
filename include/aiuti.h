@@ -187,14 +187,23 @@ struct Punto
     return verso < 0 ? -1 : varco_piu_vicino(mondo::area(e.area), verso, e.x, e.y);
 }
 
-// La freccia del promemoria: punta verso il varco lungo l'asse piu' lungo, e sta sullo schermo dentro un margine
-// (il varco fuori schermo: sul bordo; sullo schermo: accanto al varco, dalla parte del giocatore).
+// --- I riquadri degli aiuti (mockup 09 e 12, animazioni A2 e A3) ------------------------------------------
+// Il promemoria: un riquadro scuro in alto con la stella dell'obiettivo, e in basso a destra il nome della
+// prossima area con una freccia 8x8 che punta verso il varco. Il cartello: un riquadro di legno in basso, dalla
+// parte opposta al giocatore, con la freccia del varco, la via e dove porta. Le frecce e la stella sono i disegni
+// dei mockup (menu/mockup_menu.py, FRECCE e ICONE["obiettivo"]): k il piombo, O l'oro acceso, o l'oro spento.
+
+// Otto versi: la freccia punta in diagonale quando il lato corto e' almeno i due quinti del lungo.
 enum class Verso : uint8_t
 {
     DESTRA,
+    GIU_DX,
     GIU,
+    GIU_SX,
     SINISTRA,
+    SU_SX,
     SU,
+    SU_DX,
 };
 
 [[nodiscard]] constexpr Verso verso_di(int dx, int dy)
@@ -202,83 +211,157 @@ enum class Verso : uint8_t
     int ax = dx < 0 ? -dx : dx;
     int ay = dy < 0 ? -dy : dy;
 
-    if(ax >= ay)
+    if(ay * 5 <= ax * 2)
     {
         return dx >= 0 ? Verso::DESTRA : Verso::SINISTRA;
     }
 
-    return dy >= 0 ? Verso::GIU : Verso::SU;
+    if(ax * 5 < ay * 2)
+    {
+        return dy >= 0 ? Verso::GIU : Verso::SU;
+    }
+
+    return dy >= 0 ? (dx >= 0 ? Verso::GIU_DX : Verso::GIU_SX) : (dx >= 0 ? Verso::SU_DX : Verso::SU_SX);
+}
+
+inline constexpr const char* FRECCIA_GIU[8] = {
+    "..kkk...", "..kOk...", "..kOk...", "kkkOkkk.", ".kOOOk..", "..kOk...", "...k....", "........" };
+inline constexpr const char* FRECCIA_GIU_DX[8] = {
+    "kk......", "kOk.....", ".kOk..k.", "..kOkkOk", "...kOOOk", "...kOOOk", "..kkkkkk", "........" };
+inline constexpr const char* STELLA[8] = {
+    "...kk...", "..kOOk..", "kkkOokkk", "kOOooOOk", ".kOooOk.", ".kOkkOk.", "kOk..kOk", "kk....kk" };
+
+// Il pixel (x, y) della freccia verso 'v': le dritte ruotano FRECCIA_GIU (disegnata su 7 righe e 7 colonne),
+// le diagonali specchiano FRECCIA_GIU_DX.
+[[nodiscard]] constexpr char pixel_freccia(Verso v, int x, int y)
+{
+    if(x < 0 || y < 0 || x > 7 || y > 7)
+    {
+        return '.';
+    }
+
+    switch(v)
+    {
+        case Verso::GIU:
+            return FRECCIA_GIU[y][x];
+
+        case Verso::SU:
+            return y < 7 ? FRECCIA_GIU[6 - y][x] : '.';
+
+        case Verso::DESTRA:
+            return FRECCIA_GIU[x][y];
+
+        case Verso::SINISTRA:
+            return x < 7 ? FRECCIA_GIU[6 - x][y] : '.';
+
+        case Verso::GIU_DX:
+            return FRECCIA_GIU_DX[y][x];
+
+        case Verso::GIU_SX:
+            return FRECCIA_GIU_DX[y][7 - x];
+
+        case Verso::SU_DX:
+            return y < 7 ? FRECCIA_GIU_DX[6 - y][x] : '.';
+
+        default:
+            return y < 7 ? FRECCIA_GIU_DX[6 - y][7 - x] : '.';
+    }
 }
 
 inline constexpr int SCHERMO_L = 240;
 inline constexpr int SCHERMO_A = 160;
-inline constexpr int LATO_FRECCIA = 16;
-inline constexpr int MARGINE_FRECCIA = 8;
-// La freccia non scende sotto la fascia del promemoria in alto (due righe di testo dall'alto).
-inline constexpr int FASCIA_PROMEMORIA = 32;
+inline constexpr int FRAME_PROMEMORIA = 180;        // 3 secondi fermo, fra l'entrata e l'uscita
+inline constexpr int FRAME_ENTRATA_PROMEMORIA = 5;  // A3: scende dall'alto in 5 vblank (e sale per uscire)
+inline constexpr int FRAME_LAMPO = 30;              // A3: la freccia lampeggia ogni mezzo secondo
+inline constexpr int FRAME_ENTRATA_CARTELLO = 4;    // A2: sale dal basso di 8 px a vblank
 
-[[nodiscard]] constexpr int limita(int v, int minimo, int massimo)
+// Un rettangolo sullo schermo, estremi compresi.
+struct Rettangolo
 {
-    return v < minimo ? minimo : (v > massimo ? massimo : v);
+    int x0;
+    int y0;
+    int x1;
+    int y1;
+};
+
+[[nodiscard]] constexpr bool si_toccano(const Rettangolo& a, const Rettangolo& b)
+{
+    return a.x0 <= b.x1 && b.x0 <= a.x1 && a.y0 <= b.y1 && b.y0 <= a.y1;
 }
 
-// L'angolo in alto a sinistra della freccia (16x16), dato il varco in coordinate di schermo.
-[[nodiscard]] constexpr Punto posto_della_freccia(int vx, int vy)
+// Il riquadro del promemoria in alto (mockup 09): da x 2 a 237, una riga di testo alta 18 px, ogni riga in piu' 10.
+// Dentro: la stella a (7, 6), il testo a (18, 6) come nell'animazione A3, largo fino a 4 px dal bordo: ci sta una
+// riga intera del dialogo (216 px).
+inline constexpr int PROMEMORIA_X0 = 2;
+inline constexpr int PROMEMORIA_X1 = 237;
+inline constexpr int PROMEMORIA_Y0 = 1;
+inline constexpr int STELLA_X = 7;
+inline constexpr int PROMEMORIA_TESTO_X = 18;
+inline constexpr int PROMEMORIA_TESTO_DY = 5;
+inline constexpr int PROMEMORIA_TESTO_MAX = PROMEMORIA_X1 - 4 - PROMEMORIA_TESTO_X + 1;
+
+[[nodiscard]] constexpr int altezza_promemoria(int righe)
 {
-    return { limita(vx - LATO_FRECCIA / 2, MARGINE_FRECCIA, SCHERMO_L - MARGINE_FRECCIA - LATO_FRECCIA),
-             limita(vy - LATO_FRECCIA / 2, FASCIA_PROMEMORIA, SCHERMO_A - MARGINE_FRECCIA - LATO_FRECCIA) };
+    return 18 + 10 * (righe - 1);
 }
 
-inline constexpr int FRAME_PROMEMORIA = 180;        // 3 secondi
+// La targa della prossima area, in basso a destra (mockup 09): il nome 'largo' px, la freccia a 2 px dal nome.
+inline constexpr int TARGA_ALTEZZA = 16;
+inline constexpr int TARGA_Y0 = 142;
 
-// Il disegno della freccia 16x16 verso destra, giu', sinistra o su: un triangolo con la base sulla colonna 2
-// (righe 1-14) e la punta sulla colonna 14; gli altri versi lo ruotano. dentro_la_freccia dice se il pixel
-// (x, y) e' nel triangolo.
-[[nodiscard]] constexpr bool dentro_la_freccia(Verso verso, int x, int y)
+[[nodiscard]] constexpr int larghezza_targa(int largo)
 {
-    if(x < 0 || y < 0 || x > 15 || y > 15)
-    {
-        return false;
-    }
-
-    int u = verso == Verso::DESTRA ? x : (verso == Verso::SINISTRA ? 15 - x : (verso == Verso::GIU ? y : 15 - y));
-    int v = verso == Verso::DESTRA || verso == Verso::SINISTRA ? y : x;
-    int distanza = v < 8 ? 7 - v : v - 8;           // dalla mezzeria, 0..7
-    return u >= 2 && distanza <= 6 && u <= 14 - distanza * 12 / 7;
+    return largo + 21;
 }
 
-// I toni della freccia nella palette del testo (stile/dati/cornice.json, ruoli): 0 trasparente, 1 il piombo
-// (quasi nero, `neutri` 0) per il contorno, 2 il fondo chiaro per il pieno. Nessun colore nuovo.
-inline constexpr int TONO_FRECCIA_CONTORNO = 1;
-inline constexpr int TONO_FRECCIA_PIENO = 2;
-
-// Il tono del pixel (x, y). Il contorno (STANDARD P1, P3) e' ogni pixel del triangolo con uno degli 8 vicini
-// fuori: cosi' il pieno chiaro non tocca mai il lastrico chiaro, nemmeno in diagonale lungo i lati obliqui.
-// vicini_in_croce = true e' il contorno vecchio, coi soli 4 vicini in croce: lo usa solo la prova negativa.
-[[nodiscard]] constexpr int tono_della_freccia(Verso verso, int x, int y, bool vicini_in_croce = false)
+// Dove va la targa: in basso a destra; se li' tocca il giocatore o il cartello, in basso a sinistra; se tocca
+// anche li', subito sotto il promemoria, a destra.
+[[nodiscard]] constexpr Rettangolo posto_della_targa(int largo, int righe_promemoria, const Rettangolo& giocatore,
+                                                     const Rettangolo& cartello)
 {
-    if(! dentro_la_freccia(verso, x, y))
-    {
-        return 0;
-    }
+    int w = larghezza_targa(largo);
+    Rettangolo destra = { PROMEMORIA_X1 - w + 1, TARGA_Y0, PROMEMORIA_X1, TARGA_Y0 + TARGA_ALTEZZA - 1 };
+    Rettangolo sinistra = { PROMEMORIA_X0, TARGA_Y0, PROMEMORIA_X0 + w - 1, TARGA_Y0 + TARGA_ALTEZZA - 1 };
+    int sotto = PROMEMORIA_Y0 + altezza_promemoria(righe_promemoria) + 2;
+    Rettangolo in_alto = { destra.x0, sotto, destra.x1, sotto + TARGA_ALTEZZA - 1 };
 
-    for(int dy = -1; dy <= 1; ++dy)
+    for(const Rettangolo& r : { destra, sinistra })
     {
-        for(int dx = -1; dx <= 1; ++dx)
+        if(! si_toccano(r, giocatore) && ! si_toccano(r, cartello))
         {
-            if((vicini_in_croce && dx != 0 && dy != 0) || (dx == 0 && dy == 0))
-            {
-                continue;
-            }
-
-            if(! dentro_la_freccia(verso, x + dx, y + dy))
-            {
-                return TONO_FRECCIA_CONTORNO;
-            }
+            return r;
         }
     }
 
-    return TONO_FRECCIA_PIENO;
+    return in_alto;
+}
+
+// Il cartello (mockup 12): largo quanto la riga piu' lunga piu' 22 px, alto 28 (18 con una riga sola), a 3 px
+// dal bordo in basso dalla parte opposta al giocatore (A2, scelta all'entrata e poi ferma); se anche li' tocca il
+// giocatore (un cartello largo, Ubaldo in basso al centro), in alto.
+inline constexpr int CARTELLO_Y0 = 129;
+inline constexpr int CARTELLO_MARGINE = 3;
+
+[[nodiscard]] constexpr int altezza_cartello(bool due_righe)
+{
+    return due_righe ? 28 : 18;
+}
+
+[[nodiscard]] constexpr Rettangolo posto_del_cartello(int largo, bool due_righe, const Rettangolo& giocatore)
+{
+    int w = largo + 22;
+    int h = altezza_cartello(due_righe);
+    bool a_destra = (giocatore.x0 + giocatore.x1) / 2 < SCHERMO_L / 2;
+    int x0 = a_destra ? SCHERMO_L - CARTELLO_MARGINE - w : CARTELLO_MARGINE;
+    int y0 = CARTELLO_Y0 + altezza_cartello(true) - h;
+    Rettangolo sotto = { x0, y0, x0 + w - 1, y0 + h - 1 };
+
+    if(! si_toccano(sotto, giocatore))
+    {
+        return sotto;
+    }
+
+    return { x0, CARTELLO_MARGINE, x0 + w - 1, CARTELLO_MARGINE + h - 1 };
 }
 
 // --- I cartelli ai varchi --------------------------------------------------------------------------------

@@ -42,7 +42,8 @@ altro nome.
 `genera_bmp.py` scrive in `graphics/` BMP indicizzati a 4bpp con il loro `.json`:
 `ritratto_<nome>` (sprite 32x32, 3 fotogrammi = calmo, preoccupato, deciso), `logo` e
 `logo_mono` (regular_bg 256x256, logo a x2 in alto), `cornice_dialogo` e `cornice_menu`
-(regular_bg 256x256 nella disposizione della scelta 9). L'indice 0 e' il trasparente. Per
+(regular_bg 256x256 nella disposizione della scelta 9), `titolo_fondo` (regular_bg 256x256: Gubbio al
+crepuscolo sotto il titolo, mockup 10 dei menu, con la palette di notte). L'indice 0 e' il trasparente. Per
 riquadri di misura variabile si usano invece i tile di `include/stile/cornice.h`.
 `tests/test_stile_bmp.py` controlla che i BMP siano allineati ai dati e che i colori riletti
 come fa grit (canale >> 3) siano esattamente le parole BGR555 della palette.

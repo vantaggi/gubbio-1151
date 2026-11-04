@@ -13,6 +13,8 @@ Uscite:
   cornice_dialogo.bmp   regular_bg 256x256: riquadro di dialogo e cartiglio del nome nella
                         disposizione della scelta 9
   cornice_menu.bmp      regular_bg 256x256: riquadro del menu in alto a destra
+  titolo_fondo.bmp      regular_bg 256x256: Gubbio al crepuscolo sotto il titolo (mockup 10 di menu/), con la
+                        palette di notte (L5); le finestre che tremano hanno il colore segnaposto oro 1
 
 L'indice 0 di ogni palette e' il trasparente (per Butano conta la posizione, non il colore).
 I canali a 5 bit si scrivono come v << 3 | v >> 2: grit li riporta a 5 bit con >> 3, quindi
@@ -171,6 +173,119 @@ def cornice(quale):
     return tela
 
 
+# --- Il fondo del titolo (mockup 10, menu/mockup_menu.py profilo_gubbio): Monte Ingino con la basilica e gli
+# stradoni, le case su due file con le finestre accese, il Palazzo dei Consoli col campanile a vela, le mura.
+# Luce dall'alto a sinistra (L1), niente contorno nero (P2), cielo a fasce piene (P6). Tutto procedurale.
+MONTE = [(70, 160), (96, 140), (118, 126), (138, 116), (156, 108), (170, 102), (182, 98), (192, 96),
+         (204, 96), (214, 98), (226, 102), (240, 104), (240, 160)]
+STRADONI = [(206, 134), (170, 128), (208, 122), (176, 116), (206, 111), (184, 106), (204, 102), (194, 98)]
+CASE_ALTE = [(100, 120, 12), (114, 116, 14), (130, 118, 12), (144, 112, 12), (158, 116, 14)]
+CASE = [(36, 128, 18), (54, 124, 14), (68, 130, 20), (88, 126, 16), (104, 132, 18), (122, 128, 14),
+        (136, 134, 20), (156, 130, 16), (172, 136, 18), (190, 132, 16), (206, 136, 18), (224, 130, 16)]
+
+
+def _rett(tela, x0, y0, x1, y1, c):
+    for y in range(max(0, y0), min(len(tela), y1 + 1)):
+        for x in range(max(0, x0), min(len(tela[0]), x1 + 1)):
+            tela[y][x] = c
+
+
+def _punto(tela, x, y, c):
+    if 0 <= y < len(tela) and 0 <= x < len(tela[0]):
+        tela[y][x] = c
+
+
+def _linea(tela, a, b, c):
+    """Bresenham, estremi compresi."""
+    (x0, y0), (x1, y1) = a, b
+    dx, dy = abs(x1 - x0), -abs(y1 - y0)
+    sx, sy = (1 if x0 < x1 else -1), (1 if y0 < y1 else -1)
+    e = dx + dy
+    while True:
+        _punto(tela, x0, y0, c)
+        if (x0, y0) == (x1, y1):
+            return
+        e2 = 2 * e
+        if e2 >= dy:
+            e += dy
+            x0 += sx
+        if e2 <= dx:
+            e += dx
+            y0 += sy
+
+
+def _poligono(tela, punti, c):
+    """Pieno a scansione sui centri dei pixel, piu' il contorno (come il poligono pieno di PIL)."""
+    ys = [p[1] for p in punti]
+    for y in range(min(ys), max(ys) + 1):
+        xs = []
+        for (xa, ya), (xb, yb) in zip(punti, punti[1:] + punti[:1]):
+            if (ya <= y + 0.5) != (yb <= y + 0.5):
+                xs.append(xa + (y + 0.5 - ya) * (xb - xa) / (yb - ya))
+        xs.sort()
+        for a, b in zip(xs[::2], xs[1::2]):
+            _rett(tela, int(a + 0.5), y, int(b - 0.5), y, c)
+    for a, b in zip(punti, punti[1:] + punti[:1]):
+        _linea(tela, a, b, c)
+
+
+def titolo_fondo():
+    p = S.carica("palette")
+
+    def n(rampa, tono):
+        return S.colore(p, [rampa, tono], True)
+
+    def g(rampa, tono):
+        return S.colore(p, [rampa, tono])
+
+    tela = vuota(LATO_BG, LATO_BG)
+    _rett(tela, 0, 0, 239, 159, g("neutri", 0))
+    _rett(tela, 0, 112, 239, 159, n("neutri", 0))
+    _rett(tela, 0, 126, 239, 159, n("cielo e acqua", 0))
+    _poligono(tela, MONTE, n("verde dei monti", 1))
+    for (xa, ya), (xb, yb) in zip(MONTE, MONTE[1:]):
+        if xb > xa and yb < ya:
+            _linea(tela, (xa, ya), (xb, yb), n("verde dei monti", 3))
+    for (xa, ya), (xb, yb) in zip(STRADONI, STRADONI[1:]):
+        passi = max(abs(xb - xa), abs(yb - ya))
+        for k in range(0, passi, 2):
+            _punto(tela, round(xa + (xb - xa) * k / passi), round(ya + (yb - ya) * k / passi), n("verde dei monti", 3))
+    _rett(tela, 186, 89, 199, 94, n("pietra calcarea", 3))
+    _rett(tela, 186, 89, 187, 94, n("pietra calcarea", 4))
+    _rett(tela, 185, 87, 200, 88, n("cotto e coppi", 3))
+    _rett(tela, 196, 82, 198, 86, n("pietra calcarea", 3))
+    _punto(tela, 197, 81, n("cotto e coppi", 3))
+    for x, y, w in CASE_ALTE:
+        _rett(tela, x, y, x + w - 1, 130, n("pietra calcarea", 0))
+        _rett(tela, x, y, x + 1, 130, n("pietra calcarea", 1))
+        _rett(tela, x - 1, y - 2, x + w, y - 1, n("cotto e coppi", 1))
+    for i, (x, y, w) in enumerate(CASE):
+        _rett(tela, x, y, x + w - 1, 147, n("pietra calcarea", 1))
+        _rett(tela, x, y, x + 1, 147, n("pietra calcarea", 2))
+        _rett(tela, x - 1, y - 2, x + w, y - 1, n("cotto e coppi", 2))
+        if i % 3 != 1:
+            # una finestra su quattro trema: ha il colore segnaposto oro 1, che il gioco fa passare da oro 2
+            # a oro 1 insieme al lampeggio del cursore (src/titolo.cpp)
+            luce = g("oro e bronzo", 1) if i % 4 == 0 else g("oro e bronzo", 2)
+            _rett(tela, x + w // 2, y + 5, x + w // 2 + 1, y + 7, luce)
+    _rett(tela, 6, 104, 33, 147, n("pietra calcarea", 3))
+    _rett(tela, 6, 104, 8, 147, n("pietra calcarea", 4))
+    for mx in range(6, 34, 4):
+        _rett(tela, mx, 101, mx + 1, 103, n("pietra calcarea", 3))
+    _rett(tela, 8, 86, 13, 100, n("pietra calcarea", 3))
+    _rett(tela, 8, 86, 8, 100, n("pietra calcarea", 4))
+    _rett(tela, 10, 89, 11, 93, n("neutri", 0))
+    _rett(tela, 8, 84, 13, 85, n("cotto e coppi", 3))
+    for fx in (13, 20, 27):
+        _rett(tela, fx, 112, fx + 2, 117, g("oro e bronzo", 2))
+        _punto(tela, fx + 1, 111, g("oro e bronzo", 2))
+    _rett(tela, 12, 136, 27, 147, n("pietra calcarea", 1))
+    _rett(tela, 0, 146, 239, 159, n("pietra calcarea", 0))
+    for mx in range(0, 240, 6):
+        _rett(tela, mx, 143, mx + 2, 145, n("pietra calcarea", 0))
+    return tela
+
+
 def immagini():
     """nome -> (matrice di colori, meta per Butano)."""
     out = {}
@@ -180,6 +295,7 @@ def immagini():
     out["logo_mono"] = (logo(True), {"type": "regular_bg", "bpp_mode": "bpp_4_auto"})
     out["cornice_dialogo"] = (cornice("dialogo"), {"type": "regular_bg", "bpp_mode": "bpp_4_auto"})
     out["cornice_menu"] = (cornice("menu"), {"type": "regular_bg", "bpp_mode": "bpp_4_auto"})
+    out["titolo_fondo"] = (titolo_fondo(), {"type": "regular_bg", "bpp_mode": "bpp_4_auto"})
     return out
 
 

@@ -153,8 +153,11 @@ class Agganci(unittest.TestCase):
         self.assertTrue(self.update_fra_titolo_ed_esplorazione(leggi("src", "main.cpp")))
         # gli aiuti si creano solo mentre si vedono: niente VistaTesto sempre allocate nell'esplorazione
         esp_h = leggi("include", "esplorazione.h")
-        for nome in ("_promemoria", "_promemoria_ombra", "_cartello", "_cartello_ombra", "_oltre", "_oltre_ombra"):
+        for nome in ("_promemoria", "_targa_nome", "_cartello", "_oltre"):
             self.assertRegex(esp_h, rf"bn::optional<VistaTesto> {nome};", nome)
+        # e i riquadri a pixel (include/pannello.h) lo stesso
+        for nome in ("_promemoria_fondo", "_targa", "_cartello_fondo"):
+            self.assertRegex(esp_h, rf"bn::optional<pannello::Pannello> {nome};", nome)
 
     def test_tile_del_titolo_resi_prima_dell_esplorazione_negativa(self):
         main = leggi("src", "main.cpp")
@@ -176,7 +179,7 @@ class Agganci(unittest.TestCase):
         self.assertIn("aiuti::varco_verso_la_meta(", esp)
         # il cartello accende il fumetto (STANDARD I2) dove la storia spegnerebbe quello delle persone
         self.assertIn("aiuti::cartello_a_portata(", esp)
-        self.assertIn("aiuti::tono_della_freccia(", esp)
+        self.assertIn("aiuti::pixel_freccia(", esp)
         storia = leggi("src", "storia_scena.cpp")
         self.assertIn("aiuti::riprova_dopo_la_sconfitta(k)", storia)
         self.assertIn("aiuti::ritirata_della_scena(k)", storia)

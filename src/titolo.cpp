@@ -7,6 +7,9 @@
 #include "bn_keypad.h"
 #include "bn_log.h"
 #include "bn_regular_bg_items_logo.h"
+#include "bn_regular_bg_items_titolo_fondo.h"
+#include "bn_bg_palette_ptr.h"
+#include "bn_optional.h"
 #include "bn_regular_bg_ptr.h"
 #include "bn_sram.h"
 #include "bn_string_view.h"
@@ -20,6 +23,10 @@
 #include "progressione.h"
 #include "save_data.h"
 #include "storia_logica.h"
+#include "menu_pagine.h"
+#include "stile/cornice.h"
+#include "stile/palette.h"
+#include "tabella.h"
 #include "vista_testo.h"
 
 namespace gubbio
@@ -52,13 +59,6 @@ namespace
         return mondo::area(mondo::AreaId(a)).etichetta;
     }
 
-    // L'anteprima di uno slot sotto la voce «Continua» (mockup 10): area e livelli, fase e tempo di gioco.
-    constexpr int ANTEPRIMA_X = 24;
-    constexpr int ANTEPRIMA_Y = 110;
-    constexpr int ANTEPRIMA_PASSO = 12;
-    constexpr int ANTEPRIMA_LIV_X = 140;
-    constexpr int ANTEPRIMA_NUMERI_X = 158;
-
     void attendi(int frame)
     {
         for(int f = 0; f < frame; ++f)
@@ -66,12 +66,6 @@ namespace
             ++g_game_state.frames;
             bn::core::update();
         }
-    }
-
-    TestoId testo_dello_stato(StatoSlot s)
-    {
-        return s == StatoSlot::VUOTO ? TestoId::SLOT_VUOTO :
-               (s == StatoSlot::ALTRA_VERSIONE ? TestoId::SLOT_ALTRA_VERSIONE : TestoId::SLOT_CORROTTO);
     }
 
     // Uno stato di prova riconoscibile: tests/test_save_system.py ritrova questi numeri nel .sav.
@@ -100,120 +94,222 @@ namespace
     }
 }
 
-int titolo(const bn::sprite_palette_ptr& palette_testo, bool istantanea)
+int titolo(const bn::sprite_palette_ptr&, bool istantanea)
 {
-    // la mappa 256x256 ha l'angolo in (-8, -48): (12, 80) mette il logo a 4 pixel dal bordo sinistro e a 32 dall'alto
-    bn::regular_bg_ptr logo = bn::regular_bg_items::logo.create_bg(128 - 120 + 4, 128 - 80 + 32);
-    VistaTesto voce(Contesto::DIALOGO, 24, 96, INCHIOSTRO_CHIARO, palette_testo);
-    VistaTesto nota(Contesto::DIALOGO, 24, 112, INCHIOSTRO_CHIARO, palette_testo);
-    VistaTesto aiuto(Contesto::DIALOGO, 8, 140, INCHIOSTRO_CHIARO, palette_testo);
-    constexpr TestoId VOCI[3] = { TestoId::TITOLO_NUOVA, TestoId::TITOLO_SLOT_1, TestoId::TITOLO_SLOT_2 };
-    StatoSlot stati[2] = { salvataggio::stato(0), salvataggio::stato(1) };
-    VistaTesto anteprima_area(Contesto::AREA, ANTEPRIMA_X, ANTEPRIMA_Y, INCHIOSTRO_CHIARO, palette_testo);
-    VistaTesto anteprima_fase(Contesto::AREA, ANTEPRIMA_X, ANTEPRIMA_Y + ANTEPRIMA_PASSO, INCHIOSTRO_CHIARO, palette_testo);
-    VistaTesto anteprima_liv(Contesto::HUD, ANTEPRIMA_LIV_X, ANTEPRIMA_Y, INCHIOSTRO_CHIARO, palette_testo);
-    VistaNumero livelli(ANTEPRIMA_NUMERI_X, ANTEPRIMA_Y, INCHIOSTRO_CHIARO, palette_testo);
-    VistaNumero tempo(ANTEPRIMA_NUMERI_X, ANTEPRIMA_Y + ANTEPRIMA_PASSO, INCHIOSTRO_CHIARO, palette_testo);
+    // Il titolo (mockup 10 e 10b, animazione A7): Gubbio al crepuscolo (graphics/titolo_fondo.bmp, palette di
+    // notte), il logo a x2 in alto, il sottotitolo in oro, la lista col cursore della Guida e l'aiuto sulle mura.
+    // «Continua» apre lo slot giocato piu' a lungo e ne mostra l'anteprima; con due slot validi destra e sinistra
+    // passano all'altro. Senza salvataggi c'e' solo «Nuova partita», gia' scelta. Il cursore lampeggia ogni mezzo
+    // secondo, e con lui trema una finestra su quattro (il colore segnaposto oro 1 del fondo).
+    using menu::Scritta;
+    constexpr int LISTA_X = 74;
+    constexpr int CURSORE_X = 62;
+    constexpr int CONTINUA_Y = 66;
+    constexpr int ANTEPRIMA_1_Y = 77;
+    constexpr int ANTEPRIMA_2_Y = 87;
+    constexpr int NUOVA_Y = 100;
+    constexpr int PRIMA_Y = 80;             // 10b: «Nuova partita» da sola
+    constexpr int SOTTOTITOLO_Y = 46;
+    constexpr int AIUTO_Y = 149;
+    constexpr int STACCO = 12;
+    constexpr int LAMPO = 30;
+    constexpr int ORO_ACCESO = 9;           // oro e bronzo 3, nella palette dei menu (cornice, indice 9)
+
+    bn::regular_bg_ptr fondo = bn::regular_bg_items::titolo_fondo.create_bg(8, 48);
+    fondo.set_priority(3);
+    // il logo: in alto a 14 px, centrato (la tela ha il logo a y 12 e centrato su 240)
+    bn::regular_bg_ptr logo = bn::regular_bg_items::logo.create_bg(8, 50);
+    logo.set_priority(2);
+    bn::bg_palette_ptr palette_fondo = fondo.palette();
+    int candela = -1;
+
+    for(int k = 0; k < 16; ++k)
+    {
+        if(palette_fondo.colors()[k] == bn::color(GUBBIO_VOCE(stile::PALETTE_GIORNO, stile::RAMPA_ORO_E_BRONZO + 1)))
+        {
+            candela = k;
+        }
+    }
+
+    bn::sprite_palette_ptr palette = menu::crea_palette();
+    Scritta sottotitolo(TestoId::TITOLO_SOTTOTITOLO, (240 - larghezza_testo(TestoId::TITOLO_SOTTOTITOLO)) / 2,
+                        SOTTOTITOLO_Y, menu::ORO, palette);
+    StatoSlot stati[salvataggio::SLOT] = { salvataggio::stato(0), salvataggio::stato(1) };
+    int validi = 0;
+    int slot = -1;
 
     for(int k = 0; k < salvataggio::SLOT; ++k)
     {
         if(stati[k] == StatoSlot::VALIDO && salvataggio::carica(k, s_anteprima[k]))
         {
             storia::dopo_il_caricamento(s_anteprima[k]);
-        }
-        else if(stati[k] == StatoSlot::VALIDO)
-        {
-            stati[k] = StatoSlot::CORROTTO;
+            ++validi;
+
+            if(slot < 0 || s_anteprima[k].tempo_frames > s_anteprima[slot].tempo_frames)
+            {
+                slot = k;
+            }
         }
     }
 
     // il titolo ha il suo brano: il Campanone apre, poi il Tema di Gubbio
     audio::brano(colonna::BRANO_TITOLO);
 
-    // si parte da "Continua" se c'e' un salvataggio valido, se no da "Nuova partita"
-    int scelta = stati[0] == StatoSlot::VALIDO ? 1 : (stati[1] == StatoSlot::VALIDO ? 2 : 0);
-    aiuto.mostra(TestoId::TITOLO_AIUTO);
-    aiuto.rivela_tutto();
+    bn::sprite_ptr cursore = menu::crea_cursore(palette);
+    bn::optional<VistaTesto> continua;
+    bn::optional<VistaTesto> nuova;
+    bn::optional<Scritta> anteprima_area;
+    bn::optional<Scritta> anteprima_fase;
+    bn::optional<VistaNumero> livelli;
+    bn::optional<VistaNumero> tempo;
+    bn::optional<Scritta> virgola_1;
+    bn::optional<Scritta> virgola_2;
+    bn::optional<Scritta> liv;
+    bn::optional<Scritta> aiuto_a;
+    bn::optional<Scritta> aiuto_b;
+    bn::optional<Scritta> aiuto_c;
+    int voce = validi > 0 ? 0 : 1;      // 0 Continua, 1 Nuova partita
+    bool cambiata = true;
+    int f = 0;
 
     while(true)
     {
-        voce.mostra(VOCI[scelta]);
-        voce.rivela_tutto();
+        if(cambiata)
+        {
+            cambiata = false;
+            continua.reset();
+            nuova.reset();
+            anteprima_area.reset();
+            anteprima_fase.reset();
+            livelli.reset();
+            tempo.reset();
+            virgola_1.reset();
+            virgola_2.reset();
+            liv.reset();
 
-        bool anteprima = scelta > 0 && stati[scelta - 1] == StatoSlot::VALIDO;
+            if(validi > 0)
+            {
+                continua.emplace(Contesto::DIALOGO, LISTA_X, CONTINUA_Y, voce == 0 ? ORO_ACCESO : menu::GRIGIO, palette);
+                continua->mostra(slot == 0 ? TestoId::TITOLO_SLOT_1 : TestoId::TITOLO_SLOT_2);
+                continua->rivela_tutto();
 
-        if(scelta > 0 && ! anteprima)
-        {
-            nota.mostra(testo_dello_stato(stati[scelta - 1]));
-            nota.rivela_tutto();
-        }
-        else
-        {
-            nota.nascondi();
+                // «Piazza Grande, Liv. 4 4 3» e «Il digiuno, 1:42», in grigio
+                const GameState& p = s_anteprima[slot];
+                TestoId area = testo_dell_area(p);
+                TestoId fase = testo_della_fase(aiuti::fase_della_cronaca(p));
+                int x = LISTA_X;
+                anteprima_area.emplace(area, x, ANTEPRIMA_1_Y, menu::GRIGIO, palette);
+                x += larghezza_testo(area) + 1;
+                virgola_1.emplace(TestoId::VIRGOLA, x, ANTEPRIMA_1_Y, menu::GRIGIO, palette);
+                x += larghezza_testo(TestoId::VIRGOLA) + 4;
+                liv.emplace(TestoId::TITOLO_LIVELLI, x, ANTEPRIMA_1_Y, menu::GRIGIO, palette);
+                x += larghezza_testo(TestoId::TITOLO_LIVELLI) + 4;
+                livelli.emplace(x, ANTEPRIMA_1_Y, menu::GRIGIO, palette);
+                livelli->mostra_livelli(p.livello[0], p.livello[1], p.livello[2]);
+                livelli->colloca(x, ANTEPRIMA_1_Y);
+                x = LISTA_X;
+                anteprima_fase.emplace(fase, x, ANTEPRIMA_2_Y, menu::GRIGIO, palette);
+                x += larghezza_testo(fase) + 1;
+                virgola_2.emplace(TestoId::VIRGOLA, x, ANTEPRIMA_2_Y, menu::GRIGIO, palette);
+                x += larghezza_testo(TestoId::VIRGOLA) + 4;
+                tempo.emplace(x, ANTEPRIMA_2_Y, menu::GRIGIO, palette);
+                tempo->mostra_tempo(int(p.tempo_frames / 60));
+                tempo->colloca(x, ANTEPRIMA_2_Y);
+            }
+
+            int nuova_y = validi > 0 ? NUOVA_Y : PRIMA_Y;
+            nuova.emplace(Contesto::DIALOGO, LISTA_X, nuova_y, voce == 1 ? ORO_ACCESO : menu::GRIGIO, palette);
+            nuova->mostra(TestoId::TITOLO_NUOVA);
+            nuova->rivela_tutto();
+            menu::colloca(cursore, CURSORE_X, voce == 0 ? CONTINUA_Y : nuova_y, 8, 8);
+
+            // l'aiuto sulle mura, centrato: «Su e giu': scegli   A: conferma», con due slot anche «Destra: slot»
+            aiuto_a.reset();
+            aiuto_b.reset();
+            aiuto_c.reset();
+            TestoId pezzi[3] = { TestoId::TITOLO_AIUTO_SCEGLI, TestoId::TITOLO_AIUTO_SLOT, TestoId::TITOLO_AIUTO_CONFERMA };
+            int quanti = validi == 0 ? 1 : (validi == 2 ? 3 : 2);
+
+            if(validi == 0)
+            {
+                pezzi[0] = TestoId::TITOLO_AIUTO_COMINCIA;
+            }
+            else if(validi == 1)
+            {
+                pezzi[1] = TestoId::TITOLO_AIUTO_CONFERMA;
+            }
+
+            int largo = (quanti - 1) * STACCO;
+
+            for(int k = 0; k < quanti; ++k)
+            {
+                largo += larghezza_testo(pezzi[k]);
+            }
+
+            int x = (240 - largo) / 2;
+            bn::optional<Scritta>* aiuti_r[3] = { &aiuto_a, &aiuto_b, &aiuto_c };
+
+            for(int k = 0; k < quanti; ++k)
+            {
+                aiuti_r[k]->emplace(pezzi[k], x, AIUTO_Y, menu::SPENTO, palette);
+                x += larghezza_testo(pezzi[k]) + STACCO;
+            }
         }
 
-        if(anteprima)
+        // il cursore lampeggia, una finestra su quattro trema con lui
+        bool acceso = (f / LAMPO) % 2 == 0;
+        cursore.set_visible(acceso);
+
+        if(candela >= 0)
         {
-            const GameState& p = s_anteprima[scelta - 1];
-            anteprima_area.mostra(testo_dell_area(p));
-            anteprima_area.rivela_tutto();
-            anteprima_fase.mostra(testo_della_fase(aiuti::fase_della_cronaca(p)));
-            anteprima_fase.rivela_tutto();
-            anteprima_liv.mostra(TestoId::TITOLO_LIVELLI);
-            anteprima_liv.rivela_tutto();
-            livelli.mostra_livelli(p.livello[0], p.livello[1], p.livello[2]);
-            livelli.colloca(ANTEPRIMA_NUMERI_X, ANTEPRIMA_Y);
-            tempo.mostra_tempo(int(p.tempo_frames / 60));
-            tempo.colloca(ANTEPRIMA_NUMERI_X, ANTEPRIMA_Y + ANTEPRIMA_PASSO);
-        }
-        else
-        {
-            anteprima_area.nascondi();
-            anteprima_fase.nascondi();
-            anteprima_liv.nascondi();
-            livelli.nascondi();
-            tempo.nascondi();
+            palette_fondo.set_color(candela, bn::color(GUBBIO_VOCE(stile::PALETTE_GIORNO,
+                                                                   stile::RAMPA_ORO_E_BRONZO + (acceso ? 2 : 1))));
         }
 
         if(istantanea)
         {
+            cursore.set_visible(true);
             attendi(30);
             BN_LOG("Istantanea titolo");
             attendi(30);
             return -1;
         }
 
-        while(! bn::keypad::up_pressed() && ! bn::keypad::down_pressed() && ! bn::keypad::a_pressed())
-        {
-            attendi(1);
-        }
+        attendi(1);
+        ++f;
 
         if(bn::keypad::a_pressed())
         {
-            if(scelta == 0)
+            if(voce == 1)
             {
                 audio::suona(colonna::Suono::CONFERMA);
                 attendi(1);
                 return -1;
             }
 
-            if(stati[scelta - 1] == StatoSlot::VALIDO && salvataggio::carica(scelta - 1, g_game_state))
+            if(salvataggio::carica(slot, g_game_state))
             {
                 audio::suona(colonna::Suono::CONFERMA);
                 attendi(1);
-                return scelta - 1;
+                return slot;
             }
 
-            // uno slot vuoto o rovinato non si apre
             audio::suona(colonna::Suono::ANNULLA);
         }
-        else
+        else if(validi > 0 && (bn::keypad::up_pressed() || bn::keypad::down_pressed()))
         {
-            scelta = (scelta + (bn::keypad::down_pressed() ? 1 : 2)) % 3;
+            voce = 1 - voce;
+            cambiata = true;
+            f = 0;
             audio::suona(colonna::Suono::CURSORE);
         }
-
-        attendi(1);
+        else if(validi == 2 && voce == 0 && (bn::keypad::left_pressed() || bn::keypad::right_pressed()))
+        {
+            slot = 1 - slot;
+            cambiata = true;
+            f = 0;
+            audio::suona(colonna::Suono::CURSORE);
+        }
     }
 }
 
@@ -225,45 +321,77 @@ void annota_posizione(const Esplorazione& esplorazione)
     g_game_state.y = int16_t(e.y);
 }
 
-void dove_eravamo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo, bool istantanea)
+void dove_eravamo(Esplorazione& esplorazione, const bn::sprite_palette_ptr&, bool istantanea)
 {
-    // «Dove eravamo» (MAI, mockup 08): dopo «Continua», una volta, sullo sfondo scurito come nei dialoghi
-    constexpr int X = 8;
-    constexpr int TITOLO_Y = 92;
-    constexpr int LUOGO_Y = 106;
-    constexpr int FASE_X = 120;
-    constexpr int OBIETTIVO_Y = 120;
-    constexpr int CONTI_Y = 144;
-    constexpr int INCARICHI_N_X = 80;
-    constexpr int TEMPO_X = 160;
-    constexpr int TEMPO_N_X = 192;
+    // «Dove eravamo» (MAI, mockup 08): dopo «Continua», una volta, nel riquadro del dialogo a vetrata col cartiglio
+    // vermiglio. Una frase sola per luogo e fase («Piazza Grande. Il digiuno.»), la stella e l'obiettivo, sotto in
+    // grigio gli incarichi aperti e il tempo. La scena non si scurisce: quando il riquadro sparisce non c'e' uno
+    // stacco di luce. Con un obiettivo su due righe il riquadro sale di una riga.
+    using menu::CHIARO;
+    using menu::DESTRA_X;
+    using menu::INCHIOSTRO;
+    using menu::MARGINE_X;
+    using menu::NOTA;
+    using menu::PIEDE_Y;
+    using menu::Scritta;
+    constexpr int SPAZIO = 4;
+    constexpr int OBIETTIVO_X = 23;
+    constexpr int OBIETTIVO_MAX = DESTRA_X - OBIETTIVO_X + 1;
     const GameState& p = g_game_state;
     esplorazione.nascondi_etichetta();
-    bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.65));
-    VistaTesto titolo_r(Contesto::HUD, X, TITOLO_Y, INCHIOSTRO_CHIARO, palette_testo);
-    VistaTesto luogo(Contesto::AREA, X, LUOGO_Y, INCHIOSTRO_CHIARO, palette_testo);
-    VistaTesto fase(Contesto::AREA, FASE_X, LUOGO_Y, INCHIOSTRO_CHIARO, palette_testo);
-    VistaTesto obiettivo(Contesto::DIALOGO, X, OBIETTIVO_Y, INCHIOSTRO_CHIARO, palette_testo);
-    VistaTesto incarichi(Contesto::HUD, X, CONTI_Y, INCHIOSTRO_CHIARO, palette_testo);
-    VistaNumero incarichi_n(INCARICHI_N_X, CONTI_Y, INCHIOSTRO_CHIARO, palette_testo);
-    VistaTesto tempo(Contesto::HUD, TEMPO_X, CONTI_Y, INCHIOSTRO_CHIARO, palette_testo);
-    VistaNumero tempo_n(TEMPO_N_X, CONTI_Y, INCHIOSTRO_CHIARO, palette_testo);
-    titolo_r.mostra(TestoId::DOVE_ERAVAMO);
-    luogo.mostra(testo_dell_area(p));
-    fase.mostra(testo_della_fase(aiuti::fase_della_cronaca(p)));
-    obiettivo.mostra(storia::area_dell_obiettivo(p) >= 0 ? storia::OBIETTIVO[p.obiettivo].testo : TestoId::PROMEMORIA_NESSUNO);
-    incarichi.mostra(TestoId::DOVE_ERAVAMO_INCARICHI);
-    tempo.mostra(TestoId::DOVE_ERAVAMO_TEMPO);
+    bn::sprite_palette_ptr palette = menu::crea_palette();
+    bn::sprite_palette_ptr icone = menu::crea_palette_icone();
+    TestoId meta = storia::area_dell_obiettivo(p) >= 0 ? storia::OBIETTIVO[p.obiettivo].testo : TestoId::PROMEMORIA_NESSUNO;
+    const testo::Testo& t = testo::dati(meta);
+    bool con_stella = testo::riga(testo::indice_riga(t, 0)).larghezza <= OBIETTIVO_MAX;
+    int su = t.righe > 1 ? 8 : 0;
+    int y0 = stile::DIALOGO_Y - su;
 
-    for(VistaTesto* v : { &titolo_r, &luogo, &fase, &obiettivo, &incarichi, &tempo })
+    Riquadri riquadri;
+    riquadri.cornice(stile::DIALOGO_X, y0, stile::DIALOGO_COLONNE, stile::DIALOGO_RIGHE + su / 8);
+    int largo_titolo = larghezza_testo(TestoId::DOVE_ERAVAMO);
+    int colonne = colonne_cartiglio(largo_titolo);
+    riquadri.cartiglio(stile::CARTIGLIO_NOME_X, y0 - 8, colonne);
+    Scritta titolo_r(TestoId::DOVE_ERAVAMO, stile::CARTIGLIO_NOME_X + (colonne * 8 - largo_titolo) / 2, y0 - 4, CHIARO,
+                     palette);
+
+    // «Piazza Grande. Il digiuno.»: l'area, il punto, la fase, il punto
+    TestoId area = testo_dell_area(p);
+    TestoId fase = testo_della_fase(aiuti::fase_della_cronaca(p));
+    int x = MARGINE_X;
+    int y = y0 + 12;
+    Scritta luogo(area, x, y, INCHIOSTRO, palette);
+    x += larghezza_testo(area) + 1;
+    Scritta punto_1(TestoId::PUNTO, x, y, INCHIOSTRO, palette);
+    x += larghezza_testo(TestoId::PUNTO) + SPAZIO;
+    Scritta fase_r(fase, x, y, INCHIOSTRO, palette);
+    x += larghezza_testo(fase) + 1;
+    Scritta punto_2(TestoId::PUNTO, x, y, INCHIOSTRO, palette);
+
+    // la stella e l'obiettivo (senza stella, dal margine, se la prima riga non ci sta accanto)
+    bn::optional<bn::sprite_ptr> stella;
+
+    if(con_stella)
     {
-        v->rivela_tutto();
+        stella = menu::crea_icona(stile::IconaMenu::OBIETTIVO, MARGINE_X, y0 + 24, icone);
     }
 
+    VistaTesto obiettivo(Contesto::DIALOGO, con_stella ? OBIETTIVO_X : MARGINE_X, y0 + 23, INCHIOSTRO, palette);
+    obiettivo.mostra(meta);
+    obiettivo.rivela_tutto();
+
+    // in grigio: gli incarichi aperti a sinistra, il tempo allineato a destra
+    int conti_y = PIEDE_Y - 1;
+    Scritta incarichi(TestoId::DOVE_ERAVAMO_INCARICHI, MARGINE_X, conti_y, NOTA, palette);
+    VistaNumero incarichi_n(0, conti_y, NOTA, palette);
     incarichi_n.mostra(aiuti::incarichi_aperti(p));
-    incarichi_n.colloca(INCARICHI_N_X, CONTI_Y);
+    incarichi_n.colloca(MARGINE_X + larghezza_testo(TestoId::DOVE_ERAVAMO_INCARICHI) + SPAZIO, conti_y);
+    VistaNumero tempo_n(0, conti_y, NOTA, palette);
     tempo_n.mostra_tempo(int(p.tempo_frames / 60));
-    tempo_n.colloca(TEMPO_N_X, CONTI_Y);
+    tempo_n.colloca_a_destra(DESTRA_X, conti_y);
+    Scritta tempo(TestoId::DOVE_ERAVAMO_TEMPO,
+                  DESTRA_X + 1 - tempo_n.larghezza() - SPAZIO - larghezza_testo(TestoId::DOVE_ERAVAMO_TEMPO), conti_y, NOTA,
+                  palette);
     attendi(1);
 
     if(istantanea)
@@ -280,7 +408,6 @@ void dove_eravamo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& pale
         }
     }
 
-    bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
     attendi(1);
 }
 

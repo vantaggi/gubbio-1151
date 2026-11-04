@@ -131,7 +131,9 @@ namespace
                   MENU_Y - SU_PER_VOCE + 2 * MENU_PASSO + 10 <= stile::DIALOGO_Y + 8 * stile::DIALOGO_RIGHE - 8,
                   "le tre voci del menu escono dal riquadro del dialogo");
 
-    int menu_voci(const testi::TestoId* testi_voci, int quante, const bn::sprite_palette_ptr& palette_testo, bool automatica)
+    // Con 'domanda' il menu ha la sua linguetta: la domanda nel cartiglio sopra il bordo, come il nome di chi parla.
+    int menu_voci(const testi::TestoId* testi_voci, int quante, const bn::sprite_palette_ptr& palette_testo, bool automatica,
+                  bn::optional<testi::TestoId> domanda = bn::nullopt)
     {
         BN_ASSERT(quante >= 2 && quante <= VOCI_MAX, "menu_voci: voci ", quante);
         int voce = 0;
@@ -141,6 +143,19 @@ namespace
         int y0 = MENU_Y + su() - (quante - 2) * SU_PER_VOCE;
         Riquadri riquadri;
         riquadri.cornice(stile::DIALOGO_X, stile::DIALOGO_Y + su(), stile::DIALOGO_COLONNE, stile::DIALOGO_RIGHE);
+        bn::optional<VistaTesto> linguetta;
+
+        if(domanda)
+        {
+            int larghezza = larghezza_testo(*domanda);
+            int colonne = colonne_cartiglio(larghezza);
+            riquadri.cartiglio(stile::CARTIGLIO_NOME_X, stile::CARTIGLIO_NOME_Y + su(), colonne);
+            linguetta.emplace(testo::dati(*domanda).contesto, stile::CARTIGLIO_NOME_X + (colonne * 8 - larghezza) / 2,
+                              stile::CARTIGLIO_NOME_Y + su() + 4, INCHIOSTRO_CHIARO, palette_testo);
+            linguetta->mostra(*domanda);
+            linguetta->rivela_tutto();
+        }
+
         bn::sprite_ptr cursore = crea_cursore(palette_testo);
 
         while(true)
@@ -1005,23 +1020,14 @@ bool Storia::_dopo_il_duello_perso(Esplorazione& esplorazione, const bn::sprite_
     constexpr testi::TestoId VOCI[3] = { testi::TestoId::RIPROVA_SCONTRO, testi::TestoId::RIPROVA_CARICA,
                                          testi::TestoId::RIPROVA_TITOLO };
     constexpr testi::TestoId SLOT[salvataggio::SLOT] = { testi::TestoId::CARICA_SLOT_1, testi::TestoId::CARICA_SLOT_2 };
-    // la domanda sta sopra il riquadro del menu, in basso o in alto che sia (STANDARD I3, su())
-    constexpr int DOMANDA_SOPRA = 10;
-    static_assert(DIALOGO_IN_ALTO_Y - DOMANDA_SOPRA >= 0, "la domanda del Riprova esce dallo schermo in alto");
 
     while(true)
     {
         // per i copioni del banco (tools/banco.sh): da qui il menu aspetta i tasti
         BN_LOG("Duello perso: il menu");
         dialogo_inizio(&esplorazione);
-        int voce;
-
-        {
-            VistaTesto domanda(Contesto::DIALOGO, 8, stile::DIALOGO_Y + su() - DOMANDA_SOPRA, INCHIOSTRO_CHIARO, palette_testo);
-            domanda.mostra(testi::TestoId::RIPROVA_DOMANDA);
-            domanda.rivela_tutto();
-            voce = menu_voci(VOCI, 3, palette_testo, false);
-        }
+        // la domanda nella linguetta del menu, sopra il bordo, in basso o in alto che sia (STANDARD I3, su())
+        int voce = menu_voci(VOCI, 3, palette_testo, false, testi::TestoId::RIPROVA_DOMANDA);
 
         BN_LOG("Duello perso: voce ", voce);
 

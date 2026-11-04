@@ -11,6 +11,8 @@
 
 #include "mondo_logica.h"
 #include "vista_testo.h"
+#include "aiuti.h"
+#include "pannello.h"
 
 namespace gubbio
 {
@@ -134,18 +136,27 @@ private:
     bn::vector<bn::sprite_ptr, 6> _cartiglio;  // creato per primo: sta sotto il testo
     VistaTesto _ombra;              // creata prima: i suoi sprite stanno sotto quelli dell'etichetta
     VistaTesto _etichetta;
-    // MAI: il promemoria (testo con ombra e freccia) e il cartello del varco vicino (due righe con ombra). Si
-    // creano solo mentre si vedono: con i loro sprite sempre allocati (78 tile su 128) «Dove eravamo» e i
-    // dialoghi finivano gli elementi di tile degli sprite di Butano.
+    // MAI: il promemoria (mockup 09, A3: riquadro scuro, stella, targa con la freccia) e il cartello del varco
+    // vicino (mockup 12, A2: legno, freccia, due righe). Si creano solo mentre si vedono: con i loro sprite sempre
+    // allocati «Dove eravamo» e i dialoghi finivano gli elementi di tile degli sprite di Butano.
     bn::sprite_palette_ptr _palette_testo;
-    bn::optional<VistaTesto> _promemoria_ombra;
+    bn::sprite_palette_ptr _palette_aiuti;
+    bn::optional<pannello::Pannello> _promemoria_fondo;
     bn::optional<VistaTesto> _promemoria;
-    bn::optional<bn::sprite_ptr> _freccia;
-    bn::optional<VistaTesto> _cartello_ombra;
+    bn::optional<pannello::Pannello> _targa;
+    bn::optional<VistaTesto> _targa_nome;
+    aiuti::Verso _targa_verso = aiuti::Verso::GIU;
+    int _targa_x = 0;
+    int _targa_y = 0;
+    int _promemoria_t = -1;         // i frame da Select, -1 spento
+    int _promemoria_alto = 0;
+    bn::optional<pannello::Pannello> _cartello_fondo;
     bn::optional<VistaTesto> _cartello;
-    bn::optional<VistaTesto> _oltre_ombra;
     bn::optional<VistaTesto> _oltre;
-    int _attesa_promemoria = 0;
+    int _cartello_x = 0;
+    int _cartello_y = 0;
+    int _cartello_k = -1;           // il passo dell'entrata o dell'uscita (A2), -1 nessun cartello
+    bool _cartello_esce = false;
     int _varco_cartello = -1;       // il varco del cartello a schermo, -1 nessuno
     bool _aiuti = false;
     mondo::Esploratore _e;
@@ -182,6 +193,11 @@ private:
     void _mostra_aiuto(bn::optional<VistaTesto>& vista, testo::Contesto contesto, int x, int y, int inchiostro,
                        testo::TestoId testo);
     void _nascondi_aiuti();
+    [[nodiscard]] aiuti::Rettangolo _rettangolo_del_giocatore() const;
+    void _disegna_freccia_della_targa(bool spenta);
+    void _anima_promemoria();
+    void _crea_cartello(int varco);
+    void _anima_cartello();
 };
 
 }
