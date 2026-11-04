@@ -5,6 +5,9 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 import bilanciamento as B  # noqa: E402
+import battaglia_mirror as M  # noqa: E402
+
+RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 VECCHIA_ESPERIENZA = [15, 25, 200, 12, 30, 0, 0]  # prima di F8 (i nemici di F10 non c'erano): a Corrado al livello 3
 
@@ -83,6 +86,38 @@ class Bilanciamento(unittest.TestCase):
     def test_lo_scudo_in_meno_aiuta(self):
         liv = B.livelli_lungo_la_storia()[2]
         self.assertGreater(B.misura(2, liv, "medio", scudo_meno=1)[0], B.misura(2, liv, "medio")[0])
+
+    # MNEG: il Venditore delle Logge (include/negozio.h). Con tutte le scorte comprate si arriva a Corrado con la
+    # bisaccia piena, e Corrado resta nella fascia di F8.
+    def test_corrado_con_la_bisaccia_piena(self):
+        senza = B.misura(2, B.livelli_lungo_la_storia()[2], "medio", ceri=True, scorte=B.BISACCIA_PIENA)[0]
+        con = B.misura(2, B.livelli_lungo_la_storia(con_quest=True)[2], "medio", scudo_meno=1, ceri=True,
+                       scorte=B.BISACCIA_PIENA)[0]
+        self.assertTrue(55 <= senza <= 75, senza)
+        self.assertTrue(55 <= con <= 80, con)
+
+    def test_il_medio_mangia_davvero(self):
+        """La prova sopra non e' vuota: col pilota medio le Crescia si mangiano contro Corrado."""
+        cura = M.EVENT_KINDS.index("CURA")
+        liv = B.livelli_lungo_la_storia()[2]
+        mangiate = sum(1 for s in range(1, 51)
+                       for ev in B.gioca(2, liv, "medio", s, ceri=True, scorte=B.BISACCIA_PIENA).lista if ev[0] == cura)
+        self.assertGreater(mangiate, 25)
+
+    def test_senza_scorte_niente_cambia(self):
+        liv = B.livelli_lungo_la_storia()[2]
+        self.assertEqual(B.misura(2, liv, "medio", semi=50, ceri=True),
+                         B.misura(2, liv, "medio", semi=50, ceri=True, scorte={}))
+
+    def test_bisaccia_piena_come_il_cxx(self):
+        import re
+        dati = open(os.path.join(RADICE, "include", "battaglia_dati.h"), encoding="utf-8").read()
+        righe = re.findall(r"\{ (true|false), (\d+), (true|false), (\d+), (\d+) \},\s*// (\w+)", dati)
+        oggetti = {nome: (int(cura), purifica == "true", int(prio), int(massimo))
+                   for _, cura, purifica, prio, massimo, nome in righe}
+        for oggetto, nome in ((M.CRESCIA, "Crescia"), (M.BISCOTTI, "Biscotti")):
+            self.assertEqual(M.OGGETTI[oggetto], oggetti[nome][:3], nome)
+            self.assertEqual(B.BISACCIA_PIENA[oggetto], oggetti[nome][3], nome)
 
 
 if __name__ == "__main__":

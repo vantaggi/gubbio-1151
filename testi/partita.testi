@@ -139,3 +139,18 @@ LEGENDA_BOTTEGA           | AREA    | Bottega di un amico
 LEGENDA_TAVERNA           | AREA    | Taverna
 LEGENDA_PORTA             | AREA    | Porta delle mura
 LEGENDA_GRIGIO            | AREA    | Grigio: aree non ancora viste.
+# MNEG: la bottega del Venditore delle Logge (mockup 11)
+BOTTEGA_VENDITORE         | HUD     | Venditore
+BOTTEGA_DENARI            | HUD     | Denari
+BOTTEGA_CRESCIA           | HUD     | Crescia
+BOTTEGA_BISCOTTI          | HUD     | Biscotti
+BOTTEGA_RESTANO           | HUD     | Ne restano
+BOTTEGA_E                 | HUD     | e
+BOTTEGA_AIUTO_A           | HUD     | A: compra
+BOTTEGA_AIUTO_B           | HUD     | B: esci
+BOTTEGA_SALUTO            | DIALOGO | Crescia a fette e Biscotti all'anice. Pochi, ma buoni: scegliete.
+BOTTEGA_COMPRATO          | DIALOGO | Ecco qua. Che vi tenga in piedi fino alla prossima battaglia.
+BOTTEGA_FINITE            | DIALOGO | Di quella non ne ho più, mi dispiace.
+BOTTEGA_POCHI_DENARI      | DIALOGO | Non vi bastano i Denari. I nemici ne hanno in tasca, se li battete.
+BOTTEGA_PIENO             | DIALOGO | Nella vostra bisaccia non ce ne sta più. Tornate quando l'avete alleggerita.
+BOTTEGA_VUOTA             | DIALOGO | Vi ho dato tutto quello che avevo. Il resto è per la città.

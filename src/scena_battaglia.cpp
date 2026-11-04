@@ -28,6 +28,7 @@
 #include "battaglia_grafica.h"
 #include "game_state.h"
 #include "progressione.h"
+#include "negozio.h"
 #include "storia_logica.h"
 #include "tabella.h"
 #include "vista_battaglia.h"
@@ -550,6 +551,7 @@ namespace
             {
                 bool saliti[EROI] = {};
                 progressione::assegna_esperienza(*partita, _incontro, saliti);
+                negozio::assegna_denari(*partita, _incontro);
                 constexpr TestoId SALE[EROI] = { TestoId::BATT_SALE_UBALDO, TestoId::BATT_SALE_GIORGIO,
                                                  TestoId::BATT_SALE_ANTONIO };
 
