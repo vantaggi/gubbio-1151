@@ -822,6 +822,14 @@ namespace
             }
 
             st.resta_a_terra = m.bersaglio >= 0 && m.bersaglio < EROI;
+
+            // chi tira da lontano manda il colpo in volo: il fuoco di Antonio, il verrettone della balestra
+            if(m.attore >= 0 && m.bersaglio >= 0 && m.attore != m.bersaglio && ! _mischia[m.attore] &&
+               (m.gesto == Gesto::COLPO || m.gesto == Gesto::IMMUNE))
+            {
+                st.proiettile = _colpo[m.attore] == A::Effetto::FIAMMA ? A::Effetto::FIAMMA : A::Effetto::DARDO;
+            }
+
             return st;
         }
 
@@ -847,7 +855,7 @@ namespace
             int verso = m.attore >= EROI ? -1 : 1;          // verso il nemico di chi agisce
             int via = m.bersaglio >= EROI ? 1 : -1;         // lontano da chi colpisce
             bool colpo = m.gesto == Gesto::COLPO || m.gesto == Gesto::IMMUNE;
-            int scatto_foto = colpo ? A::impatto() + 1 : 12;
+            int scatto_foto = colpo ? A::impatto(stile) + 1 : 12;
             bool su_se_stesso = m.attore == m.bersaglio;
             // Dove arriva il passo: chi colpisce da vicino corre fino davanti al bersaglio, coi piedi alla
             // sua altezza; chi colpisce da lontano (la balestra, il fuoco, la luce della Verga) fa un passo.
@@ -891,7 +899,21 @@ namespace
                     lampo(m.attore, q.lampo_attore);
                     _sprite[m.attore]->set_x(lungo_la_corsa(_x[m.attore], meta_x, q.avanti_attore, verso));
                     _sprite[m.attore]->set_z_order(-1);
-                    effetto(_effetto_attore, m.attore, q.effetto_attore, q.fotogramma_attore, false, 0, 0);
+                    if(q.volo >= 0 && m.bersaglio >= 0 && _sprite[m.bersaglio])
+                    {
+                        // il proiettile: dalla mano di chi tira al petto del bersaglio
+                        int a_x = lungo_la_corsa(_x[m.attore], meta_x, q.avanti_attore, verso) + verso * 12;
+                        int b_x = _x[m.bersaglio] - verso * 6;
+                        int piedi_a = _y[m.attore] + _sprite[m.attore]->shape_size().height() / 2;
+                        int piedi_b = _y[m.bersaglio] + _sprite[m.bersaglio]->shape_size().height() / 2;
+                        int k = q.volo + 1;
+                        effetto(_effetto_attore, m.attore, q.effetto_attore, q.fotogramma_attore, verso < 0,
+                                a_x - _x[m.attore] + (b_x - a_x) * k / A::VOLO, (piedi_b - piedi_a) * k / A::VOLO - 6);
+                    }
+                    else
+                    {
+                        effetto(_effetto_attore, m.attore, q.effetto_attore, q.fotogramma_attore, false, 0, 0);
+                    }
                 }
 
                 if(m.bersaglio >= 0 && _sprite[m.bersaglio])

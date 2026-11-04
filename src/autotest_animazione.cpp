@@ -50,9 +50,9 @@ namespace
     template<typename Q>
     consteval bool fermo_tenuto(const Stile& s, Q q)
     {
-        int x = q(impatto(), s).avanti_attore;
+        int x = q(impatto(s), s).avanti_attore;
 
-        for(int f = impatto(); f < impatto() + fermo(s); ++f)
+        for(int f = impatto(s); f < impatto(s) + fermo(s); ++f)
         {
             Quadro k = q(f, s);
 
@@ -112,21 +112,21 @@ namespace
         for(int f = 0; f < durata(Gesto::COLPO, s); ++f)
         {
             Quadro q = quadro(Gesto::COLPO, f, s);
-            bool nel_fermo = f >= impatto() && f < impatto() + fermo(s);
+            bool nel_fermo = f >= impatto(s) && f < impatto(s) + fermo(s);
 
             if(q.lampo_bersaglio == Lampo::BIANCO && ! nel_fermo)
             {
                 return false;
             }
 
-            if(q.numero != (f >= impatto()))
+            if(q.numero != (f >= impatto(s)))
             {
                 return false;
             }
         }
 
         return quadro(Gesto::COLPO, durata(Gesto::COLPO, s) - 1, s).su_numero == 0 &&
-               quadro(Gesto::COLPO, impatto(), s).lampo_bersaglio == Lampo::BIANCO;
+               quadro(Gesto::COLPO, impatto(s), s).lampo_bersaglio == Lampo::BIANCO;
     }
 
     // L'IMMUNE: il ferro rimbalza, nessun lampo e nessun numero sul bersaglio.
@@ -223,7 +223,38 @@ namespace
     static_assert(effetti_validi());
     static_assert(forte_piu_pesante());
     static_assert(respiro(0, 0) == Posa::RIPOSO && respiro(30, 0) == Posa::RESPIRO && respiro(0, 0) != respiro(0, 2));
-    static_assert(int(Effetto::CONTEGGIO) - 1 == 8 && POSE_DISEGNATE == 7);
+    static_assert(int(Effetto::CONTEGGIO) - 1 == 9 && POSE_DISEGNATE == 7);
+
+    // Il colpo da lontano: il proiettile vola per tutto il VOLO, l'impatto arriva quando arriva lui, l'effetto
+    // sul bersaglio parte solo allora; il resto del colpo (fermo, ritorno) e' quello di sempre.
+    consteval bool proiettile_in_volo()
+    {
+        Stile tiro = {};
+        tiro.proiettile = Effetto::DARDO;
+        int voli = 0;
+
+        for(int f = 0; f < durata(Gesto::COLPO, tiro); ++f)
+        {
+            Quadro q = quadro(Gesto::COLPO, f, tiro);
+            bool in_volo = f >= inizio_scatto() && f < impatto(tiro);
+
+            if(in_volo != (q.volo >= 0) || (in_volo && q.effetto_attore != Effetto::DARDO) ||
+               (in_volo && q.effetto_bersaglio != Effetto::NESSUNO))
+            {
+                return false;
+            }
+
+            voli += in_volo;
+        }
+
+        return voli == VOLO && impatto(tiro) == impatto() + VOLO - SCATTO &&
+               quadro(Gesto::COLPO, impatto(tiro), tiro).effetto_bersaglio != Effetto::NESSUNO &&
+               tutti_a_posto(Gesto::COLPO, tiro, quadro_vero) && lampo_e_numero(tiro);
+    }
+
+    static_assert(proiettile_in_volo());
+    // la negativa: un colpo da vicino non ha proiettile
+    static_assert(scatto() == SCATTO && quadro(Gesto::COLPO, inizio_scatto()).volo < 0);
 }
 
 }
