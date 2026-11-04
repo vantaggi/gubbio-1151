@@ -1199,7 +1199,13 @@ def spezieria(w, h, info):
             t.punto(k, vy + 3 + r * 5, (ACQUA, COTTO_LUCE, VERDE, PIETRA_LUCE)[(k + r) % 4])
             t.punto(k, vy + 2 + r * 5, (ACQUA, COTTO_LUCE, VERDE, PIETRA_LUCE)[(k + r) % 4])
     for k in range(2):
-        t.arco(x + fw // 2 + 4 + k * 12, y + fh - 14, 10, 14, CONTORNO)
+        # il portico dell'ospizio: muro di fondo in ombra e parapetto chiaro, non un vano nero (custode
+        # visivo, 4 nov: il nero aperto e' riservato alle porte vere)
+        ax, ay = x + fw // 2 + 4 + k * 12, y + fh - 14
+        t.arco(ax, ay, 10, 14, PIETRA_SCURA)
+        t.rett(ax + 1, ay + 9, 8, 1, PIETRA_LUCE)
+        t.rett(ax + 1, ay + 10, 8, 4, PIETRA_CHIARA)
+        t.rett(ax + 4, ay + 10, 2, 4, PIETRA)
     t.elementi["vasi"] += 1
     t.elementi["portico"] += 1
     t.contorno()

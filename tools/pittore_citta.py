@@ -371,9 +371,13 @@ def _porta_del_morto(q, x0, ybase, h):
     q.conta("porta_del_morto")
 
 
-def _finestra(q, x0, y0, w, h, seme, imposte):
-    """Finestra ad arco col davanzale e la sua ombra; a volte con le imposte di legno o il vaso di fiori."""
-    _vano_arco(q, x0, y0, w, h, lambda x, y: NERO)
+def _finestra(q, x0, y0, w, h, seme, imposte, chiusa=False):
+    """Finestra ad arco col davanzale e la sua ombra; a volte con le imposte di legno o il vaso di fiori.
+    chiusa: scuri di legno serrati, per le finestrelle basse che, nere, sembrerebbero porte (M2)."""
+    if chiusa:
+        _vano_arco(q, x0, y0, w, h, lambda x, y: (L, 0) if x == w // 2 else (L, 1))
+    else:
+        _vano_arco(q, x0, y0, w, h, lambda x, y: NERO)
     q.rett(x0 - 1, y0 + h, w + 2, 1, (P, 4))
     q.rett(x0, y0 + h + 1, w + 1, 1, (P, 1))
     if imposte:
@@ -428,7 +432,7 @@ def dipingi_casa(q, casa, w_celle):
     if alta < 16:
         # facciata bassa: solo una finestrella
         if larga >= 12:
-            _finestra(q, X0 + larga // 2 - 2, Y0 + 3, 5, max(4, alta - 8), casa.n, False)
+            _finestra(q, X0 + larga // 2 - 2, Y0 + 3, 5, max(4, alta - 8), casa.n, False, chiusa=True)
         return
     # il piano terra: porta (o bottega) e, se c'e' posto, la porta del morto
     hp = min(28, alta - 4)       # M2: porte e botteghe di almeno 26 pixel dove la facciata e' alta 4-5 tile
