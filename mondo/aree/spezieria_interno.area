@@ -1,0 +1,35 @@
+# GENERATO da tools/pittore_interni.py --aree: non modificare a mano (la stanza e' scritta li').
+# Spezieria e ospizio (San Pietro), di Gabrione e Valenza. A sinistra la spezieria: gli albarelli,
+# il banco col mortaio e la bilancia, i disegni a carboncino. A destra l'ospizio: tre pagliericci.
+# Valenza cura (PV e ferite della gola) e lo dice: e' il posto dove ci si rimette in piedi.
+id spezieria_interno
+etichetta AREA_SPEZIERIA_INTERNO
+dimensioni 30 20
+monte basso
+interno
+riferimento 15 10
+fattore 0.73
+spawn 0 15 13
+spawn 1 15 13
+uscita A san_pietro 1
+griglia
+##############################
+##############################
+##############################
+##############################
+##############################
+##############################
+##############################
+#LLLLLLLLLLLLLL##LLLLLL####LL#
+#LLLLLLLLLLLLLL##LLLLLL####LL#
+#LLLLLLLLLLLLLL##LLLLLLLLLLLL#
+#LLLLLLLLLLLLLL##LLLLLLLLLLLL#
+#LL########LLLLLLLLLLLL####LL#
+#LL########LLLLLLLLLLLL####LL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLL##LLLLLLLLLL####LL#
+#LLLLLLLLLL##LLLLLLLLLL####LL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLL###
+#LLLLLLLLLLLLLLLLLLLLLLLLLL###
+#############AAAA#############

@@ -376,7 +376,11 @@ namespace
             if(interno)
             {
                 ++interni;
-                p.aree_viste[a / 8] = uint8_t(p.aree_viste[a / 8] | (1 << (a % 8)));
+
+                if(a < BIT_AREE_VISTE)   // il bit di un salvataggio di prima; gli interni in coda non ce l'hanno
+                {
+                    p.aree_viste[a / 8] = uint8_t(p.aree_viste[a / 8] | (1 << (a % 8)));
+                }
 
                 if(! nessun_bit || area_vista(p, a) || aree_viste(p) != 0)
                 {

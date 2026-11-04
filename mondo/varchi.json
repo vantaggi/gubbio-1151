@@ -4,6 +4,12 @@
   "varchi": {
     "PIAZZA_GRANDE": [
       {
+        "verso": "SALA_CONSOLI",
+        "bussola": "N",
+        "lato": "dentro",
+        "come": "dal portale dei Consoli: la sala con lo stemma e la tavola dei consoli"
+      },
+      {
         "verso": "VIA_DEI_CONSOLI",
         "bussola": "NO",
         "lato": "alto",
@@ -64,6 +70,12 @@
         "come": "rientro in citta' da Porta Metauro, via di Giove Pennino e via Gabrielli (al contrario)"
       },
       {
+        "verso": "CASA_MEDICO_INTERNO",
+        "bussola": "N",
+        "lato": "dentro",
+        "come": "dalla porta del medico: libri, rotoli, il letto"
+      },
+      {
         "verso": "LARGO_BARGELLO",
         "bussola": "E",
         "lato": "basso",
@@ -97,6 +109,12 @@
       }
     ],
     "PIAZZA_QUARANTA_MARTIRI": [
+      {
+        "verso": "CARRADORE_INTERNO",
+        "bussola": "N",
+        "lato": "dentro",
+        "come": "dal portone da carri: il carro in lavorazione, le ruote"
+      },
       {
         "verso": "SAN_MARTINO",
         "bussola": "N",
@@ -140,6 +158,18 @@
         "bussola": "E",
         "lato": "basso",
         "come": "via Armanni, corso Garibaldi, via Dante"
+      },
+      {
+        "verso": "SPEZIERIA_INTERNO",
+        "bussola": "N",
+        "lato": "dentro",
+        "come": "dalla porta della spezieria: i vasi, il banco, i letti dell'ospizio"
+      },
+      {
+        "verso": "TAVERNA_INTERNO",
+        "bussola": "N",
+        "lato": "dentro",
+        "come": "dalla porta della taverna: il banco, le botti, il camino"
       }
     ],
     "VIA_XX_SETTEMBRE": [
@@ -169,6 +199,12 @@
       }
     ],
     "SANT_AGOSTINO": [
+      {
+        "verso": "BOTTEGA_CONTI_INTERNO",
+        "bussola": "N",
+        "lato": "dentro",
+        "come": "dalla porta della bottega: chiavi, serrature, il banco dei conti"
+      },
       {
         "verso": "SANT_ANDREA",
         "bussola": "NO",
@@ -268,6 +304,54 @@
         "bussola": "S",
         "lato": "basso",
         "come": "dal portale si entra in chiesa: le navate, l'altare con l'urna e i tre ceri (al contrario)"
+      }
+    ],
+    "TAVERNA_INTERNO": [
+      {
+        "verso": "SAN_PIETRO",
+        "bussola": "S",
+        "lato": "basso",
+        "come": "dalla porta della taverna: il banco, le botti, il camino (al contrario)"
+      }
+    ],
+    "SPEZIERIA_INTERNO": [
+      {
+        "verso": "SAN_PIETRO",
+        "bussola": "S",
+        "lato": "basso",
+        "come": "dalla porta della spezieria: i vasi, il banco, i letti dell'ospizio (al contrario)"
+      }
+    ],
+    "BOTTEGA_CONTI_INTERNO": [
+      {
+        "verso": "SANT_AGOSTINO",
+        "bussola": "S",
+        "lato": "basso",
+        "come": "dalla porta della bottega: chiavi, serrature, il banco dei conti (al contrario)"
+      }
+    ],
+    "CARRADORE_INTERNO": [
+      {
+        "verso": "PIAZZA_QUARANTA_MARTIRI",
+        "bussola": "S",
+        "lato": "basso",
+        "come": "dal portone da carri: il carro in lavorazione, le ruote (al contrario)"
+      }
+    ],
+    "CASA_MEDICO_INTERNO": [
+      {
+        "verso": "SAN_MARTINO",
+        "bussola": "S",
+        "lato": "basso",
+        "come": "dalla porta del medico: libri, rotoli, il letto (al contrario)"
+      }
+    ],
+    "SALA_CONSOLI": [
+      {
+        "verso": "PIAZZA_GRANDE",
+        "bussola": "S",
+        "lato": "basso",
+        "come": "dal portale dei Consoli: la sala con lo stemma e la tavola dei consoli (al contrario)"
       }
     ],
     "BOTTACCIONE": [

@@ -1,0 +1,35 @@
+# GENERATO da tools/pittore_interni.py --aree: non modificare a mano (la stanza e' scritta li').
+# La bottega dei conti e dei congegni (Sant'Agostino): Fazio, Lauretta, Ciotto e Nicoluccio.
+# A muro le chiavi e le serrature, la chiarina; il banco dei conti con l'abaco; il tavoliere di Ciotto.
+# NOTTE con BORGO_FUORI: «la bottega l'hanno rovesciata» (sgabelli a terra, serrature sparse).
+id bottega_conti_interno
+etichetta AREA_BOTTEGA_CONTI_INTERNO
+dimensioni 30 20
+monte basso
+interno
+riferimento 15 10
+fattore 0.73
+spawn 0 15 13
+spawn 1 15 13
+uscita A sant_agostino 1
+griglia
+##############################
+##############################
+##############################
+##############################
+##############################
+##############################
+##############################
+##############################
+###LLLLLLLLLLLLLLLLLLLLLLLL###
+###LLLLLLLLLLLLLLLLLLLLLLLL###
+###LL######LLLLLLLLLLLLLLLL###
+###LL######LLLLLLLLLLLLLLLL###
+###LLLLLLLLLLLLLL####LLLLLL###
+###LLLLLLLLLLLLLL####LLLLLL###
+###LLLLLLLLLLLLLLLLLLLLLLLL###
+###LLLLLLLLLLLLLLLLLLLLLLLL###
+###LLLLLLLLLLLLLLLLLLLLLL#####
+###LLLLLLLLLLLLLLLLLLLLLL#####
+#############LLLL#############
+#############AAAA#############

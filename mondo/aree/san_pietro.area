@@ -22,6 +22,14 @@ spawn 1 20 8
 spawn 2 19 35
 uscita A piazza_quaranta_martiri 1 largo 5
 uscita B sant_agostino 2
+# La porta di taverna porta dentro (pezzo INT2, tools/pittore_interni.py).
+spawn 3 26 15
+ingresso E taverna
+uscita E taverna_interno 3
+# La porta di spezieria porta dentro (pezzo INT2, tools/pittore_interni.py).
+spawn 4 9 15
+ingresso G spezieria
+uscita G spezieria_interno 4
 griglia
 ##################AAAAA################################
 ##################AAAAA################################

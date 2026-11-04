@@ -86,7 +86,7 @@ enum class Fase : uint8_t
 };
 
 inline constexpr int FASI = 4;
-inline constexpr int AREE = 19;
+inline constexpr int AREE = 25;
 
 // Il brano di ogni area (mondo::AreaId) in ogni fase.
 inline constexpr Brano BRANO_AREA[AREE][FASI] = {
@@ -109,6 +109,12 @@ inline constexpr Brano BRANO_AREA[AREE][FASI] = {
     { Brano::CITTA, Brano::CITTA, Brano::NOTTE, Brano::CANZONE_DI_FLAVIANO },   // SANT_AGOSTINO
     { Brano::CITTA, Brano::CITTA, Brano::NOTTE, Brano::CANZONE_DI_FLAVIANO },   // SANT_ANDREA
     { Brano::CITTA, Brano::CITTA, Brano::NOTTE, Brano::CANZONE_DI_FLAVIANO },   // TEATRO_ROMANO
+    { Brano::CITTA, Brano::CITTA, Brano::NOTTE, Brano::CANZONE_DI_FLAVIANO },   // TAVERNA_INTERNO
+    { Brano::CITTA, Brano::CITTA, Brano::NOTTE, Brano::CANZONE_DI_FLAVIANO },   // SPEZIERIA_INTERNO
+    { Brano::CITTA, Brano::CITTA, Brano::NOTTE, Brano::CANZONE_DI_FLAVIANO },   // BOTTEGA_CONTI_INTERNO
+    { Brano::CITTA, Brano::CITTA, Brano::NOTTE, Brano::CANZONE_DI_FLAVIANO },   // CARRADORE_INTERNO
+    { Brano::CITTA, Brano::CITTA, Brano::NOTTE, Brano::CANZONE_DI_FLAVIANO },   // CASA_MEDICO_INTERNO
+    { Brano::CITTA, Brano::CITTA, Brano::NOTTE, Brano::BANDIERE },   // SALA_CONSOLI
 };
 
 enum class Modo : uint8_t
@@ -132,8 +138,8 @@ struct Luogo
 
 inline constexpr int LUOGHI = 2;
 inline constexpr Luogo LUOGO[2] = {
-    { 15, 23, 6, 30, 12, Brano::TAVERNA, Modo::FONDO, -1 },   // taverna
-    { 16, 37, 28, 41, 33, Brano::FAZIO, Modo::SEGNALE, 31 },   // fazio
+    { 19, 0, 0, 29, 19, Brano::TAVERNA, Modo::FONDO, -1 },   // taverna
+    { 21, 0, 0, 29, 19, Brano::FAZIO, Modo::SEGNALE, 35 },   // fazio
 };
 
 inline constexpr int LUOGO_TAVERNA = 0;

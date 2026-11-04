@@ -35,6 +35,13 @@ area GOLA_STRISCIA              bottaccione  bottaccione  bottaccione  bottaccio
 area GOLA_MIASMI                bottaccione  bottaccione  bottaccione  bottaccione
 area GOLA_ARCO                  bottaccione  bottaccione  bottaccione  bottaccione
 area CONDOTTO                   bottaccione  bottaccione  bottaccione  bottaccione
+# gli interni esplorabili: la musica del quartiere di fuori (la taverna ha la sua, sotto fra i luoghi)
+area TAVERNA_INTERNO            citta        citta        notte        canzone_di_flaviano
+area SPEZIERIA_INTERNO          citta        citta        notte        canzone_di_flaviano
+area BOTTEGA_CONTI_INTERNO      citta        citta        notte        canzone_di_flaviano
+area CARRADORE_INTERNO          citta        citta        notte        canzone_di_flaviano
+area CASA_MEDICO_INTERNO        citta        citta        notte        canzone_di_flaviano
+area SALA_CONSOLI               citta        citta        notte        bandiere     # dentro la piazza in festa
 
 # --- Luoghi dentro un'area -------------------------------------------------------------------------
 # luogo NOME AREA EDIFICIO RAGGIO BRANO MODO: il portone dell'edificio (mondo/monumenti.json, posato da
@@ -42,8 +49,9 @@ area CONDOTTO                   bottaccione  bottaccione  bottaccione  bottaccio
 #   fondo     il brano sostituisce quello dell'area finche' si resta li'
 #   segnale   suona una volta entrando (senza anello), poi torna il brano dell'area; si riarma uscendo.
 #             Con un amico (dati/amici.json) suona solo se l'amico e' in bottega.
-luogo taverna  SAN_PIETRO     taverna        3  taverna  fondo
-luogo fazio    SANT_AGOSTINO  bottega_conti  2  fazio    segnale  FAZIO
+# EDIFICIO '*' e' l'area intera (gli interni esplorabili, pezzo INT: si entra e si e' nel luogo).
+luogo taverna  TAVERNA_INTERNO        *  0  taverna  fondo
+luogo fazio    BOTTEGA_CONTI_INTERNO  *  0  fazio    segnale  FAZIO
 
 # --- Cutscene (regia/*.regia, per codice) ----------------------------------------------------------
 # cutscene CODICE BRANO [EFFETTO]: il brano parte all'inizio; '-' lascia quello che suonava.

@@ -29,6 +29,10 @@ uscita A largo_bargello 1
 uscita B piazza_quaranta_martiri 2 largo 5
 uscita E bottaccione 3 largo 3
 uscita G teatro_romano 4
+# La porta di casa_medico porta dentro (pezzo INT2, tools/pittore_interni.py).
+spawn 5 70 32
+ingresso H casa_medico
+uscita H casa_medico_interno 5
 griglia
 ################################################################################################################################
 ################################################################################################################################

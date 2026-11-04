@@ -31,37 +31,38 @@ struct Punto
     uint8_t ty;
 };
 
-inline constexpr int PUNTI = 231;
+inline constexpr int PUNTI = 234;
 inline constexpr Punto PUNTO[PUNTI] = {
-    { 18, 2 }, { 33, 2 }, { 33, 29 }, { 28, 29 }, { 28, 33 }, { 22, 33 }, { 22, 36 }, { 7, 36 },
-    { 7, 77 }, { 4, 77 }, { 4, 101 }, { 16, 101 }, { 16, 103 }, { 22, 29 }, { 22, 36 }, { 7, 36 },
-    { 7, 77 }, { 4, 77 }, { 4, 101 }, { 16, 101 }, { 16, 103 }, { 16, 101 }, { 10, 101 }, { 18, 2 },
-    { 33, 2 }, { 33, 29 }, { 28, 29 }, { 28, 33 }, { 22, 33 }, { 22, 29 }, { 18, 2 }, { 33, 2 },
-    { 33, 29 }, { 28, 29 }, { 28, 33 }, { 22, 33 }, { 22, 36 }, { 7, 36 }, { 7, 77 }, { 4, 77 },
-    { 4, 101 }, { 16, 101 }, { 16, 103 }, { 23, 80 }, { 19, 80 }, { 9, 2 }, { 9, 5 }, { 10, 5 },
-    { 10, 34 }, { 9, 34 }, { 9, 61 }, { 10, 61 }, { 10, 42 }, { 10, 29 }, { 10, 25 }, { 9, 2 },
-    { 9, 5 }, { 10, 5 }, { 10, 34 }, { 9, 34 }, { 9, 61 }, { 9, 2 }, { 9, 5 }, { 10, 5 },
-    { 10, 34 }, { 9, 34 }, { 9, 61 }, { 17, 2 }, { 17, 7 }, { 15, 7 }, { 15, 15 }, { 13, 15 },
-    { 13, 16 }, { 12, 16 }, { 12, 17 }, { 21, 11 }, { 21, 13 }, { 18, 13 }, { 17, 2 }, { 17, 7 },
-    { 15, 7 }, { 15, 15 }, { 14, 15 }, { 21, 11 }, { 21, 13 }, { 18, 13 }, { 37, 84 }, { 40, 84 },
-    { 40, 39 }, { 49, 39 }, { 49, 33 }, { 125, 33 }, { 125, 31 }, { 76, 33 }, { 29, 33 }, { 29, 6 },
-    { 2, 6 }, { 2, 2 }, { 61, 31 }, { 56, 31 }, { 6, 57 }, { 12, 57 }, { 76, 33 }, { 37, 33 },
-    { 37, 84 }, { 76, 33 }, { 37, 33 }, { 37, 84 }, { 12, 57 }, { 8, 57 }, { 125, 33 }, { 119, 33 },
-    { 119, 53 }, { 63, 53 }, { 63, 56 }, { 40, 56 }, { 40, 102 }, { 84, 102 }, { 87, 102 }, { 87, 70 },
-    { 96, 70 }, { 96, 74 }, { 105, 74 }, { 105, 70 }, { 83, 81 }, { 83, 87 }, { 93, 74 }, { 93, 70 },
-    { 79, 70 }, { 79, 57 }, { 120, 57 }, { 120, 13 }, { 63, 13 }, { 63, 2 }, { 124, 33 }, { 120, 33 },
-    { 120, 53 }, { 79, 53 }, { 79, 70 }, { 86, 70 }, { 86, 81 }, { 83, 81 }, { 125, 33 }, { 119, 33 },
-    { 119, 53 }, { 63, 53 }, { 63, 56 }, { 40, 56 }, { 40, 102 }, { 19, 2 }, { 19, 42 }, { 19, 35 },
+    { 18, 2 }, { 33, 2 }, { 33, 29 }, { 28, 29 }, { 28, 36 }, { 7, 36 }, { 7, 77 }, { 4, 77 },
+    { 4, 101 }, { 16, 101 }, { 16, 103 }, { 22, 29 }, { 22, 34 }, { 7, 34 }, { 7, 77 }, { 4, 77 },
+    { 4, 101 }, { 16, 101 }, { 16, 103 }, { 16, 101 }, { 10, 101 }, { 18, 2 }, { 33, 2 }, { 33, 29 },
+    { 28, 29 }, { 28, 36 }, { 22, 36 }, { 22, 29 }, { 18, 2 }, { 33, 2 }, { 33, 29 }, { 28, 29 },
+    { 28, 36 }, { 7, 36 }, { 7, 77 }, { 4, 77 }, { 4, 101 }, { 16, 101 }, { 16, 103 }, { 23, 80 },
+    { 19, 80 }, { 9, 2 }, { 9, 5 }, { 10, 5 }, { 10, 34 }, { 9, 34 }, { 9, 61 }, { 10, 61 },
+    { 10, 42 }, { 10, 29 }, { 10, 25 }, { 9, 2 }, { 9, 5 }, { 10, 5 }, { 10, 34 }, { 9, 34 },
+    { 9, 61 }, { 9, 2 }, { 9, 5 }, { 10, 5 }, { 10, 34 }, { 9, 34 }, { 9, 61 }, { 17, 2 },
+    { 17, 7 }, { 15, 7 }, { 15, 15 }, { 13, 15 }, { 13, 16 }, { 12, 16 }, { 12, 17 }, { 21, 11 },
+    { 21, 13 }, { 18, 13 }, { 17, 2 }, { 17, 7 }, { 15, 7 }, { 15, 15 }, { 14, 15 }, { 21, 11 },
+    { 21, 13 }, { 18, 13 }, { 37, 84 }, { 40, 84 }, { 40, 39 }, { 49, 39 }, { 49, 33 }, { 125, 33 },
+    { 125, 31 }, { 76, 33 }, { 29, 33 }, { 29, 6 }, { 2, 6 }, { 2, 2 }, { 64, 32 }, { 59, 32 },
+    { 6, 57 }, { 12, 57 }, { 76, 33 }, { 37, 33 }, { 37, 84 }, { 76, 33 }, { 37, 33 }, { 37, 84 },
+    { 12, 57 }, { 8, 57 }, { 124, 33 }, { 120, 33 }, { 120, 53 }, { 67, 53 }, { 67, 54 }, { 64, 54 },
+    { 64, 57 }, { 41, 57 }, { 41, 102 }, { 84, 102 }, { 87, 102 }, { 87, 70 }, { 96, 70 }, { 96, 74 },
+    { 105, 74 }, { 105, 70 }, { 83, 81 }, { 83, 87 }, { 93, 74 }, { 93, 70 }, { 79, 70 }, { 79, 57 },
+    { 120, 57 }, { 120, 13 }, { 63, 13 }, { 63, 2 }, { 124, 33 }, { 120, 33 }, { 120, 53 }, { 79, 53 },
+    { 79, 70 }, { 86, 70 }, { 86, 81 }, { 83, 81 }, { 124, 33 }, { 120, 33 }, { 120, 53 }, { 67, 53 },
+    { 67, 54 }, { 64, 54 }, { 64, 57 }, { 41, 57 }, { 41, 102 }, { 19, 2 }, { 19, 42 }, { 19, 35 },
     { 19, 34 }, { 16, 34 }, { 19, 35 }, { 19, 34 }, { 16, 34 }, { 9, 2 }, { 12, 2 }, { 12, 61 },
     { 10, 61 }, { 10, 61 }, { 12, 61 }, { 12, 27 }, { 10, 27 }, { 10, 5 }, { 9, 5 }, { 9, 2 },
     { 3, 2 }, { 9, 2 }, { 12, 2 }, { 12, 61 }, { 10, 61 }, { 11, 32 }, { 10, 32 }, { 10, 35 },
-    { 56, 30 }, { 42, 30 }, { 42, 29 }, { 40, 29 }, { 40, 17 }, { 40, 31 }, { 40, 28 }, { 38, 28 },
-    { 44, 30 }, { 44, 35 }, { 40, 31 }, { 56, 31 }, { 56, 30 }, { 42, 2 }, { 43, 2 }, { 43, 11 },
-    { 54, 11 }, { 44, 32 }, { 44, 31 }, { 41, 31 }, { 41, 27 }, { 2, 27 }, { 2, 24 }, { 8, 24 },
-    { 7, 24 }, { 7, 27 }, { 44, 32 }, { 44, 31 }, { 41, 31 }, { 41, 27 }, { 2, 27 }, { 2, 24 },
-    { 24, 2 }, { 28, 2 }, { 28, 54 }, { 30, 54 }, { 30, 60 }, { 31, 60 }, { 31, 61 }, { 31, 61 },
-    { 30, 61 }, { 30, 58 }, { 26, 58 }, { 26, 20 }, { 24, 20 }, { 24, 19 }, { 2, 19 }, { 2, 16 },
-    { 27, 53 }, { 27, 58 }, { 24, 2 }, { 26, 2 }, { 26, 51 }, { 31, 54 }, { 27, 54 },
+    { 56, 30 }, { 43, 30 }, { 43, 29 }, { 41, 29 }, { 41, 26 }, { 40, 26 }, { 40, 17 }, { 41, 37 },
+    { 44, 37 }, { 44, 35 }, { 46, 26 }, { 46, 30 }, { 45, 30 }, { 41, 37 }, { 55, 37 }, { 55, 31 },
+    { 42, 2 }, { 43, 2 }, { 43, 11 }, { 54, 11 }, { 44, 32 }, { 44, 31 }, { 41, 31 }, { 41, 27 },
+    { 2, 27 }, { 2, 24 }, { 8, 24 }, { 7, 24 }, { 7, 27 }, { 44, 32 }, { 44, 31 }, { 41, 31 },
+    { 41, 27 }, { 2, 27 }, { 2, 24 }, { 24, 2 }, { 28, 2 }, { 28, 54 }, { 30, 54 }, { 30, 60 },
+    { 31, 60 }, { 31, 61 }, { 31, 61 }, { 30, 61 }, { 30, 58 }, { 26, 58 }, { 26, 20 }, { 24, 20 },
+    { 24, 19 }, { 2, 19 }, { 2, 16 }, { 27, 53 }, { 27, 58 }, { 24, 2 }, { 26, 2 }, { 26, 51 },
+    { 31, 54 }, { 27, 54 },
 };
 
 struct Corrente
@@ -79,34 +80,34 @@ struct Corrente
 
 inline constexpr int CORRENTI = 48;
 inline constexpr Corrente CORRENTE[CORRENTI] = {
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 1, 0, false, 0, 13, 2, 2, true },  // portatore
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 1, 3, false, 13, 8, 2, 2, false },  // fante
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 3, 3, true, 21, 2, 3, 3, false },  // piccione
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 2, 5, false, 23, 7, 2, 3, false },  // penitente
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 4, 6, false, 30, 13, 1, 3, true },  // ronda
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 4, 1, true, 43, 2, 1, 3, false },  // gatto
-    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 1, 1, false, 45, 6, 2, 2, true },  // portatrice
-    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 1, 4, false, 51, 2, 1, 1, true },  // ragazzo
-    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 7, 1, true, 53, 2, 1, 3, false },  // gatto
-    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 2, 7, false, 55, 6, 1, 3, true },  // frate
-    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 4, 6, false, 61, 6, 1, 3, true },  // ronda
-    { int8_t(mondo::AreaId::LARGO_BARGELLO), 1, 2, false, 67, 8, 2, 2, true },  // acquaiola
-    { int8_t(mondo::AreaId::LARGO_BARGELLO), 3, 3, true, 75, 3, 2, 3, false },  // piccione
-    { int8_t(mondo::AreaId::LARGO_BARGELLO), 2, 2, false, 78, 5, 1, 2, true },  // acquaiola
-    { int8_t(mondo::AreaId::LARGO_BARGELLO), 4, 2, true, 83, 3, 1, 2, false },  // cane
-    { int8_t(mondo::AreaId::SAN_MARTINO), 1, 0, false, 86, 7, 2, 2, true },  // portatore
-    { int8_t(mondo::AreaId::SAN_MARTINO), 1, 3, false, 93, 5, 2, 2, false },  // fante
-    { int8_t(mondo::AreaId::SAN_MARTINO), 3, 0, true, 98, 2, 2, 2, false },  // gallina
-    { int8_t(mondo::AreaId::SAN_MARTINO), 1, 2, false, 100, 2, 1, 2, false },  // acquaiola
-    { int8_t(mondo::AreaId::SAN_MARTINO), 2, 3, false, 102, 3, 1, 2, false },  // fante
-    { int8_t(mondo::AreaId::SAN_MARTINO), 4, 6, false, 105, 3, 2, 3, false },  // ronda
-    { int8_t(mondo::AreaId::SAN_MARTINO), 4, 1, true, 108, 2, 1, 3, false },  // gatto
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 1, 0, false, 110, 7, 2, 2, true },  // portatore
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 1, 1, false, 117, 7, 1, 2, false },  // portatrice
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 7, 4, true, 124, 2, 3, 4, false },  // pecora
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 1, 4, false, 126, 8, 1, 1, false },  // ragazzo
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 2, 5, false, 134, 8, 2, 3, false },  // penitente
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 4, 6, false, 142, 7, 1, 3, true },  // ronda
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 1, 0, false, 0, 11, 2, 2, true },  // portatore
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 1, 3, false, 11, 8, 2, 2, false },  // fante
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 3, 3, true, 19, 2, 3, 3, false },  // piccione
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 2, 5, false, 21, 7, 2, 3, false },  // penitente
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 4, 6, false, 28, 11, 1, 3, true },  // ronda
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 4, 1, true, 39, 2, 1, 3, false },  // gatto
+    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 1, 1, false, 41, 6, 2, 2, true },  // portatrice
+    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 1, 4, false, 47, 2, 1, 1, true },  // ragazzo
+    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 7, 1, true, 49, 2, 1, 3, false },  // gatto
+    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 2, 7, false, 51, 6, 1, 3, true },  // frate
+    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 4, 6, false, 57, 6, 1, 3, true },  // ronda
+    { int8_t(mondo::AreaId::LARGO_BARGELLO), 1, 2, false, 63, 8, 2, 2, true },  // acquaiola
+    { int8_t(mondo::AreaId::LARGO_BARGELLO), 3, 3, true, 71, 3, 2, 3, false },  // piccione
+    { int8_t(mondo::AreaId::LARGO_BARGELLO), 2, 2, false, 74, 5, 1, 2, true },  // acquaiola
+    { int8_t(mondo::AreaId::LARGO_BARGELLO), 4, 2, true, 79, 3, 1, 2, false },  // cane
+    { int8_t(mondo::AreaId::SAN_MARTINO), 1, 0, false, 82, 7, 2, 2, true },  // portatore
+    { int8_t(mondo::AreaId::SAN_MARTINO), 1, 3, false, 89, 5, 2, 2, false },  // fante
+    { int8_t(mondo::AreaId::SAN_MARTINO), 3, 0, true, 94, 2, 2, 2, false },  // gallina
+    { int8_t(mondo::AreaId::SAN_MARTINO), 1, 2, false, 96, 2, 1, 2, false },  // acquaiola
+    { int8_t(mondo::AreaId::SAN_MARTINO), 2, 3, false, 98, 3, 1, 2, false },  // fante
+    { int8_t(mondo::AreaId::SAN_MARTINO), 4, 6, false, 101, 3, 2, 3, false },  // ronda
+    { int8_t(mondo::AreaId::SAN_MARTINO), 4, 1, true, 104, 2, 1, 3, false },  // gatto
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 1, 0, false, 106, 9, 2, 2, true },  // portatore
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 1, 1, false, 115, 7, 1, 2, false },  // portatrice
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 7, 4, true, 122, 2, 3, 4, false },  // pecora
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 1, 4, false, 124, 8, 1, 1, false },  // ragazzo
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 2, 5, false, 132, 8, 2, 3, false },  // penitente
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 4, 6, false, 140, 9, 1, 3, true },  // ronda
     { int8_t(mondo::AreaId::SAN_PIETRO), 1, 0, false, 149, 2, 1, 2, true },  // portatore
     { int8_t(mondo::AreaId::SAN_PIETRO), 3, 0, true, 151, 3, 2, 2, false },  // gallina
     { int8_t(mondo::AreaId::SAN_PIETRO), 4, 2, true, 154, 3, 1, 2, false },  // cane
@@ -114,19 +115,19 @@ inline constexpr Corrente CORRENTE[CORRENTI] = {
     { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 1, 2, false, 161, 8, 1, 2, true },  // acquaiola
     { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 2, 5, false, 169, 4, 2, 3, true },  // penitente
     { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 4, 1, true, 173, 3, 1, 3, false },  // gatto
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 1, 1, false, 176, 5, 2, 2, false },  // portatrice
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 1, 0, true, 181, 3, 3, 2, false },  // gallina
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 3, 2, true, 184, 2, 1, 2, false },  // cane
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 6, 7, false, 186, 3, 1, 3, false },  // frate
-    { int8_t(mondo::AreaId::SANT_ANDREA), 1, 0, false, 189, 4, 2, 2, true },  // portatore
-    { int8_t(mondo::AreaId::SANT_ANDREA), 3, 3, false, 193, 6, 2, 2, false },  // fante
-    { int8_t(mondo::AreaId::SANT_ANDREA), 1, 0, true, 199, 3, 2, 2, false },  // gallina
-    { int8_t(mondo::AreaId::SANT_ANDREA), 4, 6, false, 202, 6, 2, 3, false },  // ronda
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 1, 7, false, 208, 7, 1, 3, true },  // frate
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 1, 1, false, 215, 9, 1, 2, true },  // portatrice
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 3, 3, true, 224, 2, 2, 3, false },  // piccione
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 2, 5, false, 226, 3, 2, 3, false },  // penitente
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 4, 1, true, 229, 2, 1, 3, false },  // gatto
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 1, 1, false, 176, 7, 2, 2, false },  // portatrice
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 1, 0, true, 183, 3, 3, 2, false },  // gallina
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 3, 2, true, 186, 3, 1, 2, false },  // cane
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 6, 7, false, 189, 3, 1, 3, false },  // frate
+    { int8_t(mondo::AreaId::SANT_ANDREA), 1, 0, false, 192, 4, 2, 2, true },  // portatore
+    { int8_t(mondo::AreaId::SANT_ANDREA), 3, 3, false, 196, 6, 2, 2, false },  // fante
+    { int8_t(mondo::AreaId::SANT_ANDREA), 1, 0, true, 202, 3, 2, 2, false },  // gallina
+    { int8_t(mondo::AreaId::SANT_ANDREA), 4, 6, false, 205, 6, 2, 3, false },  // ronda
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 1, 7, false, 211, 7, 1, 3, true },  // frate
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 1, 1, false, 218, 9, 1, 2, true },  // portatrice
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 3, 3, true, 227, 2, 2, 3, false },  // piccione
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 2, 5, false, 229, 3, 2, 3, false },  // penitente
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 4, 1, true, 232, 2, 1, 3, false },  // gatto
 };
 
 // I passanti, 16x32 (8 tile), 18 fotogrammi: giu' 0-5, su 6-11, destra 12-17 (tools/figure_popolo.py).

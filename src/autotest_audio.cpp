@@ -135,10 +135,11 @@ namespace
     constexpr const colonna::Luogo& TAVERNA = colonna::LUOGO[colonna::LUOGO_TAVERNA];
     constexpr const colonna::Luogo& FAZIO = colonna::LUOGO[colonna::LUOGO_FAZIO];
 
-    static_assert(TAVERNA.area == int(mondo::AreaId::SAN_PIETRO) && TAVERNA.modo == colonna::Modo::FONDO &&
+    // con gli interni esplorabili (pezzo INT) i luoghi sono le stanze intere: si entra e si e' nel luogo
+    static_assert(TAVERNA.area == int(mondo::AreaId::TAVERNA_INTERNO) && TAVERNA.modo == colonna::Modo::FONDO &&
                   brano_di_fondo(GameState{}, TAVERNA.area, TAVERNA.x0, TAVERNA.y1) == Brano::TAVERNA,
-                  "davanti alla taverna di Padellino lo stornello");
-    static_assert(brano_di_fondo(GameState{}, TAVERNA.area, TAVERNA.x0 - 1, TAVERNA.y1) == Brano::CITTA &&
+                  "dentro la taverna di Padellino lo stornello");
+    static_assert(brano_di_fondo(GameState{}, int(mondo::AreaId::SAN_PIETRO), TAVERNA.x0, TAVERNA.y1) == Brano::CITTA &&
                   brano_di_fondo(GameState{}, PIAZZA, TAVERNA.x0, TAVERNA.y1) == Brano::CITTA,
                   "negativa: lo stornello fuori dalla taverna, o in un'altra area");
 
@@ -147,10 +148,10 @@ namespace
 
     static_assert(FAZIO.npc >= 0 && FAZIO.modo == colonna::Modo::SEGNALE && FAZIO.brano == Brano::FAZIO &&
                   FAZIO_NPC.area == FAZIO.area && nel_luogo(FAZIO, FAZIO_NPC.area, FAZIO_NPC.tx, FAZIO_NPC.ty),
-                  "il segnale di Fazio non e' davanti alla sua bottega");
+                  "il segnale di Fazio non e' nella sua bottega");
     static_assert(segnale_qui(GameState{}, FAZIO.area, FAZIO_NPC.tx, FAZIO_NPC.ty) == colonna::LUOGO_FAZIO,
                   "entrando nella bottega di Fazio non suona il suo segnale");
-    static_assert(segnale_qui(GameState{}, FAZIO.area, FAZIO.x1 + 1, FAZIO.y0) < 0 &&
+    static_assert(segnale_qui(GameState{}, int(mondo::AreaId::SANT_AGOSTINO), FAZIO_NPC.tx, FAZIO_NPC.ty) < 0 &&
                   segnale_qui(GameState{}, PIAZZA, FAZIO_NPC.tx, FAZIO_NPC.ty) < 0,
                   "negativa: il segnale fuori dalla bottega o in un'altra area");
     // col borgo dentro le mura, nel DIGIUNO Fazio e' in Sant'Andrea: la bottega tace; nell'ULTIMATUM c'e'

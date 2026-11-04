@@ -104,9 +104,10 @@ class Mondo(unittest.TestCase):
         with open(G.USCITA, encoding="utf-8") as f:
             self.assertEqual(f.read(), atteso, "eseguire python tools/genera_mondo.py")
 
-    def test_diciannove_aree(self):
-        """Le 14 dell'anello e dei dintorni, l'interno della Basilica e le 4 stanze della gola."""
-        self.assertEqual(len(self.aree), 19)
+    def test_venticinque_aree(self):
+        """Le 14 dell'anello e dei dintorni, l'interno della Basilica, le 4 stanze della gola e i 6 interni
+        esplorabili della citta' (pezzo INT2)."""
+        self.assertEqual(len(self.aree), 25)
 
     def test_l_anello_si_chiude(self):
         giro = G.anello(self.mondo["grafo"])
@@ -663,7 +664,7 @@ class FondaliInRom(unittest.TestCase):
                       for n, a in self.aree.items()}
 
     def test_ogni_fondale_e_la_sua_mappa(self):
-        self.assertEqual(len(self.fondali), 19)
+        self.assertEqual(len(self.fondali), 25)
         for nome, (fondale, fw, fh, grande) in self.fondali.items():
             a = self.aree[nome]
             self.assertEqual(grande, a["larghezza"] > 64 or a["altezza"] > 64, nome)
@@ -968,8 +969,8 @@ class FondaleControGriglia(unittest.TestCase):
         with open(G.USCITA, encoding="utf-8") as f:
             self.aree = griglie_e_mappe(f.read())
 
-    def test_diciannove_coppie(self):
-        self.assertEqual(len(self.aree), 19)
+    def test_venticinque_coppie(self):
+        self.assertEqual(len(self.aree), 25)
         for nome, (griglia, mappa) in self.aree.items():
             self.assertEqual(len(griglia), len(mappa), nome)
 
