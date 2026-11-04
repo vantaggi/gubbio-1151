@@ -169,6 +169,14 @@ def impronta(riga):
     return ("edificio", lungo, corto, "osm")
 
 
+# Scelte di gioco sull'impronta (il dato OSM resta com'e' nel censimento): edifici che col nord in alto si
+# coricano in orizzontale perche' il loro lato lungo si legga di fronte.
+CORICATI_IN_GIOCO = {
+    "loggia_tiratori": "il loggiato lungo, ad archi, di fronte alla piazza: da 40 Martiri si capisce che e' una "
+                       "loggia (custode visivo, 4 nov 2026)",
+}
+
+
 def calcola_monumenti(grafo, censimento):
     area_di = {}
     for a in grafo["aree"]:
@@ -194,6 +202,9 @@ def calcola_monumenti(grafo, censimento):
                 voce["asse_lungo_bussola"] = int(asse)
                 voce["asse_lungo_schermo"] = (
                     "orizzontale" if lato_schermo(asse) in ("destra", "sinistra") else "verticale")
+            if mid in CORICATI_IN_GIOCO:
+                voce["asse_lungo_schermo"] = "orizzontale"
+                voce["impronta_in_gioco"] = CORICATI_IN_GIOCO[mid]
         elif tipo == "tracciato":
             voce["lunghezza_m"] = round(lungo, 1)
         normale = _num(r["facciata_normale_bussola"])
