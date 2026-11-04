@@ -4,9 +4,6 @@
 #include "bn_keypad.h"
 #include "bn_log.h"
 #include "bn_optional.h"
-#include "bn_sprite_items_ritratto_antonio.h"
-#include "bn_sprite_items_ritratto_giorgio.h"
-#include "bn_sprite_items_ritratto_ubaldo.h"
 
 #include "aiuti.h"
 #include "audio.h"
@@ -222,7 +219,7 @@ namespace
     // le pagine gia' costruite; le altre arrivano coi loro pezzi (MMA, MBI, MOP)
     constexpr bool pagina_pronta(int p)
     {
-        return p == PAGINA_SALVA || p == PAGINA_DIARIO;
+        return p == PAGINA_SALVA || p == PAGINA_DIARIO || p == PAGINA_BISACCIA || p == PAGINA_COMPAGNI;
     }
 
     // ------------------------------------------------------------------ la pausa (mockup 01)
@@ -232,17 +229,6 @@ namespace
     constexpr int VOCI_Y = 13;
     constexpr int VOCI_PASSO = 12;
     constexpr int CURSORE_X = 173;
-
-    bn::sprite_ptr crea_ritratto(int e, int x, int y)
-    {
-        // nell'ordine di sempre: Ubaldo, Giorgio, Antonio
-        bn::sprite_ptr s = e == 0 ? bn::sprite_items::ritratto_ubaldo.create_sprite(0, 0) :
-                           (e == 1 ? bn::sprite_items::ritratto_giorgio.create_sprite(0, 0) :
-                                     bn::sprite_items::ritratto_antonio.create_sprite(0, 0));
-        menu::colloca(s, x, y, 32, 32);
-        s.set_bg_priority(PRIORITA_RIQUADRI);
-        return s;
-    }
 
     // Un compagno nel riquadro della pausa: ritratto, nome, «Liv. 4», le barre di PV e Fervore come li avra'
     // alla prossima battaglia (i PV tolti dai miasmi della gola, il Fervore iniziale, piu' alto coi Ceri).
@@ -260,14 +246,9 @@ namespace
             _barre(_x + 14, 68, 32, palette),
             _barre_fe(_x + 14, 78, 32, palette)
         {
-            constexpr TestoId NOMI[3] = { TestoId::PARLANTE_UBALDO, TestoId::PARLANTE_GIORGIO, TestoId::PARLANTE_ANTONIO };
-            const GameState& p = g_game_state;
-            int livello = p.livello[e] < 1 ? 1 : p.livello[e];
-            battaglia::Statistiche s = progressione::statistiche_al_livello(battaglia::STATISTICHE_EROI[e], livello);
-            int pv = s.pv - p.ferite[e] < 1 ? 1 : s.pv - p.ferite[e];
-            int percento = battaglia::FERVORE_INIZIALE[e] + (storia::ceri_accesi(p) ? battaglia::FERVORE_CERI : 0);
-            int fe = s.fervore * (percento > 100 ? 100 : percento) / 100;
-            _nome.mostra(NOMI[e]);
+            Forze f = forze(g_game_state, e);
+            int livello = f.livello;
+            _nome.mostra(GUBBIO_VOCE(NOMI_COMPAGNI, e));
             _liv.mostra(TestoId::TITOLO_LIVELLI);
             _pv.mostra(TestoId::MENU_PV);
             _fe.mostra(TestoId::MENU_FE);
@@ -279,8 +260,8 @@ namespace
 
             _livello.mostra(livello);
             _livello.colloca(_x + larghezza_testo(TestoId::TITOLO_LIVELLI) + 4, 55);
-            menu::disegna_barra(_barre, 0, 0, 26, pv, s.pv, menu::VERDE);
-            menu::disegna_barra(_barre_fe, 0, 0, 26, fe, s.fervore, menu::ORO);
+            menu::disegna_barra(_barre, 0, 0, 26, f.pv, f.al_livello.pv, menu::VERDE);
+            menu::disegna_barra(_barre_fe, 0, 0, 26, f.fervore, f.al_livello.fervore, menu::ORO);
         }
 
     private:
@@ -407,6 +388,12 @@ namespace
             case PAGINA_DIARIO:
                 return pagina_diario(palette, istantanea);
 
+            case PAGINA_BISACCIA:
+                return pagina_bisaccia(palette, istantanea);
+
+            case PAGINA_COMPAGNI:
+                return pagina_compagni(palette, istantanea);
+
             default:
                 return Esito::INDIETRO;
         }
@@ -457,6 +444,10 @@ void partita_d_esempio(GameState& p)
     // due blocchi di ferro su tre (Q-SM01)
     storia::accendi_una(p, int(storia::QUEST_GIOCO[0].primo_pezzo));
     storia::accendi_una(p, int(storia::QUEST_GIOCO[0].primo_pezzo) + 1);
+    // un indizio sul falso pellegrino, e i viveri del mockup 04: 2 Crescia, 1 Biscotto
+    storia::accendi_una(p, int(storia::INDIZIO[0].bandiera));
+    p.oggetti[int(battaglia::OggettoId::CRESCIA)] = 2;
+    p.oggetti[int(battaglia::OggettoId::BISCOTTI)] = 1;
     constexpr int SALITA = 3;
     static_assert(GUBBIO_VOCE(storia::OBIETTIVO, SALITA).testo == testo::TestoId::C_A1_05_13,
                   "l'obiettivo d'esempio e' «Sali al Monte Ingino passando dal Duomo.»");

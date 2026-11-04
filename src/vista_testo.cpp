@@ -227,6 +227,35 @@ void VistaNumero::mostra_livelli(int a, int b, int c)
     _scrivi(caratteri, n);
 }
 
+void VistaNumero::mostra_volte(int n)
+{
+    char numero[FORMATTA_CARATTERI_MAX + 1] = {};
+    char caratteri[FORMATTA_CARATTERI_MAX + 2] = { 'x' };
+    int m = formatta_intero(n, numero);
+
+    for(int k = 0; k < m; ++k)
+    {
+        caratteri[k + 1] = numero[k];
+    }
+
+    _scrivi(caratteri, m + 1);
+}
+
+void VistaNumero::mostra_su(int n)
+{
+    char caratteri[FORMATTA_CARATTERI_MAX + 2] = {};
+    char numero[FORMATTA_CARATTERI_MAX + 1] = {};
+    int m = formatta_intero(n, numero);
+
+    for(int k = 0; k < m; ++k)
+    {
+        caratteri[k] = numero[k];
+    }
+
+    caratteri[m] = '/';
+    _scrivi(caratteri, m + 1);
+}
+
 void VistaNumero::mostra_frazione(int a, int b)
 {
     char caratteri[2 * FORMATTA_CARATTERI_MAX + 2] = {};

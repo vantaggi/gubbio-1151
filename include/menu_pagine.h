@@ -3,8 +3,10 @@
 
 #include "bn_optional.h"
 #include "bn_sprite_palette_ptr.h"
+#include "bn_sprite_ptr.h"
 
 #include "aiuti.h"
+#include "battaglia_dati.h"
 #include "game_state.h"
 #include "testo.h"
 #include "vista_menu.h"
@@ -56,6 +58,24 @@ enum class Esito : uint8_t
 [[nodiscard]] testo::TestoId testo_della_fase(aiuti::FaseCronaca f);
 [[nodiscard]] testo::TestoId testo_dell_area(const GameState& p);
 
+// I compagni nell'ordine di sempre (Ubaldo, Giorgio, Antonio): il nome, il ritratto 32x32 con l'angolo in (x, y), e
+// le forze come le avranno alla prossima battaglia (i PV tolti dai miasmi della gola, il Fervore iniziale, piu' alto
+// coi Ceri).
+inline constexpr testo::TestoId NOMI_COMPAGNI[battaglia::EROI] = {
+    testo::TestoId::PARLANTE_UBALDO, testo::TestoId::PARLANTE_GIORGIO, testo::TestoId::PARLANTE_ANTONIO };
+
+[[nodiscard]] bn::sprite_ptr crea_ritratto(int e, int x, int y);
+
+struct Forze
+{
+    int livello;
+    battaglia::Statistiche al_livello;
+    int pv;
+    int fervore;
+};
+
+[[nodiscard]] Forze forze(const GameState& p, int e);
+
 // Una scritta col contesto del suo testo (cosi' non si sbaglia: VistaTesto lo controlla con un assert).
 class Scritta
 {
@@ -102,6 +122,8 @@ private:
 // ritorna subito.
 [[nodiscard]] Esito pagina_salva(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette, bool istantanea);
 [[nodiscard]] Esito pagina_diario(const bn::sprite_palette_ptr& palette, bool istantanea);
+[[nodiscard]] Esito pagina_bisaccia(const bn::sprite_palette_ptr& palette, bool istantanea);
+[[nodiscard]] Esito pagina_compagni(const bn::sprite_palette_ptr& palette, bool istantanea);
 
 }
 

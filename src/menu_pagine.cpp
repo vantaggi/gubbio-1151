@@ -2,8 +2,13 @@
 
 #include "bn_core.h"
 #include "bn_keypad.h"
+#include "bn_sprite_items_ritratto_antonio.h"
+#include "bn_sprite_items_ritratto_giorgio.h"
+#include "bn_sprite_items_ritratto_ubaldo.h"
 
 #include "mondo.h"
+#include "progressione.h"
+#include "storia_logica.h"
 
 namespace gubbio::menu
 {
@@ -57,6 +62,27 @@ TestoId testo_dell_area(const GameState& p)
 {
     int a = p.area < mondo::AREE_CONTEGGIO ? p.area : 0;
     return mondo::area(mondo::AreaId(a)).etichetta;
+}
+
+bn::sprite_ptr crea_ritratto(int e, int x, int y)
+{
+    bn::sprite_ptr s = e == 0 ? bn::sprite_items::ritratto_ubaldo.create_sprite(0, 0) :
+                       (e == 1 ? bn::sprite_items::ritratto_giorgio.create_sprite(0, 0) :
+                                 bn::sprite_items::ritratto_antonio.create_sprite(0, 0));
+    colloca(s, x, y, 32, 32);
+    s.set_bg_priority(PRIORITA_RIQUADRI);
+    return s;
+}
+
+Forze forze(const GameState& p, int e)
+{
+    Forze f;
+    f.livello = p.livello[e] < 1 ? 1 : (p.livello[e] > progressione::LIVELLO_MAX ? progressione::LIVELLO_MAX : p.livello[e]);
+    f.al_livello = progressione::statistiche_al_livello(battaglia::STATISTICHE_EROI[e], f.livello);
+    f.pv = f.al_livello.pv - p.ferite[e] < 1 ? 1 : f.al_livello.pv - p.ferite[e];
+    int percento = battaglia::FERVORE_INIZIALE[e] + (storia::ceri_accesi(p) ? battaglia::FERVORE_CERI : 0);
+    f.fervore = f.al_livello.fervore * (percento > 100 ? 100 : percento) / 100;
+    return f;
 }
 
 Scritta::Scritta(TestoId id, int x, int y, int inchiostro, const bn::sprite_palette_ptr& palette) :

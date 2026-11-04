@@ -80,3 +80,31 @@ INC_SP01_TITOLO           | AREA    | La Rosa d'Argento
 INC_SP01_DA               | AREA    | Fra' Bernardo, San Pietro
 INC_SP01_STORIA           | DIALOGO | Un falso pellegrino ha rubato la Rosa d'Argento dall'altare di San Pietro. Se è ancora in città si trova: chiedi in giro.
 INC_SP01_PREMIO           | AREA    | Premio: 1 Crescia sotto la cenere
+# MBI: la bisaccia (mockup 04): i viveri, le cose degli incarichi, la riga che spiega quello scelto
+BISACCIA_VIVERI           | HUD     | Viveri
+BISACCIA_COSE             | AREA    | Cose dell'incarico
+BISACCIA_VUOTA            | AREA    | Nella bisaccia non c'è niente.
+BISACCIA_AIUTO_A          | HUD     | A: usa
+OGG_CENERE                | AREA    | Crescia sotto la cenere
+DESCR_CRESCIA             | NARRATORE | Crescia di Pasqua: rende 100 PV. Fuori battaglia cura le ferite dei miasmi.
+DESCR_BISCOTTI            | NARRATORE | Biscotti all'anice: spengono le bruciature, e si mangiano in un attimo.
+DESCR_CENERE              | NARRATORE | Crescia sotto la cenere: si tiene da conto per quando servirà davvero.
+BISACCIA_GUARITI          | NARRATORE | Un boccone di Crescia, e le ferite dei miasmi non pesano più.
+BISACCIA_SANI             | NARRATORE | Nessuno ha ferite da curare: la Crescia resta nella bisaccia.
+BISACCIA_NON_ORA          | NARRATORE | Questa si usa in battaglia.
+COSA_FERRO                | AREA    | Blocchi di ferro
+COSA_ELLEBORO             | AREA    | Radici di elleboro
+COSA_ROSA                 | AREA    | La Rosa d'Argento
+COSA_INDIZI               | AREA    | Indizi sul falso pellegrino
+# MBI: i compagni (mockup 05): livello, esperienza, statistiche al livello, abilità col loro costo
+COMP_LIVELLO              | HUD     | Livello
+COMP_MANCANO              | HUD     | mancano
+COMP_AL_MASSIMO           | HUD     | al massimo
+COMP_FERVORE              | HUD     | Fervore
+COMP_ATTACCO              | HUD     | Attacco
+COMP_DIFESA               | HUD     | Difesa
+COMP_MISTICO              | HUD     | Mistico
+COMP_RESISTENZA           | HUD     | Resistenza
+COMP_VELOCITA             | HUD     | Velocità
+COMP_ABILITA              | HUD     | Abilità
+COMP_AIUTO                | AREA    | Su e giù: altro compagno
