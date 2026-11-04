@@ -12,6 +12,7 @@
 #include "bn_sprite_shape_size.h"
 #include "bn_sprite_tiles_ptr.h"
 
+#include "audio.h"
 #include "battaglia_grafica.h"
 #include "esplorazione.h"
 #include "game_state.h"
@@ -170,9 +171,11 @@ namespace
             {
                 voce = 1 - voce;
                 cambiata = true;
+                audio::suona(colonna::Suono::CURSORE);
             }
             else if(bn::keypad::a_pressed())
             {
+                audio::suona(colonna::Suono::CONFERMA);
                 BN_LOG("Scelta ", voce);
                 return voce;
             }
@@ -264,6 +267,7 @@ namespace
                 }
                 else if(bn::keypad::a_pressed())
                 {
+                    audio::suona(colonna::Suono::TESTO);
                     break;
                 }
 
@@ -1065,6 +1069,7 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     if(z >= 0 && apri_forziere(g_game_state, z))
     {
         BN_LOG("Forziere ", z);
+        audio::suona(colonna::Suono::RACCOLTA);
         di_sistema(GUBBIO_VOCE(FORZIERE, z).testo, &esplorazione, palette_testo);
         svuota();       // il forziere si rifa' aperto al prossimo frame
         return true;
@@ -1087,6 +1092,7 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     {
         raccogli(g_game_state, r);
         BN_LOG("Raccolta ", r);
+        audio::suona(colonna::Suono::RACCOLTA);
         dialogo_inizio(&esplorazione);
         recita_righe(GUBBIO_VOCE(QUEST_GIOCO, GUBBIO_VOCE(RACCOLTA, r).quest).raccolta, palette_testo);
         dialogo_fine();
