@@ -36,7 +36,7 @@ Regole comuni:
 
 ### Teatro Romano: le fornaci
 
-Regia: tre fornaci basse sotto le arcate, ognuna guardata da un Guerriero della Roccia visibile sulla mappa. Battuto il guerriero, il blocco si raccoglie toccando la fornace. Il contatore sale di 1. Nella v1 i guerrieri non ci sono ancora (manca il nemico, Sez. 8D): il blocco si raccoglie toccandolo. Le tre righe di SISTEMA valgono una per blocco, nell'ordine.
+Regia: tre fornaci basse sotto le arcate, ognuna guardata da un Guerriero della Roccia visibile sulla mappa. Battuto il guerriero, il blocco si raccoglie toccando la fornace. Il contatore sale di 1. Ogni guerriero si batte una volta sola (battaglia: un Guerriero della Roccia); perso lo scontro, il gruppo torna all'ingresso del Teatro e il guerriero resta. I guerrieri ci sono anche se la quest non è presa, come i blocchi. Le tre righe di SISTEMA valgono una per blocco, nell'ordine.
 
 - SISTEMA: Hai preso un blocco di ferro. Ancora 2.
 - SISTEMA: Hai preso un blocco di ferro. Ancora 1.
@@ -176,7 +176,7 @@ Con i tre indizi, sotto le Logge compare l'infiltrato:
 
 ### L'infiltrato
 
-Regia: un uomo avvolto in un mantello da pellegrino, la mano sotto il mantello. Battaglia: l'infiltrato e due spie umbre. Non si fugge. Nella v1 la battaglia è quella delle tre spie umbre degli Stradoni (manca un nemico «infiltrato»); vinta, si accende `ROSA_RIPRESA`. Persa, l'infiltrato resta sotto le Logge.
+Regia: un uomo avvolto in un mantello da pellegrino, la mano sotto il mantello. Battaglia: l'infiltrato e due spie umbre. Non si fugge. Vinta, si accende `ROSA_RIPRESA`. Persa, l'infiltrato resta sotto le Logge.
 
 - INFILTRATO: Il vescovo in persona. Dovevo immaginarlo: in questa città ficcate il naso dappertutto.
 - GIORGIO (deciso): Ridacci la Rosa.
@@ -204,4 +204,4 @@ Dopo la vittoria:
 - NOTTE: FRA' BERNARDO: Ho benedetto le guardie una per una. Nessuna ha tremato.
 - DIGIUNO: FRA' BERNARDO: La Rosa è tornata sull'altare. Il pellegrino, spero, in una cella.
 
-> Nota. «Benedizione Porta Vittoria» della Sez. 31A è un effetto dell'Atto III: nella v1 resta solo come battuta. L'infiltrato richiede la stessa «spia umbra» degli Stradoni (vedi le battaglie nel README).
+> Nota. «Benedizione Porta Vittoria» della Sez. 31A è un effetto dell'Atto III: nella v1 resta solo come battuta. L'infiltrato ha un nemico suo e combatte con due «spie umbre» degli Stradoni (vedi le battaglie nel README).
