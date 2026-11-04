@@ -174,7 +174,11 @@ int main()
             bn::core::update();
         }
 
+        // la pausa e le sue pagine sulla partita d'esempio dei mockup, poi lo stato torna quello di prima
+        gubbio::GameState prima = gubbio::g_game_state;
+        gubbio::partita_d_esempio(gubbio::g_game_state);
         gubbio::pausa(esplorazione, palette, true);
+        gubbio::g_game_state = prima;
 
         // un nemico sulla mappa: la Pattuglia al Teatro Romano, vista dall'ingresso dalla citta'
         gubbio::progressione::partita_nuova(gubbio::g_game_state);

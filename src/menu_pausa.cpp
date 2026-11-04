@@ -15,7 +15,9 @@
 #include "game_state.h"
 #include "progressione.h"
 #include "save_data.h"
+#include "menu_pagine.h"
 #include "storia_logica.h"
+#include "tabella.h"
 #include "vista_menu.h"
 #include "vista_testo.h"
 
@@ -23,7 +25,7 @@
 // la pausa sopra la scena scurita: in alto a sinistra i tre compagni (ritratto, nome, livello, PV e Fervore), a
 // destra le sei voci, in basso l'obiettivo della cronaca nel riquadro del dialogo. A apre la pagina della voce;
 // nelle pagine L e R passano alla pagina accanto, B torna alla pausa; B o Start dalla pausa tornano al gioco.
-namespace gubbio
+namespace gubbio::menu
 {
 
 namespace
@@ -32,164 +34,7 @@ namespace
     using testo::TestoId;
     using salvataggio::StatoSlot;
 
-    constexpr int PAGINE = 6;
-    constexpr int PAGINA_SALVA = 4;
-    constexpr TestoId VOCI[PAGINE] = { TestoId::MENU_DIARIO, TestoId::MENU_MAPPA, TestoId::MENU_BISACCIA,
-                                       TestoId::MENU_COMPAGNI, TestoId::MENU_SALVA, TestoId::MENU_OPZIONI };
-    constexpr int FRAME_MESSAGGIO = 60;
-
-    // le pagine gia' costruite; le altre arrivano coi loro pezzi (MDI, MMA, MBI, MOP)
-    constexpr bool pagina_pronta(int p)
-    {
-        return p == PAGINA_SALVA;
-    }
-
-    void attendi(int frame)
-    {
-        for(int f = 0; f < frame; ++f)
-        {
-            ++g_game_state.frames;
-            bn::core::update();
-        }
-    }
-
-    enum class Esito : uint8_t
-    {
-        INDIETRO,       // B: alla pausa
-        CHIUDI,         // Start: al gioco
-        SINISTRA,       // L: alla pagina prima
-        DESTRA,         // R: alla pagina dopo
-    };
-
-    // Aspetta un tasto fra quelli che interessano a una pagina; true se e' uno di quelli di navigazione (e
-    // allora 'esito' dice quale). Su, giu' e A restano alla pagina.
-    bool navigazione(Esito& esito)
-    {
-        if(bn::keypad::start_pressed())
-        {
-            esito = Esito::CHIUDI;
-        }
-        else if(bn::keypad::b_pressed())
-        {
-            esito = Esito::INDIETRO;
-        }
-        else if(bn::keypad::l_pressed())
-        {
-            esito = Esito::SINISTRA;
-        }
-        else if(bn::keypad::r_pressed())
-        {
-            esito = Esito::DESTRA;
-        }
-        else
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    // ------------------------------------------------------------------ lo schema comune delle pagine
-    // Riquadro pieno, cartiglio col nome in alto a sinistra, in fondo il filo, gli aiuti dei tasti a sinistra e
-    // le sei tessere delle pagine a destra fra L e R (mockup: pagina() e piede()).
-    constexpr int PIEDE_Y = 141;
-    constexpr int MARGINE_X = 12;
-    constexpr int DESTRA_X = 227;
-    // il cartiglio sta sulla griglia dei tile (Riquadri): sopra il bordo alto, il nome a 4 px dall'alto
-    constexpr int CARTIGLIO_Y = 0;
-
-    constexpr int colonne_titolo(TestoId titolo)
-    {
-        return colonne_cartiglio(larghezza_testo(titolo));
-    }
-
-    // R contro il bordo destro, le tessere 4 px prima, L 4 px prima delle tessere
-    int r_x()
-    {
-        return DESTRA_X + 1 - larghezza_testo(TestoId::MENU_R);
-    }
-
-    int tessere_x()
-    {
-        return r_x() - 4 - 6 * 9 + 2;
-    }
-
-    int l_x()
-    {
-        return tessere_x() - 4 - larghezza_testo(TestoId::MENU_L);
-    }
-
-    // Gli aiuti dei tasti, «A: apri» e «B: indietro» a 12 px uno dall'altro (il font non tiene gli spazi doppi).
-    constexpr int AIUTI_STACCO = 12;
-
-    class AiutoTasti
-    {
-    public:
-        AiutoTasti(TestoId a, TestoId b, int x, int y, const bn::sprite_palette_ptr& palette) :
-            _a(Contesto::HUD, x, y, menu::SPENTO, palette),
-            _b(testo::dati(b).contesto, x + larghezza_testo(a) + AIUTI_STACCO, y, menu::SPENTO, palette)
-        {
-            _a.mostra(a);
-            _b.mostra(b);
-            _a.rivela_tutto();
-            _b.rivela_tutto();
-        }
-
-    private:
-        VistaTesto _a;
-        VistaTesto _b;
-    };
-
-    class Pagina
-    {
-    public:
-        Pagina(int indice, TestoId aiuto_a, TestoId aiuto_b, const bn::sprite_palette_ptr& palette) :
-            _titolo(Contesto::HUD, 8 + (colonne_titolo(VOCI[indice]) * 8 - larghezza_testo(VOCI[indice])) / 2,
-                    CARTIGLIO_Y + 4, menu::CHIARO, palette),
-            _aiuto(aiuto_a, aiuto_b, MARGINE_X, PIEDE_Y, palette),
-            _l(Contesto::HUD, l_x(), PIEDE_Y, menu::SPENTO, palette),
-            _r(Contesto::HUD, r_x(), PIEDE_Y, menu::SPENTO, palette),
-            _filo(MARGINE_X, PIEDE_Y - 3, DESTRA_X - MARGINE_X + 1, palette),
-            _tessere(tessere_x(), PIEDE_Y + 2, 64, palette)
-        {
-            _riquadri.cornice(0, 0, 30, 20);
-            _riquadri.cartiglio(8, CARTIGLIO_Y, colonne_titolo(VOCI[indice]));
-            _titolo.mostra(VOCI[indice]);
-            _r.mostra(TestoId::MENU_R);
-            _l.mostra(TestoId::MENU_L);
-            _filo.rett(0, 0, DESTRA_X - MARGINE_X, 0, menu::GRIGIO);
-            menu::disegna_tessere(_tessere, 0, indice);
-
-            for(VistaTesto* v : { &_titolo, &_l, &_r })
-            {
-                v->rivela_tutto();
-            }
-        }
-
-    private:
-        Riquadri _riquadri;
-        VistaTesto _titolo;
-        AiutoTasti _aiuto;
-        VistaTesto _l;
-        VistaTesto _r;
-        menu::Striscia _filo;
-        menu::Striscia _tessere;
-    };
-
     // ------------------------------------------------------------------ la pagina Salva (mockup 06)
-    TestoId testo_della_fase(aiuti::FaseCronaca f)
-    {
-        constexpr TestoId FASI[4] = { TestoId::FASE_ULTIMATUM, TestoId::FASE_DIGIUNO, TestoId::FASE_NOTTE,
-                                      TestoId::FASE_DOPO_L_ALBA };
-        return FASI[int(f)];
-    }
-
-    TestoId testo_dell_area(const GameState& p)
-    {
-        int a = p.area < mondo::AREE_CONTEGGIO ? p.area : 0;
-        return mondo::area(mondo::AreaId(a)).etichetta;
-    }
-
     TestoId testo_dello_stato(StatoSlot s)
     {
         return s == StatoSlot::VUOTO ? TestoId::SALVA_VUOTO :
@@ -268,98 +113,116 @@ namespace
         int _y;
         bool _valido = false;
     };
+}
 
-    Esito pagina_salva(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette, bool istantanea)
+Esito pagina_salva(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette, bool istantanea)
+{
+    constexpr int RIGA_Y[2] = { 26, 78 };
+    constexpr int FILO_Y = 66;
+    constexpr int MESSAGGIO_Y = 118;
+    Pagina pagina(PAGINA_SALVA, TestoId::SALVA_AIUTO_A, TestoId::MENU_INDIETRO, palette);
+    menu::Striscia filo(MARGINE_X, FILO_Y, DESTRA_X - MARGINE_X + 1, palette);
+    filo.rett(0, 0, DESTRA_X - MARGINE_X, 0, menu::GRIGIO);
+    bn::optional<RigaSlot> righe[2];
+
+    for(int k = 0; k < 2; ++k)
     {
-        constexpr int RIGA_Y[2] = { 26, 78 };
-        constexpr int FILO_Y = 66;
-        constexpr int MESSAGGIO_Y = 118;
-        Pagina pagina(PAGINA_SALVA, TestoId::SALVA_AIUTO_A, TestoId::MENU_INDIETRO, palette);
-        menu::Striscia filo(MARGINE_X, FILO_Y, DESTRA_X - MARGINE_X + 1, palette);
-        filo.rett(0, 0, DESTRA_X - MARGINE_X, 0, menu::GRIGIO);
-        bn::optional<RigaSlot> righe[2];
+        righe[k].emplace(k, RIGA_Y[k], palette);
+    }
 
-        for(int k = 0; k < 2; ++k)
+    VistaTesto messaggio(Contesto::DIALOGO, 23, MESSAGGIO_Y, menu::INCHIOSTRO, palette);
+    bn::sprite_ptr cursore = menu::crea_cursore(palette);
+    int voce = 0;
+    bool conferma = false;
+    Esito esito = Esito::INDIETRO;
+
+    while(true)
+    {
+        menu::colloca(cursore, MARGINE_X, RIGA_Y[voce], 8, 8);
+
+        if(istantanea)
         {
-            righe[k].emplace(k, RIGA_Y[k], palette);
+            attendi(30);
+            BN_LOG("Istantanea pausa_salva");
+            attendi(30);
+            return Esito::INDIETRO;
         }
 
-        VistaTesto messaggio(Contesto::DIALOGO, 23, MESSAGGIO_Y, menu::INCHIOSTRO, palette);
-        bn::sprite_ptr cursore = menu::crea_cursore(palette);
-        int voce = 0;
-        bool conferma = false;
-        Esito esito = Esito::INDIETRO;
+        attendi(1);
 
-        while(true)
+        if(conferma)
         {
-            menu::colloca(cursore, MARGINE_X, RIGA_Y[voce], 8, 8);
-
-            if(istantanea)
+            if(! bn::keypad::a_pressed() && ! bn::keypad::b_pressed())
             {
-                attendi(30);
-                BN_LOG("Istantanea pausa_salva");
-                attendi(30);
-                return Esito::INDIETRO;
+                continue;
             }
 
-            attendi(1);
-
-            if(conferma)
-            {
-                if(! bn::keypad::a_pressed() && ! bn::keypad::b_pressed())
-                {
-                    continue;
-                }
-
-                conferma = false;
-                messaggio.nascondi();
-
-                if(bn::keypad::b_pressed())
-                {
-                    audio::suona(colonna::Suono::ANNULLA);
-                    continue;
-                }
-            }
-            else
-            {
-                if(navigazione(esito))
-                {
-                    audio::suona(colonna::Suono::ANNULLA);
-                    return esito;
-                }
-
-                if(bn::keypad::up_pressed() || bn::keypad::down_pressed())
-                {
-                    voce = 1 - voce;
-                    audio::suona(colonna::Suono::CURSORE);
-                    continue;
-                }
-
-                if(! bn::keypad::a_pressed())
-                {
-                    continue;
-                }
-
-                // sovrascrivere una partita chiede conferma (PROPOSTA sez. 3.6)
-                if(righe[voce]->valido())
-                {
-                    conferma = true;
-                    messaggio.mostra(TestoId::SALVA_SOVRASCRIVI);
-                    messaggio.rivela_tutto();
-                    audio::suona(colonna::Suono::CURSORE);
-                    continue;
-                }
-            }
-
-            annota_posizione(esplorazione);
-            bool fatto = salvataggio::salva(voce, g_game_state);
-            audio::suona(fatto ? colonna::Suono::SALVA : colonna::Suono::ANNULLA);
-            righe[voce]->aggiorna();
-            messaggio.mostra(fatto ? TestoId::PAUSA_SALVATO : TestoId::PAUSA_NON_SALVATO);
-            messaggio.rivela_tutto();
-            attendi(FRAME_MESSAGGIO);
+            conferma = false;
             messaggio.nascondi();
+
+            if(bn::keypad::b_pressed())
+            {
+                audio::suona(colonna::Suono::ANNULLA);
+                continue;
+            }
         }
+        else
+        {
+            if(navigazione(esito))
+            {
+                audio::suona(colonna::Suono::ANNULLA);
+                return esito;
+            }
+
+            if(bn::keypad::up_pressed() || bn::keypad::down_pressed())
+            {
+                voce = 1 - voce;
+                audio::suona(colonna::Suono::CURSORE);
+                continue;
+            }
+
+            if(! bn::keypad::a_pressed())
+            {
+                continue;
+            }
+
+            // sovrascrivere una partita chiede conferma (PROPOSTA sez. 3.6)
+            if(righe[voce]->valido())
+            {
+                conferma = true;
+                messaggio.mostra(TestoId::SALVA_SOVRASCRIVI);
+                messaggio.rivela_tutto();
+                audio::suona(colonna::Suono::CURSORE);
+                continue;
+            }
+        }
+
+        annota_posizione(esplorazione);
+        bool fatto = salvataggio::salva(voce, g_game_state);
+        audio::suona(fatto ? colonna::Suono::SALVA : colonna::Suono::ANNULLA);
+        righe[voce]->aggiorna();
+        messaggio.mostra(fatto ? TestoId::PAUSA_SALVATO : TestoId::PAUSA_NON_SALVATO);
+        messaggio.rivela_tutto();
+        attendi(FRAME_MESSAGGIO);
+        messaggio.nascondi();
+    }
+}
+
+}
+
+namespace gubbio
+{
+
+namespace
+{
+    using testo::Contesto;
+    using testo::TestoId;
+    using namespace menu;
+
+    // le pagine gia' costruite; le altre arrivano coi loro pezzi (MMA, MBI, MOP)
+    constexpr bool pagina_pronta(int p)
+    {
+        return p == PAGINA_SALVA || p == PAGINA_DIARIO;
     }
 
     // ------------------------------------------------------------------ la pausa (mockup 01)
@@ -541,6 +404,9 @@ namespace
             case PAGINA_SALVA:
                 return pagina_salva(esplorazione, palette, istantanea);
 
+            case PAGINA_DIARIO:
+                return pagina_diario(palette, istantanea);
+
             default:
                 return Esito::INDIETRO;
         }
@@ -561,6 +427,41 @@ namespace
 
         return p;
     }
+}
+
+void partita_d_esempio(GameState& p)
+{
+    using storia::Bandiera;
+    p = GameState{};
+    p.area = uint8_t(mondo::AreaId::PIAZZA_GRANDE);
+    p.tempo_frames = uint32_t((60 + 42) * 60 * 60);
+    constexpr int LIVELLI[3] = { 4, 4, 3 };
+
+    for(int e = 0; e < 3; ++e)
+    {
+        p.livello[e] = uint8_t(LIVELLI[e]);
+        p.esperienza[e] = uint16_t(progressione::ESPERIENZA_PER_LIVELLO[LIVELLI[e] - 1] + 30);
+    }
+
+    for(Bandiera b : { Bandiera::ULTIMATUM_RICEVUTO, Bandiera::GIORGIO_NEL_GRUPPO, Bandiera::ANTONIO_NEL_GRUPPO,
+                       Bandiera::CITTA_IN_DIGIUNO })
+    {
+        storia::accendi_una(p, int(b));
+    }
+
+    for(int q = 0; q < storia::QUEST; ++q)
+    {
+        storia::accendi_una(p, int(storia::QUEST_GIOCO[q].presa));
+    }
+
+    // due blocchi di ferro su tre (Q-SM01)
+    storia::accendi_una(p, int(storia::QUEST_GIOCO[0].primo_pezzo));
+    storia::accendi_una(p, int(storia::QUEST_GIOCO[0].primo_pezzo) + 1);
+    constexpr int SALITA = 3;
+    static_assert(GUBBIO_VOCE(storia::OBIETTIVO, SALITA).testo == testo::TestoId::C_A1_05_13,
+                  "l'obiettivo d'esempio e' «Sali al Monte Ingino passando dal Duomo.»");
+    p.obiettivo = uint8_t(SALITA);
+    p.ferite[0] = 40;
 }
 
 void pausa(Esplorazione& esplorazione, const bn::sprite_palette_ptr&, bool istantanea)

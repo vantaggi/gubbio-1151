@@ -6,6 +6,8 @@
 #include "bn_sprite_tiles_ptr.h"
 #include "bn_vector.h"
 
+#include "stile/icone_menu.h"
+
 // I pezzi grafici comuni ai menu (MPA, menu/PROPOSTA.md e i mockup di menu/mockup_menu.py): la palette delle
 // scritte dei menu, le strisce disegnate a pixel (barre, fili, tessere delle pagine) e il cursore della Guida.
 // Tutto sta a PRIORITA_RIQUADRI, sopra le cornici e la scena.
@@ -51,6 +53,10 @@ void disegna_barra(Striscia& s, int x, int y, int larghezza, int valore, int mas
 
 // Le sei tessere delle pagine, quella aperta in vermiglio (mockup: indicatore()): 54 px a partire da x.
 void disegna_tessere(Striscia& s, int x, int aperta);
+
+// Le icone 8x8 dei menu (tools/genera_icone_menu.py), con la loro palette: si crea una volta per schermata.
+[[nodiscard]] bn::sprite_palette_ptr crea_palette_icone();
+[[nodiscard]] bn::sprite_ptr crea_icona(stile::IconaMenu icona, int x, int y, const bn::sprite_palette_ptr& palette);
 
 // Il cursore della Guida (il triangolo della cornice), un 8x8 con l'angolo in alto a sinistra in (x, y).
 [[nodiscard]] bn::sprite_ptr crea_cursore(const bn::sprite_palette_ptr& palette);

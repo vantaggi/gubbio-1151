@@ -227,6 +227,27 @@ void VistaNumero::mostra_livelli(int a, int b, int c)
     _scrivi(caratteri, n);
 }
 
+void VistaNumero::mostra_frazione(int a, int b)
+{
+    char caratteri[2 * FORMATTA_CARATTERI_MAX + 2] = {};
+    char numero[FORMATTA_CARATTERI_MAX + 1] = {};
+    int n = 0;
+
+    for(int k = 0, m = formatta_intero(a, numero); k < m; ++k)
+    {
+        caratteri[n++] = numero[k];
+    }
+
+    caratteri[n++] = '/';
+
+    for(int k = 0, m = formatta_intero(b, numero); k < m; ++k)
+    {
+        caratteri[n++] = numero[k];
+    }
+
+    _scrivi(caratteri, n);
+}
+
 void VistaNumero::_scrivi(const char* caratteri, int n)
 {
     constexpr int L = testi::LARGHEZZA_SPRITE;

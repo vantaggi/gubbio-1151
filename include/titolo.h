@@ -7,6 +7,7 @@ namespace gubbio
 {
 
 class Esplorazione;
+struct GameState;
 
 // Il titolo: il logo, "Nuova partita" e i due slot. Ritorna -1 per una partita nuova, oppure lo
 // slot (0 o 1) da cui continuare, gia' caricato in g_game_state.
@@ -21,6 +22,10 @@ void pausa(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_tes
 // «Dove eravamo» (MAI): dopo «Continua», una volta, area, fase della cronaca, obiettivo, incarichi aperti e
 // tempo di gioco sullo sfondo scurito; A (o B, o Start) per riprendere. Con istantanea=true non aspetta tasti.
 void dove_eravamo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo, bool istantanea = false);
+
+// La partita d'esempio dei mockup (menu/mockup_menu.py): a meta' dell'Atto I, la citta' in digiuno, i tre
+// compagni ai livelli 4 4 3, i tre incarichi presi e due blocchi di ferro su tre. Per le istantanee dei menu.
+void partita_d_esempio(GameState& p);
 
 // Lo stato di partita dalla posizione dell'esploratore, prima di salvare.
 void annota_posizione(const Esplorazione& esplorazione);

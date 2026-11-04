@@ -146,6 +146,44 @@ void disegna_tessere(Striscia& s, int x, int aperta)
     }
 }
 
+bn::sprite_palette_ptr crea_palette_icone()
+{
+    struct ColoriIcone
+    {
+        bn::color c[16];
+    };
+
+    static constexpr ColoriIcone COLORI = [] {
+        ColoriIcone r;
+
+        for(int i = 0; i < 16; ++i)
+        {
+            r.c[i] = bn::color(GUBBIO_VOCE(stile::ICONE_MENU_PALETTE, i));
+        }
+
+        return r;
+    }();
+
+    return bn::sprite_palette_ptr::create(bn::sprite_palette_item(bn::span<const bn::color>(COLORI.c),
+                                                                  bn::bpp_mode::BPP_4));
+}
+
+bn::sprite_ptr crea_icona(stile::IconaMenu icona, int x, int y, const bn::sprite_palette_ptr& palette)
+{
+    bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(1, bn::bpp_mode::BPP_4);
+    bn::span<bn::tile> vram = *tiles.vram();
+
+    for(int r = 0; r < 8; ++r)
+    {
+        vram[0].data[r] = GUBBIO_VOCE(stile::ICONE_MENU_TILE, int(icona) * 8 + r);
+    }
+
+    bn::sprite_ptr s = bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(8, 8), bn::move(tiles), palette);
+    colloca(s, x, y, 8, 8);
+    s.set_bg_priority(PRIORITA_RIQUADRI);
+    return s;
+}
+
 bn::sprite_ptr crea_cursore(const bn::sprite_palette_ptr& palette)
 {
     bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(1, bn::bpp_mode::BPP_4);

@@ -63,6 +63,7 @@ public:
     void mostra(int valore);
     void mostra_tempo(int secondi);             // "h:mm" (formatta_tempo)
     void mostra_livelli(int a, int b, int c);   // "4 4 3" (formatta_livelli)
+    void mostra_frazione(int a, int b);         // "2/3": i contatori degli incarichi (MDI)
     void colloca(int x, int y);     // angolo in alto a sinistra, in pixel dello schermo
     // Con il bordo destro in x_destra (i numeri allineati a destra dei menu, MPA).
     void colloca_a_destra(int x_destra, int y)
