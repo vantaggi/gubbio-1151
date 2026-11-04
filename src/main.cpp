@@ -4,6 +4,7 @@
 #include "bn_keypad.h"
 #include "bn_log.h"
 
+#include "audio.h"
 #include "esplorazione.h"
 #include "game_state.h"
 #include "scena_battaglia.h"
@@ -170,6 +171,10 @@ int main()
         int dy = bn::keypad::up_held() ? -1 : (bn::keypad::down_held() ? 1 : 0);
         esplorazione.muovi(dx, dy, bn::keypad::b_held() ? 2 : 1);
         esplorazione.aggiorna();
+        // la musica dell'area, della fase e del luogo (include/colonna_sonora.h); non riparte se e' la stessa
+        const gubbio::mondo::Esploratore& qui = esplorazione.esploratore();
+        gubbio::audio::esplorazione(gubbio::g_game_state, int(qui.area), gubbio::mondo::cella_x(qui),
+                                    gubbio::mondo::cella_y(qui));
         // la storia prima degli scontri: una scena con la sua battaglia vale piu' del nemico sulla mappa
         if(GUBBIO_AVVIO == 0 && storia.aggiorna(esplorazione, palette))
         {

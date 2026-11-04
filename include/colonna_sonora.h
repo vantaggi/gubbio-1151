@@ -143,8 +143,38 @@ inline constexpr int CUTSCENE = 14;
 // Per cutscene (regia::CUTSCENE_DATI): il codice (ricontrollato), il brano (Brano, o NESSUNO: resta
 // quello che suonava) e l'effetto del primo quadro (Effetto, o NESSUNO).
 inline constexpr const char* CODICE_CUTSCENE[CUTSCENE] = { "C0", "C1", "C2", "C2P", "C3A", "C3C", "C3G", "C3U", "C4", "C5", "C6", "C7B", "C7S", "C9" };
-inline constexpr int8_t BRANO_CUTSCENE[CUTSCENE] = { NESSUNO, 11, 17, 9, 10, 10, 10, 10, 15, 1, 3, 3, 13, NESSUNO };
-inline constexpr int8_t EFFETTO_CUTSCENE[CUTSCENE] = { NESSUNO, NESSUNO, NESSUNO, NESSUNO, NESSUNO, NESSUNO, NESSUNO, NESSUNO, 1, NESSUNO, NESSUNO, NESSUNO, NESSUNO, NESSUNO };
+inline constexpr int8_t BRANO_CUTSCENE[CUTSCENE] = {
+    NESSUNO,   // C0
+    int8_t(Brano::PROLOGO),   // C1
+    int8_t(Brano::UNDICI_BANDIERE),   // C2
+    int8_t(Brano::PASTORALE),   // C2P
+    int8_t(Brano::PRESENTAZIONE),   // C3A
+    int8_t(Brano::PRESENTAZIONE),   // C3C
+    int8_t(Brano::PRESENTAZIONE),   // C3G
+    int8_t(Brano::PRESENTAZIONE),   // C3U
+    int8_t(Brano::TERZA_ALBA),   // C4
+    int8_t(Brano::BASILICA),   // C5
+    int8_t(Brano::BOTTACCIONE),   // C6
+    int8_t(Brano::BOTTACCIONE),   // C7B
+    int8_t(Brano::STRADONI),   // C7S
+    NESSUNO,   // C9
+};
+inline constexpr int8_t EFFETTO_CUTSCENE[CUTSCENE] = {
+    NESSUNO,   // C0
+    NESSUNO,   // C1
+    NESSUNO,   // C2
+    NESSUNO,   // C2P
+    NESSUNO,   // C3A
+    NESSUNO,   // C3C
+    NESSUNO,   // C3G
+    NESSUNO,   // C3U
+    int8_t(Effetto::CAMPANONE),   // C4
+    NESSUNO,   // C5
+    NESSUNO,   // C6
+    NESSUNO,   // C7B
+    NESSUNO,   // C7S
+    NESSUNO,   // C9
+};
 
 inline constexpr Brano BRANO_TITOLO = Brano::TITOLO;
 inline constexpr Brano BRANO_VITTORIA = Brano::VITTORIA;
@@ -157,22 +187,22 @@ inline constexpr Brano BRANO_INCONTRO[INCONTRI] = { Brano::BATTAGLIA, Brano::BAT
 inline constexpr int EVENTI = 16;
 // L'effetto di ogni evento della battaglia (battaglia::EventKind), o NESSUNO.
 inline constexpr int8_t EFFETTO_EVENTO[EVENTI] = {
-    2,   // HIT
-    10,   // SHIELD_BREAK
-    6,   // BARRIER_ABSORB
-    10,   // GUARD_REDIRECT
+    int8_t(Effetto::COLPO),   // HIT
+    int8_t(Effetto::SCUDO),   // SHIELD_BREAK
+    int8_t(Effetto::FEDE),   // BARRIER_ABSORB
+    int8_t(Effetto::SCUDO),   // GUARD_REDIRECT
     NESSUNO,   // FERVOR_GAIN
-    7,   // BURN_TICK
-    11,   // DEFEAT
-    6,   // BARRIER_UP
-    10,   // GUARD_UP
-    6,   // CHARGE
+    int8_t(Effetto::FUOCO),   // BURN_TICK
+    int8_t(Effetto::SVANISCE),   // DEFEAT
+    int8_t(Effetto::FEDE),   // BARRIER_UP
+    int8_t(Effetto::SCUDO),   // GUARD_UP
+    int8_t(Effetto::FEDE),   // CHARGE
     NESSUNO,   // BREAK_SKIP
-    10,   // IMMUNE
+    int8_t(Effetto::SCUDO),   // IMMUNE
     NESSUNO,   // FERVOR_SPEND
-    10,   // DEF_UP
-    4,   // CURA
-    4,   // PURIFICA
+    int8_t(Effetto::SCUDO),   // DEF_UP
+    int8_t(Effetto::CURA),   // CURA
+    int8_t(Effetto::CURA),   // PURIFICA
 };
 
 // Il colpo di questo eroe non e' 'colpo': e' il suo fuoco.

@@ -22,6 +22,7 @@
 #include "bn_vector.h"
 
 #include "animazione_battaglia.h"
+#include "audio.h"
 #include "battaglia_grafica.h"
 #include "game_state.h"
 #include "progressione.h"
@@ -361,6 +362,7 @@ namespace
                     const Evento& evento = g_scena.evento(i);
                     Mossa m = _vista.consuma(evento);
                     consuma_oggetto(evento);
+                    audio::evento(evento);
                     aggiorna_barre();
                     bool fotografa = false;
 
@@ -404,6 +406,7 @@ namespace
             _titolo.rivela_tutto();
             _voce.nascondi();
             _aiuto.nascondi();
+            audio::fine_battaglia(esito == Esito::VITTORIA);
             // l'esperienza dello scontro vinto, e chi sale di livello
             if(esito == Esito::VITTORIA && partita)
             {
@@ -416,6 +419,7 @@ namespace
                 {
                     if(saliti[e])
                     {
+                        audio::suona(colonna::Suono::LIVELLO);
                         _voce.mostra(GUBBIO_VOCE(SALE, e));
                         _voce.rivela_tutto();
                         aspetta(FRAME_LIVELLO);
@@ -690,6 +694,7 @@ namespace
                         {
                             int passo = bn::keypad::down_pressed() ? 1 : opzioni.size() - 1;
                             scelta = (scelta + passo) % opzioni.size();
+                            audio::suona(colonna::Suono::CURSORE);
                             _voce.mostra(opzioni[scelta].testo);
                             _voce.rivela_tutto();
                         }
@@ -707,6 +712,7 @@ namespace
 
                         if(bn::keypad::a_pressed())
                         {
+                            audio::suona(colonna::Suono::CONFERMA);
                             break;
                         }
 
@@ -760,11 +766,13 @@ namespace
                 if(bn::keypad::down_pressed() || bn::keypad::up_pressed())
                 {
                     scelto = prossimo_bersaglio(g_scena, mira, scelto, bn::keypad::down_pressed() ? 1 : -1);
+                    audio::suona(colonna::Suono::CURSORE);
                 }
 
                 if(bn::keypad::a_pressed() || bn::keypad::b_pressed())
                 {
                     confermato = bn::keypad::a_pressed();
+                    audio::suona(confermato ? colonna::Suono::CONFERMA : colonna::Suono::ANNULLA);
                     break;
                 }
 
@@ -996,6 +1004,7 @@ Esito scena_battaglia(int incontro, uint32_t seme, Guida guida, const bn::sprite
     g_scena.ricomincia(incontro, seme, false, eroi, presenti, scudi_in_meno, a_digiuno, partita ? partita->ferite : nullptr,
                        ceri);
     Esito esito;
+    audio::battaglia(incontro);
 
     {
         Scena scena(incontro, guida, palette_testo, istantanee, partita);

@@ -290,8 +290,8 @@ def risolvi(d, gioco, brani, effetti, luoghi_mondo, amici):
 def scrivi_header(r, gioco, brani, effetti, anelli):
     B = lambda b: f"Brano::{_id(b)}"                                     # noqa: E731
     E = lambda e: f"Effetto::{_id(e)}"                                   # noqa: E731
-    ib = lambda b: str(brani.index(b)) if b else "NESSUNO"               # noqa: E731
-    ie = lambda e: str(effetti.index(e)) if e else "NESSUNO"             # noqa: E731
+    ib = lambda b: f"int8_t({B(b)})" if b else "NESSUNO"                 # noqa: E731
+    ie = lambda e: f"int8_t({E(e)})" if e else "NESSUNO"                 # noqa: E731
     o = ["// GENERATO da tools/genera_colonna_sonora.py da musica/colonna_sonora.txt e audio/: non modificare a mano.",
          "#ifndef GUBBIO_COLONNA_SONORA_H", "#define GUBBIO_COLONNA_SONORA_H", "", "#include <cstdint>", "",
          "namespace gubbio::colonna", "{", "",
@@ -336,10 +336,11 @@ def scrivi_header(r, gioco, brani, effetti, anelli):
           "// quello che suonava) e l'effetto del primo quadro (Effetto, o NESSUNO).",
           "inline constexpr const char* CODICE_CUTSCENE[CUTSCENE] = { " +
           ", ".join(f'"{c}"' for c in gioco["cutscene"]) + " };",
-          "inline constexpr int8_t BRANO_CUTSCENE[CUTSCENE] = { " +
-          ", ".join(ib(b) for b, _ in r["cutscene"]) + " };",
-          "inline constexpr int8_t EFFETTO_CUTSCENE[CUTSCENE] = { " +
-          ", ".join(ie(e) for _, e in r["cutscene"]) + " };", ""]
+          "inline constexpr int8_t BRANO_CUTSCENE[CUTSCENE] = {"]
+    o += [f"    {ib(b)},   // {c}" for c, (b, _) in zip(gioco["cutscene"], r["cutscene"])]
+    o += ["};", "inline constexpr int8_t EFFETTO_CUTSCENE[CUTSCENE] = {"]
+    o += [f"    {ie(e)},   // {c}" for c, (_, e) in zip(gioco["cutscene"], r["cutscene"])]
+    o += ["};", ""]
 
     s = r["schermate"]
     o += [f"inline constexpr Brano BRANO_TITOLO = {B(s['titolo'])};",
