@@ -1,13 +1,16 @@
 """I piani di C5, Il risveglio dei Ceri (dentro A1-08, al posto della regia in prosa della cinematica 2):
 di notte nella navata, i tre ceri dell'altare si accendono e dalla loro luce salgono i tre Ceri di
 legno, due prismi ottagonali con le cornici d'oro e l'attributo in cima (la mitra, l'elmo con la lancia,
-la fiamma), nell'ordine della corsa (Ubaldo, Giorgio, Antonio). Sono legno e luce, senza colori propri
-(il copione e la decisione di Cioti sulle camicie). Girano: le facce sono strisce nei colori 13 e 14
-che il passo scambia, come le gambe dei fanti di C2. La brocca di maiolica cade e i cocci brillano;
-alla fine la luce scende sui tre e le armi si accendono. I tre restano di spalle, in controluce.
+la fiamma), nell'ordine voluto da Cioti (4 nov): Ubaldo al centro, Giorgio a destra, Antonio a
+sinistra; i tre santi davanti all'altare stanno nello stesso ordine, ognuno sotto il suo Cero. Sono
+legno e luce, senza colori propri (il copione e la decisione di Cioti sulle camicie). Girano: le facce
+sono strisce nei colori 13 e 14 che il passo scambia, come le gambe dei fanti di C2. La brocca di
+maiolica cade e i cocci brillano; alla fine la luce scende sui tre e le armi si accendono. I tre
+restano di spalle, in controluce.
 
 Di notte le luci restano accese: le voci ACCESO della palette tengono il tono del giorno (le candele,
-i Ceri, l'oro), il resto prende la rampa di notte. Dal mockup approvato (cutscene/v2, CUTM).
+i Ceri, l'oro), il resto prende la rampa di notte. Dal mockup approvato (cutscene/v2, CUTM, aggiornato
+la mattina del 4 nov con la regola dell'ordine).
 
 Un pittore riceve il momento e ritorna (tela, palette, notte), come in tools/pittore_panorami.py.
 """
@@ -32,7 +35,10 @@ N_BUIO, N_P0, N_P1, N_P2, N_P3 = 1, 2, 3, 4, 5
 N_L0, N_L1, N_L2, N_VETRO, N_ALONE = 6, 7, 8, 9, 10
 N_LUCE, N_ORO_S, N_COSTA_A, N_COSTA_B, N_ORO = 11, 12, 13, 14, 15
 ALTARE = (70, 170, 80, 98)                # x0, x1, y0 (mensa), y1
-CERI_X = (92, 120, 148)                   # Ubaldo, Giorgio, Antonio: l'ordine della corsa
+CERI_X = (92, 120, 148)                   # Antonio a sinistra, Ubaldo al centro, Giorgio a destra
+ATTRIBUTI = ("fiamma", "mitra", "elmo")   # l'ordine voluto da Cioti (4 nov): Ubaldo al centro o davanti,
+                                          # Giorgio secondo o a destra, Antonio terzo o a sinistra
+SPOSTA = {"ubaldo": 30, "giorgio": 28, "antonio": -58}   # dai disegni qui sotto alla loro posizione
 
 
 def navata(t, luce=0):
@@ -76,52 +82,57 @@ def navata(t, luce=0):
     t.rett(x0 + 49, y0 + 6, 2, 12, N_P1 if not luce else N_ORO_S)
 
 
+def figura(nome):
+    """La sagoma di uno dei tre, nera su una tela vuota, dove l'ha disegnata il mockup (prima dello
+    spostamento SPOSTA): Ubaldo con la mitra e il pastorale, Giorgio con l'elmo e la lancia, Antonio
+    col cappuccio e la fascina."""
+    f = Tela(W, H)
+    if nome == "ubaldo":
+        poligono(f, [(80, 112), (82, 96), (86, 90), (96, 90), (100, 96), (102, 112)], N_BUIO)
+        f.ellisse(91, 87, 5, 5, N_BUIO)
+        poligono(f, [(86, 84), (88, 75), (91, 79), (94, 75), (96, 84)], N_BUIO)      # la mitra
+        f.rett(104, 70, 2, 42, N_BUIO)                                               # il pastorale
+        f.ellisse(106, 69, 3, 3, N_BUIO)
+        f.punto(106, 69, 0)
+    elif nome == "giorgio":
+        poligono(f, [(110, 112), (111, 95), (116, 89), (126, 89), (131, 95), (132, 112)], N_BUIO)
+        f.ellisse(121, 85, 5, 5, N_BUIO)
+        f.rett(116, 80, 10, 3, N_BUIO)                                               # l'elmo
+        f.rett(134, 56, 2, 56, N_BUIO)                                               # la lancia
+        poligono(f, [(133, 56), (135, 50), (137, 56)], N_BUIO)
+    elif nome == "antonio":
+        poligono(f, [(138, 112), (141, 94), (145, 86), (155, 86), (159, 94), (162, 112)], N_BUIO)
+        poligono(f, [(144, 88), (146, 79), (150, 76), (154, 79), (156, 88)], N_BUIO)  # il cappuccio
+        f.linea(140, 90, 164, 82, N_BUIO, 3)                                         # la fascina
+    else:
+        raise ValueError(nome)
+    return f
+
+
 def eroi(t, luce, armi=False):
-    """I tre, di spalle in basso, guardano l'altare: Ubaldo con la mitra e il pastorale, Giorgio con
-    l'elmo e la lancia, Antonio col cappuccio e la fascina. Sagome scure col filo acceso in alto."""
-    figure = []
-    # Ubaldo
-    u = Tela(W, H)
-    poligono(u, [(80, 112), (82, 96), (86, 90), (96, 90), (100, 96), (102, 112)], N_BUIO)
-    u.ellisse(91, 87, 5, 5, N_BUIO)
-    poligono(u, [(86, 84), (88, 75), (91, 79), (94, 75), (96, 84)], N_BUIO)          # la mitra
-    u.rett(104, 70, 2, 42, N_BUIO)                                                   # il pastorale
-    u.ellisse(106, 69, 3, 3, N_BUIO)
-    u.punto(106, 69, 0)
-    figure.append((u, (104, 66, 106, 112)))
-    # Giorgio
-    g = Tela(W, H)
-    poligono(g, [(110, 112), (111, 95), (116, 89), (126, 89), (131, 95), (132, 112)], N_BUIO)
-    g.ellisse(121, 85, 5, 5, N_BUIO)
-    g.rett(116, 80, 10, 3, N_BUIO)                                                   # l'elmo
-    g.rett(134, 56, 2, 56, N_BUIO)                                                   # la lancia
-    poligono(g, [(133, 56), (135, 50), (137, 56)], N_BUIO)
-    figure.append((g, (133, 48, 137, 112)))
-    # Antonio
-    a = Tela(W, H)
-    poligono(a, [(138, 112), (141, 94), (145, 86), (155, 86), (159, 94), (162, 112)], N_BUIO)
-    poligono(a, [(144, 88), (146, 79), (150, 76), (154, 79), (156, 88)], N_BUIO)    # il cappuccio
-    a.linea(140, 90, 164, 82, N_BUIO, 3)                                             # la fascina
-    figure.append((a, (165, 72, 167, 112)))
+    """I tre, di spalle in basso, guardano l'altare, ognuno sotto il suo Cero (Antonio a sinistra,
+    Ubaldo al centro, Giorgio a destra). Sagome scure col filo acceso in alto."""
+    figure = [(figura(n), SPOSTA[n]) for n in ("ubaldo", "giorgio", "antonio")]
     filo = {0: N_P1, 1: N_ALONE, 2: N_LUCE}[luce]
-    for f, arma in figure:
+    for f, dx in figure:
         for y in range(QUADRO):
             for x in range(W):
                 if f.px[y][x]:
-                    t.punto(x, y, N_BUIO)
+                    t.punto(x + dx, y, N_BUIO)
                     if y > 0 and not f.px[y - 1][x] and (x + y) % 3:
-                        t.punto(x, y, filo)
+                        t.punto(x + dx, y, filo)
     if armi:
         # i doni dei Ceri: la verga risplende, la lancia d'oro, il fuoco si alza
-        t.rett(104, 70, 2, 30, N_ORO)
-        t.ellisse(106, 69, 3, 3, N_ORO)
-        t.punto(106, 69, N_BUIO)
-        t.rett(134, 56, 2, 40, N_ORO)
-        poligono(t, [(133, 56), (135, 50), (137, 56)], N_LUCE)
+        du, dg, da = SPOSTA["ubaldo"], SPOSTA["giorgio"], SPOSTA["antonio"]
+        t.rett(104 + du, 70, 2, 30, N_ORO)
+        t.ellisse(106 + du, 69, 3, 3, N_ORO)
+        t.punto(106 + du, 69, N_BUIO)
+        t.rett(134 + dg, 56, 2, 40, N_ORO)
+        poligono(t, [(133 + dg, 56), (135 + dg, 50), (137 + dg, 56)], N_LUCE)
         for k in range(14):
             w = max(1, int(4 * math.sin(math.pi * (k + 1) / 15)))
-            t.rett(166 - w // 2 - (k % 3 == 0), 84 - k * 2, w, 2, N_ORO if k % 2 else N_ALONE)
-        t.ellisse(166, 86, 3, 3, N_LUCE)
+            t.rett(166 + da - w // 2 - (k % 3 == 0), 84 - k * 2, w, 2, N_ORO if k % 2 else N_ALONE)
+        t.ellisse(166 + da, 86, 3, 3, N_LUCE)
 
 
 def candele(t, accese):
@@ -214,7 +225,7 @@ def c5_sorgono(m):
     navata(t, 2)
     alone(t, 120, 60, 70, 46, N_ORO_S, N_ALONE)
     colonne_di_luce(t, larghe=True)
-    for cx, a in zip(CERI_X, ("mitra", "elmo", "fiamma")):
+    for cx, a in zip(CERI_X, ATTRIBUTI):
         cero(t, cx, ALTARE[2] + 6, a, emerso=0.55)
     x0, x1, y0, y1 = ALTARE                       # l'altare davanti ai Ceri che salgono
     t.rett(x0 - 2, y0, x1 - x0 + 4, 3, N_P3)
@@ -228,7 +239,7 @@ def c5_ceri(m):
     t = Tela(W, H)
     navata(t, 2)
     alone(t, 120, 46, 76, 50, N_ORO_S, N_ALONE)
-    for cx, a in zip(CERI_X, ("mitra", "elmo", "fiamma")):
+    for cx, a in zip(CERI_X, ATTRIBUTI):
         cero(t, cx, ALTARE[2] + 6, a)
     x0, x1, y0, y1 = ALTARE
     t.rett(x0 - 2, y0, x1 - x0 + 4, 3, N_P3)
@@ -245,7 +256,7 @@ def c5_raggi(m):
     ciascun santo scende una pioggia di luce e le armi si accendono. Il resto e' trasparente."""
     t = Tela(W, H)
     r = random.Random(21)
-    for cx, sx in zip(CERI_X, (92, 122, 152)):
+    for cx, sx in zip(CERI_X, (92, 121, 149)):
         for d in range(2, 7):                                         # la scintilla dell'attributo
             for dx, dy in ((d, 0), (-d, 0), (0, d), (0, -d)):
                 t.punto(cx + dx, ALTARE[2] + 6 - 76 + 4 + dy, N_LUCE if d < 4 else N_ORO)

@@ -339,6 +339,79 @@ def ordine_sulle_mura(trio):
     return x["antonio"] < x["ubaldo"] < x["giorgio"]
 
 
+def ordine_c5(ceri, santi):
+    """Regola di Cioti in C5: il Cero della mitra (Ubaldo) al centro, quello dell'elmo (Giorgio) a destra,
+    quello della fiamma (Antonio) a sinistra; e ognuno dei tre santi sotto il suo Cero (entro 8 px)."""
+    proprio = {"ubaldo": "mitra", "giorgio": "elmo", "antonio": "fiamma"}
+    if not ceri["fiamma"] < ceri["mitra"] < ceri["elmo"]:
+        return False
+    if not santi["antonio"] < santi["ubaldo"] < santi["giorgio"]:
+        return False
+    return all(abs(santi[n] - ceri[a]) <= 8 for n, a in proprio.items())
+
+
+def ceri_nel_piano(tela, emerso=1.0):
+    """Dove stanno i tre Ceri in un piano di C5, letto dai pixel: ogni attributo (mitra, elmo, fiamma)
+    disegnato da solo con pittore_c5.cero e cercato riga per riga sopra il pomo; deve trovarsi una
+    volta sola. Ritorna {attributo: x del Cero}."""
+    C5 = GR.PP.C5
+    base = C5.ALTARE[2] + 6
+    cima = base - int(76 * emerso)
+    trovati = {}
+    for attributo in ("mitra", "elmo", "fiamma"):
+        modello = C5.Tela(C5.W, C5.H)
+        C5.cero(modello, 256, base, attributo, emerso)
+        pixel = [(x, y, modello.px[y][x]) for y in range(max(0, cima - 12), cima + 7)
+                 for x in range(C5.W) if modello.px[y][x]]
+        posti = [dx for dx in range(-250, C5.W - 256 - 10)
+                 if all(tela.px[y][x + dx] == c for x, y, c in pixel)]
+        if len(posti) == 1:
+            trovati[attributo] = 256 + posti[0]
+    return trovati
+
+
+def santi_nel_piano(tela=None, colori=None):
+    """Dove stanno i tre santi di C5, letto dai pixel: ogni sagoma (pittore_c5.figura) cercata per
+    spostamento nel piano, dove ogni suo pixel deve avere uno dei colori della sagoma (il nero e il filo);
+    senza piano, pittore_c5.eroi su una tela vuota. La x e' il mezzo della corsa piu' larga dell'ultima
+    riga (il corpo, non il bastone). Ritorna {santo: x}; un santo trovato in due posti non c'e'."""
+    C5 = GR.PP.C5
+    if tela is None:
+        tela = C5.Tela(C5.W, C5.H)
+        C5.eroi(tela, 0)
+        colori = {C5.N_BUIO, C5.N_P1}
+    trovati = {}
+    for nome in ("ubaldo", "giorgio", "antonio"):
+        f = C5.figura(nome)
+        pixel = [(x, y) for y in range(C5.QUADRO) for x in range(C5.W) if f.px[y][x]]
+        posti = [dx for dx in range(-150, 150)
+                 if all(0 <= x + dx < C5.W and tela.px[y][x + dx] in colori for x, y in pixel)]
+        if len(posti) != 1:
+            continue
+        riga = sorted(x for x, y in pixel if y == C5.QUADRO - 1)
+        corse, inizio = [], riga[0]
+        for a, b in zip(riga, riga[1:] + [None]):
+            if b != a + 1:
+                corse.append((inizio, a))
+                inizio = b
+        a, b = max(corse, key=lambda c: c[1] - c[0])
+        trovati[nome] = (a + b) / 2 + posti[0]
+    return trovati
+
+
+def fila_negli_stradoni(tela):
+    """I tre piccoli all'imbocco del primo stradone di C7S, letti dal colore della testa (righe 97-98, a
+    sinistra di x=80): l'oro della mitra di Ubaldo, il rosso di Giorgio, il legno del saio di Antonio."""
+    C7 = GR.PP.C7
+    colore = {"ubaldo": C7.ST_ORO, "giorgio": C7.ST_ROSSO, "antonio": C7.ST_LEGNO}
+    return {n: min(x for y in (97, 98) for x in range(30, 80) if tela.px[y][x] == c) for n, c in colore.items()}
+
+
+def in_fila_verso_destra(x):
+    """Regola di Cioti per chi cammina verso destra: Ubaldo davanti, poi Giorgio, poi Antonio."""
+    return x["ubaldo"] > x["giorgio"] > x["antonio"]
+
+
 def figura_a_colori(tela):
     """Una figura a colori sul suo piano: almeno 6 indici diversi, alta 70-100 px, i piedi a SUOLO - 1."""
     righe = [y for y, r in enumerate(tela.px) if any(r[:240])]
@@ -503,6 +576,48 @@ class C5C6C7(unittest.TestCase):
         self.assertEqual(self.c["C6"]["inquadrature"][0]["piani"], ["vetrata"])
         self.assertEqual([i["colpo"] for i in self.c["C5"]["inquadrature"]], [False, True, True, False, False, True, False])
         self.assertTrue(self.c["C6"]["inquadrature"][1]["dissolvi"])
+
+    def test_c5_l_ordine_di_cioti(self):
+        """Regola di Cioti (4 nov): in C5 il Cero di Ubaldo (la mitra) al centro, quello di Giorgio (l'elmo)
+        a destra, quello di Antonio (la fiamma) a sinistra, nei due piani coi Ceri; i tre santi nello stesso
+        ordine, ognuno sotto il suo Cero. Posizioni lette dai pixel dei piani."""
+        PP = GR.PP
+        C5 = PP.C5
+        for nome, emerso in (("c5_sorgono", 0.55), ("c5_ceri", 1.0)):
+            tela = PP.PITTORI[nome]("notte")[0]
+            ceri = ceri_nel_piano(tela, emerso)
+            santi = santi_nel_piano(tela, {C5.N_BUIO, C5.N_LUCE})
+            self.assertEqual(set(ceri), {"mitra", "elmo", "fiamma"}, nome)
+            self.assertEqual(set(santi), {"ubaldo", "giorgio", "antonio"}, nome)
+            self.assertTrue(ordine_c5(ceri, santi), (nome, ceri, santi))
+        # le candele dell'altare dove poi salgono i Ceri; i santi nello stesso posto in tutte le inquadrature
+        self.assertEqual(santi_nel_piano(PP.PITTORI["c5_navata"]("notte")[0], {C5.N_BUIO, C5.N_P1}), santi)
+        self.assertEqual(santi_nel_piano(PP.PITTORI["c5_accese"]("notte")[0], {C5.N_BUIO, C5.N_ALONE}), santi)
+
+    def test_negativa_c5_nell_ordine_della_corsa(self):
+        """Il port di ieri: i Ceri nell'ordine della corsa (mitra, elmo, fiamma da sinistra) e i santi dove li
+        aveva disegnati il mockup. I pixel lo vedono e la regola lo rifiuta; e rifiuta anche i Ceri giusti
+        coi santi fuori posto."""
+        C5 = GR.PP.C5
+        tela = C5.Tela(C5.W, C5.H)
+        for cx, a in zip(C5.CERI_X, ("mitra", "elmo", "fiamma")):
+            C5.cero(tela, cx, C5.ALTARE[2] + 6, a)
+        ceri_vecchi = ceri_nel_piano(tela)
+        self.assertEqual(ceri_vecchi, {"mitra": 92, "elmo": 120, "fiamma": 148})
+        santi_vecchi = {"ubaldo": 91, "giorgio": 121, "antonio": 150}
+        self.assertFalse(ordine_c5(ceri_vecchi, santi_vecchi))
+        ceri_giusti = ceri_nel_piano(GR.PP.PITTORI["c5_ceri"]("notte")[0])
+        self.assertFalse(ordine_c5(ceri_giusti, santi_vecchi))
+        self.assertFalse(ordine_c5(ceri_vecchi, santi_nel_piano()))
+
+    def test_c7s_la_fila_negli_stradoni(self):
+        """C7S: i tre vanno verso destra all'imbocco del primo stradone, Ubaldo davanti, poi Giorgio, poi
+        Antonio (la regola di Cioti)."""
+        x = fila_negli_stradoni(GR.PP.PITTORI["c7_monte"]("giorno")[0])
+        self.assertTrue(in_fila_verso_destra(x), x)
+
+    def test_negativa_c7s_ubaldo_in_coda(self):
+        self.assertFalse(in_fila_verso_destra({"ubaldo": 44, "giorgio": 50, "antonio": 56}))
 
     def test_negativa_c6_con_una_battuta(self):
         n, t = next((n, t) for n, t in GR.sorgenti_del_repo() if "c6_" in n)
