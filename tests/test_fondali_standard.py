@@ -262,3 +262,51 @@ class ScalaDelleFacciate(unittest.TestCase):
     def test_negativa_facciata_di_tre_tile_non_basta(self):
         """Una facciata di 3 tile (24 pixel) non tiene una porta da 26: e' per questo che le vie ne vogliono 4-5."""
         self.assertLess(self._altezza_porta(3), 26)
+
+
+class PortaliInScala(unittest.TestCase):
+    """M2: i portali frontali dei monumenti disegnati da portale_in_scala sono alti almeno 26 pixel."""
+
+    def test_portali_dei_monumenti(self):
+        import pittore_monumenti as PM
+        altezze = []
+        originale = PM.portale_in_scala
+
+        def conta(*a, **k):
+            h = originale(*a, **k)
+            altezze.append(h)
+            return h
+        PM.portale_in_scala = conta
+        try:
+            for nome in ("largo_bargello", "san_martino", "bottaccione", "san_pietro", "sant_agostino"):
+                a, mondo = area(nome)
+                G.disegna_area(a, mondo)
+        finally:
+            PM.portale_in_scala = originale
+        self.assertGreater(len(altezze), 5)
+        self.assertTrue(all(h >= 26 for h in altezze), altezze)
+
+    def test_negativa_facciata_troppo_bassa(self):
+        """Sotto un occhio che scende fino a 6 pixel dalla base, il portale non arriva a 26: va rifiutato."""
+        import pittore_monumenti as PM
+        t = PM.Tela(4, 6)
+        self.assertLess(PM.portale_in_scala(t, 16, 48, 30), 26)
+
+    def test_portale_sulle_celle_d(self):
+        """Il portale centrato sta sulle due celle 'd' (w//2 - 1, w//2), dove gli interni mettono l'ingresso."""
+        import pittore_monumenti as PM
+        for w in (6, 7, 8, 9, 27):
+            t = PM.Tela(w, 6)
+            PM.portale_in_scala(t, t.w // 2, 48, 4)
+            xs = [x for x in range(t.w) if t.px[40][x] == PM.LEGNO_SCURO]
+            self.assertTrue(xs, w)
+            self.assertGreaterEqual(min(xs), (w // 2 - 1) * 8, w)
+            self.assertLessEqual(max(xs), (w // 2) * 8 + 7, w)
+
+    def test_negativa_portale_spostato(self):
+        """Un portale disegnato mezza cella piu' a destra esce dalle celle 'd'."""
+        import pittore_monumenti as PM
+        t = PM.Tela(9, 6)
+        t.arco(32 - 8 + 4, 20, 16, 28, PM.LEGNO_SCURO)
+        xs = [x for x in range(t.w) if t.px[40][x] == PM.LEGNO_SCURO]
+        self.assertGreater(max(xs), (9 // 2) * 8 + 7)
