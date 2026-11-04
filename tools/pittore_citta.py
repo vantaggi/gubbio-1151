@@ -1169,7 +1169,7 @@ def dipingi_breccia(q, x, y, griglia):
     h, w = len(griglia), len(griglia[0])
 
     def b(xx, yy):
-        return 0 <= xx < w and 0 <= yy < h and griglia[yy][xx] in "bAEBJ"
+        return 0 <= xx < w and 0 <= yy < h and griglia[yy][xx] in "b,SAEBGJ"
     verticale = b(x, y - 1) and b(x, y + 1)
     orizzontale = b(x - 1, y) and b(x + 1, y)
     bosco = {(dx, dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
@@ -1196,8 +1196,8 @@ def dipingi_muretto(q, x, y, griglia):
     """Il muretto a secco sul lato a valle dei tornanti, visto in 3/4: la cresta di pietre chiare in alto, la faccia
     di pietre irregolari un tono sotto coi giunti scuri, il piede in ombra (L1, F2)."""
     X0, Y0 = x * 8, y * 8
-    sotto = y + 1 < len(griglia) and griglia[y + 1][x] == "m"
-    sopra = y > 0 and griglia[y - 1][x] == "m"
+    sotto = y + 1 < len(griglia) and griglia[y + 1][x] in "mM"
+    sopra = y > 0 and griglia[y - 1][x] in "mM"
     for yy in range(8):
         for xx in range(8):
             X, Y = X0 + xx, Y0 + yy

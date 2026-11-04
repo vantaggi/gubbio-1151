@@ -2138,10 +2138,13 @@ def ridipingi_monte(q, g, w, h):
     for y in range(h):
         for x in range(w):
             c = g[y][x]
-            if c == "b":
+            if c in "b,":
+                # la ghiaia degli stradoni e la strada bianca del Bottaccione
                 PC.dipingi_breccia(q, x, y, g)
-            elif c == "m":
+            elif c in "mM":
                 PC.dipingi_muretto(q, x, y, g)
+            elif c == "S":
+                PC.dipingi_scala(q, x, y, g)
     for y in range(h):
         for x in range(w):
             c = g[y][x]

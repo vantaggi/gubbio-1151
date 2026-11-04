@@ -145,6 +145,15 @@ def altezza_facciata(h, altezza_m=None, minimo=3):
     return max(minimo, min(h - 3, int(round(h * 0.4))))
 
 
+def portale_in_scala(t, cx, base, cima_libera, largo=16, alto=28):
+    """M2: il portale frontale in scala col giocatore (alto 22-24 pixel): 28 pixel, o fin dove la facciata lo
+    lascia (sotto finestre e occhi, 'cima_libera'), largo 2 celle (16 pixel, quanto il portale aperto degli
+    interni). Ritorna l'altezza; i test vogliono almeno 26."""
+    hp = max(8, min(alto, base - cima_libera))
+    t.arco(cx - largo // 2, base - hp, largo, hp, LEGNO_SCURO)
+    return hp
+
+
 def tetto_e_facciata(t, w, h, fh, tinta):
     """Tetto a falde sopra, gronda, facciata di conci sotto: la base comune."""
     t.falde(0, 0, w * 8, (h - fh) * 8)
@@ -219,14 +228,14 @@ def bargello(w, h, info):
     """Bargello: stretto e alto, frontale; il portale e accanto la porta del morto, stretta e rialzata."""
     t = Tela(w, h)
     tinta = TINTE[2]
-    fh = max(5, min(h - 2, h * 6 // 10))
+    fh = max(min(6, h - 2), min(h - 2, h * 6 // 10))
     tetto_e_facciata(t, w, h, fh, tinta)
     y0 = (h - fh) * 8
     largo = w * 8
     for k in range(2):
-        t.arco(largo // 2 - 17 + k * 22, y0 + 6, 12, 18, CONTORNO)
+        t.arco(largo // 2 - 17 + k * 22, y0 + 4, 12, 14, CONTORNO)
     base = y0 + fh * 8
-    t.arco(largo // 2 - 10, base - 22, 14, 22, LEGNO_SCURO)
+    portale_in_scala(t, largo // 2 - 4, base, y0 + 20)
     t.elementi["portale"] += 1
     t.arco(largo // 2 + 7, base - 24, 8, 16, LEGNO)
     t.rett(largo // 2 + 7, base - 8, 8, 8, PIETRA_SCURA)
@@ -253,7 +262,7 @@ def san_domenico(w, h, info):
     t.elementi["facciata_incompiuta"] += 1
     t.arco(largo // 2 - 6, y0 + 12, 12, 12, CONTORNO)
     base = y0 + fh * 8
-    t.arco(largo // 2 - 8, base - 22, 16, 22, LEGNO_SCURO)
+    portale_in_scala(t, largo // 2, base, y0 + 26)
     t.elementi["portale"] += 1
     t.contorno()
     return t
@@ -316,7 +325,8 @@ def generico(mid, nome, w, h, faccia, n):
     r = ruolo(nome)
     tinta = TINTE[n % len(TINTE)]
     t = Tela(w, h)
-    fh = 2 if faccia != "basso" else max(2, min(h - 2, h // 3))
+    # M2: la facciata frontale alta almeno 4 tile, perche' il portone sia di 26-28 pixel
+    fh = 2 if faccia != "basso" else max(2, min(h - 1, max(4, h // 3)))
     if r == "porta":
         t.conci(0, 0, w * 8, h * 8, tinta)
         t.merli(0, 0, w * 8, tinta)
@@ -333,9 +343,11 @@ def generico(mid, nome, w, h, faccia, n):
         t.conci(0, (h - fh) * 8, w * 8, fh * 8, tinta)
     if faccia == "basso":
         largo = w * 8
-        t.arco(largo // 2 - 5, h * 8 - 14, 10, 14, LEGNO_SCURO)
+        # M2: il portone in scala col giocatore (alto 22-24): 28 pixel, o quanto la facciata permette
+        ap = portale_in_scala(t, largo // 2, h * 8, (h - fh) * 8 + 4, largo=16 if largo >= 24 else 10)
         t.elementi["porta"] += 1
-        if r == "chiesa":
+        if r == "chiesa" and fh * 8 - ap >= 12:
+            # la finestra sopra il portone, se c'e' posto
             t.arco(largo // 2 - 4, (h - fh) * 8 + 3, 8, 8, CONTORNO)
     elif faccia in ("sinistra", "destra"):
         x = 0 if faccia == "sinistra" else w * 8 - 8
@@ -537,7 +549,7 @@ def sant_agostino(w, h, info):
     fh = altezza_facciata(h, None, 5)
     tetto_e_facciata(t, w, h, fh, TINTE[2])
     largo, base = w * 8, h * 8
-    t.arco(largo // 2 - 7, base - 22, 14, 22, LEGNO_SCURO)
+    portale_in_scala(t, largo // 2, base, (h - fh) * 8 + 18)
     t.elementi["portale"] += 1
     t.arco(largo // 2 - 4, (h - fh) * 8 + 8, 8, 8, CONTORNO)
     t.contorno()
@@ -621,7 +633,7 @@ def san_marziale(w, h, info):
     t.conci(largo // 2 - 8, (h - fh) * 8 - 20, 16, 18, TINTE[0])
     t.arco(largo // 2 - 4, (h - fh) * 8 - 17, 8, 10)
     t.elementi["campanile_vela"] += 1
-    t.arco(largo // 2 - 6, base - 18, 12, 18, LEGNO_SCURO)
+    portale_in_scala(t, largo // 2, base, (h - fh) * 8 + 4)
     t.elementi["portale"] += 1
     t.contorno()
     return t
@@ -633,7 +645,7 @@ def santa_maria_nuova(w, h, info):
     fh = altezza_facciata(h, None, 4)
     tetto_e_facciata(t, w, h, fh, TINTE[1])
     largo, base = w * 8, h * 8
-    t.arco(largo // 2 - 6, base - 18, 12, 18, LEGNO_SCURO)
+    portale_in_scala(t, largo // 2, base, (h - fh) * 8 + 17)
     t.elementi["portale"] += 1
     t.arco(largo // 2 - 2, (h - fh) * 8 + 5, 4, 10, CONTORNO)
     t.elementi["monofora"] += 1
@@ -646,16 +658,16 @@ def capitano_popolo(w, h, info):
     acuto e il portale."""
     t = Tela(w, h)
     tinta = TINTE[1]
-    fh = altezza_facciata(h, None, 4)
+    fh = altezza_facciata(h, None, min(6, h - 2))
     tetto_e_facciata(t, w, h, fh, tinta)
     y0 = (h - fh) * 8
     largo, base = w * 8, h * 8
     t.merli(0, y0, largo, tinta)
     t.elementi["merlatura"] += 1
     for k in range(3):
-        t.arco_acuto(8 + k * (largo - 16) // 3, y0 + 10, 8, 12, CONTORNO)
+        t.arco_acuto(8 + k * (largo - 16) // 3, y0 + 8, 8, 10, CONTORNO)
         t.elementi["finestra_acuta"] += 1
-    t.arco(largo // 2 - 6, base - 16, 12, 16, LEGNO_SCURO)
+    portale_in_scala(t, largo // 2, base, y0 + 20)
     t.elementi["portale"] += 1
     t.contorno()
     return t
@@ -699,7 +711,7 @@ def sant_ambrogio(w, h, info):
     t.falde(8, 8, w * 8 - 16, (h - fh) * 8 - 8)
     t.elementi["roccia"] += 1
     t.conci(8, (h - fh) * 8, w * 8 - 16, fh * 8, TINTE[1])
-    t.arco(w * 4 - 5, h * 8 - 14, 10, 14, LEGNO_SCURO)
+    portale_in_scala(t, w * 4, h * 8, (h - fh) * 8 + 4)
     t.elementi["porta"] += 1
     t.contorno()
     return t
