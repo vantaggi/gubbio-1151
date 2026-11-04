@@ -192,8 +192,9 @@ int VistaTesto::rivelati() const
     return _rivelati;
 }
 
-VistaNumero::VistaNumero(int x, int y, int inchiostro, const bn::sprite_palette_ptr& palette) :
+VistaNumero::VistaNumero(int x, int y, int inchiostro, const bn::sprite_palette_ptr& palette, int contorno) :
     _inchiostro(inchiostro),
+    _contorno(contorno),
     _tiles(bn::sprite_tiles_ptr::allocate(8, bn::bpp_mode::BPP_4)),
     _sprite(crea_sprite(x, y, _tiles, palette))
 {
@@ -201,9 +202,12 @@ VistaNumero::VistaNumero(int x, int y, int inchiostro, const bn::sprite_palette_
 
 void VistaNumero::mostra(int valore)
 {
+    constexpr int L = testi::LARGHEZZA_SPRITE;
+    constexpr int A = 16;
     char cifre[FORMATTA_CARATTERI_MAX + 1] = {};
     int n = formatta_intero(valore, cifre);
-    int x = 0;
+    int x = _contorno >= 0 ? 1 : 0;     // col contorno, un pixel di margine a sinistra
+    bool acceso[A][L] = {};
 
     pulisci_tiles(_tiles);
 
@@ -213,10 +217,48 @@ void VistaNumero::mostra(int valore)
         BN_ASSERT(g, "VistaNumero: cifra senza glifo ", int(cifre[i]));
 
         testo::per_ogni_pixel(*g, x, [&](int px, int py) {
-            accendi_pixel(_tiles, px, py, _inchiostro);
+            if(px >= 0 && px < L && py >= 0 && py < A)
+            {
+                acceso[py][px] = true;
+                accendi_pixel(_tiles, px, py, _inchiostro);
+            }
         });
 
         x += g->larghezza + stile::FONT_SPAZIATURA;
+    }
+
+    if(_contorno < 0)
+    {
+        return;
+    }
+
+    // il contorno: ogni pixel spento con un vicino acceso (anche in diagonale)
+    for(int py = 0; py < A; ++py)
+    {
+        for(int px = 0; px < L; ++px)
+        {
+            if(acceso[py][px])
+            {
+                continue;
+            }
+
+            bool vicino = false;
+
+            for(int dy = -1; dy <= 1 && ! vicino; ++dy)
+            {
+                for(int dx = -1; dx <= 1 && ! vicino; ++dx)
+                {
+                    int vx = px + dx;
+                    int vy = py + dy;
+                    vicino = vx >= 0 && vx < L && vy >= 0 && vy < A && acceso[vy][vx];
+                }
+            }
+
+            if(vicino)
+            {
+                accendi_pixel(_tiles, px, py, _contorno);
+            }
+        }
     }
 }
 

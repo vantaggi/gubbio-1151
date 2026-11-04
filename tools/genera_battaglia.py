@@ -19,7 +19,8 @@ sys.path.insert(0, os.path.join(RADICE, "tools"))
 sys.path.insert(0, os.path.join(RADICE, "stile"))
 
 import stile as S  # noqa: E402
-import sagome_battaglia as SB  # noqa: E402
+import sagome_battaglia as SB
+import fondali_battaglia as FB  # noqa: E402
 
 USCITA = os.path.join(RADICE, "include", "battaglia_grafica.h")
 INCONTRI = ("pattuglia", "imboscata", "duello", "rito", "guerrieri", "fornace", "infiltrato")
@@ -28,6 +29,7 @@ INCONTRI = ("pattuglia", "imboscata", "duello", "rito", "guerrieri", "fornace", 
 # Palazzo dei Consoli del Duello. I Guerrieri della Roccia (B-03) hanno la gola del Bottaccione.
 SFONDO_DI = {5: 0, 6: 2}
 PANNELLO_Y = 104      # da qui in giu' il pannello dei comandi
+TILE_SFONDO_MAX = 480  # i tile di un fondale nella VRAM degli sfondi, con quelli del testo
 
 # --- palette: (rampa, tono) della Guida di stile -------------------------------------------------
 PALETTE_SFONDO = [
@@ -134,120 +136,34 @@ ALTRI = (("FRECCIA", freccia),)
 
 
 # --- gli sfondi ------------------------------------------------------------------------------------
+# --- i fondali: in tools/fondali_battaglia.py (standard grafico, giro 2 del loop grafico) -------------
+FONDALE_DI = tuple(SFONDO_DI.get(i, i) for i in range(len(INCONTRI)))     # incontro -> fondale (0-4)
+
+
 def sfondo(incontro):
-    """Lo sfondo 256x256 (si vedono i primi 240x160): cielo, profilo lontano, suolo."""
-    incontro = SFONDO_DI.get(incontro, incontro)
-    t = Tela(256, 256, 1)
-    orizzonte = 76
-    for y in range(orizzonte):
-        banda = min(4, y // 14)
-        for x in range(256):
-            # fasce del cielo con il passaggio a scacchiera fra una e l'altra
-            sopra = y % 14 < 2 and (x + y) % 2 == 0 and banda > 0
-            t.punto(x, y, 1 + (banda - 1 if sopra else banda))
-    if incontro == 0:
-        # le mura con le torri merlate, la porta in mezzo
-        t.rett(0, 54, 256, orizzonte - 54, 7)
-        for x in range(0, 256, 6):
-            t.rett(x, 50, 3, 4, 7)
-        for x0 in (20, 96, 170, 230):
-            t.rett(x0, 34, 18, orizzonte - 34, 8)
-            for x in range(x0, x0 + 18, 5):
-                t.rett(x, 30, 3, 4, 8)
-            t.rett(x0 + 7, 44, 3, 6, 0)
-        t.ellisse(128, 72, 12, 16, 15)
-        for y in range(54, orizzonte, 6):
-            t.rett(0, y, 256, 1, 6)
-    elif incontro == 1:
-        # il monte: il bosco a macchie sul pendio, gli stradoni chiari
-        for x in range(256):
-            cima = 30 + int(14 * abs(((x / 256.0) * 2) % 2 - 1))
-            for y in range(cima, orizzonte):
-                t.punto(x, y, 11 if (x * 7 + y * 3) % 5 else 12)
-        for k in range(26):
-            cx, cy = (k * 41) % 256, 40 + (k * 17) % 34
-            t.ellisse(cx, cy, 6, 5, 10)
-        for y in range(46, orizzonte, 12):
-            t.rett(0, y, 256, 2, 9)
-    elif incontro == 3:
-        # dentro la Basilica: le colonne della navata nella penombra, la vetrata in fondo
-        t.rett(0, 0, 256, orizzonte, 1)
-        for x0 in range(10, 256, 46):
-            t.rett(x0, 8, 14, orizzonte - 8, 7)
-            t.rett(x0 + 10, 8, 4, orizzonte - 8, 6)
-        t.rett(104, 6, 48, 46, 0)
-        for y in range(8, 50, 6):
-            for x in range(106, 150, 6):
-                t.rett(x, y, 5, 5, 3 if (x + y) % 12 else 13)
-    elif incontro == 4:
-        # la gola del Bottaccione sotto l'arco: le due pareti di scaglia a fasce, rossa e bianca, che lasciano un
-        # filo di cielo; la striscia nera del limite K-Pg che corre da una parete all'altra; l'edera
-        fasce = (13, 13, 8, 14, 14, 14, 9, 9, 7, 13, 8, 8)    # strati di spessore diverso, 4 righe l'uno
-        for x in range(256):
-            colonna = x // 8                        # il bordo delle pareti a gradini di un tile
-            cielo = max(0, 30 - 3 * abs(colonna - 16) + (colonna * 5) % 3 * 2)
-            for y in range(cielo, orizzonte):
-                t.punto(x, y, fasce[(y // 4) % len(fasce)])
-        t.rett(0, 50, 256, 3, 0)                    # la striscia nera
-        for y in range(36, orizzonte, 6):           # le fratture della roccia, a tile
-            for x in range(4 + (y // 6) % 2 * 8, 256, 16):
-                t.rett(x, y, 1, 3, 6)
-        for k in range(9):                          # l'edera sulle pareti
-            cx, cy = (k * 61 + 12) % 256, 58 + (k * 23) % 14
-            t.ellisse(cx, cy, 5, 4, 10)
-            t.ellisse(cx + 2, cy - 1, 2, 2, 11)
-    else:
-        # Piazza Grande: il Palazzo dei Consoli con la torre, e la citta' bassa
-        t.rett(0, 58, 256, orizzonte - 58, 13)
-        for x in range(0, 256, 9):
-            t.rett(x, 56, 6, 3, 14)
-        t.rett(70, 22, 116, orizzonte - 22, 8)
-        for x in range(72, 186, 6):
-            t.rett(x, 18, 3, 4, 8)
-        t.rett(150, 4, 18, 20, 8)
-        for x in range(150, 168, 5):
-            t.rett(x, 1, 3, 3, 8)
-        for x in range(80, 180, 16):
-            t.rett(x, 32, 6, 10, 0)
-            t.rett(x, 48, 6, 10, 0)
-        t.rett(124, 60, 10, 16, 15)
-    # il suolo: ghiaia o lastre a corsi sfalsati, allineato ai tile (pochi tile diversi)
-    for y in range(orizzonte, 256):
-        for x in range(256):
-            if incontro in (1, 4):
-                c = 9 if (x * 3 + y * 5) % 7 else 8
-            else:
-                riga = y // 8
-                sfalsa = 8 if riga % 2 else 0
-                c = 6 if y % 8 == 7 or (x + sfalsa) % 16 == 15 else (8 if ((x + sfalsa) // 16 + riga) % 3 else 7)
-            t.punto(x, y, c)
-    # fuori dallo schermo (oltre 240x160) si ripete il suolo
-    for y in range(160, 256):
-        for x in range(256):
-            t.px[y][x] = t.px[96 + (y % 8)][x % 16 + 16 * ((y // 8) % 2)]
-    # il pannello in basso (da y=104): fondo scuro e cornice di pietra chiara, per i comandi,
-    # gli indizi e l'esito
-    for y in range(PANNELLO_Y, 160):
-        for x in range(240):
-            bordo = y in (PANNELLO_Y, PANNELLO_Y + 1, 158, 159) or x in (0, 1, 238, 239)
-            t.px[y][x] = 9 if bordo else (0 if (y + x) % 7 else 15)
-    for y in range(256):
-        for x in range(240, 256):
-            t.px[y][x] = t.px[y][x - 16]
+    """La griglia 256x256 di indici dello sfondo di un incontro (si vedono i primi 240x160); la palette e'
+    quella del suo fondale (palette_sfondo)."""
+    t = Tela(256, 256)
+    t.px = FB.fondale(SFONDO_DI.get(incontro, incontro))[0]
     return t
 
 
+def palette_sfondo(incontro):
+    return FB.fondale(SFONDO_DI.get(incontro, incontro))[1]
+
+
 def tile_e_mappe():
-    tile, mappe = {}, []
-    for i in range(len(INCONTRI)):
-        t = sfondo(i)
-        mappa = []
+    """Per ogni fondale i suoi tile (senza doppioni) e la sua mappa 32x32: [(tile, mappa)]."""
+    out = []
+    for k in range(len(FB.PITTORI)):
+        px = FB.fondale(k)[0]
+        tile, mappa = {}, []
         for ty in range(32):
             for tx in range(32):
-                chiave = tuple(tuple(t.px[ty * 8 + y][tx * 8:tx * 8 + 8]) for y in range(8))
+                chiave = tuple(tuple(px[ty * 8 + y][tx * 8:tx * 8 + 8]) for y in range(8))
                 mappa.append(tile.setdefault(chiave, len(tile)))
-        mappe.append(mappa)
-    return list(tile), mappe
+        out.append((list(tile), mappa))
+    return out
 
 
 # --- l'header ----------------------------------------------------------------------------------------
@@ -274,22 +190,36 @@ def blocchi(valori, per_riga, formato):
 
 def genera(palette_stile):
     colore = lambda rif: S.colore(palette_stile, rif)  # noqa: E731
-    tile, mappe = tile_e_mappe()
-    if len(tile) > 512:
-        raise SystemExit(f"[battaglia] {len(tile)} tile di sfondo: il massimo e' 512")
+    fondali = tile_e_mappe()
+    for k, (tile, _) in enumerate(fondali):
+        if len(tile) > TILE_SFONDO_MAX:
+            raise SystemExit(f"[battaglia] fondale {k}: {len(tile)} tile, il massimo e' {TILE_SFONDO_MAX}")
     out = ["// GENERATO da tools/genera_battaglia.py: la grafica procedurale della battaglia.",
            "// Non modificare a mano.",
            "#ifndef GUBBIO_BATTAGLIA_GRAFICA_H", "#define GUBBIO_BATTAGLIA_GRAFICA_H", "",
            "#include <cstdint>", "", "#include \"bn_tile.h\"", "",
            "namespace gubbio::battaglia::grafica", "{", ""]
-    for nome, pal in (("SFONDO", PALETTE_SFONDO), ("SANTI", PALETTE_SANTI), ("NEMICI", PALETTE_NEMICI)):
+    for nome, pal in (("SANTI", PALETTE_SANTI), ("NEMICI", PALETTE_NEMICI)):
         out += [f"inline constexpr uint16_t PALETTE_{nome}[16] = {{",
                 blocchi([colore(r) for r in pal], 8, lambda v: f"0x{v:04X}"), "};", ""]
-    out += [f"inline constexpr int TILE_SFONDO_CONTEGGIO = {len(tile)};",
-            "inline constexpr bn::tile TILE_SFONDO[TILE_SFONDO_CONTEGGIO] = {"]
-    out += ["    { { " + ", ".join(f"0x{v:08X}" for v in parole(t)) + " } }," for t in tile]
-    out += ["};", "", f"inline constexpr uint16_t SFONDO[{len(INCONTRI)}][1024] = {{"]
-    for m in mappe:
+    # i fondali (tools/fondali_battaglia.py): per ognuno la palette, i tile e la mappa; l'incontro sceglie il suo
+    out += [f"inline constexpr int FONDALI = {len(fondali)};",
+            f"inline constexpr int FONDALE_DI[{len(INCONTRI)}] = {{ " + ", ".join(map(str, FONDALE_DI)) + " };",
+            "inline constexpr uint16_t PALETTE_SFONDO[FONDALI][16] = {"]
+    for k in range(len(fondali)):
+        out += ["    {", blocchi([colore(r) for r in FB.fondale(k)[1]], 8, lambda v: f"0x{v:04X}").replace("    ", "        ", 1)
+                .replace("\n    ", "\n        "), "    },"]
+    out += ["};", ""]
+    for k, (tile, _) in enumerate(fondali):
+        out += [f"inline constexpr bn::tile TILE_SFONDO_{k}[{len(tile)}] = {{"]
+        out += ["    { { " + ", ".join(f"0x{v:08X}" for v in parole(t)) + " } }," for t in tile]
+        out += ["};", ""]
+    out += ["inline constexpr const bn::tile* TILE_SFONDO[FONDALI] = { " +
+            ", ".join(f"TILE_SFONDO_{k}" for k in range(len(fondali))) + " };",
+            "inline constexpr int TILE_SFONDO_CONTEGGIO[FONDALI] = { " +
+            ", ".join(str(len(t)) for t, _ in fondali) + " };", "",
+            "inline constexpr uint16_t SFONDO[FONDALI][1024] = {"]
+    for _, m in fondali:
         out += ["    {", blocchi(m, 32, str).replace("\n    ", "\n        ").replace("    ", "        ", 1), "    },"]
     out += ["};", ""]
     # le sagome (pezzo SAG, tools/sagome_battaglia.py): ogni figura con la sua palette e le sue pose
