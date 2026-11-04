@@ -248,9 +248,12 @@ namespace
         return p.obiettivo;
     }
 
-    static_assert(obiettivo_finale(0) == 7 && OBIETTIVO[7].area == int(mondo::AreaId::PIAZZA_GRANDE),
+    static_assert(obiettivo_finale(0) == 8 && OBIETTIVO[8].area == int(mondo::AreaId::PIAZZA_GRANDE),
                   "con «Sì, è ora» l'ultimo obiettivo non e' Piazza Grande all'alba");
-    static_assert(obiettivo_finale(1) == 8, "con «Non ancora» l'ultimo obiettivo non e' parlare con Guido");
+    static_assert(OBIETTIVO[6].area == int(mondo::AreaId::CONDOTTO) && OBIETTIVO[6].scena >= 0 &&
+                  SCENA[OBIETTIVO[6].scena].area == int8_t(mondo::AreaId::GOLA_STRISCIA),
+                  "nella gola, dalla striscia nera, l'obiettivo non porta al Condotto");
+    static_assert(obiettivo_finale(1) == 9, "con «Non ancora» l'ultimo obiettivo non e' parlare con Guido");
 
     // Con «Non ancora» il confronto regge fino a B-05; poi Guido accende ALBA_CONFERMATA e chi ricava
     // dalle bandiere legge «Sì, è ora» (documentato in ricava_obiettivo: l'obiettivo e' comunque Piazza Grande).
@@ -277,7 +280,7 @@ namespace
             }
         }
 
-        return p.obiettivo == 8 && ! accesa(p, Bandiera::ALBA_CONFERMATA);
+        return p.obiettivo == 9 && ! accesa(p, Bandiera::ALBA_CONFERMATA);
     }
 
     static_assert(non_ancora_fino_a_b05(), "con «Non ancora» l'obiettivo ricavato non e' quello della recita");
