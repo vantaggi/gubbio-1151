@@ -1140,23 +1140,25 @@ struct Cosa
     int8_t area;                  // mondo::AreaId
     uint8_t tx;
     uint8_t ty;
+    uint16_t fx;                  // il fumetto: sull'oggetto, in pixel dell'area
+    uint16_t fy;
     testi::TestoId testo;
 };
 
 inline constexpr int COSE = 12;
 inline constexpr Cosa COSA[COSE] = {
-    { int8_t(mondo::AreaId::TAVERNA_INTERNO), 18, 10, testi::TestoId::ESAMINA_TAVERNA_CAMINO },  // camino
-    { int8_t(mondo::AreaId::TAVERNA_INTERNO), 12, 8, testi::TestoId::ESAMINA_TAVERNA_FIASCHI },  // fiaschi
-    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 18, 9, testi::TestoId::ESAMINA_CONTI_CHIARINA },  // chiarina
-    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 14, 9, testi::TestoId::ESAMINA_CONTI_CHIAVI },  // chiavi
-    { int8_t(mondo::AreaId::CARRADORE_INTERNO), 6, 16, testi::TestoId::ESAMINA_CARRADORE_CARRO },  // carro
-    { int8_t(mondo::AreaId::CARRADORE_INTERNO), 8, 8, testi::TestoId::ESAMINA_CARRADORE_RUOTE },  // ruote
-    { int8_t(mondo::AreaId::SPEZIERIA_INTERNO), 9, 8, testi::TestoId::ESAMINA_SPEZIERIA_ALBARELLI },  // albarelli
-    { int8_t(mondo::AreaId::SPEZIERIA_INTERNO), 12, 8, testi::TestoId::ESAMINA_SPEZIERIA_DISEGNI },  // disegni
-    { int8_t(mondo::AreaId::CASA_MEDICO_INTERNO), 12, 15, testi::TestoId::ESAMINA_MEDICO_ROTOLI },  // rotoli
-    { int8_t(mondo::AreaId::CASA_MEDICO_INTERNO), 24, 13, testi::TestoId::ESAMINA_MEDICO_LETTO },  // letto
-    { int8_t(mondo::AreaId::SALA_CONSOLI), 22, 8, testi::TestoId::ESAMINA_SALA_STEMMA },  // stemma
-    { int8_t(mondo::AreaId::SALA_CONSOLI), 26, 12, testi::TestoId::ESAMINA_SALA_LEGGIO },  // leggio
+    { int8_t(mondo::AreaId::TAVERNA_INTERNO), 18, 10, 144, 48, testi::TestoId::ESAMINA_TAVERNA_CAMINO },  // camino
+    { int8_t(mondo::AreaId::TAVERNA_INTERNO), 12, 8, 96, 48, testi::TestoId::ESAMINA_TAVERNA_FIASCHI },  // fiaschi
+    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 18, 9, 144, 56, testi::TestoId::ESAMINA_CONTI_CHIARINA },  // chiarina
+    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 14, 9, 112, 56, testi::TestoId::ESAMINA_CONTI_CHIAVI },  // chiavi
+    { int8_t(mondo::AreaId::CARRADORE_INTERNO), 6, 16, 80, 112, testi::TestoId::ESAMINA_CARRADORE_CARRO },  // carro
+    { int8_t(mondo::AreaId::CARRADORE_INTERNO), 8, 8, 64, 48, testi::TestoId::ESAMINA_CARRADORE_RUOTE },  // ruote
+    { int8_t(mondo::AreaId::SPEZIERIA_INTERNO), 9, 8, 64, 48, testi::TestoId::ESAMINA_SPEZIERIA_ALBARELLI },  // albarelli
+    { int8_t(mondo::AreaId::SPEZIERIA_INTERNO), 12, 8, 96, 48, testi::TestoId::ESAMINA_SPEZIERIA_DISEGNI },  // disegni
+    { int8_t(mondo::AreaId::CASA_MEDICO_INTERNO), 12, 15, 96, 104, testi::TestoId::ESAMINA_MEDICO_ROTOLI },  // rotoli
+    { int8_t(mondo::AreaId::CASA_MEDICO_INTERNO), 24, 13, 192, 88, testi::TestoId::ESAMINA_MEDICO_LETTO },  // letto
+    { int8_t(mondo::AreaId::SALA_CONSOLI), 22, 8, 128, 48, testi::TestoId::ESAMINA_SALA_STEMMA },  // stemma
+    { int8_t(mondo::AreaId::SALA_CONSOLI), 26, 12, 208, 80, testi::TestoId::ESAMINA_SALA_LEGGIO },  // leggio
 };
 
 // I doni: dopo le battute dell'NPC (indice in NPC_AMBIENTE), una volta sola, l'oggetto e il testo.

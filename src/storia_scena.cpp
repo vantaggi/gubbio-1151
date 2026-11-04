@@ -1279,7 +1279,7 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     if(cosa >= 0)
     {
         const Cosa& c = GUBBIO_VOCE(COSA, cosa);
-        esplorazione.segnala(mondo::piedi_x(c.tx), mondo::piedi_y(c.ty), ALTEZZA_PERSONA);
+        esplorazione.segnala(c.fx, c.fy, 0);        // sull'oggetto, non sopra Ubaldo (STANDARD I2)
         a_portata = true;
     }
 

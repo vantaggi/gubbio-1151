@@ -37,6 +37,25 @@ namespace
 
     static_assert(cose_negli_interni(), "una cosa da esaminare sta fuori dagli interni");
 
+    // Il fumetto sta sull'oggetto (STANDARD I2): sopra la cella da cui lo si legge, a non piu' di 8 tile di lato (lo stemma sta dietro gli scranni).
+    consteval bool fumetti_sulle_cose()
+    {
+        for(int k = 0; k < COSE; ++k)
+        {
+            const Cosa& c = COSA[k];
+            int dx = int(c.fx) - mondo::piedi_x(c.tx);
+
+            if(int(c.fy) >= mondo::piedi_y(c.ty) || dx < -64 || dx > 64)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    static_assert(fumetti_sulle_cose(), "il fumetto di una cosa non sta sull'oggetto");
+
     // Da sopra la cosa la si legge; un passo di parola piu' in la' no.
     consteval bool cose_da_vicino()
     {

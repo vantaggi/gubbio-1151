@@ -1283,6 +1283,16 @@ def cose_di_gioco(evita=None):
     return out
 
 
+def segni_delle_cose():
+    """[(fx, fy)] in pixel dell'area, nell'ordine di COSE: il centro della cella dell'oggetto, dove sta il fumetto
+    (STANDARD I2: sull'oggetto, come sopra la testa di chi parla)."""
+    out = []
+    for stanza, _, cx, cy, _ in COSE:
+        st = stanza_di_gioco(stanza)
+        out.append((st.x0 + cx * CELLA + CELLA // 2, st.y0 + cy * CELLA + CELLA // 2))
+    return out
+
+
 def tavole(uscita):
     """Le anteprime RGB con le figure (come i mockup di /mnt/project-files/interni/)."""
     global GIOCO, NOTTE
