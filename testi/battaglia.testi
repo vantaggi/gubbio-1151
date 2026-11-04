@@ -25,7 +25,7 @@ BATT_GUERRIERI            | DIALOGO | Guerrieri della Roccia
 BATT_FORNACE              | DIALOGO | Guardia della fornace
 BATT_INFILTRATO           | DIALOGO | L'infiltrato delle Logge
 BATT_SCEGLI               | DIALOGO | Su e giù per scegliere, A per confermare.
-BATT_BERSAGLIO            | DIALOGO | Su e giù per il bersaglio, A per confermare, B per tornare.
+BATT_BERSAGLIO            | DIALOGO | Su e giù per il bersaglio, A conferma, B torna.
 BATT_SALE_UBALDO          | DIALOGO | Ubaldo sale di livello!
 BATT_SALE_GIORGIO         | DIALOGO | Giorgio sale di livello!
 BATT_SALE_ANTONIO         | DIALOGO | Antonio sale di livello!
