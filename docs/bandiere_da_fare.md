@@ -75,3 +75,9 @@ Le battaglie e l'esperienza sono in `docs/bilanciamento.md`.
 Le celle che fanno partire B-02 e B-03 (la nebbia, l'arco) sbarrano la via da parete a parete: lo controllano
 `tools/disegna_gola.py` (si rifiuta di scrivere le griglie), `src/autotest_gola.cpp` (`si_passa_senza`) e
 `tests/test_gola.py`. Così le scene non si saltano e la storia non si ferma.
+
+## I Ceri risvegliati (F10, ramo `f10-ceri`)
+
+| Bandiera | Chi la accende | Cosa fa nel gioco |
+| :-- | :-- | :-- |
+| `CERI_RISVEGLIATI` | A1-08, a fine scena (dopo gli Spettri del Dubbio) | `storia::ceri_accesi()`. **In battaglia**: ogni Santo parte con 15 punti percentuali di Fervore in più del massimo (`battaglia::FERVORE_CERI`, `Battaglia::ricomincia(..., ceri)`; nel mirror la manopola `ceri`, 200 firme in `ATTESE_CERI`). Lungo la storia vale per i Guerrieri di B-03 e per Corrado, non per gli Spettri (`ceri_alla_scena_dello_scontro()` in `src/autotest_quest.cpp`). **Nella Basilica**: una fiamma (`FIGURA_FIAMMA_CERO`, sprite 16x16 coi colori dei popolani: contorno, vermiglio, oro, bianco) sopra ognuno dei tre ceri dell'altare (`CERO_ALTARE` di `storia_logica.h`); prima restano spenti, solo il disegno del fondale. I ceri stanno solo nell'interno della Basilica (regola di Cioti): lo controllano `fiamme()` in `src/autotest_quest.cpp` e `CeriDellaBasilica` in `tests/test_storia.py`, che confronta la tabella con le celle `e` di `mondo/aree/basilica_interno.area` |
