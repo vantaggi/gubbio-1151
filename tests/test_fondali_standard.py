@@ -229,3 +229,36 @@ class Motivi(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ScalaDelleFacciate(unittest.TestCase):
+    """M2: il giocatore e' alto 22-24 pixel (Ubaldo 16x32): porte e botteghe sulle vie alte almeno 26 pixel."""
+
+    @staticmethod
+    def _altezza_porta(fh, bottega=False):
+        """L'altezza del vano della porta (o della bottega) che dipingi_casa disegna: il vano piu' alto della casa."""
+        q = PC.Quadro(6, 8)
+        casa = PC.Casa(0, 4, 6, fh, 3)
+        casa.bottega, casa.morto = bottega, False
+        vani = []
+        originale = PC._vano_arco
+
+        def conta(q_, x0, y0, w, h, *a, **k):
+            vani.append(h)
+            return originale(q_, x0, y0, w, h, *a, **k)
+        PC._vano_arco = conta
+        try:
+            PC.dipingi_casa(q, casa, 6)
+        finally:
+            PC._vano_arco = originale
+        return max(vani)
+
+    def test_porte_e_botteghe_alte_almeno_26(self):
+        self.assertEqual(PC.ALTEZZA_FACCIATA_MAX, 5)
+        self.assertGreaterEqual(self._altezza_porta(5), 26)
+        self.assertGreaterEqual(self._altezza_porta(5, bottega=True), 26)
+        self.assertGreaterEqual(self._altezza_porta(4), 26)
+
+    def test_negativa_facciata_di_tre_tile_non_basta(self):
+        """Una facciata di 3 tile (24 pixel) non tiene una porta da 26: e' per questo che le vie ne vogliono 4-5."""
+        self.assertLess(self._altezza_porta(3), 26)
