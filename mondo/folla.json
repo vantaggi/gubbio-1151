@@ -1,0 +1,62 @@
+{
+ "_leggimi": "La folla della citta' (pezzo VIVA): chi passa per le strade e gli animali, area per area e fase per fase (ULTIMATUM: la citta' si prepara all'assedio, in fermento; DIGIUNO: poca gente, in silenzio, processioni; NOTTE: le ronde con la lanterna, i gatti). Ogni corrente cammina avanti e indietro su un percorso fra due ancore: 'varco X' (chi arriva o se ne va da un'altra area: ai capi sparisce dietro l'angolo), un monumento dell'area (mondo/grafo.json), 'spawn N'; 'giro': N per gli animali (un giretto di N celle intorno all'ancora). Il percorso lo trova tools/genera_folla.py sulla griglia vera, largo 3 celle, lontano dagli NPC. Chi passa non parla e non ferma il giocatore: si ferma lui se il giocatore gli sta davanti. Al massimo 8 figure per area (FOLLA_MAX).",
+ "correnti": [
+  {"area": "PIAZZA_GRANDE", "fasi": ["ULTIMATUM"], "chi": "portatore", "da": "varco A", "a": "varco B", "quanti": 2},
+  {"area": "PIAZZA_GRANDE", "fasi": ["ULTIMATUM"], "chi": "fante", "da": "consoli", "a": "varco B", "quanti": 2},
+  {"area": "PIAZZA_GRANDE", "fasi": ["ULTIMATUM", "DIGIUNO"], "chi": "piccione", "da": "pretorio", "giro": 6, "quanti": 3},
+  {"area": "PIAZZA_GRANDE", "fasi": ["DIGIUNO"], "chi": "penitente", "da": "varco A", "a": "consoli", "quanti": 2},
+  {"area": "PIAZZA_GRANDE", "fasi": ["NOTTE"], "chi": "ronda", "da": "varco A", "a": "varco B", "quanti": 1},
+  {"area": "PIAZZA_GRANDE", "fasi": ["NOTTE"], "chi": "gatto", "da": "ranghiasci", "giro": 4, "quanti": 1},
+
+  {"area": "VIA_DEI_CONSOLI", "fasi": ["ULTIMATUM"], "chi": "portatrice", "da": "varco A", "a": "varco B", "quanti": 2},
+  {"area": "VIA_DEI_CONSOLI", "fasi": ["ULTIMATUM"], "chi": "ragazzo", "da": "varco B", "a": "varco G", "quanti": 1},
+  {"area": "VIA_DEI_CONSOLI", "fasi": ["ULTIMATUM", "DIGIUNO", "NOTTE"], "chi": "gatto", "da": "spawn 0", "giro": 4, "quanti": 1},
+  {"area": "VIA_DEI_CONSOLI", "fasi": ["DIGIUNO"], "chi": "frate", "da": "varco A", "a": "varco B", "quanti": 1},
+  {"area": "VIA_DEI_CONSOLI", "fasi": ["NOTTE"], "chi": "ronda", "da": "varco A", "a": "varco B", "quanti": 1},
+
+  {"area": "LARGO_BARGELLO", "fasi": ["ULTIMATUM"], "chi": "acquaiola", "da": "varco A", "a": "varco B", "quanti": 2},
+  {"area": "LARGO_BARGELLO", "fasi": ["ULTIMATUM", "DIGIUNO"], "chi": "piccione", "da": "spawn 0", "giro": 5, "quanti": 2},
+  {"area": "LARGO_BARGELLO", "fasi": ["DIGIUNO"], "chi": "acquaiola", "da": "varco A", "a": "varco E", "quanti": 1},
+  {"area": "LARGO_BARGELLO", "fasi": ["NOTTE"], "chi": "cane", "da": "spawn 0", "giro": 5, "quanti": 1},
+
+  {"area": "SAN_MARTINO", "fasi": ["ULTIMATUM"], "chi": "portatore", "da": "varco A", "a": "varco E", "quanti": 2},
+  {"area": "SAN_MARTINO", "fasi": ["ULTIMATUM"], "chi": "fante", "da": "porta_metauro", "a": "varco B", "quanti": 2},
+  {"area": "SAN_MARTINO", "fasi": ["ULTIMATUM", "DIGIUNO"], "chi": "gallina", "da": "casa_medico", "giro": 5, "quanti": 2},
+  {"area": "SAN_MARTINO", "fasi": ["ULTIMATUM"], "chi": "acquaiola", "da": "varco G", "a": "san_domenico", "quanti": 1},
+  {"area": "SAN_MARTINO", "fasi": ["DIGIUNO"], "chi": "fante", "da": "porta_metauro", "a": "varco A", "quanti": 1},
+  {"area": "SAN_MARTINO", "fasi": ["NOTTE"], "chi": "ronda", "da": "porta_metauro", "a": "varco A", "quanti": 2},
+  {"area": "SAN_MARTINO", "fasi": ["NOTTE"], "chi": "gatto", "da": "san_domenico", "giro": 4, "quanti": 1},
+
+  {"area": "PIAZZA_QUARANTA_MARTIRI", "fasi": ["ULTIMATUM"], "chi": "portatore", "da": "varco A", "a": "varco E", "quanti": 2},
+  {"area": "PIAZZA_QUARANTA_MARTIRI", "fasi": ["ULTIMATUM"], "chi": "portatrice", "da": "varco G", "a": "loggia_tiratori", "quanti": 1},
+  {"area": "PIAZZA_QUARANTA_MARTIRI", "fasi": ["ULTIMATUM", "DIGIUNO", "NOTTE"], "chi": "pecora", "da": "san_francesco", "giro": 6, "quanti": 3},
+  {"area": "PIAZZA_QUARANTA_MARTIRI", "fasi": ["ULTIMATUM"], "chi": "ragazzo", "da": "santa_maria_laici", "a": "varco H", "quanti": 1},
+  {"area": "PIAZZA_QUARANTA_MARTIRI", "fasi": ["DIGIUNO"], "chi": "penitente", "da": "varco A", "a": "san_francesco", "quanti": 2},
+  {"area": "PIAZZA_QUARANTA_MARTIRI", "fasi": ["NOTTE"], "chi": "ronda", "da": "varco A", "a": "varco E", "quanti": 1},
+
+  {"area": "SAN_PIETRO", "fasi": ["ULTIMATUM"], "chi": "portatore", "da": "varco A", "a": "varco B", "quanti": 1},
+  {"area": "SAN_PIETRO", "fasi": ["ULTIMATUM", "DIGIUNO"], "chi": "gallina", "da": "spawn 2", "giro": 4, "quanti": 2},
+  {"area": "SAN_PIETRO", "fasi": ["NOTTE"], "chi": "cane", "da": "spawn 2", "giro": 4, "quanti": 1},
+
+  {"area": "VIA_XX_SETTEMBRE", "fasi": ["ULTIMATUM"], "chi": "fante", "da": "varco A", "a": "varco B", "quanti": 2},
+  {"area": "VIA_XX_SETTEMBRE", "fasi": ["ULTIMATUM"], "chi": "acquaiola", "da": "varco B", "a": "varco E", "quanti": 1},
+  {"area": "VIA_XX_SETTEMBRE", "fasi": ["DIGIUNO"], "chi": "penitente", "da": "varco A", "a": "varco B", "quanti": 2},
+  {"area": "VIA_XX_SETTEMBRE", "fasi": ["NOTTE"], "chi": "gatto", "da": "spawn 0", "giro": 4, "quanti": 1},
+
+  {"area": "SANT_AGOSTINO", "fasi": ["ULTIMATUM"], "chi": "portatrice", "da": "varco A", "a": "porta_romana", "quanti": 2},
+  {"area": "SANT_AGOSTINO", "fasi": ["ULTIMATUM"], "chi": "gallina", "da": "bottega_conti", "giro": 5, "quanti": 3},
+  {"area": "SANT_AGOSTINO", "fasi": ["ULTIMATUM", "DIGIUNO"], "chi": "cane", "da": "calcara", "giro": 5, "quanti": 1},
+  {"area": "SANT_AGOSTINO", "fasi": ["DIGIUNO", "NOTTE"], "chi": "frate", "da": "sant_agostino", "a": "varco A", "quanti": 1},
+
+  {"area": "SANT_ANDREA", "fasi": ["ULTIMATUM"], "chi": "portatore", "da": "varco A", "a": "varco E", "quanti": 2},
+  {"area": "SANT_ANDREA", "fasi": ["ULTIMATUM", "DIGIUNO"], "chi": "fante", "da": "san_marziale", "a": "varco B", "quanti": 2},
+  {"area": "SANT_ANDREA", "fasi": ["ULTIMATUM"], "chi": "gallina", "da": "santa_maria_nuova", "giro": 4, "quanti": 2},
+  {"area": "SANT_ANDREA", "fasi": ["NOTTE"], "chi": "ronda", "da": "san_marziale", "a": "varco B", "quanti": 2},
+
+  {"area": "DUOMO_DUCALE", "fasi": ["ULTIMATUM"], "chi": "frate", "da": "varco A", "a": "varco B", "quanti": 1},
+  {"area": "DUOMO_DUCALE", "fasi": ["ULTIMATUM"], "chi": "portatrice", "da": "varco B", "a": "varco E", "quanti": 1},
+  {"area": "DUOMO_DUCALE", "fasi": ["ULTIMATUM", "DIGIUNO"], "chi": "piccione", "da": "duomo", "giro": 5, "quanti": 2},
+  {"area": "DUOMO_DUCALE", "fasi": ["DIGIUNO"], "chi": "penitente", "da": "varco A", "a": "duomo", "quanti": 2},
+  {"area": "DUOMO_DUCALE", "fasi": ["NOTTE"], "chi": "gatto", "da": "ducale", "giro": 4, "quanti": 1}
+ ]
+}

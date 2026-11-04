@@ -1,0 +1,26 @@
+{
+ "_nota": "I mestieri della citta' (copione/06_npc_mestieri.md, pezzo VIVA): per ognuno, dal nome in grassetto del copione, la figura (un costume di tools/figure_popolo.py) e dove sta nella sua area: 'ancora' e' un monumento dell'area (mondo/grafo.json) o un varco ('varco A'); il gioco lo mette nella cella libera piu' vicina, lontano dai varchi e dagli altri NPC.",
+ "mestieri": {
+  "Il Banditore del Comune": {"figura": "banditore", "ancora": "consoli"},
+  "Il Misuratore del grano": {"figura": "misuratore", "ancora": "pretorio"},
+  "Il Fabbro":               {"figura": "fabbro", "ancora": "varco A"},
+  "La Vasaia":               {"figura": "vasaia", "ancora": "varco B"},
+  "L'Acquaiolo":             {"figura": "acquaiolo", "ancora": "varco E"},
+  "Il Funaio":               {"figura": "funaio", "ancora": "bargello"},
+  "Il Tintore":              {"figura": "tintore", "ancora": "varco G"},
+  "Il Conciatore":           {"figura": "conciatore", "ancora": "capitano_popolo"},
+  "Il Mugnaio":              {"figura": "mugnaio", "ancora": "varco B"},
+  "Il Lanaiolo":             {"figura": "lanaiolo", "ancora": "loggia_tiratori"},
+  "Il Pastore":              {"figura": "pastore", "ancora": "san_francesco"},
+  "Il Macellaio":            {"figura": "macellaio", "ancora": "santa_maria_laici"},
+  "La Fornaia":              {"figura": "fornaia", "ancora": "taverna"},
+  "Il Calzolaio":            {"figura": "calzolaio", "ancora": "varco A"},
+  "Il Notaio del Comune":    {"figura": "notaio", "ancora": "varco B"},
+  "L'Ortolana":              {"figura": "ortolana", "ancora": "sant_agostino"},
+  "Il Carbonaio":            {"figura": "carbonaio", "ancora": "calcara"},
+  "Il Carpentiere":          {"figura": "carpentiere", "ancora": "varco E"},
+  "Il Frecciaio":            {"figura": "frecciaio", "ancora": "santa_maria_nuova"},
+  "Il Campanaro":            {"figura": "campanaro", "ancora": "varco B"},
+  "Il Viandante":            {"figura": "viandante", "ancora": "varco A"}
+ }
+}

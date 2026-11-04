@@ -19,6 +19,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import figure_npc as FN  # noqa: E402
+import figure_popolo as FP  # noqa: E402
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 COPIONE = os.path.join(RADICE, "copione")
@@ -27,6 +28,10 @@ USCITA_TESTI = os.path.join(RADICE, "testi", "copione.testi")
 FILE_SCENE = ("00_prologo.md", "01_atto_I.md", "02_bottaccione_epilogo.md")
 FILE_NPC = "03_npc_ambiente.md"
 FILE_AMICI = "05_npc_amici.md"
+FILE_MESTIERI = "06_npc_mestieri.md"
+# I mestieri (pezzo VIVA): figura di tools/figure_popolo.py e ancora di ognuno, dal nome in grassetto.
+MESTIERI = __import__("json").load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                                    "dati", "mestieri.json"), encoding="utf-8"))["mestieri"]
 AMICI = __import__("json").load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                                   "dati", "amici.json"), encoding="utf-8"))["amici"]
 
@@ -749,7 +754,8 @@ def posti_degli_npc(npc, altri=(), occupati=None):
     posti = []
     richieste = []
     for p in npc:
-        ancora = AMICI[p["amico"]]["ancora"] if p.get("amico") else None
+        ancora = AMICI[p["amico"]]["ancora"] if p.get("amico") else (
+            MESTIERI[p["mestiere"]]["ancora"] if p.get("mestiere") else None)
         richieste.append((p, p["area"], ancora))
     for p in npc:
         if p.get("amico") and AMICI[p["amico"]].get("borgo"):
@@ -916,7 +922,12 @@ def leggi_copione():
     amici = leggi_npc(open(os.path.join(COPIONE, FILE_AMICI), encoding="utf-8").read(), FILE_AMICI)
     for p in amici:
         p["amico"] = parlante_dell_amico(p)
-    return scene, npc + amici
+    mestieri = leggi_npc(open(os.path.join(COPIONE, FILE_MESTIERI), encoding="utf-8").read(), FILE_MESTIERI)
+    for p in mestieri:
+        if p["nome"] not in MESTIERI:
+            raise ErroreStoria(f"{FILE_MESTIERI} ({p['nome']}): manca in dati/mestieri.json")
+        p["mestiere"] = p["nome"]
+    return scene, npc + amici + mestieri
 
 
 def parlante_dell_amico(p):
@@ -927,12 +938,22 @@ def parlante_dell_amico(p):
     return next(iter(chi))
 
 
+def figura_popolo(base, accessorio=None, nome=None):
+    """Una figura della gente (tools/figure_popolo.py, pezzo VIVA): la chiave con cui si cerca in FIGURA_NPC."""
+    return (base, accessorio, nome)
+
+
 def figura_dell_npc(p):
-    """La figura nel gioco: per un NPC d'ambiente quella del mestiere, per un amico la sua (dati/amici.json)."""
+    """La figura nel gioco: per un NPC d'ambiente quella del mestiere, per un amico la sua (dati/amici.json), per un
+    mestiere nuovo quella di dati/mestieri.json."""
     if p.get("amico"):
         a = AMICI[p["amico"]]
-        return FN.figura_composta(a["base"], a["accessorio"])
-    return FN.figura_composta(FN.figura_di(p["nome"]), None)
+        if a.get("figura"):
+            return figura_popolo(a["figura"], None, a["nome"])
+        return figura_popolo(a["base"], a["accessorio"], a["nome"])
+    if p.get("mestiere"):
+        return figura_popolo(MESTIERI[p["mestiere"]]["figura"], None, p["nome"])
+    return figura_popolo(FN.figura_di(p["nome"]), None, p["nome"])
 
 
 def controlla(scene):
@@ -1145,15 +1166,25 @@ def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None,
     out += blocco_quest
     out += parte_gola(codici, posti_raccolte, figure) if posti_raccolte else []
     out += parte_fornaci(posti_guardie) if posti_guardie else []
-    out += ["// Le figure degli NPC, 16x32 (8 tile in mappatura 1D) con la palette dei popolani: quelle dei",
-            "// mestieri (tools/figure_npc.py) e quelle degli amici (base e accessorio, dati/amici.json).",
+    out += ["// Le figure della gente (pezzo VIVA, tools/figure_popolo.py): 16x32, 8 tile in mappatura 1D, con la",
+            "// palette della gente (PALETTE_POPOLO). Per ognuna quattro pose: riposo e respiro di fronte (STANDARD A5),",
+            "// riposo di schiena e di lato (A7, chi parla si gira; la sinistra e' il lato specchiato).",
+            "inline constexpr int POSE_NPC = 4;",
+            "inline constexpr int POSA_RIPOSO = 0;", "inline constexpr int POSA_RESPIRO = 1;",
+            "inline constexpr int POSA_SCHIENA = 2;", "inline constexpr int POSA_LATO = 3;",
+            "inline constexpr int FRAME_RESPIRO = 30;            // vblank per fotogramma del respiro (A5)",
+            "inline constexpr uint16_t PALETTE_POPOLO[16] = {",
+            "    " + ", ".join(f"0x{v:04X}" for v in FP.bgr555("giorno")) + ",", "};",
+            "inline constexpr uint16_t PALETTE_POPOLO_NOTTE[16] = {",
+            "    " + ", ".join(f"0x{v:04X}" for v in FP.bgr555("notte")) + ",", "};",
             f"inline constexpr int FIGURE_NPC = {len(figure)};",
-            "inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][8 * 8] = {"]
-    for f in figure:
-        parole = FN.parole(f)
+            "inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][POSE_NPC * 8 * 8] = {"]
+    for base, accessorio, nome in figure:
         out.append("    {")
-        out += ["        " + ", ".join(f"0x{v:08X}" for v in parole[k:k + 8]) + "," for k in range(0, 64, 8)]
-        out.append("    },")
+        for px in FP.fotogrammi_npc(base, accessorio, nome):
+            parole = FP.parole(px)
+            out += ["        " + ", ".join(f"0x{v:08X}" for v in parole[k:k + 8]) + "," for k in range(0, 64, 8)]
+        out.append(f"    }},  // {nome or base}")
     out += ["};", ""]
     out += ["}", "", "#endif", ""]
     return "\n".join(out)
@@ -1187,7 +1218,7 @@ def parte_quest(quest, npc, posti_quest, posti_raccolte, riga_battuta, figure):
         if pezzi != list(range(pezzi[0], pezzi[0] + len(pezzi))):
             raise ErroreStoria(f"{d['id']}: i pezzi dell'obiettivo devono essere bandiere consecutive")
         (tx, ty) = posti_quest[qi]
-        figura = FN.figura_composta(FN.figura_di(q["datore"]), None)
+        figura = figura_popolo(FN.figura_di(q["datore"]), None, q["datore"])
         if figura not in figure:
             figure.append(figura)
         r = intervalli[d["id"]]
@@ -1234,7 +1265,7 @@ def parte_quest(quest, npc, posti_quest, posti_raccolte, riga_battuta, figure):
     righe_i = [f"    {{ {npc_dell_indizio(ind, npc)}, {ind['bandiera']}, {r[f'indizio_{k}']} }},  // {ind['nome']}"
                for k, ind in enumerate(q["indizi"])]
     (ix, iy) = posti_quest[len(QUEST)]
-    fig_inf = FN.figura_composta(*INFILTRATO["figura"])
+    fig_inf = figura_popolo(*INFILTRATO["figura"])
     if fig_inf not in figure:
         figure.append(fig_inf)
     out += ["// Gli indizi di Q-SP01: l'NPC (NPC_AMBIENTE) che, con la quest presa e la Rosa non ancora ripresa, dopo le",
@@ -1257,7 +1288,7 @@ def parte_gola(codici, posti_raccolte, figure):
     import genera_mondo as G  # noqa: E402
     nomi = list(G.CELLE)
     inneschi = [f"    {{ {codici.index(k)}, mondo::Cella::{G.CELLE[c][0]} }},  // {k}" for k, c in INNESCHI.items()]
-    figura = FN.figura_composta(SENTINELLE["figura"], None)
+    figura = figura_popolo(SENTINELLE["figura"])
     if figura not in figure:
         figure.append(figura)
     sentinelle = [f"    {{ int8_t(mondo::AreaId::{SENTINELLE['area']}), {tx}, {ty}, {figure.index(figura)} }},"

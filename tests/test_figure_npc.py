@@ -21,7 +21,7 @@ _spec_m = importlib.util.spec_from_file_location("genera_mondo", os.path.join(RA
 GM = importlib.util.module_from_spec(_spec_m)
 _spec_m.loader.exec_module(GM)
 
-NPC = [p for p in GS.leggi_copione()[1] if not p.get("amico")]     # gli NPC d'ambiente: gli amici in test_amici.py
+NPC = [p for p in GS.leggi_copione()[1] if not p.get("amico") and not p.get("mestiere")]  # d'ambiente (03): amici in test_amici.py, mestieri in test_popolo.py
 
 
 def sagoma(righe):
@@ -69,14 +69,13 @@ class FigureNpc(unittest.TestCase):
 
     def test_la_tabella_del_gioco(self):
         h = open(os.path.join(RADICE, "include", "storia.h"), encoding="utf-8").read()
-        # i mestieri, gli amici e l'infiltrato di Q-SP01 (mercante col bastone); i datori usano i mestieri
-        self.assertIn(f"inline constexpr int FIGURE_NPC = {len(FN.ORDINE) + len(GS.AMICI) + 1};", h)
+        # pezzo VIVA: la figura viene da tools/figure_popolo.py (base del mestiere, tinta dal nome); quattro pose
+        self.assertIn("FIGURA_NPC[FIGURE_NPC][POSE_NPC * 8 * 8] = {", h)
         for p in NPC:
             riga = next(r for r in h.splitlines() if r.endswith("// " + p["nome"]))
-            figura = int(re.search(r"\}, (\d+), \d+, \d+, \d+, \d+, (?:true|false) \},\s*//", riga).group(1))
-            self.assertEqual(GS.figura_dell_npc(p), FN.figura_composta(FN.figura_di(p["nome"]), None), p["nome"])
-            self.assertLess(figura, 5 + len(GS.AMICI) + 1)
-        parole = FN.parole(FN.figura_composta("frate", None))
+            self.assertRegex(riga, r"\}, (\d+), \d+, \d+, \d+, \d+, (?:true|false) \},\s*//")
+            self.assertEqual(GS.figura_dell_npc(p), GS.figura_popolo(FN.figura_di(p["nome"]), None, p["nome"]), p["nome"])
+        parole = GS.FP.parole(GS.FP.fotogrammi_npc("frate", None, "Canonico")[0])
         self.assertIn(", ".join(f"0x{v:08X}" for v in parole[32:40]), h)
 
     def test_negativa_parole_di_un_altra_figura(self):
