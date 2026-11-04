@@ -53,7 +53,8 @@ Dopo `CITTA_IN_DIGIUNO` la postierla di San Martino è chiusa. Se Q-SM01 è atti
 - RANIERO: Ascolta. Il ferro di Spoleto è battuto a freddo, a strati. Contro la lama regge come un muro.
 - RANIERO: Ma col fuoco gli strati si aprono come un libro bagnato. Ricordalo, coi grossi.
 - ANTONIO (calmo): Col fuoco. Sento che questa la ricorderò io.
-- RANIERO: E per la strada, prendete queste. Mia moglie le ha fatte stamattina. Col digiuno, chissà quando ne rifà.
+- RANIERO: E per la strada, prendete queste.
+- RANIERO: Mia moglie le ha fatte stamattina. Col digiuno, chissà quando ne rifà.
 - SISTEMA: Ricevi 3 Crescia di Pasqua.
 - SISTEMA: San Martino ti è grato.
 

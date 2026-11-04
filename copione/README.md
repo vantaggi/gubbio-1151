@@ -12,12 +12,12 @@ Bozza del 1 novembre 2026, per la fase F6 del [piano di ripartenza](https://clau
 | [01_atto_I.md](01_atto_I.md) | Dall'ultimatum al rito della Basilica e alla visione; il borgo (D1) | 136 |
 | [02_bottaccione_epilogo.md](02_bottaccione_epilogo.md) | Il dungeon, il ragazzo esule (D2), Corrado, il rientro, la terza alba (D4), la vetrata | 90 |
 | [03_npc_ambiente.md](03_npc_ambiente.md) | NPC d'ambiente delle 14 aree, per fase; il pane (D3) | 59 |
-| [04_quest.md](04_quest.md) | Le 3 quest scelte: il Ferro (San Martino), le Erbe (Sant'Andrea), la Rosa (San Pietro) | 68 |
+| [04_quest.md](04_quest.md) | Le 3 quest scelte: il Ferro (San Martino), le Erbe (Sant'Andrea), la Rosa (San Pietro) | 69 |
 | [05_npc_amici.md](05_npc_amici.md) | Gli amici di Cioti e le loro famiglie come NPC del 1151, per area e fase | 84 |
 | [verifica_copione.py](verifica_copione.py) | Controllo di caratteri e righe | |
 | [v1/](v1/) | Copia del copione v1 (297 battute), prima della storia v2 | |
 
-`python3 verifica_copione.py` dalla cartella `copione/`: oggi 447 battute, 0 errori (dopo la revisione indipendente, 4 nov 2026), con la misura v2 (2 righe da 224 px). La v1 misurava 3 righe da 180 px. Prova negativa fatta: una «ñ», una battuta da 10 righe e un'espressione inventata danno 3 errori e uscita 1.
+`python3 verifica_copione.py` dalla cartella `copione/`: oggi 448 battute, 0 errori (dopo la revisione indipendente, 4 nov 2026), con la misura v2 (2 righe da 224 px). La v1 misurava 3 righe da 180 px. Prova negativa fatta: una «ñ», una battuta da 10 righe e un'espressione inventata danno 3 errori e uscita 1.
 
 ## La storia della v1 in breve
 

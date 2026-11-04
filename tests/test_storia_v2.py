@@ -184,7 +184,7 @@ class Npc(unittest.TestCase):
     def test_se_non(self):
         cecco = next(p for p in NPC if p["nome"].startswith("Cecco"))
         varianti = [b for b in cecco["frasi"] if b["guardia"][0].startswith("VARIANTE")]
-        self.assertEqual([GS.TUTTE[b["guardia"][1]] for b in varianti], ["INDIZIO_ROCCIA"])
+        self.assertEqual([GS.TUTTE[b["guardia"][1]] for b in varianti], ["ESULE_LIBERATO", "INDIZIO_ROCCIA"])  # NOTTE: il ragazzo di B-03 lasciato andare
 
 
 class Bandiere(unittest.TestCase):
