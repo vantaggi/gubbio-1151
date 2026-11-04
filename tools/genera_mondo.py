@@ -2628,7 +2628,12 @@ def scrivi_header(aree, grafo, palette_stile):
             a_blocchi(tiles, 8, lambda v: f"0x{v:08X}"), "};", "",
             "inline constexpr uint16_t PALETTE_GIOCATORE[16] = {",
             a_blocchi([colore(r) for r in PALETTE_GIOCATORE], 8, lambda v: f"0x{v:04X}"),
-            "};", "", "}", "", "#endif", ""]
+            "};", "",
+            "// Il segnale d'interazione (STANDARD I2, tools/sagome_mappa.py): un tile 8x8 con la palette del",
+            "// giocatore; oscilla di un pixel ogni FUMETTO_OSCILLA vblank.",
+            f"inline constexpr int FUMETTO_OSCILLA = {SM.FUMETTO_OSCILLA};",
+            "inline constexpr uint32_t TILE_FUMETTO[8] = {",
+            a_blocchi(parole_tile(SM.fumetto()), 8, lambda v: f"0x{v:08X}"), "};", "", "}", "", "#endif", ""]
     return "\n".join(out)
 
 

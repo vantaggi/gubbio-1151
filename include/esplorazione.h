@@ -46,6 +46,13 @@ public:
 
     void nascondi_etichetta();
 
+    // Il segnale d'interazione (STANDARD I2): il fumetto coi tre puntini sopra chi o cosa risponde ad A.
+    // (x, y) sono i piedi in pixel, 'altezza' quanto e' alto in pixel (una persona 24): il fumetto sta 2 px
+    // sopra. La storia lo chiama a ogni frame; spegni_segnale() lo toglie (anche nascondi_etichetta() e
+    // sospendi(), cosi' non resta sotto un dialogo).
+    void segnala(int x, int y, int altezza);
+    void spegni_segnale();
+
     // Il varco 'indice' dell'area si urta come un muro (-1: tutti aperti). Lo decide la storia a ogni frame
     // (storia::varco_chiuso(): il duello del Condotto).
     void chiudi_varco(int indice)
@@ -82,6 +89,11 @@ private:
     bn::camera_ptr _camera;
     bn::optional<bn::regular_bg_ptr> _fondale;
     bn::sprite_ptr _giocatore;
+    bn::sprite_ptr _fumetto;            // il segnale d'interazione (STANDARD I2), con la palette del giocatore
+    bool _fumetto_acceso = false;
+    int _fumetto_x = 0;
+    int _fumetto_y = 0;
+    int _oscilla = 0;
     bn::vector<bn::sprite_ptr, 6> _cartiglio;  // creato per primo: sta sotto il testo
     VistaTesto _ombra;              // creata prima: i suoi sprite stanno sotto quelli dell'etichetta
     VistaTesto _etichetta;

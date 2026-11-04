@@ -107,6 +107,22 @@ namespace
         return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 32), bn::move(tiles), bn::move(palette));
     }
 
+    bn::sprite_ptr crea_fumetto(const bn::sprite_palette_ptr& palette)
+    {
+        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(1, bn::bpp_mode::BPP_4);
+        bn::span<bn::tile> vram = *tiles.vram();
+
+        for(int r = 0; r < 8; ++r)
+        {
+            vram[0].data[r] = GUBBIO_VOCE(mondo::TILE_FUMETTO, r);
+        }
+
+        bn::sprite_ptr fumetto = bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(8, 8), bn::move(tiles), palette);
+        fumetto.set_z_order(-1);        // davanti a chi parla
+        fumetto.set_visible(false);
+        return fumetto;
+    }
+
     constexpr int limita(int v, int minimo, int massimo)
     {
         return v < minimo ? minimo : (v > massimo ? massimo : v);
@@ -132,11 +148,13 @@ Esplorazione::Esplorazione(const bn::sprite_palette_ptr& palette_testo) :
         bn::bg_palette_item(bn::span<const bn::color>(COLORI_FONDALI.colori), bn::bpp_mode::BPP_4))),
     _camera(bn::camera_ptr::create(0, 0)),
     _giocatore(crea_giocatore()),
+    _fumetto(crea_fumetto(_giocatore.palette())),
     _cartiglio(crea_cartiglio()),
     _ombra(testo::Contesto::AREA, 25, 9, INCHIOSTRO_OMBRA, palette_testo),
     _etichetta(testo::Contesto::AREA, 24, 8, INCHIOSTRO_ETICHETTA, palette_testo)
 {
     _giocatore.set_camera(_camera);
+    _fumetto.set_camera(_camera);
 }
 
 void Esplorazione::entra(mondo::AreaId id, int spawn)
@@ -152,6 +170,25 @@ void Esplorazione::riprendi(mondo::AreaId id, int x, int y)
     _e.y = y;
     _e.varco_sotto = -1;
     _carica_fondale();
+}
+
+void Esplorazione::segnala(int x, int y, int altezza)
+{
+    // il centro del tile 8x8: 2 px sopra la testa, 4 di meta' fumetto
+    _fumetto_x = x;
+    _fumetto_y = y - altezza - 2 - 4;
+
+    if(! _fumetto_acceso)
+    {
+        _fumetto_acceso = true;
+        _oscilla = 0;
+    }
+}
+
+void Esplorazione::spegni_segnale()
+{
+    _fumetto_acceso = false;
+    _fumetto.set_visible(false);
 }
 
 void Esplorazione::sospendi()
@@ -398,6 +435,15 @@ void Esplorazione::aggiorna()
     _giocatore.set_position(_e.x - _mezza_larghezza_mappa, _e.y - 15 - _mezza_altezza_mappa);
     _anima_giocatore();
 
+    // il fumetto oscilla di un pixel ogni FUMETTO_OSCILLA vblank (STANDARD I2)
+    if(_fumetto_acceso)
+    {
+        int su = (_oscilla / mondo::FUMETTO_OSCILLA) % 2;
+        _oscilla = (_oscilla + 1) % (2 * mondo::FUMETTO_OSCILLA);
+        _fumetto.set_position(_fumetto_x - _mezza_larghezza_mappa, _fumetto_y - su - _mezza_altezza_mappa);
+        _fumetto.set_visible(true);
+    }
+
     if(_attesa_etichetta > 0)
     {
         _ombra.avanza();
@@ -414,6 +460,7 @@ void Esplorazione::aggiorna()
 
 void Esplorazione::nascondi_etichetta()
 {
+    spegni_segnale();
     _attesa_etichetta = 0;
     _ombra.nascondi();
     _etichetta.nascondi();
