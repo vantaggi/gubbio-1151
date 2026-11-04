@@ -11,6 +11,7 @@
 #include "bn_sprite_shape_size.h"
 #include "bn_sprite_tiles_ptr.h"
 
+#include "aiuti.h"
 #include "audio.h"
 #include "battaglia_grafica.h"
 #include "esplorazione.h"
@@ -18,6 +19,7 @@
 #include "progressione.h"
 #include "regia_logica.h"
 #include "regia_scena.h"
+#include "save_data.h"
 #include "scena_battaglia.h"
 #include "scontri_mappa.h"
 #include "storia_logica.h"
@@ -79,14 +81,18 @@ namespace
         return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(8, 8), bn::move(tiles), palette_testo);
     }
 
-    // Il menu di una scelta nella vista di gioco, sullo sfondo scurito come nei dialoghi: due voci, su e
-    // giu' per spostarsi, A per scegliere. La voce col cursore e' chiara, l'altra in ombra.
-    int menu_scelta(const Battuta& b, const bn::sprite_palette_ptr& palette_testo, bool automatica)
+    // Un menu nella vista di gioco, sullo sfondo scurito come nei dialoghi: 'quante' voci (2 o 3), su e giu' per
+    // spostarsi, A per scegliere. La voce col cursore e' chiara, le altre in ombra. Con tre voci (il Riprova dopo
+    // il duello, MAI) il menu sale di mezzo passo per stare nello schermo.
+    constexpr int VOCI_MAX = 3;
+
+    int menu_voci(const testi::TestoId* testi_voci, int quante, const bn::sprite_palette_ptr& palette_testo, bool automatica)
     {
         int voce = 0;
         bool cambiata = true;
-        bn::optional<VistaTesto> voci[2];
+        bn::optional<VistaTesto> voci[VOCI_MAX];
         int attesa = 0;
+        int y0 = MENU_Y - (quante - 2) * MENU_PASSO / 2;
         bn::sprite_ptr cursore = crea_cursore(palette_testo);
         bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));     // come nei dialoghi: lo sfondo scuro
 
@@ -94,17 +100,17 @@ namespace
         {
             if(cambiata)
             {
-                for(int k = 0; k < 2; ++k)
+                for(int k = 0; k < quante; ++k)
                 {
                     voci[k].reset();
-                    voci[k].emplace(Contesto::SCELTA, MENU_X, MENU_Y + k * MENU_PASSO, k == voce ? INCHIOSTRO_CHIARO : 1,
+                    voci[k].emplace(Contesto::SCELTA, MENU_X, y0 + k * MENU_PASSO, k == voce ? INCHIOSTRO_CHIARO : 1,
                                     palette_testo);
-                    voci[k]->mostra(k == 0 ? b.testo : b.parlante);
+                    voci[k]->mostra(testi_voci[k]);
                     voci[k]->rivela_tutto();
                 }
 
                 // le coordinate degli sprite partono dal centro dello schermo
-                cursore.set_position(MENU_X - 12 - 120 + 4, MENU_Y + voce * MENU_PASSO - 80 + 4);
+                cursore.set_position(MENU_X - 12 - 120 + 4, y0 + voce * MENU_PASSO - 80 + 4);
 
                 cambiata = false;
             }
@@ -120,16 +126,23 @@ namespace
                 }
                 else if(attesa == 80)
                 {
-                    BN_LOG("Scelta ", s_voce_automatica);
-                    return s_voce_automatica;
+                    int scelta = s_voce_automatica < quante ? s_voce_automatica : 0;
+                    BN_LOG("Scelta ", scelta);
+                    return scelta;
                 }
 
                 continue;
             }
 
-            if(bn::keypad::up_pressed() || bn::keypad::down_pressed())
+            if(bn::keypad::up_pressed())
             {
-                voce = 1 - voce;
+                voce = (voce + quante - 1) % quante;
+                cambiata = true;
+                audio::suona(colonna::Suono::CURSORE);
+            }
+            else if(bn::keypad::down_pressed())
+            {
+                voce = (voce + 1) % quante;
                 cambiata = true;
                 audio::suona(colonna::Suono::CURSORE);
             }
@@ -140,6 +153,13 @@ namespace
                 return voce;
             }
         }
+    }
+
+    // Il menu di una scelta del copione: le due voci della battuta SCELTA.
+    int menu_scelta(const Battuta& b, const bn::sprite_palette_ptr& palette_testo, bool automatica)
+    {
+        const testi::TestoId voci[2] = { b.testo, b.parlante };
+        return menu_voci(voci, 2, palette_testo, automatica);
     }
 
     // Le battute a schermo: il nome di chi parla sopra, il testo a macchina da scrivere sotto, A per
@@ -411,6 +431,13 @@ namespace
         bn::sprite_palettes::set_fade(verde, 0);
     }
 
+    // La riga di SISTEMA dopo una sconfitta che riporta indietro (MAI): dove si e' stati riportati.
+    testi::TestoId testo_della_ritirata(aiuti::Ritirata r)
+    {
+        return r == aiuti::Ritirata::ARCO ? testi::TestoId::SCONFITTA_ARCO :
+               (r == aiuti::Ritirata::SUBITO ? testi::TestoId::SCONFITTA_SUBITO : testi::TestoId::SCONFITTA_INGRESSO);
+    }
+
     // Chi sale di livello con l'esperienza di una quest: le stesse frasi della battaglia, come SISTEMA.
     void annuncia_livelli(const bool (&saliti)[battaglia::EROI], const bn::sprite_palette_ptr& palette_testo)
     {
@@ -570,6 +597,26 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
             battaglia::Esito esito = scena_battaglia(s.battaglia, automatica ? 1u : (uint32_t(g_game_state.frames) | 1u),
                                                      automatica ? Guida::PILOTA : Guida::GIOCATORE, palette_testo,
                                                      automatica, &g_game_state);
+
+            // il duello con Corrado perso (MAI): Riprova lo scontro, Carica uno slot o Torna al titolo, invece di
+            // tornare all'ingresso del Condotto con l'uscita chiusa
+            while(esito != battaglia::Esito::VITTORIA && ! automatica && aiuti::riprova_dopo_la_sconfitta(k))
+            {
+                mondo::colloca(esplorazione->esploratore(), esplorazione->esploratore().area, 1);
+                esplorazione->ricompari();
+
+                if(_dopo_il_duello_perso(*esplorazione, palette_testo))
+                {
+                    return false;
+                }
+
+                svuota();
+                esplorazione->sospendi();
+                attendi(1);
+                esito = scena_battaglia(s.battaglia, uint32_t(g_game_state.frames) | 1u, Guida::GIOCATORE, palette_testo,
+                                        false, &g_game_state);
+            }
+
             // a meta' scena (B-03) vinta si resta sotto l'arco e la scena va avanti; persa si torna indietro, allo
             // spawn 0 (dalla parte dei miasmi: lo spawn 1 e' oltre i guerrieri), e si ripassa sotto l'arco
             if(a_meta_della_scena(k) >= 0)
@@ -589,6 +636,12 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
 
             if(esito != battaglia::Esito::VITTORIA)
             {
+                // dove si e' stati riportati, con una riga di SISTEMA (MAI)
+                if(! automatica)
+                {
+                    di_sistema(testo_della_ritirata(aiuti::ritirata_della_scena(k)), esplorazione, palette_testo);
+                }
+
                 return false;   // la scena resta da giocare: si riprova rientrando nell'area
             }
         }
@@ -839,6 +892,11 @@ void Storia::_affronta_l_infiltrato(Esplorazione& esplorazione, const bn::sprite
 
     esplorazione.ricompari();
 
+    if(esito != battaglia::Esito::VITTORIA)
+    {
+        di_sistema(testi::TestoId::SCONFITTA_INGRESSO, &esplorazione, palette_testo);
+    }
+
     if(esito == battaglia::Esito::VITTORIA && riprendi_la_rosa(g_game_state))
     {
         dialogo_inizio(&esplorazione);
@@ -869,6 +927,60 @@ void Storia::_affronta_la_guardia(int guardia, Esplorazione& esplorazione, const
     }
 
     esplorazione.ricompari();
+
+    if(esito != battaglia::Esito::VITTORIA)
+    {
+        di_sistema(testi::TestoId::SCONFITTA_INGRESSO, &esplorazione, palette_testo);
+    }
+}
+
+bool Storia::_dopo_il_duello_perso(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo)
+{
+    constexpr testi::TestoId VOCI[3] = { testi::TestoId::RIPROVA_SCONTRO, testi::TestoId::RIPROVA_CARICA,
+                                         testi::TestoId::RIPROVA_TITOLO };
+    constexpr testi::TestoId SLOT[salvataggio::SLOT] = { testi::TestoId::CARICA_SLOT_1, testi::TestoId::CARICA_SLOT_2 };
+    constexpr int DOMANDA_Y = 94;
+
+    while(true)
+    {
+        dialogo_inizio(&esplorazione);
+        int voce;
+
+        {
+            VistaTesto domanda(Contesto::DIALOGO, 8, DOMANDA_Y, INCHIOSTRO_CHIARO, palette_testo);
+            domanda.mostra(testi::TestoId::RIPROVA_DOMANDA);
+            domanda.rivela_tutto();
+            voce = menu_voci(VOCI, 3, palette_testo, false);
+        }
+
+        BN_LOG("Duello perso: voce ", voce);
+
+        if(voce == 0)
+        {
+            dialogo_fine();
+            return false;
+        }
+
+        if(voce == 2)
+        {
+            bn::core::reset();
+        }
+
+        int slot = menu_voci(SLOT, salvataggio::SLOT, palette_testo, false);
+
+        if(salvataggio::carica(slot, g_game_state))
+        {
+            storia::dopo_il_caricamento(g_game_state);
+            dialogo_fine();
+            esplorazione.riprendi(mondo::AreaId(g_game_state.area), g_game_state.x, g_game_state.y);
+            svuota();
+            BN_LOG("Duello perso: caricato lo slot ", slot);
+            return true;
+        }
+
+        dialogo_fine();
+        di_sistema(testi::TestoId::CARICA_FALLITO, &esplorazione, palette_testo);
+    }
 }
 
 // Il respiro di chi sta fermo (STANDARD A5): due pose da FRAME_RESPIRO vblank, sfasate per posizione (x 17) cosi'
