@@ -1,7 +1,7 @@
 {
   "_leggimi": "Generato da tools/mondo_dati.py dal censimento F3 (OSM, (c) contributori OpenStreetMap, ODbL) e da mondo/grafo.json. Non modificare a mano.",
   "metri_per_tile": 1.5,
-  "rotazione": "alto=ovest, basso=est, destra=nord, sinistra=sud",
+  "rotazione": "nord in alto: alto=nord, basso=sud, destra=est, sinistra=ovest",
   "monumenti": {
     "acquedotto": {
       "nome": "Acquedotto medievale del Bottaccione",
@@ -38,9 +38,10 @@
         2
       ],
       "fonte_misure": "osm",
-      "asse_lungo_bussola": 0,
+      "asse_lungo_bussola": 90,
       "asse_lungo_schermo": "orizzontale",
       "facciata_bussola": 90,
+      "facciata_lato_reale": "destra",
       "facciata_lato_schermo": "basso",
       "facciata_vista": "frontale",
       "dall_ancora_m": [
@@ -67,8 +68,9 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 104,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "facciata_bussola": 104,
+      "facciata_lato_reale": "destra",
       "facciata_lato_schermo": "basso",
       "facciata_vista": "frontale",
       "dall_ancora_m": [
@@ -95,7 +97,7 @@
       ],
       "fonte_misure": "eccezione",
       "asse_lungo_bussola": 91,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         0.0,
         0.0
@@ -119,11 +121,12 @@
         6
       ],
       "fonte_misure": "osm",
-      "asse_lungo_bussola": 0,
+      "asse_lungo_bussola": 90,
       "asse_lungo_schermo": "orizzontale",
       "facciata_bussola": 180,
-      "facciata_lato_schermo": "sinistra",
-      "facciata_vista": "fianco sinistro",
+      "facciata_lato_reale": "basso",
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
       "dall_ancora_m": [
         -32.1,
         60.0
@@ -147,11 +150,12 @@
         5
       ],
       "fonte_misure": "osm",
-      "asse_lungo_bussola": 0,
+      "asse_lungo_bussola": 90,
       "asse_lungo_schermo": "orizzontale",
       "facciata_bussola": 0,
-      "facciata_lato_schermo": "destra",
-      "facciata_vista": "fianco destro",
+      "facciata_lato_reale": "alto",
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
       "dall_ancora_m": [
         32.9,
         -8.2
@@ -175,9 +179,10 @@
         5
       ],
       "fonte_misure": "osm",
-      "asse_lungo_bussola": 0,
+      "asse_lungo_bussola": 90,
       "asse_lungo_schermo": "orizzontale",
       "facciata_bussola": 90,
+      "facciata_lato_reale": "destra",
       "facciata_lato_schermo": "basso",
       "facciata_vista": "frontale",
       "dall_ancora_m": [
@@ -218,7 +223,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 51,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         202.4,
         98.3
@@ -242,9 +247,10 @@
         6
       ],
       "fonte_misure": "osm",
-      "asse_lungo_bussola": 0,
+      "asse_lungo_bussola": 90,
       "asse_lungo_schermo": "orizzontale",
       "facciata_bussola": 90,
+      "facciata_lato_reale": "destra",
       "facciata_lato_schermo": "basso",
       "facciata_vista": "frontale",
       "dall_ancora_m": [
@@ -292,8 +298,9 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 33,
-      "asse_lungo_schermo": "orizzontale",
+      "asse_lungo_schermo": "verticale",
       "facciata_bussola": 123,
+      "facciata_lato_reale": "destra",
       "facciata_lato_schermo": "basso",
       "facciata_vista": "frontale",
       "dall_ancora_m": [
@@ -320,7 +327,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 48,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         36.2,
         -44.7
@@ -345,7 +352,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 125,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         0.0,
         0.0
@@ -399,10 +406,11 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 147,
-      "asse_lungo_schermo": "orizzontale",
+      "asse_lungo_schermo": "verticale",
       "facciata_bussola": 327,
-      "facciata_lato_schermo": "destra",
-      "facciata_vista": "fianco destro",
+      "facciata_lato_reale": "alto",
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
       "dall_ancora_m": [
         60.9,
         67.7
@@ -441,7 +449,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 120,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         0.0,
         0.0
@@ -466,7 +474,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 86,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         21.2,
         117.5
@@ -491,7 +499,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 114,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         222.1,
         122.0
@@ -516,7 +524,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 37,
-      "asse_lungo_schermo": "orizzontale",
+      "asse_lungo_schermo": "verticale",
       "dall_ancora_m": [
         26.9,
         -41.9
@@ -567,10 +575,11 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 30,
-      "asse_lungo_schermo": "orizzontale",
+      "asse_lungo_schermo": "verticale",
       "facciata_bussola": 300,
-      "facciata_lato_schermo": "alto",
-      "facciata_vista": "retro (solo tetto)",
+      "facciata_lato_reale": "sinistra",
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
       "dall_ancora_m": [
         -20.0,
         27.0
@@ -595,10 +604,11 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 122,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "facciata_bussola": 212,
-      "facciata_lato_schermo": "sinistra",
-      "facciata_vista": "fianco sinistro",
+      "facciata_lato_reale": "basso",
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
       "dall_ancora_m": [
         25.5,
         2.7
@@ -623,7 +633,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 90,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         0.0,
         0.0
@@ -648,10 +658,11 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 111,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "facciata_bussola": 291,
-      "facciata_lato_schermo": "alto",
-      "facciata_vista": "retro (solo tetto)",
+      "facciata_lato_reale": "sinistra",
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
       "dall_ancora_m": [
         0.0,
         0.0
@@ -676,7 +687,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 119,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         0.0,
         0.0
@@ -701,7 +712,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 60,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         0.0,
         0.0
@@ -726,7 +737,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 132,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         0.0,
         0.0
@@ -751,7 +762,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 40,
-      "asse_lungo_schermo": "orizzontale",
+      "asse_lungo_schermo": "verticale",
       "dall_ancora_m": [
         -317.8,
         -311.9
@@ -776,10 +787,11 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 148,
-      "asse_lungo_schermo": "orizzontale",
+      "asse_lungo_schermo": "verticale",
       "facciata_bussola": 238,
-      "facciata_lato_schermo": "alto",
-      "facciata_vista": "retro (solo tetto)",
+      "facciata_lato_reale": "sinistra",
+      "facciata_lato_schermo": "basso",
+      "facciata_vista": "frontale",
       "dall_ancora_m": [
         95.7,
         42.3
@@ -804,7 +816,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 132,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         -66.4,
         -23.2
@@ -828,9 +840,10 @@
         6
       ],
       "fonte_misure": "osm",
-      "asse_lungo_bussola": 0,
+      "asse_lungo_bussola": 90,
       "asse_lungo_schermo": "orizzontale",
       "facciata_bussola": 90,
+      "facciata_lato_reale": "destra",
       "facciata_lato_schermo": "basso",
       "facciata_vista": "frontale",
       "dall_ancora_m": [
@@ -856,9 +869,10 @@
         5
       ],
       "fonte_misure": "osm",
-      "asse_lungo_bussola": 0,
+      "asse_lungo_bussola": 90,
       "asse_lungo_schermo": "orizzontale",
       "facciata_bussola": 90,
+      "facciata_lato_reale": "destra",
       "facciata_lato_schermo": "basso",
       "facciata_vista": "frontale",
       "dall_ancora_m": [
@@ -885,7 +899,7 @@
       ],
       "fonte_misure": "osm",
       "asse_lungo_bussola": 127,
-      "asse_lungo_schermo": "verticale",
+      "asse_lungo_schermo": "orizzontale",
       "dall_ancora_m": [
         0.0,
         0.0

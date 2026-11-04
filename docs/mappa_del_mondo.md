@@ -135,25 +135,27 @@ suggerisce sempre negli stessi tre modi, mai in un quarto inventato per l'occasi
 
 ## 3. L'orientamento, uguale per tutte le aree
 
-**Tutte le aree sono disegnate ruotate di novanta gradi rispetto al nord**, come Piazza Grande. È
-la scelta del committente, presa per Piazza Grande e poi estesa a tutto il mondo per non far
-girare la bussola al giocatore a ogni varco.
+**Nord in alto** (decisione di Cioti del 4 novembre 2026, dopo la prima prova: il giro della città si
+capisce meglio). Prima le aree erano ruotate di novanta gradi, con l'ovest in alto; ora città, mappa
+del menù e bussola coincidono con una carta normale: San Martino a sinistra, San Pietro e
+Sant'Agostino a destra, la salita verso il Monte Ingino in alto a destra, la valle in basso.
 
 ```
-                 ALTO SCHERMO   = OVEST reale
-                 BASSO SCHERMO  = EST reale
-                 SINISTRA       = SUD reale
-                 DESTRA         = NORD reale
+                 ALTO SCHERMO   = NORD reale
+                 BASSO SCHERMO  = SUD reale
+                 SINISTRA       = OVEST reale
+                 DESTRA         = EST reale
 ```
 
-Conseguenza sulle coordinate della griglia, da tenere a mente leggendo qualunque
-`*_collision.h`: **`y` cresce verso EST, `x` cresce verso NORD.**
+Sulle griglie: **`x` cresce verso EST, `y` cresce verso SUD.** Le eccezioni:
 
-> **Il tranello, già caduto una volta.** Ruotare non è ribaltare. Ruotando di novanta gradi una
-> mappa con il nord in alto fino a portare l'**ovest** in cima, il **nord finisce a destra** e il
-> sud a sinistra. Mettendoli al contrario si ottiene l'immagine allo specchio della città: una
-> mappa che compila, si gioca, e non dà il minimo segno di sé. Se ne accorge solo chi conosce
-> Gubbio. È successo nella Sessione 19, ed è la ragione per cui questo paragrafo esiste.
+- **Le facciate.** Un monumento si disegna sempre con la facciata verso il basso, verso chi guarda,
+  come nei giochi visti dall'alto, anche se in realtà guarda a est o a ovest (Consoli, Pretorio,
+  Bargello, San Francesco...). Il lato vero resta in `facciata_lato_reale` di `mondo/monumenti.json`.
+  Ogni area lascia lo spazio calpestabile davanti alla porta.
+- **La gola del Bottaccione** (le stanze `coricata` di `mondo/grafo.json`) resta un corridoio di
+  fianco: si risale il Camignano da sinistra a destra, col nord a destra.
+- **Gli interni** non sono orientati.
 
 ---
 

@@ -20,7 +20,7 @@
 #include "tabella.h"
 
 // La mappa della citta' (MMA, menu/PROPOSTA.md sez. 3.3; mockup menu/mockup/03_mappa.png e 03c_legenda.png). In alto
-// la mappa a schema, ruotata come il gioco: il fondo viene da tools/genera_mappa_menu.py, e qui ci si disegnano sopra
+// la mappa a schema, col nord in alto come il gioco: il fondo viene da tools/genera_mappa_menu.py, e qui ci si disegnano sopra
 // le strade (piene fra aree viste, a puntini verso quelle no), le porte e le aree (oro le viste, grigio la nebbia).
 // Sopra, come sprite, i segnalini: dove sei, la cronaca, gli incarichi, il venditore, le botteghe, la taverna. In
 // basso la scheda dell'area sotto il cursore: nome, quota, una riga. Le frecce spostano il cursore all'area piu'

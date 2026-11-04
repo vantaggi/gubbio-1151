@@ -3,81 +3,145 @@
 # cappellette ai tornanti 3, 6 e 7, il bosco ai lati, il belvedere sulla citta' a valle.
 id monte_ingino
 etichetta AREA_MONTE_INGINO
-dimensioni 128 64
-monte destra
-belvedere alto
+dimensioni 64 128
+monte alto
+belvedere sinistra
 stradoni
-riferimento 64 32
+riferimento 32 63
 fattore 0.73
-spawn 0 43 57
-spawn 1 7 8
-spawn 2 119 47
-spawn 3 7 18
+spawn 0 57 84
+spawn 1 8 120
+spawn 2 47 8
+spawn 3 18 120
 uscita A duomo_ducale 1
 uscita B basilica 2
 uscita E sant_andrea 3
 griglia
-######AAAA######################################################################################################################
-######AAAA######################################################################################################################
-######bbbb######################################################################################################################
-######bbbb######################################################################################################################
-#####pbbbb#k####TT##kmmmmmmmmmmmmmmmmr######TT#TT#TT#k#######TT#TT###TT#TT##kmmmmmmmmmmmmmmmmk####k#k#TT###########TT##TT#TT####
-####r#bbbb###TT#TT##mbbbbbbbbbbbbbbbbb##TT##TT#TT#TT#########TT#TT#TTTT#TT##mbbbbbbbbbbbbbbbbb#k######TT#TT###k####TT##TT#TTTT##
-##k###bbbb###TT#####bbbbbbbbbbbbbbbbbbr#TT###########TT##TT####TT##TT#####k#bbbbbbbbbbbbbbbbbb######TT###TT#############TT##TT##
-######bbbb#########pbbbbbbbbbbbbbbbbbb########TT#TT##TT##TT##TTTT#######TT#pbbbbbbbbbbbbbbbbbb###k##TT##################TT######
-####kpbbbb######r###bbbbbbbbbbbbbbbbbb######TTTT#TTTT##TT#TT#TT#########TT##bbbbbbbbbbbbbbbbbb#####TT###########k##########TT#TT
-######bbbb#########kbbbbbb###k#ubbbbbb###TT#TT#####TT##TT#TT###TT#########k#bbbbbb##ccc#bbbbbbk####TT#####k###k######k##TT#TT#TT
-EEbbbbbbbbk#####k###bbbbb##k###u#bbbbbk##TT#####TTTT##TT#####TTTT#k#####TT##bbbbb###ccc##bbbbb##TT######################TT#TT#TT
-EEbbbbbbbb#########pbbbb#######r#pbbbb########TTTTTT##TT#####TTTT###k###TT#pbbbb####ccc##pbbbb##TT##k########k#############TT#TT
-EEbbbbbbbbr#####TT##bbbb##k##TT###bbbb##TTTT##TT##TT#####TTTT##TT###########bbbb#r########bbbb##TT########k#####k##k#r#k#u######
-EEbbbbbbbb##TT##TTr#bbbb#####TT###bbbb##TTTTTT#TT#TT#TT##TTTT#####TT###TT##rbbbb#########kbbbb##TT###TT#kmmmmmmmmmmmmmmmmu######
-#####kbbbb##TT######bbbb#########rbbbb#r####TT#TT####TT##TT#######TT#TTTT###bbbb##TT######bbbb####TT#TT#mbbbbbbbbbbbbbbbbb##TT##
-######bbbb#####TT##pbbbbu##TT##TTpbbbb###TT##TT###TT##TT#TT##########TT####pbbbb##TT#####pbbbb####TT#TT#bbbbbbbbbbbbbbbbbbk#TT##
-##TTrpbbbbu####TT###bbbbu##TT##TTkbbbb#r#TT##TT#TTTT##TT###TT######TT####TT#bbbb##########bbbb##TT###TTpbbbbbbbbbbbbbbbbbb####TT
-##TT##bbbbu#TT####u#bbbb##########bbbb##########TT#######TTTT######TTTT##TT#bbbb#r#TT#####bbbb##TT#TT###bbbbbbbbbbbbbbbbbbk###TT
-#####ubbbb##TT#TT#u#bbbb###TT###k#bbbbk####TT############TT###TT#####TT###u#bbbb###TTTT###bbbb#####TT###bbbbbb######bbbbbb##TT##
-#####ubbbbk####TT##pbbbb#k#TTTT##pbbbb#####TT###############TTTT##TT####TTupbbbb#####TT##pbbbb#########rbbbbb#r#u#k##bbbbb##TT##
-#k###pbbbb##TT##TT##bbbb###TTTTTT#bbbb########TT####k#######TT####TTTT##TT##bbbb####TT###kbbbb#k#######pbbbbk###u####pbbbbk#####
-####r#bbbb##TT##TT##bbbb###TT##TT#bbbb#####TT#TT############TTTTTT##TT####u#bbbb####TT#TT#bbbb####k#####bbbb##k##TT#k#bbbb##TT##
-######bbbbk####TT##kbbbbr#TTTT####bbbbu####TT#######r#######TTTTTTTT######u#bbbb#u#####TT#bbbb##########bbbb#####TT###bbbbu#TT##
-####k#bbbb#####TT##pbbbb##TTTT##rpbbbbu#####TT################TTTTTT#TT####pbbbb#u#######pbbbbr#########bbbb##########bbbbu#####
-#TT##pbbbb#u#TTTT#r#bbbb###TT#####bbbbk##TT#TT#TT#####TT###TT#TTTT###TT#TT#ubbbb###TT##TTkbbbb##TT#TTTTpbbbb##TT#TT##pbbbb##k###
-#TT###bbbb#u#TTTT###bbbbr##TT#####bbbb###TT####TT#####TTTT#TT###########TT#ubbbbk##TT##TT#bbbbk#TT#TTTT#bbbbu#TT#TT##rbbbb######
-##TT##bbbb##########bbbb#########rbbbb#r#####TT#########TT#TT###############bbbb####TT#TT#bbbb#####TT###bbbbu##TT#####bbbb###TT#
-##TT##bbbb#r#####TTpbbbbk##TT####pbbbb#####TTTTTT###k#TT###TT#TTTT#########pbbbb#k##TT#TTpbbbbr#TT#TT#k#bbbb###TT####kbbbb#r#TT#
-#####pbbbb####TT#TT#bbbb###TT####rbbbb###TTTT##TT#####TTr#####TTTT###k###TT#bbbb##########bbbb##TT#####pbbbb#########pbbbb######
-######bbbb####TT####bbbb#k#TTTT###bbbb###TT######mmmmmmmmmmmmmmmm########TT#bbbb#k#TT#TTk#bbbb####TTTT##bbbbr####TT###bbbb##TT##
-#k#TT#bbbbu#TT###TTkbbbb###TTTT##kbbbb#k#TT##TT#mbbbbbbbbbbbbbbbbb#u######r#bbbb###TT#TT##bbbb####TTTT#ubbbb##TT#TT#u#bbbbr#TT##
-###TT#bbbbu#TT#TTTTpbbbb######TT#pbbbb###TT##TT#bbbbbbbbbbbbbbbbbb#u#######pbbbb###TT#TT#pbbbb#########ubbbbk#TT####u#bbbb######
-#####pbbbb#####TT##kbbbb######TT##bbbbk###TT###pbbbbbbbbbbbbbbbbbbu#########bbbbr##TT#TT##bbbbu########pbbbb#######TTpbbbb#r####
-#TTTT#bbbbk#TT##TT##bbbb##########bbbb####TT#TTrbbbbbbbbbbbbbbbbbbu#k####TT#bbbb######TT##bbbbu###k###k#bbbb###TT##TT#bbbb###TT#
-#TTTT#bbbb##TT##TT##bbbb#k#####TT#bbbbu#TT###TT#bbbbbb#r####bbbbbb#######TT#bbbb######TT##bbbbu#####k###bbbb###TT#####bbbb###TT#
-#TT###bbbb#u#######pbbbb#######TTpbbbbu#TT#TT###bbbbbu###k###bbbbbk########pbbbb##TTTT###pbbbbu#########bbbb#r##TT#TT#bbbb#k####
-#TT##pbbbb#u#TT####rbbbb##########bbbb##TT#TTTTpbbbb#u#####k#pbbbb#####TT#k#bbbb##TTTT###kbbbb####k####pbbbb####TT#TTpbbbb####TT
-######bbbb###TTTT###bbbb##########bbbbr#TT###TT#bbbb####TT####bbbbk#TT#TT###bbbbu#########bbbb#k#####k##bbbb########k#bbbb####TT
-######bbbb##TT#TT###bbbb##########bbbb#####TT###bbbbk#TTTT#TTrbbbb##TTTTTT##bbbbu#TT######bbbb##########bbbb######TT##bbbb#k##TT
-######bbbb##TTTT#TTpbbbb########kpbbbb#r#TTTT#r#bbbb##TT###TT#bbbbr###TTTT#pbbbb##TT#####pbbbb#k######k#bbbb####k#TT##bbbb####TT
-#####pbbbbk###TT#TT#bbbb##########bbbb###TT####pbbbbk##TTTT##pbbbb##########bbbbr#########bbbb#########pbbbb#######TTpbbbb######
-####k#bbbb##TT######bbbb#####k###kbbbbk#TT###TT#bbbb###TTTT###bbbb#k#TT####kbbbb##TT######bbbb#########kbbbbr######TT#bbbbu#####
-######bbbb##TT#####rbbbbk#########bbbb##TT###TT#bbbb##########bbbb###TTTT###bbbb##TT#TTTT#bbbb##TTTT#TT#bbbb###TT#####bbbbu###TT
-#TTTT#bbbb###TT#TT#pbbbb##TT###TTpbbbb########k#bbbb##TT###TT#bbbbr####TT##pbbbb##TT#TTTTpbbbb##TTTT#TT#bbbb#u#TT#TT#rbbbb##TTTT
-#TTTTpbbbb#k#TT#TT##bbbb##TTTT#TT#bbbbr##TT####pbbbb##TT###TTpbbbb######TT#kbbbb##TT##TT##bbbb#r##TT#TTpbbbb#u#TT#TT#pbbbb##TT##
-######bbbb####TT####bbbbr###TT####bbbb###TT#####bbbbk###TT#TT#bbbbu##TT#TT##bbbb######TT##bbbb####TT#TT#bbbb###TTTT##kbbbbk#TT##
-######bbbb####TT####bbbb##TT######bbbb##########bbbb##TTTT#TT#bbbbu##TT####rbbbb#k##TT#TT#bbbb##TT######bbbb##TT#TT###bbbb##TT##
-#TTTT#bbbb##u####r#pbbbb##TT##TTrpbbbbr#########bbbb##TT######bbbb#########pbbbb####TT#TTpbbbb##TTTT##u#bbbbk#TT#####rbbbbk#TT##
-#TTTTpbbbbb#u######bbbbb######TT##bbbb###TT##TTpbbbb#########pbbbb#r#####TT#bbbb#k########bbbb####TT##upbbbb#########pbbbb##TT##
-##TT##bbbbbb##r#r#bbbbbbr######TT#bbbbk##TT##TT#bbbb#u#######kbbbb###TTTTTT#bbbb###k#u####bbbb##########bbbbr#TT###TT#bbbbk#####
-##TT#kbbbbbbbbbbbbbbbbbb#######TT#bbbb##########bbbb#u########bbbbr##TTTT###bbbb#####u####bbbb##########bbbb##TTTT#TT#bbbbbbbbBB
-######bbbbbbbbbbbbbbbbbbk#####TT#pbbbb#r########bbbb#k#######kbbbb###TT##TTpbbbbk#TT#####pbbbbr###ccc###bbbb##TTTT####bbbbbbbbBB
-#TT#r#bbbbbbbbbbbbbbbbbb######TT##bbbb#########pbbbb#########pbbbb#u#TT##TT#bbbb##TT######bbbbb###ccc##bbbbb##TT####k#bbbbbbbbBB
-#TT###mbbbbbbbbbbbbbbbbb#######TT#bbbb####ccc###bbbb##########bbbb#u##TT#TT#bbbb########k#bbbbbb##ccc#bbbbbb##########bbbbbbbbBB
-#####u#mmmmmmmmmmmmmmmm#r###TT#TT#bbbbb###ccc##bbbbbk######TT#bbbb#u##TT#TT#bbbbk#########bbbbbbbbbbbbbbbbbb#k#TT####r##k#######
-#####u########k####r######TTTT###pbbbbbb##ccc#bbbbbb###TTTTTT#bbbb#u#######pbbbb##TTTT#TTpbbbbbbbbbbbbbbbbbb###TT#TT############
-##TT#TT##########TT##TT###TT#####kbbbbbbbbbbbbbbbbbbu##TTTTTTpbbbbbk#######bbbbbk#TTTT#TT#bbbbbbbbbbbbbbbbbb######TTTT##TTTT#TT#
-##TT#TT######TT##TT##TT#TT#TTTT###bbbbbbbbbbbbbbbbbbu##TTTTTT#bbbbbb#k###kbbbbbb#####TT###mbbbbbbbbbbbbbbbbbk#TTTT##TT##TTTT#TT#
-###TT########TT####TTTT#TT#TTTT##ubbbbbbbbbbbbbbbbbb###TTTT###bbbbbbbbbbbbbbbbbb###TTTT##r#mmmmmmmmmmmmmmmm###TTTT##############
-#TTTT##############TTTT##########umbbbbbbbbbbbbbbbbb#k####TT##bbbbbbbbbbbbbbbbbbk##TT########r##k###k#k##r##########TT##TT##TT##
-#TT#########TT###TT##########TTTT#rmmmmmmmmmmmmmmmm####TT#TT##bbbbbbbbbbbbbbbbbb#######TTTT#####################TT##TT##TT##TT##
-######TT#TT#TTTT#TT####TTTT##TTTT#######k#k#r##########TT#####mbbbbbbbbbbbbbbbbb#######TTTT#TT#####u#########TT#TTk#############
-######TT#TT#TTTT####TT#TTTT#######TTTT########TTTT#TT##TT#TTk##mmmmmmmmmmmmmmmm#u#TTTT######TT#TT##u#########TT#TT############TT
-############TT######TT############TTTT########TTTT#TT##TT#TT####################u#TTTT#########TT###############TT############TT
+########TTTT####TT##################TTTT##TT######BBBB########TT
+########TTTT####TT########TT#####TT#TTTT##TT######BBBB##TT####TT
+#####TT#######TT##TT#TT###TT#TT##TT########TTTTTT#bbbb##TT#TT###
+#####TT#TTTT##TT##TT#TT#k####TT############TTTTTT#bbbb#####TT###
+####TT##TTTT###############r####r##k##k###########bbbb##TT######
+####TT#########k#k##k#r#######r##########r###k#k#kbbbb##TT######
+######TT#TT#u#bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb##TT#TT###
+####TTTT#TT#umbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbk#TT#TT###
+####TT######kmbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb##########
+#############mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb##########
+#########k##rmbbbbbbp###pr#kp###p###p###p##rpk#rp#####r#TT#TT###
+####TT#######mbbbbb##k########u#TT#TTk##TT#######TT#k###TT#TT###
+####TT######kmbbbb############u#TT#TT#TTTT#TT####TT####TT#######
+#############mbbbb#k#TT#TT###TT#######TT###TTTT########TT####k##
+#############mbbbb###TT#TT###TT####TT########TT###TT#####TT#TTTT
+########k###kmbbbb#u######TT#####TTTT##k##TTTT####TT##TT#TT#TTTT
+#############mbbbb#u####TTTT##TT#TT#######TTTTTT#TTTT#TT#TT#####
+#####k###k###mbbbb#r#k##TT####TT##############TT#TTTT####TT##TT#
+###########k#mbbbbb################r#######u##########k######TT#
+#############mbbbbbbk####r###r#k#########r#u###k#r#######k######
+#############mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb######
+#####TT##k##kmbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#####
+#####TT######mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbmr####
+#############kmbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#####
+####TT##########p##rp###p###p#u#p###p###pk##p###p###bbbbbbm#####
+####TT#######TTTT#######TT#k##u##k#####k##TTTT#u#####bbbbbmk####
+######TT#####TTTT#######TT###TT######k####TTTT#u######bbbbm#####
+####k#TTTT#k#####TT#####TTTT#TT###k################cccbbbbmk####
+########TT####TT#TT#####TTTT#TT###########TTTT#TT##cccbbbbm##u##
+####k#########TT#####k#######TT##k##k#####TTTT#TT##cccbbbbm##u##
+#######k##TTTT##TT######TT#TT#############TT##TT######bbbbm#####
+##########TTTT##TT######TT#TT#############TT##TT######bbbbmk##TT
+#####k##############k################k#k####r########bbbbbm###TT
+#########k#############r#k#r####r#r################rbbbbbbm#####
+####kbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbmr#TT#
+####mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm##TT#
+####mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#####
+####mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm##TT##
+####mbbbbbbp#k#p###pk##pk##p###p###pk##p###p###p###p###p##r#TT##
+####mbbbbb###########TT#TTTT#k############TT##TT#####k#TT###TT##
+####mbbbb############TT#TTTT#TTTTTT#######TTTTTT#######TT###TT##
+####mbbbbccc######TT#########TTTTTT#######TTTT###########TT#####
+####mbbbbccc######TTTT####TT#######TT#####TT##TT#u#####TTTT###TT
+####mbbbbccc#####TT#TT##TTTT#TTTT##TT#########TT#u#####TT#TT##TT
+####mbbbb#####TT#TT#####TT###TTTT##TT#TT#TTTT####k#TT##TT#TT##TT
+####mbbbb#####TT###################TT#TT#TTTT######TT##TT#####TT
+####mbbbbb##r####r####u####k#k################k#k###############
+####mbbbbbb###########u##k######r####r##r##########k##k#k##k##u#
+####mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbu#
+####mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#
+####mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#
+####kmbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#
+#######p###p#r#p###p###pu##p###p###p###p#k#pk#rp###p###pbbbbbbm#
+######k##k######TTu##u##u###TTr##TT#k###########TT#TTTT##bbbbbm#
+####TT#TT#TT####TTuTTu##TT##TT###TT###TT####TT##TT#TTTT##kbbbbm#
+####TT#TT#TT#TT####TT###TT##########TTTT##TTTT###TT#######bbbbm#
+#############TT#####################TTTT##TT#####TT##TT###bbbbm#
+####TT########TT#TT####TT#############TT#TT##TT##TTTTTT###bbbbm#
+####TT########TT#TT#TT#TT###k########TT##TT##TT##TTTT####kbbbbm#
+#####TT####k####TT##TT###########k###TT###################bbbbm#
+#####TT######TT#TT#TT#TT######u##########k######r###u#u#kbbbbbm#
+##########k##TT####TT#TT######u#r##k#k#r###r#r####r#u#u#bbbbbbm#
+####TT###############TTTT##TT#bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#
+####TTTT#TTTT########TTTT##TTmbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#
+######TT#TTTT#####TT#TTTT##TTmbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#
+####TT#TT#TT######TT#TTTT##TTmbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm##
+####TT#TT#TT#######TTTT######mbbbbbbp#r#p###p###pk#kp###p#######
+############TT##TT#TTTT#TTTT#mbbbbb###TT###TTTT#######TTTT####k#
+########TT##TT##TT######TTTT#mbbbb##k#TT###TTTT#######TTTT#TT#TT
+######TTTT##TTTT#TT##########mbbbb######TT#############TTTTTT#TT
+######TT####TTTT#TT######TT##mbbbb#k#TT#TT###TT########TTTT#####
+########TT###############TT#rmbbbb###TT#TT###TT########TTTT#TTTT
+########TTTT###TT#######TT#TTmbbbbr###TTTT#TT#TT#######TTTT#TTTT
+######TT##TT#TTTT#######TT#TTmbbbb####TT###TT#TT################
+####k#TT#####TT##############mbbbbbr#############u#k#######k####
+########TT##########k#r####k#mbbbbbb##k#k####k###u####k#r#####TT
+####TT##TTTTTT#TT############mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb##TT
+####TT#TT#TTTT#TT############mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm###
+#######TT#TT####TT###########mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#TT
+####TT####TT#TT#TT######TT#TT#mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#TT
+####TT#TT##TTTT#####TT##TT#TT###pr##p###p###p###p###p#bbbbbbm#TT
+#######TT##TT##TT###TT####TT##TT#TT#TT#r#TTk####TT#####bbbbbm#TT
+####TT##TT###TTTT######TT#TT##TT#TT#TT###TT#####TT######bbbbm###
+####TT##TT###TT###TT#TTTT##TT######TT#TT#############cccbbbbmr##
+############TT####TT#TT####TT###TT#TT#TT#############cccbbbbm###
+#########TT#TT#TT#######TT##TTTTTT#####TT###TT##TT###cccbbbbmk##
+#####TT##TT#TT#TT#######TT##TTTT##TTTT#TTTT#TT##TT######bbbbm###
+#####TT#####TT####################TTTT###TT#############bbbbmk##
+##############r#r#########r###k########r###########r###bbbbbm###
+######r###k#######k###r#k#######k#r##r###k##r##r#k####bbbbbbm###
+####rbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#TT
+####mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#TT
+####mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#TT
+####mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbmr#TT
+####mbbbbbbp##rpk##p###p##rpr#kp###p###p#k#p###p###p###pk#u#####
+####mbbbbb#####TT#k#TT#r##########TT###k###TT##r#TT##TT###u#TT##
+####mbbbbu#r###TT###TT#########TT#TT#######TT##TTTTTTTT#####TT##
+####mbbbbu##TT#####TT########TTTT##############TT##TT####TT#TT##
+####mbbbbk##TT#####TT#TT#####TT##########k##TT########TT#TT#TT##
+####mbbbb######TT#TTTTTTTT#TTTT#############TT########TT#TT#####
+####mbbbb#k####TT#TTTTTTTT#TTTT############TT#TT#######TTTT#####
+####mbbbb###k#########TT###################TT#TT#######TT####TT#
+####mbbbbb#########k#########k####k######################TT##TT#
+####mbbbbbb####r######r##r#k##############k##r###r#k##r##TT##TT#
+####mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb#######TT#
+####mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#TTTT####
+####mbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#TTTT##TT
+####kmbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm###TT##TT
+#######p#k#p###p###p##kp###p##kpk##pr##p##rp###pbbbbbbmr##TT####
+#############r###u######r##TT#TT#######TT########bbbbbm#TT##TT##
+####TT######TT###u##TT#####TT#TT#TT####TT##TT##r##bbbbm#TT##TT##
+####TT##r#k#TT#TT#TTTTTTTT#####TTTT##TT####TT####rbbbbm#########
+###############TT#TT##TTTT##TT#TT####TTTT####TT###bbbbm######TT#
+#####TT#################TT##TT######TT#TT##TTTT##rbbbbmk#TT##TT#
+#####TT######TT##TT#TT##TT####TT#TT#TTTT#TTTT#####bbbbm##TT#TTTT
+#############TT##TT#TT########TT#TT###TT#TT####u##bbbbm#####TTTT
+####k###################u##r#######u########k##u#bbbbbm#########
+##########k#r###r##k##k#u#####r##k#u####k#######bbbbbbm######TT#
+AAbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm######TT#
+AAbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm#########
+AAbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm######TT#
+AAbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbm##TT###TT#
+####p###p#bbbbk#p#u#p###p###p###p###p###p###p###p#k###u#TT######
+#####r##k#bbbb##r#u##r#k######TT#TT######k#TT##TT###r#u###TT####
+##########bbbb##TT########TT##TT#TT########TT##TTTT#####TTTT####
+######k###bbbb##TT######TTTT#####TTTT######TT##TTTT#TT##TT#TT###
+##########EEEE######k###TT####k##TTTT######TT##TT###TT#####TT###
+##########EEEE##################################################

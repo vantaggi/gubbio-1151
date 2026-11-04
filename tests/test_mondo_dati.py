@@ -30,33 +30,39 @@ def arco(g, da, a):
 
 
 class Rotazione(unittest.TestCase):
+    """Nord in alto (Cioti, 4 nov 2026)."""
 
     def test_quattro_punti_cardinali(self):
-        self.assertEqual(M.lato_schermo(0), "destra")      # nord
-        self.assertEqual(M.lato_schermo(90), "basso")      # est
-        self.assertEqual(M.lato_schermo(180), "sinistra")  # sud
-        self.assertEqual(M.lato_schermo(270), "alto")      # ovest
+        self.assertEqual(M.lato_schermo(0), "alto")        # nord
+        self.assertEqual(M.lato_schermo(90), "destra")     # est
+        self.assertEqual(M.lato_schermo(180), "basso")     # sud
+        self.assertEqual(M.lato_schermo(270), "sinistra")  # ovest
 
-    def test_facciata_est_frontale(self):
-        self.assertEqual(M.vista_facciata(90), "frontale")
-        self.assertEqual(M.vista_facciata(270), "retro (solo tetto)")
+    def test_facciata_est_di_fianco(self):
+        self.assertEqual(M.vista_facciata(90), "fianco destro")
+        self.assertEqual(M.vista_facciata(180), "frontale")
+        self.assertEqual(M.vista_facciata(0), "retro (solo tetto)")
 
     def test_rotazione_specchiata_presa(self):
         """Prova negativa: una rotazione con est e ovest scambiati non passa gli stessi controlli."""
         originale = M.vettore_schermo
         try:
-            M.vettore_schermo = lambda b: (originale(b)[0], -originale(b)[1])
-            self.assertNotEqual(M.lato_schermo(90), "basso")
-            self.assertNotEqual(M.vista_facciata(90), "frontale")
+            M.vettore_schermo = lambda b: (-originale(b)[0], originale(b)[1])
+            self.assertNotEqual(M.lato_schermo(90), "destra")
+            self.assertNotEqual(M.vista_facciata(90), "fianco destro")
         finally:
             M.vettore_schermo = originale
 
     def test_facciate_note(self):
-        """Consoli e Bargello si vedono di fronte, Pretorio da dietro (decisione del 1 nov 2026)."""
+        """Tutte le facciate si disegnano verso il basso, di fronte; il lato vero resta annotato: Consoli e
+        Bargello guardano a est (a destra), il Pretorio a ovest (a sinistra)."""
         mon = M.calcola_monumenti(GRAFO, CENS)
-        self.assertEqual(mon["consoli"]["facciata_vista"], "frontale")
-        self.assertEqual(mon["bargello"]["facciata_vista"], "frontale")
-        self.assertEqual(mon["pretorio"]["facciata_vista"], "retro (solo tetto)")
+        for mid in ("consoli", "bargello", "pretorio"):
+            self.assertEqual(mon[mid]["facciata_vista"], "frontale")
+            self.assertEqual(mon[mid]["facciata_lato_schermo"], "basso")
+        self.assertEqual(mon["consoli"]["facciata_lato_reale"], "destra")
+        self.assertEqual(mon["bargello"]["facciata_lato_reale"], "destra")
+        self.assertEqual(mon["pretorio"]["facciata_lato_reale"], "sinistra")
 
 
 class Grafo(unittest.TestCase):
@@ -153,13 +159,24 @@ class Direzioni(unittest.TestCase):
                          ["eccezione per un arco che non c'e': SANT_AGOSTINO>SANT_ANDREA"])
 
     def test_varchi_andata_e_ritorno(self):
-        self.assertEqual(M.errori_lati_varchi(M.calcola_varchi(GRAFO, CENS)), [])
+        coricate = {a["id"] for a in GRAFO["aree"] if a.get("coricata")}
+        self.assertEqual(coricate, {"GOLA_STRISCIA", "GOLA_MIASMI", "GOLA_ARCO", "CONDOTTO"})
+        self.assertEqual(M.errori_lati_varchi(M.calcola_varchi(GRAFO, CENS), coricate), [])
+
+    def test_la_gola_resta_di_fianco(self):
+        """La gola si risale da sinistra a destra anche col nord in alto; dal Bottaccione ci si entra in alto."""
+        var = M.calcola_varchi(GRAFO, CENS)
+        lati = lambda aid: {v["verso"]: v["lato"] for v in var[aid]}  # noqa: E731
+        self.assertEqual(lati("GOLA_STRISCIA"), {"BOTTACCIONE": "sinistra", "GOLA_MIASMI": "destra"})
+        self.assertEqual(lati("BOTTACCIONE")["GOLA_STRISCIA"], "alto")
 
     def test_varco_storto_preso(self):
         var = M.calcola_varchi(GRAFO, CENS)
         ritorno = next(v for v in var["DUOMO_DUCALE"] if v["verso"] == "MONTE_INGINO")
-        ritorno["lato"] = "destra"
-        self.assertTrue(any("rientra" in e for e in M.errori_lati_varchi(var)))
+        coricate = {a["id"] for a in GRAFO["aree"] if a.get("coricata")}
+        self.assertEqual(M.errori_lati_varchi(var, coricate), [])
+        ritorno["lato"] = "sinistra"
+        self.assertTrue(any("rientra" in e for e in M.errori_lati_varchi(var, coricate)))
 
     def test_accessi_esclusivi_di_piazza_grande(self):
         """Regola di Cioti: a Piazza Grande solo da via dei Consoli e via XX Settembre, che salgono
@@ -186,31 +203,31 @@ class Direzioni(unittest.TestCase):
                           "come vuole il vincolo su PIAZZA_GRANDE"])
 
     def test_lati_attesi(self):
-        """Piazza Grande: via dei Consoli in alto (ovest), via XX Settembre in basso (est), e la porta della Sala dei Consoli."""
+        """Piazza Grande: via dei Consoli a sinistra (ovest), via XX Settembre a destra (est), e la porta della Sala dei Consoli."""
         lati = {v["verso"]: v["lato"] for v in M.calcola_varchi(GRAFO, CENS)["PIAZZA_GRANDE"]}
-        self.assertEqual(lati, {"VIA_DEI_CONSOLI": "alto", "VIA_XX_SETTEMBRE": "basso", "SALA_CONSOLI": "dentro"})
+        self.assertEqual(lati, {"VIA_DEI_CONSOLI": "sinistra", "VIA_XX_SETTEMBRE": "destra", "SALA_CONSOLI": "dentro"})
 
     def test_lati_attesi_quaranta_martiri(self):
-        """Quaranta Martiri: San Martino e via dei Consoli a destra (nord), San Pietro e via XX
-        Settembre in basso (est), il Teatro in alto (ovest)."""
+        """Quaranta Martiri: San Martino e via dei Consoli in alto (nord), San Pietro e via XX
+        Settembre a destra (est), il Teatro a sinistra (ovest); col nord in alto."""
         lati = {v["verso"]: v["lato"] for v in M.calcola_varchi(GRAFO, CENS)["PIAZZA_QUARANTA_MARTIRI"]}
-        self.assertEqual(lati, {"SAN_MARTINO": "destra", "VIA_DEI_CONSOLI": "destra", "SAN_PIETRO": "basso",
-                                "VIA_XX_SETTEMBRE": "basso", "TEATRO_ROMANO": "alto",
+        self.assertEqual(lati, {"SAN_MARTINO": "alto", "VIA_DEI_CONSOLI": "alto", "SAN_PIETRO": "destra",
+                                "VIA_XX_SETTEMBRE": "destra", "TEATRO_ROMANO": "sinistra",
                                 "CARRADORE_INTERNO": "dentro"})
 
     def test_lati_attesi_ordine_nuovo(self):
-        """Rete stradale OSM: da via XX Settembre si va a Sant'Andrea (in basso, sud-est), si sale al
-        Duomo (a destra, nord) e si scende a Quaranta Martiri (in alto); da Sant'Andrea al Monte."""
+        """Rete stradale OSM: da via XX Settembre si va a Sant'Andrea (a destra, sud-est), si sale al
+        Duomo (in alto, nord) e si scende a Quaranta Martiri (a sinistra); da Sant'Andrea al Monte."""
         var = M.calcola_varchi(GRAFO, CENS)
         lati = lambda aid: {v["verso"]: v["lato"] for v in var[aid]}  # noqa: E731
-        self.assertEqual(lati("VIA_XX_SETTEMBRE"), {"PIAZZA_GRANDE": "alto", "SANT_ANDREA": "basso",
-                                                    "PIAZZA_QUARANTA_MARTIRI": "alto", "DUOMO_DUCALE": "destra"})
-        self.assertEqual(lati("SANT_ANDREA"), {"VIA_XX_SETTEMBRE": "alto", "SANT_AGOSTINO": "sinistra",
-                                               "MONTE_INGINO": "destra"})
-        self.assertEqual(lati("SANT_AGOSTINO"), {"SANT_ANDREA": "destra", "SAN_PIETRO": "alto",
+        self.assertEqual(lati("VIA_XX_SETTEMBRE"), {"PIAZZA_GRANDE": "sinistra", "SANT_ANDREA": "destra",
+                                                    "PIAZZA_QUARANTA_MARTIRI": "sinistra", "DUOMO_DUCALE": "alto"})
+        self.assertEqual(lati("SANT_ANDREA"), {"VIA_XX_SETTEMBRE": "sinistra", "SANT_AGOSTINO": "basso",
+                                               "MONTE_INGINO": "alto"})
+        self.assertEqual(lati("SANT_AGOSTINO"), {"SANT_ANDREA": "alto", "SAN_PIETRO": "sinistra",
                                                  "BOTTEGA_CONTI_INTERNO": "dentro"})
-        self.assertEqual(lati("DUOMO_DUCALE"), {"LARGO_BARGELLO": "alto", "MONTE_INGINO": "basso",
-                                                "VIA_XX_SETTEMBRE": "sinistra"})
+        self.assertEqual(lati("DUOMO_DUCALE"), {"LARGO_BARGELLO": "sinistra", "MONTE_INGINO": "destra",
+                                                "VIA_XX_SETTEMBRE": "basso"})
 
 
 class Monumenti(unittest.TestCase):

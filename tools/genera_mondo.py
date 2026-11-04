@@ -37,8 +37,8 @@ Il dislivello si vede in tre modi, tutti ricavati da quote e lati a monte (non d
 particolari): scale davanti ai varchi fra aree con quote diverse; gradoni con il muro di
 contenimento e l'ombra a valle dove la quota dell'area sale al suo interno (uno ogni
 METRI_PER_GRADONE, al massimo GRADONI_MAX, con una scala di passaggio in ogni tratto); belvederi
-(parapetto) sul bordo a valle delle aree alte. La salita va sempre verso nord-est, cioe' in basso a
-destra: ogni .area dichiara "monte basso" o "monte destra", e un belvedere sta su un lato a valle.
+(parapetto) sul bordo a valle delle aree alte. La salita va sempre verso nord-est, cioe' (col nord in alto)
+in alto a destra: ogni .area dichiara "monte alto" o "monte destra", e un belvedere sta su un lato a valle.
 
 Vie e piazze in proporzione, dalle misure muro a muro di mondo/fonti/misure_osm.json: la .area
 nomina la sua via ("via Via dei Consoli") e la sua piazza ("piazza Piazza Grande"). La via deve
@@ -177,9 +177,10 @@ LATO_MAX = 128               # tile per lato di un'area
 LATO_MAPPA_HW = 64           # oltre, il fondale e' una big map
 TILE_MAX_PER_AREA = 1024     # tile unici di un area, suolo e monumenti insieme: il massimo di Butano per un BG (pezzo EDI)
 
-# Dislivello. La salita va verso nord-est: sullo schermo in basso (est) o a destra (nord).
-LATI_A_MONTE = ("basso", "destra")
-LATI_A_VALLE = {"basso": "alto", "destra": "sinistra"}
+# Dislivello. La salita va verso nord-est: sullo schermo in alto (nord) o a destra (est).
+LATI_A_MONTE = ("alto", "destra")      # nord in alto: la salita verso nord-est e' in alto o a destra
+LATI_A_VALLE = {"alto": "basso", "destra": "sinistra"}
+LATI_DEGLI_INTERNI = ("basso",)         # un interno non e' orientato: resta come era disegnato
 QUOTA_MIN_BELVEDERE = 60       # metri: sotto non c'e' niente da guardare dall'alto
 PROFONDITA_BELVEDERE = 3       # senza piazza: vuoto e parapetto nei primi tile dal bordo a valle
 METRI_PER_GRADONE = 15
@@ -1151,8 +1152,8 @@ def tile_per_cella(griglia, x, y, del_monte=False, monte=None):
     monte: il lato a monte dell'area; il suolo subito a valle di un gradone e' in ombra."""
     c = griglia[y][x]
     if c in ".," and monte:
-        mx, my = (x, y + 1) if monte == "basso" else (x + 1, y)
-        if my < len(griglia) and mx < len(griglia[0]) and griglia[my][mx] == "M":
+        mx, my = {"alto": (x, y - 1), "basso": (x, y + 1)}.get(monte, (x + 1, y))
+        if 0 <= my < len(griglia) and mx < len(griglia[0]) and griglia[my][mx] == "M":
             return INDICE_TILE["SUOLO_OMBRA" if c == "." else "STRADA_OMBRA"]
     if c in VARCHI:
         return INDICE_TILE["INGRESSO" if c == "I" else "VARCO"]
@@ -1302,10 +1303,10 @@ def leggi_area(nome_file, testo):
             elif t[0] == "strettoia":
                 a["strettoia"] = int(t[1])
             elif t[0] == "monte":
-                if t[1] not in LATI_A_MONTE:
-                    raise ErroreMondo(f"{nome_file}:{n}: lato a monte '{t[1]}': la salita va verso nord-est, "
-                                      f"il lato a monte e' basso o destra")
+                if t[1] not in LATI_A_MONTE + LATI_DEGLI_INTERNI:
+                    raise ErroreMondo(f"{nome_file}:{n}: lato a monte '{t[1]}' sconosciuto")
                 a["monte"] = t[1]
+                a["riga_monte"] = n
             elif t[0] == "belvedere":
                 a["belvedere"].append((t[1], n))
             elif t[0] == "giardini":
@@ -1351,6 +1352,9 @@ def leggi_area(nome_file, testo):
     for campo in ("id", "etichetta", "larghezza", "riferimento", "monte"):
         if campo not in a:
             raise ErroreMondo(f"{nome_file}: manca '{campo}'")
+    if a["monte"] not in LATI_A_MONTE and not a.get("interno"):
+        raise ErroreMondo(f"{nome_file}:{a['riga_monte']}: lato a monte '{a['monte']}': la salita va verso "
+                          f"nord-est, il lato a monte e' alto o destra")
     if not (0 < a["larghezza"] <= LATO_MAX and 0 < a["altezza"] <= LATO_MAX):
         raise ErroreMondo(f"{nome_file}: area {a['larghezza']}x{a['altezza']}: il lato massimo e' {LATO_MAX} tile")
     if len(a["griglia"]) != a["altezza"]:
@@ -1401,8 +1405,9 @@ def posa_edifici(a, monumenti):
         m = monumenti[mid]
         nord, est = m.get("dall_ancora_tile", [0, 0])
         dx, dy = a["sposta"].get(mid, (0, 0))
-        x0 = rx + int(round(nord * a["fattore"])) + dx - w // 2
-        y0 = ry + int(round(est * a["fattore"])) + dy - h // 2
+        # nord in alto: x = est, y = -nord (il centro in basso a destra se il lato e' pari)
+        x0 = rx + int(round(est * a["fattore"])) + dx - w // 2
+        y0 = ry - int(round(nord * a["fattore"])) + dy - (h - 1) // 2
         if x0 < 0 or y0 < 0 or x0 + w > a["larghezza"] or y0 + h > a["altezza"]:
             raise ErroreMondo(f"{a['file']}: l'edificio {mid} ({w}x{h} tile in {x0}, {y0}) esce dalla "
                               f"griglia {a['larghezza']}x{a['altezza']}")
@@ -1446,7 +1451,7 @@ def rettangolo_piazza(a):
         misura = json.load(f)["piazze"][a["piazza"][0]]
     w, h = misure_piazza_tile(misura, a.get("fattore_piazza"))
     rx, ry = a["riferimento"]
-    return rx - w // 2, ry - h // 2, w, h
+    return rx - w // 2, ry - (h - 1) // 2, w, h
 
 
 def linee_del_belvedere(a, lato):
@@ -1498,24 +1503,32 @@ FORME = {"teatro_romano": "cavea a semicerchio, anello di arcate, orchestra e sc
 
 
 def geometria_teatro(x0, y0, w, h):
-    """Centro e raggi del Teatro nel suo rettangolo: il diametro sul lato lungo (verticale), la cavea
-    che si apre a destra, la scena sul bordo sinistro."""
+    """Centro e raggi del Teatro nel suo rettangolo: il diametro sul lato lungo. Col nord in alto (4 nov
+    2026) il lato lungo e' orizzontale: la scena sul bordo basso, la cavea che sale verso l'alto, come la
+    si vede arrivando; su un rettangolo alto la scena a sinistra e la cavea che si apre a destra.
+    Ritorna (cx, cy, r, r_int, orizzontale)."""
+    if w > h:
+        cx, cy = x0 + w / 2 - 0.5, y0 + h - 3
+        r = min(h - 3, w / 2 - 1)
+        return cx, cy, r, r / 3, True
     cx, cy = x0 + 2, y0 + h / 2 - 0.5
     r = min(w - 3, h / 2 - 1)
-    return cx, cy, r, r / 3
+    return cx, cy, r, r / 3, False
 
 
 def stampa_teatro(a, rett):
     """La forma del Teatro Romano nella griglia: scena (P), orchestra (lastrico), gradinate (R) e anello
     di arcate (U) in un semicerchio; il resto del rettangolo resta prato calpestabile."""
     x0, y0, w, h = rett
-    cx, cy, r, r_int = geometria_teatro(x0, y0, w, h)
+    cx, cy, r, r_int, orizz = geometria_teatro(x0, y0, w, h)
     g = [list(riga) for riga in a["griglia"]]
     for y in range(y0, y0 + h):
         for x in range(x0, x0 + w):
             d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
-            if x < cx:
-                g[y][x] = "P" if abs(y - cy) <= r else "."
+            # lungo: la coordinata lungo il diametro; fuori: oltre il diametro, dalla parte della scena
+            lungo, fuori = (x - cx, y > cy) if orizz else (y - cy, x < cx)
+            if fuori:
+                g[y][x] = "P" if abs(lungo) <= r else "."
             elif d <= r_int:
                 g[y][x] = "L"
             elif d <= r - 1.5:
@@ -1528,21 +1541,26 @@ def stampa_teatro(a, rett):
 
 
 def errori_semicerchio(a, rett):
-    """La cavea e' un semicerchio: su ogni riga, la gradinata arriva fino al raggio (con un tile di
-    tolleranza), e la riga di mezzo e' la piu' larga."""
+    """La cavea e' un semicerchio: su ogni linea parallela alla scena... cioe' su ogni riga (scena a
+    sinistra) o colonna (scena in basso), la gradinata arriva fino al raggio (con un tile di tolleranza)."""
     x0, y0, w, h = rett
-    cx, cy, r, _ = geometria_teatro(x0, y0, w, h)
+    cx, cy, r, _, orizz = geometria_teatro(x0, y0, w, h)
     err = []
-    for y in range(y0, y0 + h):
-        cavea = [x for x in range(x0, x0 + w) if a["griglia"][y][x] in "RU"]
-        if abs(y - cy) > r:
+    linee = range(x0, x0 + w) if orizz else range(y0, y0 + h)
+    for k in linee:
+        if orizz:
+            cavea = [y for y in range(y0, y0 + h) if a["griglia"][y][k] in "RU"]
+            scarto, trovato = k - cx, (cy - min(cavea)) if cavea else 0
+        else:
+            cavea = [x for x in range(x0, x0 + w) if a["griglia"][k][x] in "RU"]
+            scarto, trovato = k - cy, (max(cavea) - cx) if cavea else 0
+        if abs(scarto) > r:
             if cavea:
-                err.append((y, "cavea fuori dal semicerchio"))
+                err.append((k, "cavea fuori dal semicerchio"))
             continue
-        atteso = (r * r - (y - cy) ** 2) ** 0.5
-        trovato = (max(cavea) - cx) if cavea else 0
+        atteso = (r * r - scarto ** 2) ** 0.5
         if abs(trovato - atteso) > 1.5:
-            err.append((y, round(trovato, 1), round(atteso, 1)))
+            err.append((k, round(trovato, 1), round(atteso, 1)))
     return err
 
 
@@ -1836,9 +1854,27 @@ def blocchi(griglia, lettera):
     return out
 
 
+def coricata(a):
+    """Gli stradoni col nord in alto salgono verso l'alto a tratti orizzontali: per contarli la griglia si
+    gira di 90 gradi in senso orario, come la disegna tools/disegna_stradoni.py (tratti in colonna,
+    salita verso destra)."""
+    g, w, h = a["griglia"], a["larghezza"], a["altezza"]
+    if h <= w:
+        return a
+    return dict(a, griglia=["".join(g[h - 1 - x][y] for x in range(h)) for y in range(w)], larghezza=h, altezza=w)
+
+
+def celle_dalla_coricata(a, celle):
+    """Le celle lette sulla griglia coricata, riportate sulla griglia vera dell'area."""
+    if a["altezza"] <= a["larghezza"]:
+        return set(celle)
+    return {(y, a["altezza"] - 1 - x) for x, y in celle}
+
+
 def tratti_degli_stradoni(a):
-    """Letti dalla griglia: i tratti (colonne di ghiaia lunghe almeno LUNGHEZZA_MIN_TRATTO, unite
-    fra colonne vicine) da sinistra a destra, ognuno come (x0, x1, y0, y1)."""
+    """Letti dalla griglia (coricata): i tratti (colonne di ghiaia lunghe almeno LUNGHEZZA_MIN_TRATTO,
+    unite fra colonne vicine) dal primo all'ultimo, ognuno come (x0, x1, y0, y1)."""
+    a = coricata(a)
     g, w, h = a["griglia"], a["larghezza"], a["altezza"]
     via = "bJ"
     colonne = []
@@ -1865,8 +1901,8 @@ def tratti_degli_stradoni(a):
 
 def tornanti_degli_stradoni(a, tratti):
     """Il tornante n (dal basso, da 1) e' la ghiaia orizzontale fra il tratto n e il successivo:
-    le celle di ghiaia fra le due colonne, all'estremo comune."""
-    g = a["griglia"]
+    le celle di ghiaia fra le due colonne, all'estremo comune (sulla griglia coricata)."""
+    g = coricata(a)["griglia"]
     out = []
     for (ax0, ax1, ay0, ay1), (bx0, bx1, by0, by1) in zip(tratti, tratti[1:]):
         celle = {(x, y) for y in range(max(ay0, by0), min(ay1, by1) + 1) for x in range(ax1 + 1, bx0)
@@ -1888,7 +1924,7 @@ def errori_stradoni(a, dati):
     for n, celle in enumerate(tornanti, 1):
         if not celle:
             err.append(f"manca il tornante {n}")
-    capp = blocchi(a["griglia"], "c")
+    capp = blocchi(coricata(a)["griglia"], "c")
     if len(capp) != len(dati["cappellette"]):
         err.append(f"{len(capp)} cappellette, i dati ne vogliono {len(dati['cappellette'])}")
     trovate = []
@@ -1984,9 +2020,9 @@ def applica_dislivello(a, grafo):
                     if 0 <= nx < w and 0 <= ny < h and g[ny][nx] in ".,":
                         g[ny][nx] = "S"
 
-    # gradoni: righe (monte basso) o colonne (monte destra) di muro, con una scala in ogni tratto
+    # gradoni: righe (monte alto) o colonne (monte destra) di muro, con una scala in ogni tratto
     n = numero_gradoni(a, grafo)
-    lungo = h if a["monte"] == "basso" else w
+    lungo = h if a["monte"] == "alto" else w
     vietate = set(a["spawn"].values()) | {(x, y) for y, r in enumerate(g) for x, c in enumerate(r)
                                           if c in VARCHI or c == "S"}
     a["gradoni"] = []
@@ -1996,7 +2032,7 @@ def applica_dislivello(a, grafo):
             pos = voluto + scarto
             if not 2 <= pos < lungo - 2:
                 continue
-            linea = [(x, pos) for x in range(w)] if a["monte"] == "basso" else [(pos, y) for y in range(h)]
+            linea = [(x, pos) for x in range(w)] if a["monte"] == "alto" else [(pos, y) for y in range(h)]
             vicine = {(x + dx, y + dy) for x, y in linea for dx in (-2, -1, 0, 1, 2) for dy in (-2, -1, 0, 1, 2)}
             if not vicine & vietate:
                 break
@@ -2736,13 +2772,16 @@ def misure_piazza_tile(misura, fattore=None):
 
 
 def asse_lungo_area(a):
-    return "verticale" if a["altezza"] >= a["larghezza"] else "orizzontale"
+    # un'area quadrata conta come orizzontale (col nord in alto le vie lunghe corrono di traverso)
+    return "verticale" if a["altezza"] > a["larghezza"] else "orizzontale"
 
 
-def larghezze_lungo_l_asse(a):
-    """Per ogni linea perpendicolare all'asse lungo dell'area, il tratto calpestabile piu' lungo."""
+def larghezze_lungo_l_asse(a, asse=None):
+    """Per ogni linea perpendicolare all'asse lungo dell'area (o all'asse dato), il tratto calpestabile piu'
+    lungo."""
     g = a["griglia"]
-    linee = g if asse_lungo_area(a) == "verticale" else ["".join(r[x] for r in g) for x in range(a["larghezza"])]
+    asse = asse or asse_lungo_area(a)
+    linee = g if asse == "verticale" else ["".join(r[x] for r in g) for x in range(a["larghezza"])]
     out = []
     for linea in linee[1:-1]:
         tratti = "".join("x" if not solida(c) and c not in VARCHI else " " for c in linea).split()
@@ -2766,9 +2805,12 @@ def controlla_proporzioni(a, misure):
                               f"{larga} (al massimo {larga * tolleranza:g})")
         if mediana < 2:
             raise ErroreMondo(f"{a['file']}:{n}: {nome} e' larga {mediana} tile: per passare ne servono 2")
-        if "strettoia" in a and min(righe) > a["strettoia"]:
+        # la strettoia puo' correre per lungo o di traverso (la stradina fra il Duomo e il Ducale)
+        stretta = min(min(righe), min(larghezze_lungo_l_asse(a, "orizzontale" if asse_lungo_area(a) == "verticale"
+                                                             else "verticale") or [99]))
+        if "strettoia" in a and stretta > a["strettoia"]:
             raise ErroreMondo(f"{a['file']}: la strettoia di {a['strettoia']} tile non c'e': il tratto piu' "
-                              f"stretto e' {min(righe)}")
+                              f"stretto e' {stretta}")
     if "piazza" in a:
         nome, n = a["piazza"]
         misura = misure["piazze"].get(nome)
@@ -2779,7 +2821,7 @@ def controlla_proporzioni(a, misure):
             raise ErroreMondo(f"{a['file']}:{n}: {nome} in scala e' {w}x{h} tile e non sta nella griglia "
                               f"{a['larghezza']}x{a['altezza']}: serve un fattore_piazza")
         rx, ry = a["riferimento"]
-        x0, y0 = rx - w // 2, ry - h // 2
+        x0, y0 = rx - w // 2, ry - (h - 1) // 2
         for y in range(y0, y0 + h):
             for x in range(x0, x0 + w):
                 if not (0 <= x < a["larghezza"] and 0 <= y < a["altezza"]) or \
@@ -2907,7 +2949,7 @@ def scrivi_header(aree, grafo, palette_stile):
         "namespace gubbio::mondo",
         "{",
         "",
-        "// Orientamento di tutte le aree: alto = ovest, basso = est, sinistra = sud, destra = nord.",
+        "// Orientamento di tutte le aree: nord in alto (alto = nord, destra = est); la gola resta di fianco.",
         "// Scala: un tile da 8 px = 1,5 m.",
         "",
         "enum class Cella : uint8_t",

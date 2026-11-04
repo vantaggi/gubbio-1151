@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Gli stradoni del Monte Ingino: da mondo/stradoni.json scrive mondo/aree/monte_ingino.area.
 
-Il percorso sale a zig-zag verso destra, come la salita del resto del mondo: 9 tratti verticali di
-ghiaia (b), alternati in giu' e in su, cuciti da tornanti orizzontali. In alto a sinistra Porta
-Sant'Ubaldo con i due varchi verso la citta' (A da via Sant'Ubaldo, E da via Appennino); a destra
-l'arrivo alla Basilica (B). Ai lati bosco (#), con lecci e roverelle (T) e rocce (k) sulle
-scarpate; le cappellette (c) stanno nel gomito dei loro tornanti. Il lato a valle (in alto) e' un
-belvedere sulla citta'.
+Nord in alto (4 nov 2026): il percorso sale a zig-zag verso l'alto, verso la cima: 9 tratti
+orizzontali di ghiaia (b), alternati verso destra e verso sinistra, cuciti da tornanti. In basso a
+sinistra Porta Sant'Ubaldo con i due varchi verso la citta' (A da via Sant'Ubaldo, a sinistra; E da
+via Appennino, in basso); in alto l'arrivo alla Basilica (B). Ai lati bosco (#), con lecci e
+roverelle (T) e rocce (k) sulle scarpate; le cappellette (c) stanno nel gomito dei loro tornanti.
+Il lato a valle (a sinistra) e' un belvedere sulla citta'. Il disegno si fa coricato (W x H, salita
+a destra) e ruota() lo gira.
 
     python tools/disegna_stradoni.py            # controlla che il file sia aggiornato
     python tools/disegna_stradoni.py --scrivi   # lo riscrive
@@ -154,19 +155,36 @@ def disegna(dati):
     return g, spawn
 
 
+def ruota(g, spawn):
+    """Nord in alto (4 nov 2026): il disegno si fa coricato, con la salita verso destra, e si gira di 90
+    gradi in senso antiorario. I tratti diventano orizzontali e il percorso sale verso l'alto; il
+    cipresso (1x2, in piedi) si rimette in piedi."""
+    w, h = len(g[0]), len(g)
+    r = [[g[x][w - 1 - y] for x in range(h)] for y in range(w)]
+    for y in range(w):
+        for x in range(h - 1):
+            if r[y][x] == "u" and r[y][x + 1] == "u":
+                r[y][x + 1] = "#"
+                if y + 1 < w and r[y + 1][x] == "#":
+                    r[y + 1][x] = "u"
+                else:
+                    r[y][x] = "r"
+    return r, {k: (y, w - 1 - x) for k, (x, y) in spawn.items()}
+
+
 def testo(dati):
-    g, spawn = disegna(dati)
+    g, spawn = ruota(*disegna(dati))
     righe = [
         "# Generato da tools/disegna_stradoni.py da mondo/stradoni.json: non modificare a mano.",
         "# Gli stradoni: 9 tratti di ghiaia a zig-zag da Porta Sant'Ubaldo alla Basilica, le",
         "# cappellette ai tornanti 3, 6 e 7, il bosco ai lati, il belvedere sulla citta' a valle.",
         "id monte_ingino",
         "etichetta AREA_MONTE_INGINO",
-        f"dimensioni {W} {H}",
-        "monte destra",
-        "belvedere alto",
+        f"dimensioni {H} {W}",
+        "monte alto",
+        "belvedere sinistra",
         "stradoni",
-        f"riferimento {W // 2} {H // 2}",
+        f"riferimento {H // 2} {W // 2 - 1}",
         "fattore 0.73",
     ]
     righe += [f"spawn {k} {x} {y}" for k, (x, y) in sorted(spawn.items())]

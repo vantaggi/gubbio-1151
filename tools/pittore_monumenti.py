@@ -31,7 +31,7 @@ LEGNO_SCURO, LEGNO = 14, 15
 REQUISITI = {
     "consoli": {"finestra_arco": 6, "lesena": 5, "portale_gotico": 1, "bifora": 2, "merlatura": 1,
                 "campanile_vela": 1},
-    "pretorio": {"retro": 1},
+    "pretorio": {"facciata": 1, "portale": 1, "finestra_arco": 4},
     "bargello": {"portale": 1, "porta_del_morto": 1},
     "san_domenico": {"facciata_incompiuta": 1, "portale": 1},
     "basilica": {"scalinata": 1, "portale": 1},
@@ -217,8 +217,32 @@ def consoli(w, h, info):
 
 
 def pretorio(w, h, info):
-    """Pretorio: la facciata guarda a ovest, sullo schermo in alto: se ne vede il retro, tetto e muro."""
+    """Pretorio: col nord in alto (4 nov 2026) la facciata si disegna verso il basso, sulla piazza: il
+    palazzo gotico rimasto a meta', conci grezzi, due file di finestre ad arco e il portale al centro.
+    Con la facciata in alto (il vecchio orientamento) se ne vede il retro, tetto e muro."""
     t = Tela(w, h)
+    if info.get("faccia", "basso") == "basso":
+        fh = altezza_facciata(h, info.get("altezza_m"), 5)
+        tetto_e_facciata(t, w, h, fh, TINTE[1])
+        y0, largo, base = (h - fh) * 8, w * 8, h * 8
+        # il bordo alto irregolare: il palazzo non fu mai finito
+        for x in range(largo):
+            for y in range(y0, y0 + (x * 5 + (x // 7) * 3) % 5):
+                t.punto(x, y, COTTO)
+        centro = (w // 2) * 8
+        for k, y in enumerate((y0 + 8, y0 + 8 + max(14, fh * 8 // 3))):
+            if y + 12 > base - 30:
+                break
+            for fx in range(12, largo - 12, 24):
+                if k == 1 and abs(fx - centro) < 18:
+                    continue
+                t.arco(fx - 4, y, 8, 12, CONTORNO)
+                t.elementi["finestra_arco"] += 1
+        portale_in_scala(t, centro, base, y0 + 10)
+        t.elementi["portale"] += 1
+        t.elementi["facciata"] += 1
+        t.contorno()
+        return t
     t.falde(0, 0, w * 8, (h - 2) * 8)
     t.gronda(0, (h - 2) * 8 - 3, w * 8)
     t.conci(0, (h - 2) * 8, w * 8, 16, TINTE[1])
@@ -231,14 +255,16 @@ def bargello(w, h, info):
     """Bargello: stretto e alto, frontale; il portale e accanto la porta del morto, stretta e rialzata."""
     t = Tela(w, h)
     tinta = TINTE[2]
-    fh = max(min(6, h - 2), min(h - 2, h * 6 // 10))
+    # col nord in alto l'impronta e' bassa (6 righe): la facciata prende quasi tutto, il tetto e' una gronda
+    fh = max(min(6, h - 1), min(h - 2, h * 6 // 10))
     tetto_e_facciata(t, w, h, fh, tinta)
     y0 = (h - fh) * 8
     largo = w * 8
+    hf = max(6, min(14, fh * 8 - 32))   # le finestre si accorciano perche' il portale resti di 26 pixel
     for k in range(2):
-        t.arco(largo // 2 - 17 + k * 22, y0 + 4, 12, 14, CONTORNO)
+        t.arco(largo // 2 - 17 + k * 22, y0 + 3, 12, hf, CONTORNO)
     base = y0 + fh * 8
-    portale_in_scala(t, largo // 2 - 4, base, y0 + 20)
+    portale_in_scala(t, largo // 2 - 4, base, y0 + 5 + hf)
     t.elementi["portale"] += 1
     t.arco(largo // 2 + 7, base - 24, 8, 16, LEGNO)
     t.rett(largo // 2 + 7, base - 8, 8, 8, PIETRA_SCURA)
@@ -549,7 +575,7 @@ def sant_agostino(w, h, info):
         solo_retro(t, w, h, TINTE[2])
         t.contorno()
         return t
-    fh = altezza_facciata(h, None, 5)
+    fh = altezza_facciata(h, None, 6)   # 6 righe: sotto l'occhio il portale resta di 28 pixel
     tetto_e_facciata(t, w, h, fh, TINTE[2])
     largo, base = w * 8, h * 8
     portale_in_scala(t, largo // 2, base, (h - fh) * 8 + 18)
@@ -680,6 +706,8 @@ def ranghiasci(w, h, info):
     """Palazzo Ranghiasci-Brancaleoni: la facciata neoclassica guarda a sud, cioe' a sinistra: una
     lunga fila regolare di finestre rettangolari e il portone al centro."""
     t = Tela(w, h)
+    if info.get("faccia", "basso") == "basso":
+        return ranghiasci_di_fronte(t, w, h)
     faccia = info.get("faccia") if info.get("faccia") in ("sinistra", "destra") else "sinistra"
     x0, larga = facciata_di_lato(t, w, h, faccia, TINTE[2], 2)
     # di scorcio le finestre sono strette (M2, F5): il vano scuro, lo stipite in luce, il davanzale e la sua ombra
@@ -697,6 +725,30 @@ def ranghiasci(w, h, info):
     t.rett(x0 + 2, h * 8 // 2 - 9, 1, 17, PIETRA_LUCE)
     t.rett(x0 + 3, h * 8 // 2 - 9, larga - 6, 1, PIETRA_LUCE)
     t.punto(x0 + larga // 2, h * 8 // 2, ("oro e bronzo", 2))
+    t.elementi["portone"] += 1
+    t.contorno()
+    return t
+
+
+def ranghiasci_di_fronte(t, w, h):
+    """Col nord in alto la facciata si vede di fronte, in basso (4 nov 2026): la lunga fila regolare di
+    finestre rettangolari a cornice chiara, su due piani, e il portone al centro sulle celle d."""
+    fh = altezza_facciata(h, None, 4)
+    tetto_e_facciata(t, w, h, fh, TINTE[2])
+    y0, largo, base = (h - fh) * 8, w * 8, h * 8
+    piani = [y0 + 5] + ([y0 + 18] if fh * 8 >= 36 else [])
+    centro = (w // 2) * 8
+    for y in piani:
+        for fx in range(6, largo - 8, 14):
+            if abs(fx + 2 - centro) < 14 and y == piani[-1]:
+                continue
+            t.rett(fx - 1, y - 1, 6, 1, PIETRA_LUCE)
+            t.rett(fx, y, 4, 8, CONTORNO)
+            t.rett(fx + 1, y + 1, 2, 6, ("legno e cuoio", 0))
+            t.rett(fx - 1, y + 8, 6, 1, PIETRA_LUCE)
+            t.rett(fx, y + 9, 5, 1, ("pietra calcarea", 1))
+            t.elementi["finestra_regolare"] += 1
+    portale_in_scala(t, centro, base, piani[-1] + 10)
     t.elementi["portone"] += 1
     t.contorno()
     return t
@@ -728,8 +780,8 @@ REQUISITI.update({
     "capitano_popolo": {"merlatura": 1, "finestra_acuta": 3, "portale": 1},
     "ranghiasci": {"finestra_regolare": 10, "portone": 1},
     "sant_ambrogio": {"roccia": 1, "porta": 1},
-    # la facciata di Sant'Agostino guarda a ovest, in alto: se ne vede il retro
-    "sant_agostino": {"retro": 1},
+    # col nord in alto la facciata di Sant'Agostino si vede di fronte, sul piazzale (4 nov 2026)
+    "sant_agostino": {"portale": 1},
 })
 FACCIATA_DI_DEFAULT.update({"san_marziale": "basso", "santa_maria_nuova": "basso", "capitano_popolo": "basso",
                             "sant_ambrogio": "basso"})
@@ -798,7 +850,17 @@ def teatro_romano(w, h, info):
     sinistro, orchestra a semicerchio, gradinate concentriche, l'anello esterno di arcate di pietra, il prato
     intorno. Allo standard (pezzo EDI): i gradini sono anelli veri di 5 pixel, ognuno con lo spigolo chiaro, la
     pedata nel tono medio e l'alzata d'ombra (F2, C5); l'anello delle arcate ha i fornici scuri con l'arco (F5);
-    la scena e' un muro di conci con le nicchie; il prato e' quello dei giardini."""
+    la scena e' un muro di conci con le nicchie; il prato e' quello dei giardini. Col nord in alto (4 nov 2026)
+    il rettangolo e' largo: si dipinge alto e si gira di 90 gradi in senso antiorario, scena in basso e cavea
+    che sale verso l'alto."""
+    if w > h:
+        alto = teatro_romano(h, w, info)
+        t = Tela(w, h, VERDE)
+        for y in range(t.h):
+            for x in range(t.w):
+                t.px[y][x] = alto.px[x][alto.w - 1 - y]
+        t.elementi.update(alto.elementi)
+        return t
     t = Tela(w, h, VERDE)
     cx, cy = 2.0 * 8 + 4, h * 4 - 0.5     # centro fra due righe di pixel: la cavea e' simmetrica (tile specchiati)
     r = min(w - 3, h / 2 - 1)
@@ -844,9 +906,44 @@ def teatro_romano(w, h, info):
     return t
 
 
+def san_francesco_di_fronte(w, h, info):
+    """Col nord in alto (4 nov 2026) la facciata di San Francesco si vede di fronte, in basso: il portale
+    sulle celle d, il rosone, il campanile al fianco destro alto sopra il tetto; in cima l'abside."""
+    t = Tela(w, h)
+    largo, alto = w * 8, h * 8
+    raggio = min(largo // 3, 20)
+    cx, cy = largo // 2, 4 + raggio
+    t.falde(0, 0, largo, alto)
+    for y in range(cy - raggio, cy + 1):
+        for x in range(cx - raggio, cx + raggio + 1):
+            d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            if d <= raggio:
+                spicchio = int((x - cx + raggio) / 4) % 2
+                t.punto(x, y, CONTORNO if d > raggio - 1 else (COTTO_CHIARO if spicchio else COTTO))
+    t.elementi["abside"] += 1
+    fh = altezza_facciata(h, None, 5)
+    y0 = alto - fh * 8
+    t.gronda(0, y0 - 3, largo)
+    t.conci(0, y0, largo, fh * 8, TINTE[0])
+    rosone(t, cx, y0 + 12, 7)
+    t.elementi["facciata"] += 1
+    portale_in_scala(t, (w // 2) * 8, alto, y0 + 22)
+    t.elementi["portale"] += 1
+    # il campanile, a destra della facciata, alto sopra il tetto
+    t.conci(largo - 24, y0 - 40, 20, 40 + fh * 8 - 8, TINTE[1])
+    t.merli(largo - 24, y0 - 48, 20, TINTE[1])
+    t.arco(largo - 18, y0 - 34, 8, 10)
+    t.elementi["campanile"] += 1
+    t.contorno()
+    return t
+
+
 def san_francesco(w, h, info):
     """San Francesco: la facciata guarda la piazza (in alto), con il portale, il rosone e il campanile
-    al fianco; il tetto a capanna e, in fondo, l'abside semicircolare."""
+    al fianco; il tetto a capanna e, in fondo, l'abside semicircolare. Con la facciata in basso (nord in
+    alto) la disegna san_francesco_di_fronte."""
+    if info.get("faccia", "basso") == "basso":
+        return san_francesco_di_fronte(w, h, info)
     t = Tela(w, h)
     t.falde(0, 24, w * 8, h * 8 - 40)
     t.conci(0, 0, w * 8, 24, TINTE[0])

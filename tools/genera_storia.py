@@ -198,10 +198,10 @@ FILE_QUEST = "04_quest.md"
 # Q-SM01: le fornaci basse sotto le arcate del Teatro Romano. Q-SA01: le rocce bagnate della Strada del Bottaccione
 # e della gola, una dentro i miasmi e una sotto gli archi di B-03 (04_quest.md); si raccolgono anche dopo B-05.
 RACCOLTE = [
-    {"bandiera": "FERRO_1", "area": "TEATRO_ROMANO", "vicino": "U", "verso": (0.62, 0.22), "figura": "ferro"},
-    {"bandiera": "FERRO_2", "area": "TEATRO_ROMANO", "vicino": "U", "verso": (0.72, 0.55), "figura": "ferro"},
-    {"bandiera": "FERRO_3", "area": "TEATRO_ROMANO", "vicino": "U", "verso": (0.56, 0.86), "figura": "ferro"},
-    {"bandiera": "ELLEBORO_1", "area": "BOTTACCIONE", "vicino": "#", "verso": (0.75, 0.75), "figura": "elleboro"},
+    {"bandiera": "FERRO_1", "area": "TEATRO_ROMANO", "vicino": "U", "verso": (0.22, 0.38), "figura": "ferro"},
+    {"bandiera": "FERRO_2", "area": "TEATRO_ROMANO", "vicino": "U", "verso": (0.55, 0.28), "figura": "ferro"},
+    {"bandiera": "FERRO_3", "area": "TEATRO_ROMANO", "vicino": "U", "verso": (0.86, 0.44), "figura": "ferro"},
+    {"bandiera": "ELLEBORO_1", "area": "BOTTACCIONE", "vicino": "#", "verso": (0.75, 0.25), "figura": "elleboro"},
     {"bandiera": "ELLEBORO_2", "area": "GOLA_STRISCIA", "vicino": "k", "verso": (0.70, 0.30), "figura": "elleboro"},
     {"bandiera": "ELLEBORO_3", "area": "GOLA_MIASMI", "vicino": "g", "verso": (0.42, 0.45), "figura": "elleboro"},
     {"bandiera": "ELLEBORO_4", "area": "GOLA_ARCO", "vicino": "J", "verso": (0.50, 0.60), "figura": "elleboro"},
