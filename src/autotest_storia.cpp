@@ -339,6 +339,93 @@ namespace
 
     static_assert(scelte_di_tutta_la_storia(0), "la storia con le prime voci");
     static_assert(scelte_di_tutta_la_storia(1), "la storia con le seconde voci");
+
+    // F10, C7S: la cartolina degli Stradoni parte entrando nel Monte Ingino con A1-07 pronta (dopo A1-06,
+    // PORTA_DEL_MONTE), prima di toccare l'Imboscata (il nemico c'e' ancora); una volta sola. Negative: in
+    // un'altra area, prima di A1-06, gia' vista, a scena fatta (il nemico toccato e la scena chiusa) non parte.
+    consteval int scena_col_codice(const char* codice)
+    {
+        for(int k = 0; k < SCENE; ++k)
+        {
+            if(stesso_codice(SCENA[k].codice, codice))
+            {
+                return k;
+            }
+        }
+
+        return -1;
+    }
+
+    consteval GameState fino_a(const char* ultima)
+    {
+        GameState p = {};
+        progressione::partita_nuova(p);
+
+        for(int k = 0; k <= scena_col_codice(ultima); ++k)
+        {
+            chiudi_scena(p, k);
+        }
+
+        return p;
+    }
+
+    consteval int regia_col_codice(const char* codice)
+    {
+        for(int c = 0; c < regia::CUTSCENE; ++c)
+        {
+            if(stesso_codice(regia::CUTSCENE_DATI[c].codice, codice))
+            {
+                return c;
+            }
+        }
+
+        return -1;
+    }
+
+    constexpr int MONTE = int(mondo::AreaId::MONTE_INGINO);
+    constexpr int C7S = regia_col_codice("C7S");
+
+    static_assert(C7S >= 0 && INGRESSI == 1 && INGRESSO[0].scena == scena_col_codice("A1-07") && INGRESSO[0].regia == C7S,
+                  "C7S non e' la cartolina all'ingresso di A1-07");
+    static_assert(SCENA[scena_col_codice("A1-07")].area == MONTE, "A1-07 non e' sul Monte Ingino");
+
+    // entrando con A1-07 pronta parte, e l'Imboscata e' ancora sulla mappa: la cartolina viene prima del contatto
+    static_assert(cutscene_all_ingresso(fino_a("A1-06"), MONTE) == C7S && scontro_attivo(fino_a("A1-06"), 1),
+                  "C7S non parte entrando negli Stradoni prima dell'Imboscata");
+    static_assert(cutscene_all_ingresso(fino_a("A1-06"), int(mondo::AreaId::DUOMO_DUCALE)) < 0 &&
+                  cutscene_all_ingresso(fino_a("A1-06"), int(mondo::AreaId::PIAZZA_GRANDE)) < 0 &&
+                  cutscene_all_ingresso(fino_a("A1-06"), NESSUNA_AREA) < 0, "C7S parte fuori dal Monte Ingino");
+    static_assert(cutscene_all_ingresso(fino_a("A1-05b"), MONTE) < 0, "C7S parte prima della porta del monte (A1-06)");
+
+    consteval bool c7s_una_volta()
+    {
+        GameState p = fino_a("A1-06");
+        regia::segna_vista(p, C7S);
+        GameState q = fino_a("A1-07");
+        return cutscene_all_ingresso(p, MONTE) < 0 && cutscene_all_ingresso(q, MONTE) < 0 &&
+               ! scontro_attivo(q, 1);
+    }
+
+    static_assert(c7s_una_volta(), "C7S riparte gia' vista o a scena fatta");
+
+    // l'inserto alla battuta 0 di A1-07 resta (la prova senza camminare) e non copre battute: vista all'ingresso,
+    // la scena non ripete nulla
+    consteval bool inserto_di_c7s()
+    {
+        int prima = SCENA[scena_col_codice("A1-07")].prima_battuta;
+
+        for(int i = 0; i < INSERTI; ++i)
+        {
+            if(INSERTO[i].regia == C7S)
+            {
+                return INSERTO[i].battuta == prima && INSERTO[i].copre == 0;
+            }
+        }
+
+        return false;
+    }
+
+    static_assert(inserto_di_c7s(), "l'inserto di C7S in A1-07 manca o copre battute");
 }
 
 }

@@ -127,6 +127,13 @@ REGIA_DENTRO = -2           # la scena e' gia' recitata dalla cutscene della sce
 # dei luoghi all'inizio della scena: C7S in A1-07 (prima di «Ingresso»), C7B in B-01 (prima di Antonio).
 INSERTI = {"A1-01": {1: "C3U", 2: "C3G", 4: "C2", 8: "C2P"}, "A1-04": {1: "C3A"}, "B-04": {0: "C3C"},
            "A1-07": {0: "C7S"}, "A1-08": {9: "C5"}, "A1-09": {3: "C6"}, "B-01": {0: "C7B"}}
+# Le cartoline dei luoghi che partono entrando nell'area della scena, non quando la scena comincia: A1-07 parte
+# toccando l'Imboscata a meta' salita (49,44), ma C7S presenta gli Stradoni al primo tornante (copione, «Ingresso»).
+# Partono la prima volta che si entra nell'area con la scena pronta (pronta(): non fatta, condizione accesa) e la
+# cutscene non vista. Ognuna resta anche inserto alla battuta 0 della sua scena: li' non riparte (gia' vista), ma
+# la recita chi non cammina (GUBBIO_AVVIO=8). Non deve coprire battute del narratore della scena: vista all'ingresso,
+# la scena le leggerebbe di nuovo nella vista di gioco.
+ALL_INGRESSO = {"A1-07": "C7S"}
 
 # Le battaglie delle scene (battaglia::INCONTRO). Quelle con un nemico sulla mappa partono toccandolo;
 # gli Spettri del Dubbio di A1-08 compaiono durante il rito: la scena parte entrando nella Basilica.
@@ -1046,6 +1053,25 @@ def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None,
             "struct Inserto", "{", "    uint16_t battuta;", "    int8_t regia;", "    uint8_t copre;", "};", "",
             f"inline constexpr int INSERTI = {len(inserti)};",
             "inline constexpr Inserto INSERTO[INSERTI > 0 ? INSERTI : 1] = {"] + (inserti or ["    { 0xFFFF, -1, 0 },"]) + ["};", ""]
+    ingressi = []
+    for codice_scena, codice in sorted(ALL_INGRESSO.items()):
+        if codice_scena not in codici or codice not in regie:
+            raise ValueError(f"all'ingresso {codice_scena} {codice}: scena o cutscene che non c'e'")
+        s = scene[codici.index(codice_scena)]
+        if not AREE[codice_scena]:
+            raise ValueError(f"all'ingresso {codice_scena} {codice}: la scena e' a schermo intero, non ha un'area")
+        if INSERTI.get(codice_scena, {}).get(0) != codice:
+            raise ValueError(f"all'ingresso {codice_scena} {codice}: manca l'inserto alla battuta 0 della scena")
+        if coperte(s, 0, codice):
+            raise ValueError(f"all'ingresso {codice_scena} {codice}: la cutscene copre battute del narratore, "
+                             f"che la scena ripeterebbe")
+        ingressi.append(f"    {{ {codici.index(codice_scena)}, {regie.index(codice)} }},  "
+                        f"// {codice}: entrando in {AREE[codice_scena]} con {codice_scena} pronta")
+    out += ["// Le cartoline dei luoghi che partono entrando nell'area della scena (indice in SCENA) quando la scena e'",
+            "// pronta e la cutscene (regia::CUTSCENE_DATI) non e' vista; restano anche inserto alla battuta 0.",
+            "struct Ingresso", "{", "    int8_t scena;", "    int8_t regia;", "};", "",
+            f"inline constexpr int INGRESSI = {len(ingressi)};",
+            "inline constexpr Ingresso INGRESSO[INGRESSI > 0 ? INGRESSI : 1] = {"] + (ingressi or ["    { -1, -1 },"]) + ["};", ""]
     a_meta = []
     for s in scene:
         if s["codice"] not in BATTAGLIA_A_META:
