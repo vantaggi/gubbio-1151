@@ -383,6 +383,8 @@ def parole(figura):
 # stesso contorno scuro delle figure. Il blocco di ferro delle fornaci (Q-SM01) e il ciuffo di elleboro sulla
 # pietra (Q-SA01: «fiore verde chiaro sulla pietra cupa»).
 FIGURE_RACCOLTE = {
+    # M6 (STANDARD_GRAFICO): il lingotto di ferro in 3/4, il piano di sopra chiaro e schiacciato, la faccia davanti
+    # intera in due toni con il riflesso di due pixel (C3), l'ombra a destra e in basso sul suolo (L4).
     "ferro": [
         "................",
         "................",
@@ -391,13 +393,13 @@ FIGURE_RACCOLTE = {
         "................",
         "................",
         "....11111111....",
-        "...1ddddddddc1..",
-        "..1ddddddddcc1..",
-        "..1cccccccccc1..",
-        "..1cccccccccc1..",
-        "..1ccc7ccccc11..",
-        "...1111111111...",
-        "................",
+        "...1d66ddddd1...",
+        "..1dddddddddd1..",
+        "..1777777777c1..",
+        "..1d77777777c1..",
+        "..1d7777777cc1..",
+        "...11111111111c.",
+        "....ccccccccccc.",
         "................",
         "................",
     ],
@@ -422,40 +424,42 @@ FIGURE_RACCOLTE = {
 }
 # T2: il forziere negli slarghi della gola, chiuso (cuoio scuro e chiaro, fasce di ferro, la serratura d'oro) e
 # aperto, col coperchio alzato e il fondo buio: preso, resta li' aperto.
+# M6: il coperchio bombato visto dall'alto (tre righe, il cuoio chiaro con la luce a sinistra), la faccia davanti
+# intera con le due fasce di ferro e la serratura d'oro, la luce sullo spigolo sinistro, l'ombra a destra (L1, L4).
 FIGURE_RACCOLTE["forziere"] = [
     "................",
     "................",
     "................",
-    "................",
     "...1111111111...",
-    "..1bbbbbbbbbb1..",
-    ".1bbbbbbbbbbbb1.",
-    ".1aaaaaaaaaaaa1.",
-    ".1ddddd11ddddd1.",
-    ".1aaaaa1e1aaaa1.",
-    ".1bbbbb1e1bbbb1.",
-    ".1bbbbbb11bbbb1.",
-    ".1ccbbbbbbbbcc1.",
-    ".1aaaaaaaaaaaa1.",
-    "..111111111111..",
+    "..1bbbbbbbbbba1.",
+    ".1bbbbbbbbbbbaa1",
+    ".1dbbbbbbbbbbad1",
+    ".1ccccccccccccc1",
+    ".1baaaa1e1aaaac1",
+    ".1baaaa1e1aaaac1",
+    ".1daaaaa1aaaadc1",
+    ".1baaaaaaaaaaac1",
+    ".1dcccccccccccc1",
+    "..111111111111c.",
+    "...ccccccccccc..",
     "................",
 ]
 FIGURE_RACCOLTE["forziere_aperto"] = [
     "................",
-    "................",
     "...1111111111...",
-    "..1bbbbbbbbbb1..",
-    "..1aaaaaaaaaa1..",
-    "..1dddddddddd1..",
+    "..1bbbbbbbbbba1.",
+    "..1abbbbbbbbaa1.",
+    "..1cccccccccccc1",
     ".11111111111111.",
-    ".1cc11111111cc1.",
-    ".1aaaaaaaaaaaa1.",
-    ".1aaaaaaaaaaaa1.",
-    ".1bbbbbbbbbbbb1.",
-    ".1bbbbbbbbbbbb1.",
-    ".1ccbbbbbbbbcc1.",
-    ".1aaaaaaaaaaaa1.",
-    "..111111111111..",
+    ".1d11111111111d1",
+    ".1ccccccccccccc1",
+    ".1baaaaaaaaaaac1",
+    ".1baaaaaaaaaaac1",
+    ".1daaaaaaaaaadc1",
+    ".1baaaaaaaaaaac1",
+    ".1dcccccccccccc1",
+    "..111111111111c.",
+    "...ccccccccccc..",
     "................",
 ]
 # F10: la fiamma sopra un cero dell'altare della Basilica, con i Ceri risvegliati (CERI_RISVEGLIATI). Solo colori

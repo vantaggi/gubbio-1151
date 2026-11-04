@@ -657,8 +657,10 @@ class FondaliInRom(unittest.TestCase):
             header = f.read()
         self.fondali = fondali(header)
         self.aree = {a["id"].upper(): a for a in I.aree_finali()}
-        # le celle del fondale sono gli indici dei tile dell'area, come li calcola disegna_area
-        self.mappe = {n: (None, a["indici"]) for n, a in self.aree.items()}
+        # le celle del fondale sono gli indici dei tile dell'area, come li calcola disegna_area, col banco di
+        # palette nei bit 12-15 e gli specchi nei bit 10-11 (pezzo EDI)
+        self.mappe = {n: (None, [i | (a["specchi"][k] << 10) | (a["banchi"][i] << 12) for k, i in enumerate(a["indici"])])
+                      for n, a in self.aree.items()}
 
     def test_ogni_fondale_e_la_sua_mappa(self):
         self.assertEqual(len(self.fondali), 19)
@@ -684,7 +686,7 @@ class FondaliInRom(unittest.TestCase):
         fondale, fw, fh, grande = self.fondali["TEATRO_ROMANO"]
         a = self.aree["TEATRO_ROMANO"]
         fondale = list(fondale)
-        fondale[33] = (fondale[33] + 1) % len(G.TILE_FONDALI)
+        fondale[33] ^= 1
         self.assertEqual(len(errori_disposizione(self.mappe["TEATRO_ROMANO"][1], a["larghezza"], a["altezza"],
                                                  fondale, fw, fh, grande)), 1)
 
@@ -745,7 +747,7 @@ class GraficaDeiMonumenti(unittest.TestCase):
         a = self.aree["teatro_romano"]
         troppi = [[[i % 16] * 8 for _ in range(8)] for i in range(G.TILE_MAX_PER_AREA + 1)]
         elementi = G.disegna_area(a, self.mondo)[2]
-        with self.assertRaisesRegex(G.ErroreMondo, "513 tile unici, il massimo per un BG e' 512"):
+        with self.assertRaisesRegex(G.ErroreMondo, "1025 tile unici, il massimo per un BG e' 1024"):
             G.controlla_grafica(a, troppi, elementi)
 
     def test_colori_nella_palette(self):
