@@ -1420,11 +1420,12 @@ def parte_interni(npc, posti):
             raise ErroreStoria(f"dono {d['bandiera']}: {d['npc']} non e' fra gli NPC")
         doni.append(f"    {{ {nomi.index(d['npc'])}, {d['bandiera']}, {OGGETTI.index(d['oggetto'])}, {d['quanti']}, "
                     f"testi::TestoId::{d['testo']} }},  // {d['npc']}: {d['quanti']} {d['oggetto']}")
-    cose = [f"    {{ int8_t(mondo::AreaId::{aid.upper()}), {tx}, {ty}, testi::TestoId::{testo} }},  // {nome}"
-            for aid, nome, tx, ty, testo in PI.cose_di_gioco(evita)]
+    cose = [f"    {{ int8_t(mondo::AreaId::{aid.upper()}), {tx}, {ty}, {fx}, {fy}, testi::TestoId::{testo} }},  // {nome}"
+            for (aid, nome, tx, ty, testo), (fx, fy) in zip(PI.cose_di_gioco(evita), PI.segni_delle_cose())]
     return ["// --- Gli interni (INTC) ----------------------------------------------------------------------------",
             "// Le cose da esaminare: a portata di parola dalla cella (tx, ty) il fumetto, e con A il testo di sistema.",
             "struct Cosa", "{", "    int8_t area;                  // mondo::AreaId", "    uint8_t tx;", "    uint8_t ty;",
+            "    uint16_t fx;                  // il fumetto: sull'oggetto, in pixel dell'area", "    uint16_t fy;",
             "    testi::TestoId testo;", "};", "",
             f"inline constexpr int COSE = {len(cose)};", "inline constexpr Cosa COSA[COSE] = {"] + cose + ["};", "",
             "// I doni: dopo le battute dell'NPC (indice in NPC_AMBIENTE), una volta sola, l'oggetto e il testo.",
