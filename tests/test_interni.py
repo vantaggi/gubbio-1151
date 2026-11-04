@@ -320,5 +320,24 @@ class VariantiDiFase(unittest.TestCase):
         self.assertNotEqual(g, PI.griglia_di_gioco(PI.stanza_di_gioco("sala_consoli")))
 
 
+class NotteDentro(unittest.TestCase):
+    """Di notte negli interni anche oro e vermiglio vanno alle rampe di notte (il tappeto della soglia non brilla)."""
+
+    def test_vermiglio_di_notte_dentro(self):
+        pal = G.S.carica("palette")
+        fuori = G.banchi_fondali(pal, notte=True)
+        dentro = G.banchi_fondali(pal, notte=True, dentro=True)
+        rossi = [i for i, r in enumerate(G.BANCHI_FONDALI[3]) if r[0] == G.PC.R]
+        self.assertTrue(rossi)
+        for i in rossi:
+            self.assertNotEqual(fuori[3][i], dentro[3][i])
+
+    def test_negativa_gli_altri_banchi_uguali(self):
+        pal = G.S.carica("palette")
+        fuori = G.banchi_fondali(pal, notte=True)
+        dentro = G.banchi_fondali(pal, notte=True, dentro=True)
+        self.assertEqual([b for k, b in enumerate(fuori) if k != 3], [b for k, b in enumerate(dentro) if k != 3])
+
+
 if __name__ == "__main__":
     unittest.main()
