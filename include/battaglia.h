@@ -126,6 +126,7 @@ struct Unita
     int azioni = 1;
     bool immune_al_taglio = false;
     int difesa_bonus = 0;       // percento in piu' (Scudo di Forgia)
+    bool a_digiuno = false;     // non mangia: nessun consumabile da lui ne' su di lui (Ubaldo nel DIGIUNO)
     int script = 0;
     int ia_round = 0;           // i round in cui l'unita' ha agito, per le condizioni dell'IA
     uint32_t ia_battaglia = 0;  // un bit per regola: gia' usata in questa battaglia
@@ -256,8 +257,13 @@ public:
     // di base del livello 1, le stesse del mirror Python.
     // 'presenti': un bit per Santo nel gruppo (la storia: Giorgio dall'ultimatum, Antonio dal Teatro);
     // chi non c'e' parte a 0 PV e non agisce mai.
+    // 'scudi_in_meno': i nemici partono con tanti scudi in meno, mai sotto 0 (Corrado con Q-SM01 o
+    // RUFINO_ASCOLTATO, storia::scudi_in_meno()); il mirror Python ha la stessa manopola.
+    // 'a_digiuno': un bit per Santo che non mangia (Ubaldo nel DIGIUNO, storia::a_digiuno()): non usa
+    // consumabili e nessuno li usa su di lui. Il pilota non usa oggetti: le firme non cambiano.
     constexpr void ricomincia(int incontro, uint32_t seme, bool pilota_debole = false,
-                              const Statistiche* eroi = nullptr, uint8_t presenti = TUTTI_PRESENTI)
+                              const Statistiche* eroi = nullptr, uint8_t presenti = TUTTI_PRESENTI,
+                              int scudi_in_meno = 0, uint8_t a_digiuno = 0)
     {
         _caso = Caso(seme);
         _pilota_debole = pilota_debole;
@@ -270,6 +276,7 @@ public:
         {
             _eroi[e] = da_statistiche(eroi ? eroi[e] : STATISTICHE_EROI[e], false);
             _eroi[e].fervore = (_eroi[e].fervore_max * FERVORE_INIZIALE[e]) / 100;
+            _eroi[e].a_digiuno = (a_digiuno >> e) & 1;
 
             if(! ((presenti >> e) & 1))
             {
@@ -293,6 +300,8 @@ public:
             _nemici[n].azioni = dati.azioni_per_turno;
             _nemici[n].immune_al_taglio = dati.immune_al_taglio;
             _nemici[n].script = dati.script;
+            int scudo = dati.statistiche.scudo - scudi_in_meno;
+            _nemici[n].scudo = _nemici[n].scudo_max = scudo > 0 ? scudo : 0;
         }
     }
 
@@ -478,14 +487,15 @@ private:
         return -1;
     }
 
-    // L'alleato piu' ferito: la percentuale di PV piu' bassa; a parita', lo slot piu' basso.
-    [[nodiscard]] constexpr int piu_ferito() const
+    // L'alleato piu' ferito: la percentuale di PV piu' bassa; a parita', lo slot piu' basso. Con
+    // 'chi_mangia', solo fra chi non e' a digiuno (il bersaglio di un consumabile).
+    [[nodiscard]] constexpr int piu_ferito(bool chi_mangia = false) const
     {
         int scelto = -1;
 
         for(int e = 0; e < EROI; ++e)
         {
-            if(_eroi[e].vivo() && (scelto < 0 ||
+            if(_eroi[e].vivo() && ! (chi_mangia && _eroi[e].a_digiuno) && (scelto < 0 ||
                _eroi[e].pv * 100 / _eroi[e].pv_max < _eroi[scelto].pv * 100 / _eroi[scelto].pv_max))
             {
                 scelto = e;
@@ -897,14 +907,17 @@ private:
         }
     }
 
-    // Un consumabile: su un alleato vivo (il bersaglio, o il piu' ferito); se non c'e' nessuno da
-    // curare o da purificare l'oggetto non si consuma (nessun evento).
+    // Un consumabile: su un alleato vivo che non e' a digiuno (il bersaglio, o il piu' ferito); se non
+    // c'e' nessuno da curare o da purificare, o chi lo usa e' a digiuno, l'oggetto non si consuma
+    // (nessun evento).
     constexpr void usa_oggetto(const Azione& azione, const Comando& c)
     {
         const Oggetto& o = OGGETTI[int(c.oggetto)];
-        int bersaglio = c.bersaglio >= 0 && c.bersaglio < EROI && _eroi[c.bersaglio].vivo() ? c.bersaglio : piu_ferito();
+        bool puo_mangiare = c.bersaglio >= 0 && c.bersaglio < EROI && _eroi[c.bersaglio].vivo() &&
+                            ! _eroi[c.bersaglio].a_digiuno;
+        int bersaglio = puo_mangiare ? c.bersaglio : piu_ferito(true);
 
-        if(! o.usabile || bersaglio < 0)
+        if(! o.usabile || bersaglio < 0 || _eroi[azione.slot].a_digiuno)
         {
             return;
         }
@@ -1049,9 +1062,15 @@ private:
     }
 };
 
-[[nodiscard]] constexpr Firma gioca(int incontro, uint32_t seme, bool pilota_debole = false)
+[[nodiscard]] constexpr Firma gioca(int incontro, uint32_t seme, bool pilota_debole = false, int scudi_in_meno = 0)
 {
     Battaglia b(incontro, seme, pilota_debole);
+
+    if(scudi_in_meno)
+    {
+        b.ricomincia(incontro, seme, pilota_debole, nullptr, TUTTI_PRESENTI, scudi_in_meno);
+    }
+
     return b.gioca();
 }
 

@@ -1,7 +1,9 @@
 #ifndef GUBBIO_STORIA_LOGICA_H
 #define GUBBIO_STORIA_LOGICA_H
 
+#include "battaglia_dati.h"
 #include "game_state.h"
+#include "progressione.h"
 #include "storia.h"
 
 // Il motore della storia, tutto constexpr: le bandiere nello stato di partita, quale scena del copione
@@ -238,6 +240,59 @@ inline constexpr int INCONTRO_DEL_TEATRO = 0;     // la Pattuglia Perugina che c
     }
 
     return accesa(p, Bandiera::CITTA_IN_DIGIUNO) ? Fase::DIGIUNO : Fase::ULTIMATUM;
+}
+
+inline constexpr int INCONTRO_DI_CORRADO = 2;     // il duello sul Condotto (B-04)
+
+// Gli scudi in meno dei nemici di uno scontro (Battaglia::ricomincia): Corrado ne ha uno in meno se Q-SM01
+// e' consegnata (il ferro di Raniero torna alle fornaci della citta') o se Rufino ha detto che col calore il
+// ferro si apre (RUFINO_ASCOLTATO). Le due cose non si sommano (copione 02 e 04, «uno scudo in meno»).
+[[nodiscard]] constexpr int scudi_in_meno(const GameState& p, int incontro)
+{
+    return incontro == INCONTRO_DI_CORRADO && (accesa(p, int(RUFINO_ASCOLTATO)) || accesa(p, int(Q_SM01_CONSEGNATA)))
+           ? 1 : 0;
+}
+
+// Chi e' a digiuno in battaglia (un bit per Santo, Battaglia::ricomincia): Ubaldo nel DIGIUNO, da
+// CITTA_IN_DIGIUNO al rientro da Porta Metauro (B-05, RIENTRO_PORTA_METAURO), non usa il cibo e nessuno
+// glielo da' (README del copione: «durante il DIGIUNO Ubaldo non puo' usare il cibo fino al rientro in
+// citta'»; A1-05: «Il digiuno e' per chi prega. Chi combatte, mangi»).
+[[nodiscard]] constexpr uint8_t a_digiuno(const GameState& p)
+{
+    return accesa(p, Bandiera::CITTA_IN_DIGIUNO) && ! accesa(p, Bandiera::RIENTRO_PORTA_METAURO)
+           ? uint8_t(1 << battaglia::UBALDO) : uint8_t(0);
+}
+
+// Una quest si consegna se e' gia' stata data (la sua bandiera di partenza), prima della sua scadenza
+// (ATTO_I_COMPLETATO: la conferma dell'alba che avvia E-01; regola «nessuna quest si perde») e una volta sola.
+[[nodiscard]] constexpr bool quest_consegnabile(const GameState& p, int q)
+{
+    const Quest& d = QUEST_V1[q];
+    return accesa(p, d.da) && ! accesa(p, d.entro) && ! accesa(p, int(d.consegnata));
+}
+
+// La consegna di una quest (l'obiettivo lo controlla chi la chiama: i blocchi, le radici, la Rosa):
+// accende la sua bandiera, da' il premio (fino al massimo che se ne porta) e ESPERIENZA_QUEST a ogni Santo.
+// Ritorna false, e non cambia nulla, se la quest non si puo' consegnare. 'saliti' dice chi e' salito.
+constexpr bool consegna_quest(GameState& p, int q, bool (&saliti)[battaglia::EROI])
+{
+    for(bool& s : saliti)
+    {
+        s = false;
+    }
+
+    if(q < 0 || q >= QUEST || ! quest_consegnabile(p, q))
+    {
+        return false;
+    }
+
+    const Quest& d = QUEST_V1[q];
+    accendi_una(p, d.consegnata);
+    int quanti = p.oggetti[d.oggetto] + d.quanti;
+    int massimo = battaglia::OGGETTI[d.oggetto].massimo;
+    p.oggetti[d.oggetto] = uint8_t(quanti > massimo ? massimo : quanti);
+    progressione::assegna_esperienza_fissa(p, progressione::ESPERIENZA_QUEST, saliti);
+    return true;
 }
 
 // Il giro senza camminare, quando nessuna scena e' pronta: la prima scelta di un NPC della fase che

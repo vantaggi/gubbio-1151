@@ -190,9 +190,11 @@ class Firma:
 
 
 class Battaglia:
-    """Opzioni per le prove negative: senza_redirect toglie l'emissione di GUARD_REDIRECT."""
+    """Opzioni per le prove negative: senza_redirect toglie l'emissione di GUARD_REDIRECT.
+    scudi_in_meno: quanti scudi in meno hanno i nemici (mai sotto 0), come Battaglia::ricomincia() del C++:
+    Corrado ne ha uno in meno con Q-SM01 consegnata o RUFINO_ASCOLTATO (storia::scudi_in_meno())."""
 
-    def __init__(self, incontro, seme, senza_redirect=False, pilota_debole=False):
+    def __init__(self, incontro, seme, senza_redirect=False, pilota_debole=False, scudi_in_meno=0):
         self.caso = Caso(seme)
         self.senza_redirect = senza_redirect
         self.pilota_debole = pilota_debole
@@ -208,6 +210,7 @@ class Battaglia:
             u.azioni = azioni
             u.immune_al_taglio = immune
             u.script = script
+            u.scudo = u.scudo_max = max(0, u.scudo - scudi_in_meno)
             self.nemici.append(u)
         self.firma = Firma()
         self.comandi = [None] * EROI
@@ -513,7 +516,24 @@ def tutte_le_firme():
     return {(i, s, d): gioca(i, s, pilota_debole=d) for d in PILOTI for i in range(len(INCONTRO)) for s in SEMI}
 
 
-def header(firme):
+# Il duello con Corrado con uno scudo in meno (Q-SM01 o RUFINO_ASCOLTATO): 50 semi x 2 piloti, a parte
+# dalle 400 battaglie di sempre, che restano quelle.
+INCONTRO_CORRADO = 2
+
+
+def firme_scudo_in_meno():
+    return {(INCONTRO_CORRADO, s, d): gioca(INCONTRO_CORRADO, s, pilota_debole=d, scudi_in_meno=1)
+            for d in PILOTI for s in SEMI}
+
+
+def righe_attese(firme):
+    esiti = ["IN_CORSO", "VITTORIA", "SCONFITTA", "PARITA"]
+    return [f"    {{ {i}, {s}, {'true' if d else 'false'}, 0x{f.hash:08X}u, {f.eventi}, {f.round}, "
+            f"Esito::{esiti[f.esito]}, 0x{f.tipi:04X}u }}," for (i, s, d), f in sorted(firme.items())]
+
+
+def header(firme, scudo_in_meno=None):
+    scudo_in_meno = firme_scudo_in_meno() if scudo_in_meno is None else scudo_in_meno
     out = ["// GENERATO da tools/battaglia_mirror.py: le firme che il mirror Python trova per ogni",
            "// incontro e ogni seme. src/autotest_battaglia.cpp le confronta con il C++ (include/battaglia.h).",
            "// Non modificare a mano.",
@@ -539,10 +559,12 @@ def header(firme):
            "",
            f"inline constexpr int ATTESE_CONTEGGIO = {len(firme)};",
            "inline constexpr Attesa ATTESE[ATTESE_CONTEGGIO] = {"]
-    esiti = ["IN_CORSO", "VITTORIA", "SCONFITTA", "PARITA"]
-    for (i, s, d), f in sorted(firme.items()):
-        out.append(f"    {{ {i}, {s}, {'true' if d else 'false'}, 0x{f.hash:08X}u, {f.eventi}, {f.round}, "
-                   f"Esito::{esiti[f.esito]}, 0x{f.tipi:04X}u }},")
+    out += righe_attese(firme)
+    out += ["};", "",
+            "// Il duello con Corrado con uno scudo in meno (Battaglia::ricomincia(..., scudi_in_meno = 1)).",
+            f"inline constexpr int ATTESE_SCUDO_IN_MENO_CONTEGGIO = {len(scudo_in_meno)};",
+            "inline constexpr Attesa ATTESE_SCUDO_IN_MENO[ATTESE_SCUDO_IN_MENO_CONTEGGIO] = {"]
+    out += righe_attese(scudo_in_meno)
     out += ["};", "", "}", "", "#endif", ""]
     return "\n".join(out)
 

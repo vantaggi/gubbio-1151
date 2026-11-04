@@ -58,6 +58,27 @@ def scritte_non_lette(scene, lette_dal_gioco):
     return sorted(scritte - lette)
 
 
+def codice_che_legge():
+    """Il codice che legge le bandiere: la logica della storia, la scena, e la tabella delle quest di storia.h."""
+    codice = "".join(open(os.path.join(RADICE, p), encoding="utf-8").read()
+                     for p in ("include/storia_logica.h", "src/storia_scena.cpp"))
+    storia_h = open(GS.USCITA_H, encoding="utf-8").read()
+    return codice + re.search(r"inline constexpr Quest QUEST_V1\[QUEST\] = \{.*?\n\};", storia_h, re.S).group(0)
+
+
+def lette_dal_gioco_senza_codice(lette, codice):
+    """Le bandiere di LETTE_DAL_GIOCO che il codice non nomina: Bandiera::X per la storia (0-63), il nome per
+    quelle delle quest (64-127, costanti di storia.h)."""
+    mancano = []
+    for b in lette:
+        if b in GS.BANDIERE_QUEST:
+            if not re.search(r"\b%s\b" % b, codice):
+                mancano.append(b)
+        elif f"Bandiera::{b}" not in codice:
+            mancano.append(b)
+    return sorted(mancano)
+
+
 def quest_non_completabili(quest, scene):
     ordine, accese = giro(scene)
     posizione = {}
@@ -112,10 +133,13 @@ class Tabelle(unittest.TestCase):
         doc = open(os.path.join(RADICE, "docs", "bandiere_da_fare.md"), encoding="utf-8").read()
         for b in GS.DA_FARE:
             self.assertIn(f"| `{b}` |", doc, b)
-        codice = "".join(open(os.path.join(RADICE, p), encoding="utf-8").read()
-                         for p in ("include/storia_logica.h", "src/storia_scena.cpp"))
-        for b in GS.LETTE_DAL_GIOCO:
-            self.assertIn(f"Bandiera::{b}", codice, b)
+        self.assertEqual(lette_dal_gioco_senza_codice(GS.LETTE_DAL_GIOCO, codice_che_legge()), [])
+
+    def test_negativa_letta_dal_gioco_senza_codice(self):
+        """Una bandiera dichiarata letta dal gioco che il codice non nomina viene segnalata (della storia e quest)."""
+        codice = codice_che_legge().replace("Bandiera::CRONACA_V1_FINITA", "Bandiera::X")
+        codice = re.sub(r"\bRUFINO_ASCOLTATO\b", "RUFINO", codice)
+        self.assertEqual(lette_dal_gioco_senza_codice(GS.LETTE_DAL_GIOCO, codice), ["CRONACA_V1_FINITA", "RUFINO_ASCOLTATO"])
 
     def test_negativa_bandiera_da_fare_senza_documento(self):
         doc = open(os.path.join(RADICE, "docs", "bandiere_da_fare.md"), encoding="utf-8").read()

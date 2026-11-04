@@ -38,7 +38,11 @@ FINE = "CRONACA_V1_FINITA"
 TUTTE_NOTE = set(GS.BANDIERE) | set(GS.BANDIERE_QUEST)
 FILE_COPIONE = GS.FILE_SCENE + (GS.FILE_NPC, "04_quest.md", GS.FILE_AMICI)
 # Le bandiere che accende il gioco da solo (storia_logica.h, all_ingresso).
-ACCESE_DAL_GIOCO = {"BORGO_FUORI": "storia::all_ingresso(): salire agli Stradoni nel digiuno senza aver deciso del borgo"}
+ACCESE_DAL_GIOCO = {"BORGO_FUORI": "storia::all_ingresso(): salire agli Stradoni nel digiuno senza aver deciso del borgo",
+                    # le consegne delle quest (04_quest.md): le accende storia::consegna_quest()
+                    "Q_SM01_CONSEGNATA": "storia::consegna_quest(): Q-SM01 consegnata a Raniero",
+                    "Q_SA01_CONSEGNATA": "storia::consegna_quest(): Q-SA01 consegnata ad Agnese",
+                    "Q_SP01_CONSEGNATA": "storia::consegna_quest(): Q-SP01 consegnata a Fra' Bernardo"}
 
 
 def problema(gravita, codice, dove, testo, proposta=""):
