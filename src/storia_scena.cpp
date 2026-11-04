@@ -40,6 +40,22 @@ namespace
     constexpr int RESPIRO = 4;
     constexpr int TESTO_X = stile::DIALOGO_X + 8 + RESPIRO;
     constexpr int TESTO_Y = stile::DIALOGO_Y + 8 + RESPIRO;
+
+    // STANDARD I3: il testo non copre chi parla. Sulla mappa, se Ubaldo sta nella meta' bassa dello schermo,
+    // riquadro, cartiglio del nome, testo e scelte salgono in cima (riquadro a y=16, cartiglio a y=8).
+    // Lo decide dialogo_inizio() (e recita()) guardando il giocatore; nelle cutscene resta in basso.
+    constexpr int DIALOGO_IN_ALTO_Y = 16;
+    bool s_dialogo_in_alto = false;
+
+    int su()
+    {
+        return s_dialogo_in_alto ? DIALOGO_IN_ALTO_Y - stile::DIALOGO_Y : 0;
+    }
+
+    void scegli_il_lato(const Esplorazione* esplorazione)
+    {
+        s_dialogo_in_alto = esplorazione && esplorazione->giocatore_in_basso();
+    }
     constexpr int FRAME_CARTELLO = 90;
     constexpr int FRAME_TITOLI = 300;
     constexpr int FRAME_AUTOMATICA = 3;
@@ -84,16 +100,16 @@ namespace
                          const bn::sprite_palette_ptr& palette_testo)
     {
         riquadri.svuota();
-        riquadri.cornice(stile::DIALOGO_X, stile::DIALOGO_Y, stile::DIALOGO_COLONNE, stile::DIALOGO_RIGHE);
+        riquadri.cornice(stile::DIALOGO_X, stile::DIALOGO_Y + su(), stile::DIALOGO_COLONNE, stile::DIALOGO_RIGHE);
         nome.reset();
 
         if(con_nome)
         {
             int larghezza = larghezza_testo(parlante);
             int colonne = colonne_cartiglio(larghezza);
-            riquadri.cartiglio(stile::CARTIGLIO_NOME_X, stile::CARTIGLIO_NOME_Y, colonne);
+            riquadri.cartiglio(stile::CARTIGLIO_NOME_X, stile::CARTIGLIO_NOME_Y + su(), colonne);
             nome.emplace(Contesto::HUD, stile::CARTIGLIO_NOME_X + (colonne * 8 - larghezza) / 2,
-                         stile::CARTIGLIO_NOME_Y + 4, INCHIOSTRO_CHIARO, palette_testo);
+                         stile::CARTIGLIO_NOME_Y + su() + 4, INCHIOSTRO_CHIARO, palette_testo);
             nome->mostra(parlante);
             nome->rivela_tutto();
         }
@@ -108,7 +124,7 @@ namespace
         bn::optional<VistaTesto> voci[2];
         int attesa = 0;
         Riquadri riquadri;
-        riquadri.cornice(stile::DIALOGO_X, stile::DIALOGO_Y, stile::DIALOGO_COLONNE, stile::DIALOGO_RIGHE);
+        riquadri.cornice(stile::DIALOGO_X, stile::DIALOGO_Y + su(), stile::DIALOGO_COLONNE, stile::DIALOGO_RIGHE);
         bn::sprite_ptr cursore = crea_cursore(palette_testo);
 
         while(true)
@@ -119,7 +135,7 @@ namespace
                 {
                     if(! voci[k])
                     {
-                        voci[k].emplace(Contesto::SCELTA, MENU_X, MENU_Y + k * MENU_PASSO, INCHIOSTRO_SCURO, palette_testo);
+                        voci[k].emplace(Contesto::SCELTA, MENU_X, MENU_Y + su() + k * MENU_PASSO, INCHIOSTRO_SCURO, palette_testo);
                         voci[k]->mostra(k == 0 ? b.testo : b.parlante);
                         voci[k]->rivela_tutto();
                     }
@@ -127,7 +143,7 @@ namespace
 
                 // le coordinate degli sprite partono dal centro dello schermo; il triangolo e' alto 7 px e
                 // sta a meta' della riga di testo
-                cursore.set_position(MENU_X - 12 - 120 + 4, MENU_Y + voce * MENU_PASSO + 1 - 80 + 4);
+                cursore.set_position(MENU_X - 12 - 120 + 4, MENU_Y + su() + voce * MENU_PASSO + 1 - 80 + 4);
 
                 cambiata = false;
             }
@@ -211,7 +227,7 @@ namespace
 
             if(! testo)
             {
-                testo.emplace(Contesto::DIALOGO, TESTO_X, TESTO_Y, INCHIOSTRO_SCURO, palette_testo);
+                testo.emplace(Contesto::DIALOGO, TESTO_X, TESTO_Y + su(), INCHIOSTRO_SCURO, palette_testo);
             }
 
             testo->mostra(b.testo);
@@ -372,6 +388,8 @@ namespace
     // si scurisce (scurirla scuriva anche la cornice, che sta fra le palette dei fondi).
     void dialogo_inizio(Esplorazione* esplorazione)
     {
+        scegli_il_lato(esplorazione);
+
         if(esplorazione)
         {
             esplorazione->nascondi_etichetta();
@@ -382,6 +400,7 @@ namespace
 
     void dialogo_fine()
     {
+        s_dialogo_in_alto = false;
         bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
         attendi(1);
     }
@@ -510,6 +529,7 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
     BN_LOG("Scena ", s.codice);
     // il duello gia' incontrato (CORRADO_INCONTRATO): al secondo tentativo niente battute, dritti alla battaglia
     bool salta_le_battute = gia_incontrata(g_game_state, k);
+    scegli_il_lato(esplorazione);
 
     if(esplorazione)
     {
