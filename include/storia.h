@@ -395,6 +395,19 @@ inline constexpr Inserto INSERTO[INSERTI > 0 ? INSERTI : 1] = {
     { 172, 5, 0 },  // B-04 prima della battuta 0: C3C
 };
 
+// Le cartoline dei luoghi che partono entrando nell'area della scena (indice in SCENA) quando la scena e'
+// pronta e la cutscene (regia::CUTSCENE_DATI) non e' vista; restano anche inserto alla battuta 0.
+struct Ingresso
+{
+    int8_t scena;
+    int8_t regia;
+};
+
+inline constexpr int INGRESSI = 1;
+inline constexpr Ingresso INGRESSO[INGRESSI > 0 ? INGRESSI : 1] = {
+    { 10, 12 },  // C7S: entrando in MONTE_INGINO con A1-07 pronta
+};
+
 // Le battaglie a meta' scena: la battaglia della scena si combatte prima della battuta (indice in BATTUTA),
 // non alla fine; vinta, accende la bandiera (64-127) e non si rigioca. B-03: dopo l'ascolto, prima del ragazzo.
 struct BattagliaAMeta

@@ -357,5 +357,60 @@ class Inserti(unittest.TestCase):
             GS.INSERTI = vecchi
 
 
+    # F10, C7S all'ingresso degli Stradoni: la cartolina parte entrando nel Monte Ingino, non toccando l'Imboscata.
+    def test_c7s_all_ingresso_del_monte(self):
+        self.assertEqual(GS.ALL_INGRESSO, {"A1-07": "C7S"})
+        self.assertEqual(GS.AREE["A1-07"], "MONTE_INGINO")
+        h = open(os.path.join(RADICE, "include", "storia.h"), encoding="utf-8").read()
+        codici = [s["codice"] for s in SCENE]
+        self.assertIn(f"{{ {codici.index('A1-07')}, {GS.codici_regia().index('C7S')} }},", h)
+        self.assertIn("inline constexpr int INGRESSI = 1;", h)
+
+    def test_negativa_ingresso_senza_inserto_o_che_copre(self):
+        """Una cartolina all'ingresso senza l'inserto alla battuta 0, che copre il narratore della scena, su una
+        scena a schermo intero o con una cutscene che non c'e' e' rifiutata."""
+        vecchi, vecchia = GS.ALL_INGRESSO, GS.coperte
+        try:
+            GS.ALL_INGRESSO = {"A1-07": "C7B"}
+            with self.assertRaisesRegex(ValueError, "manca l'inserto alla battuta 0"):
+                GS.genera()
+            GS.ALL_INGRESSO = {"P-00": "C7S"}
+            with self.assertRaisesRegex(ValueError, "a schermo intero"):
+                GS.genera()
+            GS.ALL_INGRESSO = {"A1-07": "C99"}
+            with self.assertRaisesRegex(ValueError, "scena o cutscene che non c'e'"):
+                GS.genera()
+            GS.ALL_INGRESSO = {"A1-07": "C7S"}
+            GS.coperte = lambda scena, k, codice: 1 if codice == "C7S" else vecchia(scena, k, codice)
+            with self.assertRaisesRegex(ValueError, "copre battute del narratore"):
+                GS.genera()
+        finally:
+            GS.ALL_INGRESSO, GS.coperte = vecchi, vecchia
+
+    def _ordine_in_aggiorna(self, cpp):
+        corpo = cpp[cpp.index("bool Storia::aggiorna"):]
+        return corpo.index("cutscene_all_ingresso(") < corpo.index("pronta_qui(g_game_state")
+
+    def test_c7s_prima_delle_scene_e_dei_nemici(self):
+        """In Storia::aggiorna la cartolina viene prima delle scene; nel giro del gioco la storia si aggiorna
+        prima dei nemici sulla mappa: C7S parte prima del contatto con l'Imboscata."""
+        cpp = open(os.path.join(RADICE, "src", "storia_scena.cpp"), encoding="utf-8").read()
+        self.assertTrue(self._ordine_in_aggiorna(cpp))
+        self.assertRegex(cpp, r"recita_regia\(cartolina, &esplorazione")
+        main = open(os.path.join(RADICE, "src", "main.cpp"), encoding="utf-8").read()
+        self.assertLess(main.index("storia.aggiorna(esplorazione, palette)"), main.index("scontri.aggiorna(esplorazione, palette)"))
+
+    def test_negativa_cartolina_dopo_le_scene(self):
+        cpp = open(os.path.join(RADICE, "src", "storia_scena.cpp"), encoding="utf-8").read()
+        corpo = cpp[cpp.index("bool Storia::aggiorna"):]
+        a = corpo.index("    int cartolina")
+        b = corpo.index("    // la cella sotto i piedi")
+        blocco = corpo[a:b]
+        spostato = corpo[:a] + corpo[b:]
+        c = spostato.index("    if(k >= 0)")
+        spostato = spostato[:c] + blocco + spostato[c:]
+        self.assertFalse(self._ordine_in_aggiorna("bool Storia::aggiorna" + spostato[len("bool Storia::aggiorna"):]))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

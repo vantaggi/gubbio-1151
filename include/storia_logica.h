@@ -5,6 +5,7 @@
 #include "game_state.h"
 #include "mondo_logica.h"
 #include "progressione.h"
+#include "regia_logica.h"
 #include "storia.h"
 
 // Il motore della storia, tutto constexpr: le bandiere nello stato di partita, quale scena del copione
@@ -204,6 +205,24 @@ static_assert(int(Bandiera::CONTEGGIO) <= 64, "le bandiere della storia stanno i
         if(pronta(p, k, area, tabella))
         {
             return k;
+        }
+    }
+
+    return -1;
+}
+
+// La cartolina del luogo che parte entrando nell'area (INGRESSO; C7S agli Stradoni, F10): la cutscene
+// (regia::CUTSCENE_DATI) se la sua scena e' pronta in quest'area e la cutscene non e' ancora vista, -1 se
+// nessuna. Vista una volta (regia::segna_vista) non riparte, ne' qui ne' come inserto della scena.
+[[nodiscard]] constexpr int cutscene_all_ingresso(const GameState& p, int area)
+{
+    for(int i = 0; i < INGRESSI; ++i)
+    {
+        const Ingresso& n = INGRESSO[i];
+
+        if(n.scena >= 0 && pronta(p, n.scena, area) && ! regia::vista(p, n.regia))
+        {
+            return n.regia;
         }
     }
 

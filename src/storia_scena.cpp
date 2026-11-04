@@ -828,6 +828,21 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         return true;
     }
 
+    // la cartolina del luogo entrando nell'area (C7S agli Stradoni, F10): prima di ogni scena e di ogni nemico
+    // sulla mappa (gli scontri si aggiornano dopo la storia), una volta sola; l'inserto della scena la trovera'
+    // gia' vista. Gli NPC dell'area si rifanno al frame dopo (recita_regia svuota).
+    int cartolina = cutscene_all_ingresso(g_game_state, int(e.area));
+
+    if(cartolina >= 0)
+    {
+        BN_LOG("Cutscene all'ingresso: ", GUBBIO_VOCE(regia::CUTSCENE_DATI, cartolina).codice);
+        esplorazione.nascondi_etichetta();
+        recita_regia(cartolina, &esplorazione, palette_testo, false);
+        bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
+        attendi(1);
+        return true;
+    }
+
     // la cella sotto i piedi: le scene della gola partono su una cella (la nebbia, l'arco), i miasmi la leggono
     int cella = mondo::cella(mondo::area(e.area), mondo::cella_x(e), mondo::cella_y(e));
 

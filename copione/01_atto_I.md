@@ -236,7 +236,7 @@ Regia: un canonico del Duomo sta sul varco. Il dialogo parte quando il giocatore
 
 ### Ingresso (primo tornante)
 
-Regia: prima delle battute, la presentazione del luogo: la cutscene C7S «Gli Stradoni del Monte» (`regia/c7s_stradoni.regia`), solo la prima volta.
+Regia: la presentazione del luogo: la cutscene C7S «Gli Stradoni del Monte» (`regia/c7s_stradoni.regia`) parte appena si entra negli Stradoni con la porta del monte aperta, prima di salire verso l'imboscata; solo la prima volta.
 
 - ANTONIO (calmo): Due chilometri di sterrato. E il vescovo ha le gambe di un mulo.
 - UBALDO (calmo): E il mulo ti sente.
