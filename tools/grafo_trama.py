@@ -266,6 +266,101 @@ def esplora(m):
             "dette_dopo": dette_dopo, "dette_trama": dette_trama, "voci": voci_viste}
 
 
+def vicini():
+    """Le aree vicine dal contratto del mondo (mondo/varchi.json); None se il file non c'e'."""
+    p = os.path.join(RADICE, "mondo", "varchi.json")
+    if not os.path.exists(p):
+        return None
+    with open(p, encoding="utf-8") as f:
+        varchi = json.load(f)["varchi"]
+    return {a: sorted({v["verso"] for v in l}) for a, l in varchi.items()}
+
+
+def area_dell_npc(p, accese):
+    """Gli amici del borgo, con il borgo dentro, dal digiuno stanno in Sant'Andrea (Storia::_prepara_npc)."""
+    if p.get("amico") and GS.AMICI[p["amico"]].get("borgo") and "BORGO_DENTRO" in accese and fase(accese) != "ULTIMATUM":
+        return "SANT_ANDREA"
+    return p["area"]
+
+
+def esplora_mappa(m, grafo):
+    """Come esplora(), ma il giocatore cammina: lo stato ha anche l'area dove si trova, si passa solo da
+    un'area a una vicina (mondo/varchi.json), e ogni area attraversata puo' far partire la sua scena
+    (Storia::aggiorna). Si parla solo con gli NPC dell'area. Il prologo finisce in Piazza Grande."""
+    scene, npc = m["scene"], m["npc"]
+    dette_prima, dette_dopo, dette_trama = set(), set(), set()
+    passi, voci_viste = [], {}
+
+    def pronta(s, accese, fatte):
+        return (s["codice"] not in fatte and set(s["richieste"]) <= accese and not set(s["vietate"]) & accese
+                and (s["codice"] not in GS.SEGUE or GS.SEGUE[s["codice"]] in fatte))
+
+    def scene_in(accese, fatte, area, etichetta, dette, voci):
+        """Ogni modo di finire dopo essere in 'area' con questo stato: le scene pronte partono una dopo
+        l'altra (anche quelle a schermo intero), finche' non ne resta nessuna."""
+        s = next((s for s in scene if s["area"] == area and pronta(s, accese, fatte)), None)
+        if s is None:
+            s = next((s for s in scene if s["area"] == SCHERMO_INTERO and pronta(s, accese, fatte)), None)
+        if s is None:
+            return [(etichetta, (frozenset(accese), frozenset(fatte), area), dette, voci, [])]
+        esiti = []
+        for fin, d, v in recita(s["battute"], set(accese)):
+            fin = set(fin) | set(s["imposta"])
+            et = etichetta + f" → scena {s['codice']}" + "".join(f" «{x}»" for _, x in v)
+            for e in scene_in(fin, fatte | {s["codice"]}, area, et, dette + d, voci + v):
+                esiti.append(e[:4] + ([s["codice"]] + e[4],))
+        return esiti
+
+    partenze = scene_in(set(), frozenset(), "PIAZZA_GRANDE", "avvio", [], [])
+    inizio = ("INIZIO",)
+    padre = {inizio: None}
+    coda = deque()
+    for et, dopo, dette, voci, giocate in partenze:
+        dette_trama.update(dette)
+        dette_prima.update(dette)
+        prima = inizio
+        for c in giocate:
+            passi.append((prima, et, dopo if c == giocate[-1] else prima, c))
+        if dopo not in padre:
+            padre[dopo] = (inizio, et)
+            coda.append(dopo)
+    while coda:
+        stato = coda.popleft()
+        accese, fatte, qui = stato
+        finita = FINE in accese
+        uscite = []
+        for la in grafo.get(qui, []):
+            a = set(accese)
+            if la == "MONTE_INGINO" and "CITTA_IN_DIGIUNO" in a and not {"BORGO_DENTRO", "BORGO_FUORI"} & a:
+                a.add("BORGO_FUORI")
+            uscite += scene_in(a, fatte, la, f"va a {la}", [], [])
+        for p in npc:
+            if area_dell_npc(p, accese) != qui:
+                continue
+            f = fase(accese)
+            for fin, dette, voci in recita(frasi_npc(p, accese), accese):
+                if p["imposta"] is not None and p["imposta_fasi"] & (1 << GS.FASI.index(f)):
+                    fin = fin | {nome(p["imposta"])}
+                if dette:
+                    et = f"parla con {p['nome']}" + "".join(f" «{v}»" for _, v in voci)
+                    uscite += scene_in(set(fin), fatte, qui, et, dette, voci)
+        for et, dopo, dette, voci, giocate in uscite:
+            (dette_dopo if finita else dette_prima).update(dette)
+            if not finita and "ATTO_I_COMPLETATO" not in accese:
+                dette_trama.update(dette)
+            for idb, v in voci:
+                voci_viste.setdefault(idb, set()).add(v)
+            if not giocate and dopo != stato:
+                passi.append((stato, et, dopo, None))
+            for c in giocate:
+                passi.append((stato, et, dopo, c))
+            if dopo not in padre:
+                padre[dopo] = (stato, et)
+                coda.append(dopo)
+    return {"stati": set(padre) - {inizio}, "padre": padre, "passi": passi, "dette_prima": dette_prima,
+            "dette_dopo": dette_dopo, "dette_trama": dette_trama, "voci": voci_viste}
+
+
 def percorso(e, stato, massimo=40):
     azioni = []
     while e["padre"][stato] is not None:
@@ -868,7 +963,7 @@ def grafo_atto2(a2):
 
 # --- tutto insieme ------------------------------------------------------------------------------------------
 
-def analizza(cartella, atto2=None, schede=None):
+def analizza(cartella, atto2=None, schede=None, mappa=False):
     pr = []
     try:
         m = carica_v1(cartella)
@@ -878,7 +973,7 @@ def analizza(cartella, atto2=None, schede=None):
         GS.controlla(m["scene"])
     except GS.ErroreStoria as x:
         pr.append(problema(ERRORE, "SCENE_DIVERSE_DAL_MOTORE", "genera_storia.py", str(x), ""))
-    e = esplora(m)
+    e = esplora_mappa(m, vicini()) if mappa and vicini() else esplora(m)
     pr += controlla_v1(m, e)
     grafo = {"v1": grafo_v1(m, e)}
     cut = carica_cutscene(schede)
@@ -942,10 +1037,11 @@ def main(argv=None):
     ap.add_argument("--copione", default=os.path.join(RADICE, "copione"))
     ap.add_argument("--atto2", default=None, help="la scaletta dell'Atto II (markdown)")
     ap.add_argument("--schede", default=None, help="le schede delle cutscene proposte (cutscene/v2/SCHEDE.md)")
+    ap.add_argument("--mappa", action="store_true", help="il giocatore cammina di area in area (piu' lento, ~20 s)")
     ap.add_argument("--json")
     ap.add_argument("--md")
     a = ap.parse_args(argv)
-    r = analizza(a.copione, a.atto2, a.schede)
+    r = analizza(a.copione, a.atto2, a.schede, a.mappa)
     if a.json:
         with open(a.json, "w", encoding="utf-8") as f:
             json.dump({"conti": r["conti"], "problemi": r["problemi"], "grafo": r["grafo"]}, f, ensure_ascii=False, indent=1)

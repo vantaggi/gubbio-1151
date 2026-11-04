@@ -34,6 +34,7 @@ Poi, per tutti:
 Con «Sì, è ora» (`ALBA_CONFERMATA`):
 
 - GUIDO (deciso): Allora andiamo. Il popolo vi aspetta già in piazza.
+
 - DIGIUNO: GUIDO (calmo): La città tace, come avete chiesto. Non l'ho mai sentita così.
 
 **Berto il Tagliapietre** (sul selciato, verso il parapetto)
