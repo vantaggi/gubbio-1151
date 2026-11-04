@@ -241,23 +241,46 @@ namespace
         return bn::sprite_palette_ptr::create(bn::sprite_palette_item(bn::span<const bn::color>(c), bn::bpp_mode::BPP_4));
     }
 
-    constexpr int ALTEZZA_NPC = 30;      // lo sprite e' 16x32: i piedi due pixel sopra il bordo in basso
-
-    // Un NPC con la sua figura (FIGURA_NPC, 16x32) e i colori dei popolani.
-    bn::sprite_ptr crea_npc(const bn::sprite_palette_ptr& palette, int figura)
+    // La palette della gente (pezzo VIVA, tools/figure_popolo.py): di notte le stesse voci con le rampe notte
+    // (STANDARD_GRAFICO L5), come i fondali della citta'.
+    bn::sprite_palette_ptr palette_popolo()
     {
-        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(8, bn::bpp_mode::BPP_4);
+        bool notte = fase_npc(g_game_state) == Fase::NOTTE;
+        bn::color c[16];
+
+        for(int i = 0; i < 16; ++i)
+        {
+            c[i] = bn::color(notte ? GUBBIO_VOCE(PALETTE_POPOLO_NOTTE, i) : GUBBIO_VOCE(PALETTE_POPOLO, i));
+        }
+
+        return bn::sprite_palette_ptr::create(bn::sprite_palette_item(bn::span<const bn::color>(c), bn::bpp_mode::BPP_4));
+    }
+
+    constexpr int ALTEZZA_NPC = 31;      // lo sprite e' 16x32: i piedi sull'ultima riga (pose.json, linea_piedi)
+
+    // Una posa di FIGURA_NPC (POSA_RIPOSO, POSA_RESPIRO, POSA_SCHIENA, POSA_LATO) nei tile dello sprite.
+    void carica_posa(bn::sprite_ptr& sprite, int figura, int posa)
+    {
+        bn::sprite_tiles_ptr tiles = sprite.tiles();
         bn::span<bn::tile> vram = *tiles.vram();
+        int base = posa * 64;
 
         for(int t = 0; t < 8; ++t)
         {
             for(int r = 0; r < 8; ++r)
             {
-                vram[t].data[r] = GUBBIO_VOCE(GUBBIO_VOCE(FIGURA_NPC, figura), t * 8 + r);
+                vram[t].data[r] = GUBBIO_VOCE(GUBBIO_VOCE(FIGURA_NPC, figura), base + t * 8 + r);
             }
         }
+    }
 
-        return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 32), bn::move(tiles), palette);
+    // Un NPC con la sua figura (FIGURA_NPC, 16x32) nella posa di riposo, con la palette della gente.
+    bn::sprite_ptr crea_npc(const bn::sprite_palette_ptr& palette, int figura)
+    {
+        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(8, bn::bpp_mode::BPP_4);
+        bn::sprite_ptr sprite = bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 32), bn::move(tiles), palette);
+        carica_posa(sprite, figura, POSA_RIPOSO);
+        return sprite;
     }
 
     // Dove sta un NPC adesso: quelli del borgo, con BORGO_DENTRO, nel digiuno e nella notte stanno
@@ -612,6 +635,9 @@ void Storia::svuota()
 {
     _npc.clear();
     _indici.clear();
+    _figura.clear();
+    _posa.clear();
+    _parla = -1;
     _raccolte.clear();
     _gola.clear();
     _area = -1;
@@ -622,7 +648,8 @@ void Storia::_prepara_npc(const Esplorazione& esplorazione)
     svuota();
     _area = int(esplorazione.esploratore().area);
     int fase = int(fase_npc(g_game_state));
-    bn::sprite_palette_ptr palette = palette_npc();
+    bn::sprite_palette_ptr palette = palette_npc();        // gli oggetti (raccolte, forzieri, fiamme)
+    bn::sprite_palette_ptr gente = palette_popolo();       // le persone (VIVA)
 
     for(int i = 0; i < NPC; ++i)
     {
@@ -632,10 +659,12 @@ void Storia::_prepara_npc(const Esplorazione& esplorazione)
 
         if(qui.area == _area && GUBBIO_VOCE(n.frasi, fase) > 0)
         {
-            bn::sprite_ptr sprite = crea_npc(palette, n.figura);
+            bn::sprite_ptr sprite = crea_npc(gente, n.figura);
             esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(qui.tx), mondo::piedi_y(qui.ty), ALTEZZA_NPC);
             _npc.push_back(bn::move(sprite));
             _indici.push_back(i);
+            _figura.push_back(n.figura);
+            _posa.push_back(POSA_RIPOSO);
         }
     }
 
@@ -646,20 +675,24 @@ void Storia::_prepara_npc(const Esplorazione& esplorazione)
 
         if(g.area == _area && momento_del_datore(g_game_state, q) != Momento::ASSENTE)
         {
-            bn::sprite_ptr sprite = crea_npc(palette, g.figura);
+            bn::sprite_ptr sprite = crea_npc(gente, g.figura);
             esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(g.tx), mondo::piedi_y(g.ty), ALTEZZA_NPC);
             _npc.push_back(bn::move(sprite));
             _indici.push_back(NPC + q);
+            _figura.push_back(g.figura);
+            _posa.push_back(POSA_RIPOSO);
         }
     }
 
     // l'infiltrato sotto le Logge, con i tre indizi
     if(INFILTRATO.area == _area && infiltrato_presente(g_game_state))
     {
-        bn::sprite_ptr sprite = crea_npc(palette, INFILTRATO.figura);
+        bn::sprite_ptr sprite = crea_npc(gente, INFILTRATO.figura);
         esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(INFILTRATO.tx), mondo::piedi_y(INFILTRATO.ty), ALTEZZA_NPC);
         _npc.push_back(bn::move(sprite));
         _indici.push_back(NPC + QUEST);
+        _figura.push_back(INFILTRATO.figura);
+        _posa.push_back(POSA_RIPOSO);
     }
 
     // i soldati di B-03 oltre l'arco, finche' il piano di Corrado non e' ascoltato
@@ -669,7 +702,8 @@ void Storia::_prepara_npc(const Esplorazione& esplorazione)
 
         if(s.area == _area)
         {
-            bn::sprite_ptr sprite = crea_npc(palette, s.figura);
+            bn::sprite_ptr sprite = crea_npc(gente, s.figura);
+            carica_posa(sprite, s.figura, POSA_LATO);
             sprite.set_horizontal_flip(true);       // guardano verso valle, verso l'arco
             esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(s.tx), mondo::piedi_y(s.ty), ALTEZZA_NPC);
             _gola.push_back(bn::move(sprite));
@@ -818,6 +852,51 @@ void Storia::_affronta_la_guardia(int guardia, Esplorazione& esplorazione, const
     esplorazione.ricompari();
 }
 
+// Il respiro di chi sta fermo (STANDARD A5): due pose da FRAME_RESPIRO vblank, sfasate per posizione (x 17) cosi'
+// due vicini non respirano insieme. Chi ha appena parlato torna nella posa di riposo, di fronte (A7).
+void Storia::_anima_npc()
+{
+    if(_parla >= 0 && _parla < _npc.size())
+    {
+        _npc[_parla].set_horizontal_flip(false);
+        _posa[_parla] = POSA_RIPOSO;
+        carica_posa(_npc[_parla], _figura[_parla], POSA_RIPOSO);
+    }
+
+    _parla = -1;
+
+    for(int j = 0; j < _npc.size(); ++j)
+    {
+        if(_posa[j] != POSA_RIPOSO && _posa[j] != POSA_RESPIRO)
+        {
+            continue;
+        }
+
+        Posto qui = posto_di(_indici[j]);
+        int fase = ((int(g_game_state.frames) + (qui.tx + qui.ty) * 17) / FRAME_RESPIRO) % 2;
+        int posa = fase ? POSA_RESPIRO : POSA_RIPOSO;
+
+        if(posa != _posa[j])
+        {
+            _posa[j] = uint8_t(posa);
+            carica_posa(_npc[j], _figura[j], posa);
+        }
+    }
+}
+
+// Chi parla si gira verso il giocatore (STANDARD A7): di lato (la sinistra e' il lato specchiato), di schiena se
+// il giocatore sta sopra, di fronte se sta sotto. dx, dy: i piedi del giocatore meno quelli dell'NPC.
+void Storia::_gira_verso(int j, int dx, int dy)
+{
+    int ax = dx < 0 ? -dx : dx;
+    int ay = dy < 0 ? -dy : dy;
+    int posa = ax > ay ? POSA_LATO : (dy < 0 ? POSA_SCHIENA : POSA_RIPOSO);
+    _npc[j].set_horizontal_flip(posa == POSA_LATO && dx < 0);
+    _posa[j] = uint8_t(posa);
+    carica_posa(_npc[j], _figura[j], posa);
+    _parla = j;
+}
+
 bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo)
 {
     const mondo::Esploratore& e = esplorazione.esploratore();
@@ -827,6 +906,8 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         all_ingresso(g_game_state, int(e.area));
         _prepara_npc(esplorazione);
     }
+
+    _anima_npc();
 
     // l'uscita del Condotto chiusa durante il duello (T2): si urta come un muro, e lo si dice
     esplorazione.chiudi_varco(varco_chiuso(g_game_state, int(e.area)));
@@ -957,6 +1038,7 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
 
         if(dx > -DISTANZA_PAROLA && dx < DISTANZA_PAROLA && dy > -DISTANZA_PAROLA && dy < DISTANZA_PAROLA)
         {
+            _gira_verso(j, dx, dy);
             dialogo_inizio(&esplorazione);
 
             if(indice == NPC + QUEST)
@@ -1078,7 +1160,7 @@ namespace gubbio
 void prova_figure_npc(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo)
 {
     esplorazione.entra(mondo::AreaId::PIAZZA_GRANDE, 0);
-    bn::sprite_palette_ptr palette = palette_npc();
+    bn::sprite_palette_ptr palette = palette_popolo();
     bn::vector<bn::sprite_ptr, FIGURE_NPC> figure;
     const mondo::Esploratore& e = esplorazione.esploratore();
 

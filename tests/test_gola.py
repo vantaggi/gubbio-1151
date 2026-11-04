@@ -229,8 +229,8 @@ class Sentinelle(unittest.TestCase):
             self.assertGreater(x, arco)
             self.assertIn(g[y][x], ",")
         figura = int([t for t in righe[0] if t.isdigit()][-1])
-        figure = re.search(r"FIGURA_NPC\[FIGURE_NPC\]\[8 \* 8\] = \{(.*?)\n\};", STORIA_H, re.S).group(1)
-        attesa = GS.FN.parole(GS.FN.figura_composta("soldato", None))
+        figure = re.search(r"FIGURA_NPC\[FIGURE_NPC\]\[POSE_NPC \* 8 \* 8\] = \{(.*?)\n\};", STORIA_H, re.S).group(1)
+        attesa = [v for px in GS.FP.fotogrammi_npc("soldato") for v in GS.FP.parole(px)]
         blocchi = re.findall(r"\{\s*((?:0x[0-9A-F]{8},\s*)+)\s*\}", figure)
         self.assertEqual([int(v, 16) for v in re.findall(r"0x[0-9A-F]{8}", blocchi[figura])], attesa)
 

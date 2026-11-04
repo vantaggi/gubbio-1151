@@ -50,6 +50,9 @@ private:
     static constexpr int PERSONE_MAX = storia::NPC + storia::QUEST + 1;
     bn::vector<bn::sprite_ptr, PERSONE_MAX> _npc;
     bn::vector<int, PERSONE_MAX> _indici;
+    bn::vector<uint8_t, PERSONE_MAX> _figura;     // la figura di ogni persona (FIGURA_NPC)
+    bn::vector<uint8_t, PERSONE_MAX> _posa;       // la posa caricata (POSA_RIPOSO ... POSA_LATO)
+    int _parla = -1;                              // chi si e' girato per parlare: torna a posto al frame dopo
     bn::vector<bn::sprite_ptr, storia::RACCOLTE> _raccolte;
     // la gola (T2): i soldati di B-03 e i forzieri (chiusi o aperti); le guardie delle fornaci e le fiamme dei
     // ceri della Basilica (F10)
@@ -59,6 +62,8 @@ private:
     uint32_t _ultimo_urto = 0;  // il frame dell'ultimo avviso dell'uscita chiusa (uno ogni due secondi)
 
     void _prepara_npc(const Esplorazione& esplorazione);
+    void _anima_npc();
+    void _gira_verso(int j, int dx, int dy);
     void _parla_col_datore(int quest, const bn::sprite_palette_ptr& palette_testo);
     void _affronta_l_infiltrato(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
     void _affronta_la_guardia(int guardia, Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
