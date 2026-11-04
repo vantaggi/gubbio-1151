@@ -1,0 +1,36 @@
+# GENERATO da tools/pittore_interni.py --aree: non modificare a mano (la stanza e' scritta li').
+# La sala grande del Palazzo dei Consoli (Piazza Grande): lastre, muro di pietra con lo stemma e
+# le torce, la tavola lunga dei consoli con gli scranni, il leggio del notaio. Riusata nell'Atto II (A2-10).
+id sala_consoli
+etichetta AREA_SALA_CONSOLI
+dimensioni 32 22
+monte basso
+interno
+riferimento 16 11
+fattore 0.73
+spawn 0 15 15
+spawn 1 15 15
+uscita A piazza_grande 1
+griglia
+################################
+################################
+################################
+################################
+################################
+################################
+################################
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LL####LLLL##LL##LL##LLLL##LLLL#
+#LL####LLLL##LL##LL##LLLL##LLLL#
+#LLLLLLLL##############LLLLLLLL#
+#LLLLLLLL##############LLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLL##LLLLLLLLLLLLLL##LLLLLL#
+#LLLLLL##LLLLLLLLLLLLLL##LLLLLL#
+#LL####LLLLLLLLLLLLLLLLLL####LL#
+#LL####LLLLLLLLLLLLLLLLLL####LL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#############AAAA###############

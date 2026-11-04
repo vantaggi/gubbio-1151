@@ -351,9 +351,12 @@ def errori_eccezioni_superflue(grafo, censimento, tolleranza=90.0):
 
 def errori_accessi_esclusivi(grafo):
     """I vincoli "accessi_esclusivi" di grafo.json: i vicini dell'area sono esattamente quelli
-    dichiarati, e ognuno di loro confina anche con l'area "collegati_a"."""
+    dichiarati, e ognuno di loro confina anche con l'area "collegati_a". Gli archi "dentro" (la porta di un
+    edificio che si apre sulla piazza) non sono accessi: si resta nella piazza."""
     vicini = {a["id"]: set() for a in grafo["aree"]}
     for e in grafo["archi"]:
+        if e.get("dentro"):
+            continue
         vicini.setdefault(e["da"], set()).add(e["a"])
         vicini.setdefault(e["a"], set()).add(e["da"])
     err = []

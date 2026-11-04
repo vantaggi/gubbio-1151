@@ -1,0 +1,33 @@
+# GENERATO da tools/pittore_interni.py --aree: non modificare a mano (la stanza e' scritta li').
+# La casa del medico (San Martino), di Vanni: i libri, i rotoli sugli assedi, il letto per i feriti.
+id casa_medico_interno
+etichetta AREA_CASA_MEDICO_INTERNO
+dimensioni 30 20
+monte basso
+interno
+riferimento 15 10
+fattore 0.73
+spawn 0 16 13
+spawn 1 16 13
+uscita A san_martino 1
+griglia
+##############################
+##############################
+##############################
+##############################
+##############################
+##############################
+##############################
+##############################
+###LLLLLLLLLLLLLLLLLLLLLLLL###
+###LLLLLLLLLLLLLLLLLLLLLLLL###
+###LL##LLLLLLLLLLLLLL####LL###
+###LL##LLLLLLLLLLLLLL####LL###
+###LLLLLL######LLLLLLLLLLLL###
+###LLLLLL######LLLLLLLLLLLL###
+###LLLLLLLLLLLLLLLLLLLLLLLL###
+###LLLLLLLLLLLLLLLLLLLLLLLL###
+###LLLLLLLLLLLLLLLLLLLLLLLL###
+###LLLLLLLLLLLLLLLLLLLLLLLL###
+#############LLLL#############
+#############AAAA#############

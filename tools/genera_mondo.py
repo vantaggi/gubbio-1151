@@ -81,6 +81,7 @@ sys.path.insert(0, os.path.join(RADICE, "tools"))
 import mondo_dati as M  # noqa: E402
 import pittore_monumenti as PM  # noqa: E402
 import pittore_citta as PC  # noqa: E402
+import pittore_interni as PI  # noqa: E402
 
 AREE_GLOB = os.path.join(RADICE, "mondo", "aree", "*.area")
 USCITA = os.path.join(RADICE, "include", "mondo.h")
@@ -199,7 +200,7 @@ def banchi_fondali(palette_stile, cupa=False, notte=False):
     alla luce delle fiaccole, L5)."""
     import pittore_citta as _PC
     out = []
-    for b, banco in enumerate([PALETTE_FONDALI] + _PC.BANCHI_NUOVI):
+    for b, banco in enumerate(BANCHI_FONDALI):
         if b == 0 and cupa:
             out.append([S.colore(palette_stile, r, True) for r in palette_cupa(palette_stile)])
             continue
@@ -2113,7 +2114,7 @@ def disegna_area(a, mondo):
 # --- Lo standard grafico sui fondali (pezzo EDI) -----------------------------------------------------
 # La palette dei fondali ha 5 banchi da 16 colori: il banco 0 e' PALETTE_FONDALI (la gola e il monte ci
 # restano interi), gli altri tre li definisce tools/pittore_citta.py. Ogni tile usa un banco solo.
-BANCHI_FONDALI = [PALETTE_FONDALI] + PC.BANCHI_NUOVI
+BANCHI_FONDALI = [PALETTE_FONDALI] + PC.BANCHI_NUOVI + [PI.BANCO_INTERNI]   # il settimo: gli interni (pezzo INT1)
 
 # Le celle e come proiettano l'ombra (L4): (tipo del pixel, altezza in pixel).
 TIPO_CELLA = {
@@ -2164,6 +2165,8 @@ def ridipingi(a, celle, tile_di, mondo, elementi):
                 v = pix[yy][xx]
                 q.px[y * 8 + yy][x * 8 + xx] = PALETTE_FONDALI[v] if isinstance(v, int) else v
     citta = area_di_citta(a)
+    if a.get("interno") and PI.dipinge(a["id"]):
+        return PI.dipingi(q, a)           # gli interni esplorabili: la stanza intera da tools/pittore_interni.py
     if a["id"] in AREE_GOLA or a.get("interno"):
         return q
     occupate = {}

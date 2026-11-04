@@ -24,8 +24,8 @@ def area(nome):
 
 class Banchi(unittest.TestCase):
 
-    def test_sei_banchi_da_sedici(self):
-        self.assertEqual(len(G.BANCHI_FONDALI), 6)
+    def test_sette_banchi_da_sedici(self):
+        self.assertEqual(len(G.BANCHI_FONDALI), 7)
         for banco in G.BANCHI_FONDALI:
             self.assertEqual(len(banco), 16)
             self.assertEqual(banco[0], PC.FONDO)
@@ -33,7 +33,7 @@ class Banchi(unittest.TestCase):
 
     def test_ogni_colore_dei_banchi_esiste_nello_stile(self):
         banchi = G.banchi_fondali(G.S.carica("palette"))
-        self.assertEqual(len(banchi), 6)
+        self.assertEqual(len(banchi), 7)
         self.assertTrue(all(len(b) == 16 and all(0 <= c < 0x8000 for c in b) for b in banchi))
 
     def test_un_tile_tutto_pietra_sta_nel_banco_della_pietra(self):

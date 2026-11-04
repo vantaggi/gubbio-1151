@@ -1,0 +1,34 @@
+# GENERATO da tools/pittore_interni.py --aree: non modificare a mano (la stanza e' scritta li').
+# La bottega del carradore (Quaranta Martiri), di Mastro Rufino: pavimento d'assi, il carro in mezzo
+# con le sponde «ad ali», le ruote appese, il banco con gli attrezzi, il portone largo (3 celle).
+id carradore_interno
+etichetta AREA_CARRADORE_INTERNO
+dimensioni 30 20
+monte basso
+interno
+riferimento 15 10
+fattore 0.73
+spawn 0 16 13
+spawn 1 16 13
+uscita A piazza_quaranta_martiri 1
+griglia
+##############################
+##############################
+##############################
+##############################
+##############################
+##############################
+##############################
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLLLLLL########LL#
+#LLLLLLLLLLLLLLLLLL########LL#
+#LLLL##########LLLLLLLLLLLLLL#
+#LLLL##########LLLLLLLLLLLLLL#
+#LLLL##########LLLLLLLLLLLLLL#
+#LLLL##########LLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLL#####
+#LLLLLLLLLLLLLLLLLLLLLLLL#####
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#LLLLLLLLLLLLLLLLLLLLLLLLLLLL#
+#############AAAAAA###########
