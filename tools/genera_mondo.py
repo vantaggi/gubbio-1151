@@ -66,7 +66,11 @@ a un varco, e dopo averli posati ogni varco resta raggiungibile da ogni spawn.
     python tools/genera_mondo.py --controlla  # esce con 1 se include/mondo.h non e' aggiornato
 """
 import glob
+import hashlib
+import io
 import math
+import pickle
+import types
 import json
 import os
 import sys
@@ -2014,7 +2018,104 @@ def applica_dislivello(a, grafo):
     a["griglia"] = ["".join(r) for r in g]
 
 
+# --- Memoria dei fondali già dipinti ------------------------------------------------------------------
+# Dipingere un'area costa circa mezzo secondo e genera() le dipinge tutte: i test negativi che cambiano
+# un solo file .area ridipingevano ogni volta anche le altre 24. La memoria vale solo dentro un processo
+# (lo script vero dipinge una volta e non la usa) e la chiave è l'impronta di tutto ciò da cui il disegno
+# dipende: l'area, il mondo, i dati dei moduli di tools/ e l'identità delle loro funzioni, così che un
+# test che sostituisce un pittore (PM.PITTORI, PC._vano_arco...) non riceve un disegno vecchio. Gli
+# oggetti chiamabili restano referenziati dalla voce, perciò il loro id non può passare a un altro.
+_MEMORIA_DISEGNO = {}
+_MEMORIA_MASSIMO = 256
+_MONDO_DEL_DISEGNO = ("monumenti", "censimento")
+# Fuori dall'impronta: le memorie interne dei pittori (si riempiono da sole, non cambiano il disegno) e i
+# registri che il disegno scrive (si rimettono come li lascerebbe il disegno, vedi _REGISTRI). Una voce
+# nuova che manca qui rende solo la memoria inutile (si ridipinge), mai sbagliata.
+_NON_IMPRONTA = {"COMPROMESSI", "_MEMORIA_DISEGNO", "_RGB", "_BR", "_CB", "_MOTIVI", "_MOTIVI_VERDI",
+                 "PORTALI_APERTI", "SOSTITUZIONI"}
+# I registri per area che il disegno riscrive da capo (clear e poi append): area -> elenco.
+_REGISTRI = (("pittore_interni", "PORTALI_APERTI"), ("pittore_interni", "SOSTITUZIONI"))
+
+
+class _Impronta(pickle.Pickler):
+    def __init__(self, f, tenuti):
+        super().__init__(f, protocol=4)
+        self.tenuti = tenuti
+
+    def persistent_id(self, obj):
+        if isinstance(obj, types.ModuleType):
+            return ("modulo", obj.__name__)
+        if callable(obj):
+            self.tenuti.append(obj)
+            return ("chiamabile", id(obj))
+        return None
+
+
+def _stato_dei_moduli():
+    """I dati e le funzioni dei moduli del repo (tools/, stile/) caricati in questo processo."""
+    radice = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    cartelle = {os.path.join(radice, "tools"), os.path.join(radice, "stile")}
+    moduli = [m for m in list(sys.modules.values())
+              if os.path.dirname(os.path.abspath(getattr(m, "__file__", None) or "/")) in cartelle]
+    stato = []
+    for m in sorted(moduli, key=lambda m: m.__name__):
+        if vars(m) is globals():
+            continue
+        stato.append((m.__name__, [(k, v) for k, v in sorted(vars(m).items())
+                                   if not k.startswith("__") and k not in _NON_IMPRONTA]))
+    stato.append(("questo", [(k, v) for k, v in sorted(globals().items())
+                             if not k.startswith("__") and k not in _NON_IMPRONTA]))
+    return stato
+
+
+def _chiave_disegno(a, mondo):
+    tenuti = []
+    f = io.BytesIO()
+    try:
+        _Impronta(f, tenuti).dump((a, mondo, _stato_dei_moduli()))
+    except (pickle.PicklingError, TypeError, AttributeError):
+        return None, None
+    return hashlib.sha256(f.getvalue()).hexdigest(), tenuti
+
+
 def disegna_area(a, mondo):
+    """Come _disegna_area, con la memoria: stesso risultato, stessi effetti su 'a', su COMPROMESSI e sui
+    registri dei pittori (_REGISTRI)."""
+    # il disegno legge solo monumenti e censimento: gli si passa solo quello, cosi' la chiave non cambia
+    # quando una prova tocca le misure o il grafo, e se un giorno il disegno leggesse altro la KeyError
+    # lo direbbe subito (invece di una memoria sbagliata)
+    mondo = {k: mondo[k] for k in _MONDO_DEL_DISEGNO if k in mondo}
+    chiave, tenuti = _chiave_disegno(a, mondo)
+    chiave_comp = a["id"] + (":" + a["variante"] if a.get("variante") else "")
+    voce = _MEMORIA_DISEGNO.get(chiave) if chiave else None
+    if voce is None:
+        prima = len(COMPROMESSI.get(chiave_comp, []))
+        risultato = _disegna_area(a, mondo)
+        if chiave is None:
+            return risultato
+        nuovi = COMPROMESSI.get(chiave_comp, [])[prima:]
+        registri = []
+        for modulo, nome in _REGISTRI:
+            reg = getattr(sys.modules[modulo], nome)
+            for k in {a["id"], chiave_comp}:
+                registri.append((modulo, nome, k, k in reg, reg.get(k)))
+        if len(_MEMORIA_DISEGNO) >= _MEMORIA_MASSIMO:
+            _MEMORIA_DISEGNO.clear()
+        _MEMORIA_DISEGNO[chiave] = (pickle.dumps((risultato, a["banchi"], a["specchi"], nuovi, registri), 4), tenuti)
+        return risultato
+    risultato, a["banchi"], a["specchi"], nuovi, registri = pickle.loads(voce[0])
+    if nuovi:
+        COMPROMESSI.setdefault(chiave_comp, []).extend(nuovi)
+    for modulo, nome, k, presente, valore in registri:
+        reg = getattr(sys.modules[modulo], nome)
+        if presente:
+            reg[k] = valore
+        else:
+            reg.pop(k, None)
+    return risultato
+
+
+def _disegna_area(a, mondo):
     """Il fondale dell'area come tile 8x8: il suolo dai tile procedurali, gli edifici dalle loro
     tele, la Fontana dei Matti dalla sua. Ritorna (tile unici, indice per cella, elementi per
     monumento). Il primo tile e' il vuoto, per le celle fuori dall'area."""
