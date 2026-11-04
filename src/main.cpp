@@ -94,6 +94,8 @@ int main()
 
     if(slot >= 0)
     {
+        // un salvataggio v3 aggiornato ritrova obiettivo e aree viste dalle scene fatte (MOB)
+        gubbio::storia::dopo_il_caricamento(gubbio::g_game_state);
         esplorazione.riprendi(gubbio::mondo::AreaId(gubbio::g_game_state.area), gubbio::g_game_state.x,
                               gubbio::g_game_state.y);
     }

@@ -19,3 +19,5 @@ STORIA_FINE               | DIALOGO | Fine della prima cronaca. La cronaca conti
 FORZIERE_CRESCIA          | DIALOGO | Un forziere fra i sassi. Ricevi 2 Crescia di Pasqua.
 FORZIERE_BISCOTTI         | DIALOGO | Un forziere fra i sassi. Ricevi 3 Biscotti all'Anice.
 CONDOTTO_CHIUSO           | DIALOGO | Corrado vi sbarra il ritorno. Da qui si esce solo battendolo.
+# MOB: il cartiglio delle righe OBIETTIVO (la cronaca e gli incarichi), al posto del nome di chi parla
+ETICHETTA_OBIETTIVO       | HUD     | Obiettivo

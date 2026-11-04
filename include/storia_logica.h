@@ -132,6 +132,100 @@ constexpr void accendi_una(GameState& p, int b)
     return -1;
 }
 
+// --- L'obiettivo della cronaca e le aree viste (MOB, menu/PROPOSTA.md sez. 4 e 5) ---------------------------
+
+// Le aree gia' visitate: un bit per mondo::AreaId in GameState::aree_viste (la nebbia della mappa).
+static_assert(mondo::AREE_CONTEGGIO <= 8 * int(sizeof(GameState::aree_viste)), "le aree viste non stanno in 3 byte");
+
+constexpr void segna_area_vista(GameState& p, int area)
+{
+    if(area >= 0 && area < mondo::AREE_CONTEGGIO)
+    {
+        p.aree_viste[area / 8] = uint8_t(p.aree_viste[area / 8] | (1 << (area % 8)));
+    }
+}
+
+[[nodiscard]] constexpr bool area_vista(const GameState& p, int area)
+{
+    return area >= 0 && area < mondo::AREE_CONTEGGIO && ((p.aree_viste[area / 8] >> (area % 8)) & 1);
+}
+
+[[nodiscard]] constexpr int aree_viste(const GameState& p)
+{
+    int n = 0;
+
+    for(int a = 0; a < mondo::AREE_CONTEGGIO; ++a)
+    {
+        n += area_vista(p, a) ? 1 : 0;
+    }
+
+    return n;
+}
+
+// La riga di OBIETTIVO (storia.h) che ha questo testo, -1 se nessuna.
+[[nodiscard]] constexpr int obiettivo_del_testo(testi::TestoId testo)
+{
+    for(int i = 0; i < OBIETTIVI; ++i)
+    {
+        if(OBIETTIVO[i].testo == testo)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+// Una battuta OBIETTIVO di una scena recitata: diventa l'obiettivo della cronaca. Quelle delle quest (nelle
+// proposte di 04_quest.md) restano dell'incarico: la cronaca e' la storia (il diario le elenca a parte, MDI).
+// True se l'obiettivo e' cambiato.
+constexpr bool segna_obiettivo(GameState& p, const Battuta& b)
+{
+    if(b.tipo != TipoBattuta::OBIETTIVO)
+    {
+        return false;
+    }
+
+    int i = obiettivo_del_testo(b.testo);
+
+    if(i < 0 || OBIETTIVO[i].quest >= 0 || p.obiettivo == i)
+    {
+        return false;
+    }
+
+    p.obiettivo = uint8_t(i);
+    return true;
+}
+
+// L'area dove porta l'obiettivo della cronaca (mondo::AreaId), -1 se non c'e' obiettivo.
+[[nodiscard]] constexpr int area_dell_obiettivo(const GameState& p)
+{
+    return p.obiettivo < OBIETTIVI ? int(OBIETTIVO[p.obiettivo].area) : -1;
+}
+
+// La voce di un menu SCELTA gia' fatto, ricavata dalle bandiere: quella la cui bandiera e' accesa, o quella
+// senza bandiera se la bandiera dell'altra e' spenta. -1 se non si sa.
+[[nodiscard]] constexpr int voce_dalle_bandiere(const GameState& p, const Battuta& b)
+{
+    for(int v = 0; v < 2; ++v)
+    {
+        if(b.accende[v] != NESSUNA_BANDIERA && accesa(p, int(b.accende[v])))
+        {
+            return v;
+        }
+    }
+
+    for(int v = 0; v < 2; ++v)
+    {
+        if(b.accende[v] == NESSUNA_BANDIERA && b.accende[1 - v] != NESSUNA_BANDIERA && ! accesa(p, int(b.accende[1 - v])))
+        {
+            return v;
+        }
+    }
+
+    return -1;
+}
+
 // Una scelta fatta: accende la bandiera della voce e, per la prima voce, consuma l'oggetto.
 constexpr void scegli(GameState& p, const Battuta& b, int voce)
 {
@@ -143,7 +237,8 @@ constexpr void scegli(GameState& p, const Battuta& b, int voce)
     }
 }
 
-// Le scelte di una scena senza recitarla (il giro di tutta la storia): ogni menu prende la voce data.
+// Le scelte di una scena senza recitarla (il giro di tutta la storia): ogni menu prende la voce data. Le
+// righe OBIETTIVO che valgono aggiornano l'obiettivo della cronaca, come nella recita.
 constexpr void scegli_tutto(GameState& p, int k, int voce, const Scena* tabella = SCENA)
 {
     const Scena& s = tabella[k];
@@ -158,13 +253,20 @@ constexpr void scegli_tutto(GameState& p, int k, int voce, const Scena* tabella 
             scelta = voce;
             scegli(p, b, voce);
         }
+        else if(b.tipo == TipoBattuta::OBIETTIVO && vale(p, b.guardia, scelta))
+        {
+            segna_obiettivo(p, b);      // come nella recita (Storia::recita_battute)
+        }
     }
 }
 
 // Entrando in un'area: chi sale agli Stradoni durante il digiuno senza aver deciso del borgo l'ha
 // lasciato fuori (copione v2, A1-05b). Fuori dalle stanze della gola le ferite dei miasmi guariscono (T2).
+// L'area e' vista (MOB).
 constexpr void all_ingresso(GameState& p, int area)
 {
+    segna_area_vista(p, area);
+
     if(area == int(mondo::AreaId::MONTE_INGINO) && accesa(p, Bandiera::CITTA_IN_DIGIUNO) &&
        ! accesa(p, Bandiera::BORGO_DENTRO) && ! accesa(p, Bandiera::BORGO_FUORI))
     {
@@ -183,6 +285,62 @@ constexpr void all_ingresso(GameState& p, int area)
 [[nodiscard]] constexpr bool fatta(const GameState& p, int scena)
 {
     return (p.scene_fatte[scena / 8] >> (scena % 8)) & 1;
+}
+
+// L'obiettivo della cronaca ricavato dalle scene fatte (un salvataggio v3 non l'ha): l'ultima riga OBIETTIVO
+// che vale nell'ultima scena fatta, nell'ordine del copione, che ne ha una. NESSUN_OBIETTIVO se nessuna.
+[[nodiscard]] constexpr uint8_t ricava_obiettivo(const GameState& p)
+{
+    uint8_t trovato = NESSUN_OBIETTIVO;
+
+    for(int k = 0; k < SCENE; ++k)
+    {
+        if(! fatta(p, k))
+        {
+            continue;
+        }
+
+        const Scena& s = SCENA[k];
+        int scelta = -1;
+
+        for(int i = s.prima_battuta; i < s.prima_battuta + s.battute; ++i)
+        {
+            const Battuta& b = BATTUTA[i];
+
+            if(b.tipo == TipoBattuta::SCELTA && vale(p, b.guardia, scelta))
+            {
+                scelta = voce_dalle_bandiere(p, b);
+            }
+            else if(b.tipo == TipoBattuta::OBIETTIVO && vale(p, b.guardia, scelta))
+            {
+                int o = obiettivo_del_testo(b.testo);
+                trovato = o >= 0 && OBIETTIVO[o].quest < 0 ? uint8_t(o) : trovato;
+            }
+        }
+    }
+
+    return trovato;
+}
+
+// Dopo aver caricato uno slot: l'area dove si riprende e quelle delle scene fatte sono viste; senza
+// obiettivo (un salvataggio v3 aggiornato) l'obiettivo si ricava dalle scene. Non cambia nulla in uno
+// stato gia' coerente: ricaricare due volte da' lo stesso stato.
+constexpr void dopo_il_caricamento(GameState& p)
+{
+    segna_area_vista(p, p.area);
+
+    for(int k = 0; k < SCENE; ++k)
+    {
+        if(fatta(p, k))
+        {
+            segna_area_vista(p, SCENA[k].area);
+        }
+    }
+
+    if(p.obiettivo == NESSUN_OBIETTIVO)
+    {
+        p.obiettivo = ricava_obiettivo(p);
+    }
 }
 
 static_assert(SCENE <= 32, "le scene fatte stanno in 4 byte di GameState");

@@ -187,14 +187,14 @@ class Forzieri(unittest.TestCase):
         self.assertNotIn((20, 5), GS.raggiungibili_da(a, *a["spawn"][0], G))
 
     def test_bandiere_libere_nell_intervallo_quest(self):
-        """88 e 89: dopo le bandiere di SV2c (77-87), dentro 64-127; il salvataggio resta v3."""
+        """88 e 89: dopo le bandiere di SV2c (77-87), dentro 64-127; i forzieri non hanno cambiato il formato del salvataggio (oggi v4, da MOB)."""
         indici = {b: GS.PRIMA_QUEST + i for i, b in enumerate(GS.BANDIERE_QUEST)}
         self.assertEqual((indici["FORZIERE_CRESCIA"], indici["FORZIERE_BISCOTTI"]), (88, 89))
         self.assertEqual(len(set(indici.values())), len(indici))
         self.assertLess(max(indici.values()), 128)
         self.assertIn("inline constexpr uint8_t FORZIERE_CRESCIA = 88;", STORIA_H)
         with open(os.path.join(RADICE, "include", "save_data.h"), encoding="utf-8") as f:
-            self.assertIn("VERSIONE = 3;", f.read())
+            self.assertIn("VERSIONE = 4;", f.read())     # la v4 viene da MOB, non dai forzieri
 
     def test_negativa_bandiera_sopra_sv2c(self):
         indici = [GS.PRIMA_QUEST + i for i, b in enumerate(GS.BANDIERE_QUEST)]

@@ -276,8 +276,10 @@ class Battuta:
     la guardia, le voci e gli effetti di una SCELTA."""
 
     def __init__(self, chi, espressione, frase, dove, guardia=SEMPRE):
+        frase, meta = meta_dell_obiettivo(chi, frase, dove)
         self.d = {"chi": chi, "espr": espressione or "calmo", "frase": frase.strip(), "dove": dove,
-                  "guardia": guardia, "voci": None, "accende": (NESSUNA, NESSUNA), "consuma": -1, "fase": None}
+                  "guardia": guardia, "voci": None, "accende": (NESSUNA, NESSUNA), "consuma": -1, "fase": None,
+                  "meta": meta}
 
     def __getitem__(self, k):
         return tuple(self)[k] if isinstance(k, int) else self.d[k]
@@ -290,6 +292,21 @@ class Battuta:
 
     def __len__(self):
         return 4
+
+
+# MOB: l'area meta di una riga OBIETTIVO scritta a mano in fondo alla riga, «(area: ID)» con un mondo::AreaId.
+# Non e' testo a schermo: si toglie dalla frase (anche verifica_copione.py la toglie prima di misurare).
+META_OBIETTIVO = re.compile(r"\s*\(area: ([A-Z_]+)\)\s*$")
+
+
+def meta_dell_obiettivo(chi, frase, dove):
+    """(frase senza «(area: ID)», ID o None). L'annotazione vale solo per le righe OBIETTIVO."""
+    m = META_OBIETTIVO.search(frase)
+    if not m:
+        return frase, None
+    if chi != "OBIETTIVO":
+        raise ErroreStoria(f"{dove}: «(area: ...)» solo nelle righe OBIETTIVO")
+    return frase[:m.start()], m.group(1)
 
 
 def battuta(chi, espressione, frase, dove, guardia=SEMPRE):
@@ -974,6 +991,46 @@ def testi_del_copione(scene, npc):
     return "\n".join(r for r in righe if r is not None) + "\n"
 
 
+def aree_del_grafo():
+    """Gli id delle aree del gioco (mondo::AreaId), da mondo/grafo.json."""
+    with open(os.path.join(RADICE, "mondo", "grafo.json"), encoding="utf-8") as f:
+        return [a["id"] for a in __import__("json").load(f)["aree"]]
+
+
+def obiettivi(scene, quest):
+    """Le righe OBIETTIVO (MOB, menu/PROPOSTA.md sez. 5): [{testo, area, quest, scena, dove, frase}].
+    Nelle scene l'area meta e' quella della prima scena che segue nel copione con un'area (il suo Luogo, AREE),
+    oppure quella scritta a mano con «(area: ID)»; nelle quest e' l'area dell'obiettivo della quest (QUEST), se
+    la riga non ne scrive una. quest = -1 per le righe della cronaca, scena = -1 per quelle delle quest."""
+    validi = set(aree_del_grafo())
+    righe = []
+    for i, s in enumerate(scene):
+        for k, b in enumerate(s["battute"]):
+            if b["chi"] != "OBIETTIVO":
+                continue
+            meta = b["meta"] or next((AREE[t["codice"]] for t in scene[i + 1:] if AREE.get(t["codice"])), None)
+            righe.append({"testo": id_battuta(s["codice"], k), "area": meta, "quest": -1, "scena": i,
+                          "dove": b["dove"], "frase": b["frase"]})
+    for qi, d in enumerate(QUEST):
+        if not quest or d["id"] not in quest:
+            continue
+        k = 0
+        for _, lista in frasi_della_quest(quest[d["id"]]):
+            for b in lista:
+                if b["chi"] == "OBIETTIVO":
+                    righe.append({"testo": id_frase_quest(d["id"], k), "area": b["meta"] or d["obiettivo"], "quest": qi,
+                                  "scena": -1, "dove": b["dove"], "frase": b["frase"]})
+                k += 1
+    for r in righe:
+        if not r["area"]:
+            raise ErroreStoria(f"{r['dove']}: riga OBIETTIVO senza area meta: nessuna scena dopo, scrivere «(area: ID)»")
+        if r["area"] not in validi:
+            raise ErroreStoria(f"{r['dove']}: area meta {r['area']} che il mondo non ha")
+    if len(righe) >= 255:
+        raise ErroreStoria("troppe righe OBIETTIVO: GameState::obiettivo e' un byte, 255 vuol dire nessuno")
+    return righe
+
+
 def maschera(bandiere):
     v = 0
     for b in bandiere:
@@ -1091,6 +1148,16 @@ def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None,
             f"inline constexpr int BATTAGLIE_A_META = {len(a_meta)};",
             "inline constexpr BattagliaAMeta BATTAGLIA_A_META[BATTAGLIE_A_META > 0 ? BATTAGLIE_A_META : 1] = {"] + (
                 a_meta or ["    { -1, 0xFFFF, 255 },"]) + ["};", ""]
+    righe_ob = obiettivi(scene, quest)
+    out += ["// Le righe OBIETTIVO del copione (MOB, menu/PROPOSTA.md sez. 5): il testo, l'area meta (mondo::AreaId: il",
+            "// Luogo della scena che segue, o l'area scritta a mano in fondo alla riga), la quest (-1 per la cronaca) e la scena",
+            "// (indice in SCENA, -1 per le quest). GameState::obiettivo e' un indice qui; lo aggiorna la recita delle scene.",
+            "struct Obiettivo", "{", "    testi::TestoId testo;", "    int8_t area;", "    int8_t quest;", "    int8_t scena;", "};", "",
+            f"inline constexpr int OBIETTIVI = {len(righe_ob)};",
+            "inline constexpr Obiettivo OBIETTIVO[OBIETTIVI > 0 ? OBIETTIVI : 1] = {"] + [
+                f"    {{ testi::TestoId::{r['testo']}, int8_t(mondo::AreaId::{r['area']}), {r['quest']}, {r['scena']} }},"
+                f"  // {r['frase'][:60]}" for r in righe_ob] + (
+                [] if righe_ob else ["    { testi::TestoId(0), -1, -1, -1 },"]) + ["};", ""]
     # NPC
     out += ["enum class Fase : uint8_t", "{"] + [f"    {f}," for f in FASI] + ["};", "",
             "struct Npc", "{", "    int8_t area;", "    uint8_t tx;", "    uint8_t ty;",

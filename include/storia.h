@@ -422,6 +422,33 @@ inline constexpr BattagliaAMeta BATTAGLIA_A_META[BATTAGLIE_A_META > 0 ? BATTAGLI
     { 15, 163, 90 },  // B-03 prima della battuta 8
 };
 
+// Le righe OBIETTIVO del copione (MOB, menu/PROPOSTA.md sez. 5): il testo, l'area meta (mondo::AreaId: il
+// Luogo della scena che segue, o l'area scritta a mano in fondo alla riga), la quest (-1 per la cronaca) e la scena
+// (indice in SCENA, -1 per le quest). GameState::obiettivo e' un indice qui; lo aggiorna la recita delle scene.
+struct Obiettivo
+{
+    testi::TestoId testo;
+    int8_t area;
+    int8_t quest;
+    int8_t scena;
+};
+
+inline constexpr int OBIETTIVI = 12;
+inline constexpr Obiettivo OBIETTIVO[OBIETTIVI > 0 ? OBIETTIVI : 1] = {
+    { testi::TestoId::C_A1_01_23, int8_t(mondo::AreaId::TEATRO_ROMANO), -1, 3 },  // Raggiungi il Teatro Romano, fuori dalle mura di San Martino.
+    { testi::TestoId::C_A1_03_07, int8_t(mondo::AreaId::TEATRO_ROMANO), -1, 5 },  // Esci dalla postierla e trova Antonio.
+    { testi::TestoId::C_A1_04_18, int8_t(mondo::AreaId::PIAZZA_GRANDE), -1, 6 },  // Torna in città prima che chiudano la postierla.
+    { testi::TestoId::C_A1_05_13, int8_t(mondo::AreaId::DUOMO_DUCALE), -1, 7 },  // Sali al Monte Ingino passando dal Duomo.
+    { testi::TestoId::C_A1_07_15, int8_t(mondo::AreaId::BASILICA_INTERNO), -1, 10 },  // Raggiungi la Basilica in vetta.
+    { testi::TestoId::C_A1_09_11, int8_t(mondo::AreaId::GOLA_STRISCIA), -1, 12 },  // Scendi per la Strada del Bottaccione, dietro il monte.
+    { testi::TestoId::C_B_04_18, int8_t(mondo::AreaId::SAN_MARTINO), -1, 16 },  // Rientra in città da Porta Metauro.
+    { testi::TestoId::C_B_05_12, int8_t(mondo::AreaId::PIAZZA_GRANDE), -1, 17 },  // All'alba, raggiungi Piazza Grande.
+    { testi::TestoId::C_B_05_14, int8_t(mondo::AreaId::PIAZZA_GRANDE), -1, 17 },  // Quando sei pronto, parla con Guido in Piazza Grande.
+    { testi::TestoId::QST_SM01_05, int8_t(mondo::AreaId::TEATRO_ROMANO), 0, -1 },  // Recupera 3 blocchi di ferro alle fornaci del Teatro Romano.
+    { testi::TestoId::QST_SA01_07, int8_t(mondo::AreaId::BOTTACCIONE), 1, -1 },  // Raccogli 4 radici di elleboro nel Bottaccione.
+    { testi::TestoId::QST_SP01_05, int8_t(mondo::AreaId::SAN_PIETRO), 2, -1 },  // Trova chi ha rubato la Rosa d'Argento. Chiedi in giro.
+};
+
 enum class Fase : uint8_t
 {
     ULTIMATUM,
