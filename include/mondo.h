@@ -15045,6 +15045,12 @@ inline constexpr uint16_t PALETTE_GIOCATORE[16] = {
     0x26B8, 0x4FBD, 0x2529, 0x41EF, 0x1085, 0x190A, 0x2D8D, 0x18D4,
 };
 
+// di notte (STANDARD L5) il giocatore prende le rampe di notte, come i fondali e la gente
+inline constexpr uint16_t PALETTE_GIOCATORE_NOTTE[16] = {
+    0x1462, 0x1462, 0x314B, 0x39CF, 0x458A, 0x61AC, 0x4250, 0x2508,
+    0x296A, 0x3250, 0x24C5, 0x3528, 0x1883, 0x20A5, 0x28E7, 0x24C9,
+};
+
 // Il segnale d'interazione (STANDARD I2, tools/sagome_mappa.py): un tile 8x8 con la palette del
 // giocatore; oscilla di un pixel ogni FUMETTO_OSCILLA vblank.
 inline constexpr int FUMETTO_OSCILLA = 20;
