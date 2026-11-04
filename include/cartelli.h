@@ -19,10 +19,11 @@ struct Cartello
     testi::TestoId oltre;
 };
 
-inline constexpr int CARTELLI = 50;
+inline constexpr int CARTELLI = 62;
 inline constexpr Cartello CARTELLO[CARTELLI] = {
     { int8_t(mondo::AreaId::PIAZZA_GRANDE), int8_t(mondo::AreaId::VIA_DEI_CONSOLI), testi::TestoId::CARTELLO_PIAZZA_GRANDE_VIA_DEI_CONSOLI },
     { int8_t(mondo::AreaId::PIAZZA_GRANDE), int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), testi::TestoId::CARTELLO_PIAZZA_GRANDE_VIA_XX_SETTEMBRE },
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), int8_t(mondo::AreaId::SALA_CONSOLI), testi::TestoId::CARTELLO_PIAZZA_GRANDE_SALA_CONSOLI },
     { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), int8_t(mondo::AreaId::PIAZZA_GRANDE), testi::TestoId::CARTELLO_VIA_DEI_CONSOLI_PIAZZA_GRANDE },
     { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), int8_t(mondo::AreaId::LARGO_BARGELLO), testi::TestoId::CARTELLO_VIA_DEI_CONSOLI_LARGO_BARGELLO },
     { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), testi::TestoId::CARTELLO_VIA_DEI_CONSOLI_PIAZZA_QUARANTA_MARTIRI },
@@ -33,6 +34,7 @@ inline constexpr Cartello CARTELLO[CARTELLI] = {
     { int8_t(mondo::AreaId::SAN_MARTINO), int8_t(mondo::AreaId::BOTTACCIONE), testi::TestoId::CARTELLO_SAN_MARTINO_BOTTACCIONE },
     { int8_t(mondo::AreaId::SAN_MARTINO), int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), testi::TestoId::CARTELLO_SAN_MARTINO_PIAZZA_QUARANTA_MARTIRI },
     { int8_t(mondo::AreaId::SAN_MARTINO), int8_t(mondo::AreaId::TEATRO_ROMANO), testi::TestoId::CARTELLO_SAN_MARTINO_TEATRO_ROMANO },
+    { int8_t(mondo::AreaId::SAN_MARTINO), int8_t(mondo::AreaId::CASA_MEDICO_INTERNO), testi::TestoId::CARTELLO_SAN_MARTINO_CASA_MEDICO_INTERNO },
     { int8_t(mondo::AreaId::TEATRO_ROMANO), int8_t(mondo::AreaId::SAN_MARTINO), testi::TestoId::CARTELLO_TEATRO_ROMANO_SAN_MARTINO },
     { int8_t(mondo::AreaId::TEATRO_ROMANO), int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), testi::TestoId::CARTELLO_TEATRO_ROMANO_PIAZZA_QUARANTA_MARTIRI },
     { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), int8_t(mondo::AreaId::SAN_MARTINO), testi::TestoId::CARTELLO_PIAZZA_QUARANTA_MARTIRI_SAN_MARTINO },
@@ -40,14 +42,18 @@ inline constexpr Cartello CARTELLO[CARTELLI] = {
     { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), int8_t(mondo::AreaId::VIA_DEI_CONSOLI), testi::TestoId::CARTELLO_PIAZZA_QUARANTA_MARTIRI_VIA_DEI_CONSOLI },
     { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), testi::TestoId::CARTELLO_PIAZZA_QUARANTA_MARTIRI_VIA_XX_SETTEMBRE },
     { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), int8_t(mondo::AreaId::SAN_PIETRO), testi::TestoId::CARTELLO_PIAZZA_QUARANTA_MARTIRI_SAN_PIETRO },
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), int8_t(mondo::AreaId::CARRADORE_INTERNO), testi::TestoId::CARTELLO_PIAZZA_QUARANTA_MARTIRI_CARRADORE_INTERNO },
     { int8_t(mondo::AreaId::SAN_PIETRO), int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), testi::TestoId::CARTELLO_SAN_PIETRO_PIAZZA_QUARANTA_MARTIRI },
     { int8_t(mondo::AreaId::SAN_PIETRO), int8_t(mondo::AreaId::SANT_AGOSTINO), testi::TestoId::CARTELLO_SAN_PIETRO_SANT_AGOSTINO },
+    { int8_t(mondo::AreaId::SAN_PIETRO), int8_t(mondo::AreaId::TAVERNA_INTERNO), testi::TestoId::CARTELLO_SAN_PIETRO_TAVERNA_INTERNO },
+    { int8_t(mondo::AreaId::SAN_PIETRO), int8_t(mondo::AreaId::SPEZIERIA_INTERNO), testi::TestoId::CARTELLO_SAN_PIETRO_SPEZIERIA_INTERNO },
     { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), testi::TestoId::CARTELLO_VIA_XX_SETTEMBRE_PIAZZA_QUARANTA_MARTIRI },
     { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), int8_t(mondo::AreaId::PIAZZA_GRANDE), testi::TestoId::CARTELLO_VIA_XX_SETTEMBRE_PIAZZA_GRANDE },
     { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), int8_t(mondo::AreaId::SANT_ANDREA), testi::TestoId::CARTELLO_VIA_XX_SETTEMBRE_SANT_ANDREA },
     { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), int8_t(mondo::AreaId::DUOMO_DUCALE), testi::TestoId::CARTELLO_VIA_XX_SETTEMBRE_DUOMO_DUCALE },
     { int8_t(mondo::AreaId::SANT_AGOSTINO), int8_t(mondo::AreaId::SANT_ANDREA), testi::TestoId::CARTELLO_SANT_AGOSTINO_SANT_ANDREA },
     { int8_t(mondo::AreaId::SANT_AGOSTINO), int8_t(mondo::AreaId::SAN_PIETRO), testi::TestoId::CARTELLO_SANT_AGOSTINO_SAN_PIETRO },
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), testi::TestoId::CARTELLO_SANT_AGOSTINO_BOTTEGA_CONTI_INTERNO },
     { int8_t(mondo::AreaId::SANT_ANDREA), int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), testi::TestoId::CARTELLO_SANT_ANDREA_VIA_XX_SETTEMBRE },
     { int8_t(mondo::AreaId::SANT_ANDREA), int8_t(mondo::AreaId::SANT_AGOSTINO), testi::TestoId::CARTELLO_SANT_ANDREA_SANT_AGOSTINO },
     { int8_t(mondo::AreaId::SANT_ANDREA), int8_t(mondo::AreaId::MONTE_INGINO), testi::TestoId::CARTELLO_SANT_ANDREA_MONTE_INGINO },
@@ -61,6 +67,12 @@ inline constexpr Cartello CARTELLO[CARTELLI] = {
     { int8_t(mondo::AreaId::BASILICA), int8_t(mondo::AreaId::BOTTACCIONE), testi::TestoId::CARTELLO_BASILICA_BOTTACCIONE },
     { int8_t(mondo::AreaId::BASILICA), int8_t(mondo::AreaId::BASILICA_INTERNO), testi::TestoId::CARTELLO_BASILICA_BASILICA_INTERNO },
     { int8_t(mondo::AreaId::BASILICA_INTERNO), int8_t(mondo::AreaId::BASILICA), testi::TestoId::CARTELLO_BASILICA_INTERNO_BASILICA },
+    { int8_t(mondo::AreaId::TAVERNA_INTERNO), int8_t(mondo::AreaId::SAN_PIETRO), testi::TestoId::CARTELLO_TAVERNA_INTERNO_SAN_PIETRO },
+    { int8_t(mondo::AreaId::SPEZIERIA_INTERNO), int8_t(mondo::AreaId::SAN_PIETRO), testi::TestoId::CARTELLO_SPEZIERIA_INTERNO_SAN_PIETRO },
+    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), int8_t(mondo::AreaId::SANT_AGOSTINO), testi::TestoId::CARTELLO_BOTTEGA_CONTI_INTERNO_SANT_AGOSTINO },
+    { int8_t(mondo::AreaId::CARRADORE_INTERNO), int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), testi::TestoId::CARTELLO_CARRADORE_INTERNO_PIAZZA_QUARANTA_MARTIRI },
+    { int8_t(mondo::AreaId::CASA_MEDICO_INTERNO), int8_t(mondo::AreaId::SAN_MARTINO), testi::TestoId::CARTELLO_CASA_MEDICO_INTERNO_SAN_MARTINO },
+    { int8_t(mondo::AreaId::SALA_CONSOLI), int8_t(mondo::AreaId::PIAZZA_GRANDE), testi::TestoId::CARTELLO_SALA_CONSOLI_PIAZZA_GRANDE },
     { int8_t(mondo::AreaId::BOTTACCIONE), int8_t(mondo::AreaId::SAN_MARTINO), testi::TestoId::CARTELLO_BOTTACCIONE_SAN_MARTINO },
     { int8_t(mondo::AreaId::BOTTACCIONE), int8_t(mondo::AreaId::BASILICA), testi::TestoId::CARTELLO_BOTTACCIONE_BASILICA },
     { int8_t(mondo::AreaId::BOTTACCIONE), int8_t(mondo::AreaId::GOLA_STRISCIA), testi::TestoId::CARTELLO_BOTTACCIONE_GOLA_STRISCIA },

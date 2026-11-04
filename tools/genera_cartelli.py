@@ -27,7 +27,10 @@ BREVI = {"PIAZZA_GRANDE": "Piazza Grande", "VIA_DEI_CONSOLI": "via dei Consoli",
          "SAN_PIETRO": "San Pietro", "VIA_XX_SETTEMBRE": "via XX Settembre", "SANT_AGOSTINO": "Sant'Agostino",
          "SANT_ANDREA": "Sant'Andrea", "DUOMO_DUCALE": "Duomo", "MONTE_INGINO": "Monte Ingino", "BASILICA": "Basilica",
          "BASILICA_INTERNO": "dentro la Basilica", "BOTTACCIONE": "Bottaccione", "GOLA_STRISCIA": "la gola",
-         "GOLA_MIASMI": "i miasmi", "GOLA_ARCO": "l'arco", "CONDOTTO": "il Condotto"}
+         "GOLA_MIASMI": "i miasmi", "GOLA_ARCO": "l'arco", "CONDOTTO": "il Condotto",
+         # gli interni esplorabili (pezzo INT)
+         "TAVERNA_INTERNO": "la taverna", "SPEZIERIA_INTERNO": "la spezieria", "BOTTEGA_CONTI_INTERNO": "la bottega dei conti",
+         "CARRADORE_INTERNO": "il carradore", "CASA_MEDICO_INTERNO": "il medico", "SALA_CONSOLI": "la Sala dei Consoli"}
 OLTRE_MAX = 3           # quante aree al massimo sulla seconda riga
 LARGHEZZA_AREA = 192    # il contesto AREA di tools/genera_testi.py: una riga da 192 px
 
@@ -49,12 +52,13 @@ def cartelli(grafo):
         for x, y in ((a["da"], a["a"]), (a["a"], a["da"])):
             if x not in vicine or y not in vicine:
                 raise ErroreCartelli(f"arco {x} - {y} con un'area che non c'e'")
-            vicine[x].append((y, a.get("porta")))
+            vicine[x].append((y, a.get("porta"), bool(a.get("dentro"))))
     font = S.carica("font")
     righe = []
     for da in ids:
-        for verso, porta in vicine[da]:
-            oltre = [BREVI[z] for z, _ in vicine[verso] if z != da][:OLTRE_MAX]
+        for verso, porta, _ in vicine[da]:
+            # oltre la destinazione si contano le strade, non i portoni degli edifici (gli interni)
+            oltre = [BREVI[z] for z, _, dentro in vicine[verso] if z != da and not dentro][:OLTRE_MAX]
             # si tolgono aree dalla fine finche' la riga sta in una riga del contesto AREA
             while True:
                 pezzi = ([porta] if porta else []) + ([("poi " if porta else "") + ", ".join(oltre)] if oltre else [])
