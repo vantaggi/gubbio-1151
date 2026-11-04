@@ -119,7 +119,7 @@ Si consegna in qualunque momento fino alla conferma di E-01; di solito in fase N
 - AGNESE: Quattro radici! E sono ancora umide. Siete scesi davvero laggiù.
 - AGNESE: Non me lo dite, cosa c'era. Me lo racconterete quando sarà finita.
 - AGNESE: Prendete questi biscotti all'anice. Tolgono il veleno dal sangue, e la paura dallo stomaco.
-- SISTEMA: Ricevi 3 Biscotti all'Anice di Sant'Ubaldo.
+- SISTEMA: Ricevi 3 Biscotti all'Anice.
 - SISTEMA: Sant'Andrea ti è grato.
 
 Se `CONDOTTO_SALVO` (la consegna avviene dopo il Condotto), una battuta in più:

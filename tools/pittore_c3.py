@@ -24,7 +24,7 @@ CENTRO = (150, 52)
 SUOLO = 100
 
 # il nome nel cartiglio: quello del copione (PARLANTI di tools/genera_storia.py)
-NOMI = {"ubaldo": "Sant'Ubaldo", "giorgio": "Giorgio", "antonio": "Antonio", "corrado": "Corrado di Spoleto"}
+NOMI = {"ubaldo": "Ubaldo", "giorgio": "Giorgio", "antonio": "Antonio", "corrado": "Corrado di Spoleto"}
 
 
 def bagliore(t):

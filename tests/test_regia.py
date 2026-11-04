@@ -373,7 +373,9 @@ class C3(unittest.TestCase):
 
     def test_negativa_un_nome_diverso_dal_copione(self):
         import genera_storia as GS
-        self.assertNotEqual(GS.PARLANTI["UBALDO"], "Ubaldo")
+        # un nome sbagliato nel cartiglio non e' quello del copione (i tre senza "San", Cioti 4 nov 2026)
+        self.assertNotEqual(GS.PARLANTI["UBALDO"], "Sant'Ubaldo")
+        self.assertEqual(GS.PARLANTI["UBALDO"], GR.PP.C3.NOMI["ubaldo"])
 
 
 class SagomeX3(unittest.TestCase):

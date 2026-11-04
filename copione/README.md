@@ -53,6 +53,7 @@ La revisione indipendente del copione (`revisione/REVISIONE_COPIONE_v2.md` nella
 - **Dopo E-01 non si gira la città.** E-02 parte subito, a schermo intero; le battute che devono pesare su D4 stanno dentro E-01 (Ciaccio, T1).
 - **Licenze dichiarate (V3).** La città del gioco è la Gubbio di oggi: molti edifici sono più tardi del 1151 (il Palazzo dei Consoli e il grande acquedotto del Trecento, la Loggia dei Tiratori del Cinque-Seicento, il Palazzo Ducale del Quattrocento, la Fontana dei Matti, Porta Metauro). Anche il condotto del Bottaccione nel 1151 è una licenza. Le battute non li correggono uno per uno: la licenza va detta una volta, qui e nei crediti. Solo i personaggi del 1151 non nominano ciò che non possono conoscere (V2: il canonico non parla del «Ducale»).
 - **La canzone di Flaviano (V15).** Flaviano e Giuliana promettono «la canzone nuova»: la ripaga il brano dei titoli di coda, che nell'audio si chiama già `canzone_di_flaviano` (`audio/canzone_di_flaviano.xm`). Nessuna battuta nuova.
+- **«San» e «Sant'» (Cioti, 4 nov 2026).** I tre protagonisti si chiamano solo Ubaldo, Giorgio e Antonio (o «il vescovo Ubaldo»): nel 1151 non sono ancora santi. «Sant'Ubaldo», «San Giorgio», «Sant'Antonio» restano solo nei nomi dei luoghi (Basilica, cappellette degli Stradoni, chiese, quartieri) e nelle scene che guardano al futuro (Basilica, epilogo). «S.» abbreviato solo sulla mappa, se manca lo spazio.
 - **Nomi.** Su richiesta di Cioti il medico si chiama **Vanni** (da Giovanni, prima «Compagno») e il custode delle carte **Renzo** (da Lorenzo, prima «Bubo»).
 
 ## La storia v2 in breve
@@ -63,7 +64,7 @@ Tema: **una città si giudica da chi lascia fuori dalle porte.** L'assedio resta
 
 | Personaggio | Chi è nella v1 | Come parla | Arco nella v1 |
 | :-- | :-- | :-- | :-- |
-| Sant'Ubaldo | Il vescovo, anziano | Frasi brevi, calme, ironia asciutta. Mai una minaccia | Dal pastore che protegge alla guida che porta il digiuno fuori dalla chiesa |
+| Ubaldo | Il vescovo, anziano | Frasi brevi, calme, ironia asciutta. Mai una minaccia | Dal pastore che protegge alla guida che porta il digiuno fuori dalla chiesa |
 | Giorgio | Giovane cavaliere | Impulsivo, squillante, vuole agire | Impara che chi corre avanti da solo combatte da solo («Insieme») |
 | Antonio | Eremita piromante | Roco, sarcastico, poche parole | Da «fino al monte, poi vedremo» a «resto finché c'è legna da bruciare» |
 | Console Guido | Capo della città | Ansioso, conta tutto | Dalla paura al «Suonate!» |
