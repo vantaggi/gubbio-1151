@@ -1,0 +1,8 @@
+aspetta 60
+tieni DESTRA 60
+tieni SU 60
+aspetta 40
+tieni SINISTRA 40
+tieni GIU 40
+aspetta 70
+tieni B+SU 90

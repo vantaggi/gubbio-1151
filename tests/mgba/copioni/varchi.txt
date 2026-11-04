@@ -1,0 +1,11 @@
+aspetta 120
+tieni DESTRA 90
+tieni SU 230
+tieni SINISTRA 120
+tieni SU 80
+aspetta 60
+tieni GIU 200
+tieni SU 200
+tieni DESTRA 200
+tieni SINISTRA 200
+tieni GIU 300
