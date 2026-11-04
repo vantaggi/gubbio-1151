@@ -9,15 +9,15 @@ Bozza del 1 novembre 2026, per la fase F6 del [piano di ripartenza](https://clau
 | File | Contenuto | Battute |
 | :-- | :-- | --: |
 | [00_prologo.md](00_prologo.md) | Avvio, la vetrata chiara, la mappa che annerisce | 10 |
-| [01_atto_I.md](01_atto_I.md) | Dall'ultimatum al rito della Basilica e alla visione; il borgo (D1) | 135 |
-| [02_bottaccione_epilogo.md](02_bottaccione_epilogo.md) | Il dungeon, il ragazzo esule (D2), Corrado, il rientro, la terza alba (D4), la vetrata | 86 |
-| [03_npc_ambiente.md](03_npc_ambiente.md) | NPC d'ambiente delle 14 aree, per fase; il pane (D3) | 52 |
-| [04_quest.md](04_quest.md) | Le 3 quest scelte: il Ferro (San Martino), le Erbe (Sant'Andrea), la Rosa (San Pietro) | 68 |
-| [05_npc_amici.md](05_npc_amici.md) | Gli amici di Cioti e le loro famiglie come NPC del 1151, per area e fase | 80 |
+| [01_atto_I.md](01_atto_I.md) | Dall'ultimatum al rito della Basilica e alla visione; il borgo (D1) | 136 |
+| [02_bottaccione_epilogo.md](02_bottaccione_epilogo.md) | Il dungeon, il ragazzo esule (D2), Corrado, il rientro, la terza alba (D4), la vetrata | 90 |
+| [03_npc_ambiente.md](03_npc_ambiente.md) | NPC d'ambiente delle 14 aree, per fase; il pane (D3) | 59 |
+| [04_quest.md](04_quest.md) | Le 3 quest scelte: il Ferro (San Martino), le Erbe (Sant'Andrea), la Rosa (San Pietro) | 69 |
+| [05_npc_amici.md](05_npc_amici.md) | Gli amici di Cioti e le loro famiglie come NPC del 1151, per area e fase | 84 |
 | [verifica_copione.py](verifica_copione.py) | Controllo di caratteri e righe | |
 | [v1/](v1/) | Copia del copione v1 (297 battute), prima della storia v2 | |
 
-`python3 verifica_copione.py` dalla cartella `copione/`: oggi 431 battute, 0 errori, con la misura v2 (2 righe da 224 px). La v1 misurava 3 righe da 180 px. Prova negativa fatta: una «ñ», una battuta da 10 righe e un'espressione inventata danno 3 errori e uscita 1.
+`python3 verifica_copione.py` dalla cartella `copione/`: oggi 448 battute, 0 errori (dopo la revisione indipendente, 4 nov 2026), con la misura v2 (2 righe da 224 px). La v1 misurava 3 righe da 180 px. Prova negativa fatta: una «ñ», una battuta da 10 righe e un'espressione inventata danno 3 errori e uscita 1.
 
 ## La storia della v1 in breve
 
@@ -39,11 +39,24 @@ Ogni scena ha un codice (`P-`, `A1-`, `B-`, `E-`), una tabella con luogo, condiz
 - Le condizioni sulle bandiere sono righe di regia chiare (`se INDIZIO_ROCCIA:`) prima delle battute che valgono solo in quel caso.
 - **Caratteri**: ASCII stampabile, le 12 accentate italiane e « ». Niente lineette lunghe, niente puntini di sospensione in un solo carattere (si scrive `...`).
 - Negli NPC d'ambiente la riga comincia con la fase (`NOTTE:`, `DIGIUNO:`, `ULTIMATUM:`): vince la prima che vale, dall'alto.
-- Variante con bandiera: `- NOTTE (se BORGO_DENTRO): GUIDO: ...` (o `se non BANDIERA`), sempre sopra la riga senza condizione della stessa fase.
+- Variante con bandiera: `- NOTTE (se BORGO_DENTRO): GUIDO: ...` (o `se non BANDIERA`), sempre sopra la riga senza condizione della stessa fase. La variante che vale parla da sola; per aggiungere una battuta alle altre si usa un blocco `Se `BANDIERA`:` sotto la riga di fase.
+- **Righe di battaglia**: le battute che si dicono dentro uno scontro, la prima volta che succede un evento, si scrivono `- IN BATTAGLIA (evento): PARLANTE (espressione): testo` (B-04). `tools/genera_storia.py` le mette da parte e non le recita nel dialogo della scena; `verifica_copione.py` le misura come le altre.
+- **Note di regia** in prosa, mai in forma di battuta: una riga che comincia con `- ` e un nome in maiuscolo è una battuta.
+
+## Regole decise con la revisione (4 novembre 2026)
+
+La revisione indipendente del copione (`revisione/REVISIONE_COPIONE_v2.md` nella cartella del progetto) è applicata: i gialli T1-T12 e i verdi V1, V2, V4-V8, V11-V14, V16; V9 e V17 restano come sono (V9 è una nota per l'Atto II, V17 chiederebbe una condizione «dopo aver parlato con» che il lettore non ha), V10 non è applicata (la prova di gioco dirà se serve). Da qui valgono queste regole:
+
+- **Nessuna quest si perde.** Ogni quest si prende e si consegna fino alla conferma di E-01, e i luoghi dove si raccolgono gli oggetti restano raggiungibili fino alla fine. In particolare la Strada del Bottaccione resta percorribile dopo B-05, rientrando da Porta Metauro, e Agnese accetta le radici di Q-SA01 fino alla fine (`04_quest.md`).
+- **Giordano e Q-SP01 (T7).** Con Q-SP01 attiva, Giordano dice **prima** la sua battuta del DIGIUNO, che accende `INDIZIO_ACQUA`, e **poi** le due battute dell'indizio della quest. Con la regola «vince la prima che vale» la battuta della quest non deve coprire quella del DIGIUNO: chi fa Q-SP01 riceve sempre anche `INDIZIO_ACQUA`. Da rispettare nel codice delle quest.
+- **Dopo E-01 non si gira la città.** E-02 parte subito, a schermo intero; le battute che devono pesare su D4 stanno dentro E-01 (Ciaccio, T1).
+- **Licenze dichiarate (V3).** La città del gioco è la Gubbio di oggi: molti edifici sono più tardi del 1151 (il Palazzo dei Consoli e il grande acquedotto del Trecento, la Loggia dei Tiratori del Cinque-Seicento, il Palazzo Ducale del Quattrocento, la Fontana dei Matti, Porta Metauro). Anche il condotto del Bottaccione nel 1151 è una licenza. Le battute non li correggono uno per uno: la licenza va detta una volta, qui e nei crediti. Solo i personaggi del 1151 non nominano ciò che non possono conoscere (V2: il canonico non parla del «Ducale»).
+- **La canzone di Flaviano (V15).** Flaviano e Giuliana promettono «la canzone nuova»: la ripaga il brano dei titoli di coda, che nell'audio si chiama già `canzone_di_flaviano` (`audio/canzone_di_flaviano.xm`). Nessuna battuta nuova.
+- **Nomi.** Su richiesta di Cioti il medico si chiama **Vanni** (da Giovanni, prima «Compagno») e il custode delle carte **Renzo** (da Lorenzo, prima «Bubo»).
 
 ## La storia v2 in breve
 
-Tema: **una città si giudica da chi lascia fuori dalle porte.** L'assedio resta quello della v1, ma ha una ragione vera: Gubbio è cresciuta a spese dei vicini, e fra gli assedianti ci sono gli **esuli eugubini** della famiglia di **Rinaldo di Valmarcola**, cacciati nella pace del 1140 (licenza dichiarata: la famiglia c'è nell'elenco di Piccotti, la cacciata no). Il traditore in città, il **canonico Ilario** fratello di Rinaldo, si rivela nell'Atto II, fuori dalla v1. Il piano del condotto non arriva più solo dalla visione: Bubo (la carta), Giordano (l'acqua) e Giambono (la roccia) danno tre indizi, e la vetrata conferma. Quattro scelte cambiano battute e bandiere, non il finale: il borgo fuori Porta Romana (D1), il ragazzo esule al Bottaccione (D2), il pane alla popolana (D3), la giustizia offerta agli esuli alla terza alba (D4).
+Tema: **una città si giudica da chi lascia fuori dalle porte.** L'assedio resta quello della v1, ma ha una ragione vera: Gubbio è cresciuta a spese dei vicini, e fra gli assedianti ci sono gli **esuli eugubini** della famiglia di **Rinaldo di Valmarcola**, cacciati nella pace del 1140 (licenza dichiarata: la famiglia c'è nell'elenco di Piccotti, la cacciata no). Il traditore in città, il **canonico Ilario** fratello di Rinaldo, si rivela nell'Atto II, fuori dalla v1. Il piano del condotto non arriva più solo dalla visione: Renzo (la carta), Giordano (l'acqua) e Giambono (la roccia) danno tre indizi, e la vetrata conferma. Quattro scelte cambiano battute e bandiere, non il finale: il borgo fuori Porta Romana (D1), il ragazzo esule al Bottaccione (D2), il pane alla popolana (D3), la giustizia offerta agli esuli alla terza alba (D4).
 
 ## Personaggi e voci
 
@@ -69,8 +82,9 @@ Nell'intervallo boss (128-159): `CORRADO_SCONFITTO`, già presente nel prototipo
 
 Bandiere nuove della v2 (intervallo quest, 64-127):
 
-- Indizi del condotto: `INDIZIO_CARTA` (Bubo), `INDIZIO_ACQUA` (Giordano), `INDIZIO_ROCCIA` (Giambono). Con almeno due, in A1-09 Ubaldo arriva alla visione già sapendo.
+- Indizi del condotto: `INDIZIO_CARTA` (Renzo), `INDIZIO_ACQUA` (Giordano), `INDIZIO_ROCCIA` (Giambono). Con almeno due, in A1-09 Ubaldo arriva alla visione già sapendo.
 - Scelte: `BORGO_DENTRO` / `BORGO_FUORI` (D1; saltare A1-05b vale `BORGO_FUORI`), `ESULE_PRIGIONIERO` / `ESULE_LIBERATO` (D2), `PANE_DATO` (D3), `GIUSTIZIA_OFFERTA` (D4).
+- Conferma dell'alba: `ALBA_CONFERMATA` (intervallo 0-63), accesa da «Sì, è ora» in B-05 o dal console Guido nella NOTTE; E-01 la richiede, così il tempo libero della notte (decisione 6) c'è davvero.
 - Ascolti: `RICCIARDO_ASCOLTATO`, `RUFINO_ASCOLTATO` (con Q-SM01 consegnata, Corrado ha uno scudo in meno).
 
 Meccanica nuova: durante il DIGIUNO Ubaldo non può usare il cibo fino al rientro in città.
@@ -149,6 +163,7 @@ Da segnalare, senza averlo cambiato:
 
 ## Cosa manca
 
-- La revisione indipendente del copione finito, che il piano prevede in F6 con un agente.
+- Il dono del baccalà di Fra' Matteo e lo scudo in meno di Corrado con `RUFINO_ASCOLTATO`: il copione li scrive, il codice ancora no.
+- La spia legata in sacrestia (`03_npc_ambiente.md`): il copione ha le sue battute, il gioco non le ha ancora un posto.
 - La prova di gioco di Cioti, che giudica il divertimento (R0).
 - I testi di menu, oggetti e abilità: arrivano con F1 e F5, insieme a `testi.h`.

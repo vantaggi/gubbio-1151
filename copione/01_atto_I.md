@@ -74,7 +74,7 @@ Regia: l'araldo esce. Giorgio scatta verso le scale.
 | | |
 | :-- | :-- |
 | Luogo | via dei Consoli, al primo ingresso |
-| Condizione | `ULTIMATUM_RICEVUTO` e non `CHIACCHIERA_CONSOLI` |
+| Condizione | `ULTIMATUM_RICEVUTO`, né `CHIACCHIERA_CONSOLI` né `CITTA_IN_DIGIUNO` (via dei Consoli si può evitare: dopo la chiusura della città la chiacchiera non parte più) |
 | Imposta | `CHIACCHIERA_CONSOLI` |
 
 Regia: si ferma il controllo per due battute, poi si riparte. Nessuna cinematica.
@@ -167,6 +167,7 @@ Regia: la postierla si chiude alle spalle del gruppo con un tonfo (si sente anch
 - ANTONIO (calmo): Finalmente una regola che capisco.
 - SISTEMA: Ubaldo digiuna: fino al ritorno in città non può usare il cibo.
 - GUIDO (calmo): La strada del monte passa dal Duomo. Che Dio vi accompagni.
+- UBALDO (calmo): Prima, Porta Romana. Poi il monte.
 - SISTEMA: Prima di salire puoi girare la città.
 - OBIETTIVO: Sali al Monte Ingino passando dal Duomo.
 
@@ -217,7 +218,7 @@ Regia: la porta si chiude. Da qui le battute degli NPC del borgo cambiano con la
 
 Regia: un canonico del Duomo sta sul varco. Il dialogo parte quando il giocatore lo tocca; dopo, il varco è libero.
 
-- CANONICO: Monsignore, il capitolo pregherà con voi dal Duomo. Anche i giardini del Ducale sono muti, stasera.
+- CANONICO: Monsignore, il capitolo pregherà con voi. Anche il palazzo del vescovo tace, stasera.
 - CANONICO: Lassù il sentiero è lungo, e dicono che nei boschi ci siano occhi che non sono di Gubbio.
 - UBALDO (calmo): Allora vuol dire che ci stanno guardando salire. Bene: che vedano.
 - SISTEMA: Da qui la città non si vede più. Salva prima di partire.
@@ -237,7 +238,7 @@ Regia: un canonico del Duomo sta sul varco. Il dialogo parte quando il giocatore
 
 - ANTONIO (calmo): Due chilometri di sterrato. E il vescovo ha le gambe di un mulo.
 - UBALDO (calmo): E il mulo ti sente.
-- GIORGIO (calmo): Ne siete sicuri? Lassù ci arriviamo a notte.
+- GIORGIO (deciso): Così lassù ci arriviamo a notte, padre!
 - UBALDO (calmo): Ci arriviamo quando ci arriviamo. Il monte non scappa.
 
 ### L'imboscata (a metà salita)
@@ -345,7 +346,7 @@ Regia: prima del vetro, gli indizi. Se il giocatore ha almeno due bandiere fra `
 
 Se almeno due indizi:
 
-- UBALDO (preoccupato): La carta che manca, l'acqua che cala, la pietra che non regge...
+- UBALDO (preoccupato): Quello che ci hanno detto in città... tutte le voci portano all'acqua.
 - ANTONIO (deciso): E la spia che rideva della nostra acqua. È il condotto, Ubaldo.
 - UBALDO (calmo): Allora il vetro ci dirà soltanto quando.
 

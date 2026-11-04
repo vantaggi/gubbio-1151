@@ -75,7 +75,7 @@ class CopioneRotto(unittest.TestCase):
 
     def test_vicolo_cieco(self):
         # la terza alba vietata a chi ha lasciato fuori il borgo: da li' la fine non si raggiunge
-        r = self.rompi("02_bottaccione_epilogo.md", "| Condizione | `RIENTRO_PORTA_METAURO` e conferma |",
+        r = self.rompi("02_bottaccione_epilogo.md", "| Condizione | `RIENTRO_PORTA_METAURO` e `ALBA_CONFERMATA` (la voce «Sì, è ora», in B-05 o dal console Guido) |",
                        "| Condizione | `RIENTRO_PORTA_METAURO` e non `BORGO_FUORI` |")
         self.assertIn("VICOLO_CIECO", codici(r))
 

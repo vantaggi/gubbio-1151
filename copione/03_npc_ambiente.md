@@ -18,10 +18,22 @@ Varianti con bandiera (v2): una riga `- NOTTE (se BANDIERA): ...` vale solo con 
 
 ## Piazza Grande
 
-**Il console Guido** (sotto il portone dei Consoli). Le sue battute di trama sono in A1-01, A1-05 ed E-01.
+**Il console Guido** (sotto il portone dei Consoli). Le sue battute di trama sono in A1-01, A1-05 ed E-01. Nella NOTTE rifà la domanda di B-05 a chi ha detto «Non ancora»: con «Sì, è ora» accende `ALBA_CONFERMATA` e parte E-01.
 
-- NOTTE (se BORGO_DENTRO): GUIDO (preoccupato): Settanta bocche in più. Ho rifatto i conti tre volte.
 - NOTTE: GUIDO (preoccupato): Non ho dormito, monsignore. Ho contato i fuochi nella piana. Sono di più.
+
+Se `BORGO_DENTRO`:
+
+- GUIDO (preoccupato): Settanta bocche in più. Ho rifatto i conti tre volte.
+
+Poi, per tutti:
+
+- GUIDO (calmo): L'alba sta per sorgere, monsignore. Andiamo incontro all'araldo?
+- SCELTA: Sì, è ora / Non ancora
+
+Con «Sì, è ora» (`ALBA_CONFERMATA`):
+
+- GUIDO (deciso): Allora andiamo. Il popolo vi aspetta già in piazza.
 - DIGIUNO: GUIDO (calmo): La città tace, come avete chiesto. Non l'ho mai sentita così.
 
 **Berto il Tagliapietre** (sul selciato, verso il parapetto)
@@ -45,12 +57,13 @@ Dilemma D3: dopo la battuta del DIGIUNO, se il gruppo ha almeno una Crescia di P
 
 Con «Dalle una Crescia» si toglie 1 Crescia di Pasqua e si imposta `PANE_DATO`:
 
-- GIORGIO (calmo): Per il bambino. Io ho già mangiato abbastanza per due.
+- GIORGIO (calmo): Per il bambino. Io ho mangiato stamattina, mi basta.
 - SISTEMA: Hai dato 1 Crescia di Pasqua.
 
 Con «Non ora»:
 
-- ANTONIO (calmo): La fame di un giorno non uccide. Il Bottaccione sì.
+- ANTONIO (calmo): La fame di un giorno non uccide. Lassù ci servirà tutto quello che abbiamo.
+
 - ULTIMATUM: POPOLANA: Quel cavaliere col Grifo... ha guardato le nostre case come si guarda il bestiame.
 
 ---
@@ -77,6 +90,7 @@ Con «Non ora»:
 
 **Cecco il Balestriere** (alla postierla). Le battute di trama sono in A1-03.
 
+- NOTTE (se ESULE_LIBERATO): CECCO: Il ragazzo l'avete lasciato andare? Speriamo che sappia la strada di casa.
 - NOTTE: CECCO: Da Porta Metauro? Allora la gola non è più loro. Dormirò un'ora, forse.
 - DIGIUNO (se INDIZIO_ROCCIA): CECCO: Quello di San Pietro dice che tira meglio di me? Bugia.
 - DIGIUNO: CECCO: Postierla chiusa, monsignore. Nemmeno il vento passa senza il mio permesso.
@@ -93,7 +107,7 @@ Con «Non ora»:
 
 Fuori dalle mura. Dopo A1-04 restano solo nemici visibili e la quest delle fornaci, se c'è.
 
-- ULTIMATUM: nessun NPC: la scena è A1-04.
+Nessun NPC d'ambiente nella fase ULTIMATUM: al Teatro Romano c'è la scena A1-04.
 
 ---
 
@@ -106,11 +120,10 @@ Fuori dalle mura. Dopo A1-04 restano solo nemici visibili e la quest delle forna
 - DIGIUNO: VENDITORE: Crescia, biscotti all'anice, un fiasco di rosso. Per chi combatte, il vescovo ha detto.
 - ULTIMATUM: VENDITORE: Comprate oggi, che domani non so se ci sarà ancora una loggia.
 
-**Fra' Matteo il Pescatore** (dona un Baccalà alla Ceraiola una sola volta: bandiera `DONO_MATTEO`)
+**Fra' Matteo il Pescatore**. Dona un Baccalà alla Ceraiola una sola volta: la battuta del DIGIUNO imposta `DONO_MATTEO`. La prima volta parla la variante «se non `DONO_MATTEO`», che dà il baccalà (il dono dell'oggetto è da collegare nel codice degli NPC: oggi una battuta d'ambiente non dà oggetti); dopo, la riga senza condizione.
 
-- DIGIUNO, prima volta: FRA' MATTEO: Il Camignano è torbido, ma il convento ha riserve. Prendi questo baccalà.
-- SISTEMA: Ricevi Baccalà alla Ceraiola.
-- dopo il dono: FRA' MATTEO: Uno a testa, e già è troppo. Il resto è per i feriti.
+- DIGIUNO (se non DONO_MATTEO): FRA' MATTEO: Il Camignano è torbido, ma il convento ha riserve. Prendi questo baccalà.
+- DIGIUNO: FRA' MATTEO: Uno a testa, e già è troppo. Il resto è per i feriti.
 
 ---
 
@@ -129,7 +142,7 @@ Fuori dalle mura. Dopo A1-04 restano solo nemici visibili e la quest delle forna
 **Vecchio sulla scalinata**
 
 - NOTTE: VECCHIO: Ho sentito l'acqua tornare nelle fontane. A una certa età si sente tutto.
-- DIGIUNO: VECCHIO: Dieci anni fa le torri dei Valmarcola. Ora tornano, lo sento nelle ossa.
+- DIGIUNO: VECCHIO: Undici anni fa le torri dei Valmarcola. Ora tornano, lo sento nelle ossa.
 - DIGIUNO: VECCHIO: Questa salita la faccio da settant'anni. I perugini la troveranno più ripida di me.
 - ULTIMATUM: VECCHIO: Ubaldo! Ti ricordi quando eri chierico e ti addormentavi ai vespri?
 - ULTIMATUM: UBALDO (calmo): Me lo ricordo. Mi svegliavi tu, con un calcio.
@@ -143,6 +156,7 @@ Fuori dalle mura. Dopo A1-04 restano solo nemici visibili e la quest delle forna
 - NOTTE (se BORGO_FUORI): FRATE: Hanno bruciato tre case del borgo. Il convento no. Non so se ringraziare.
 - NOTTE: FRATE: Preghiamo a turno, tutta la notte. Il mio turno è finito, ma resto sveglio.
 - DIGIUNO: FRATE: La chiesa è aperta a chi vuole pregare in silenzio. Il silenzio è l'unica cosa che non manca.
+- DIGIUNO: FRATE: Vent'anni fa il borgo bruciò, e il morbo si fermò. Chi accese il fuoco, nessuno lo dice.
 - ULTIMATUM: FRATE: Le mura di qui sono le più basse. Lo sanno anche loro, temo.
 
 ---
@@ -153,6 +167,7 @@ Fuori dalle mura. Dopo A1-04 restano solo nemici visibili e la quest delle forna
 
 - NOTTE: SENTINELLA: I fuochi dei perugini non si muovono. Aspettano l'alba come noi.
 - DIGIUNO: SENTINELLA: Da qui si vedono gli stendardi di Spoleto e Foligno. Sono tanti, monsignore.
+- DIGIUNO: SENTINELLA: Da qui si vedono gli stendardi di Gualdo e Fossato. Non si sono mossi da ieri.
 - ULTIMATUM: SENTINELLA: Porta Romana tiene. Per ora tiene.
 
 ---
@@ -168,6 +183,10 @@ Fuori dalle mura. Dopo A1-04 restano solo nemici visibili e la quest delle forna
 
 ## Stradoni del Monte, Basilica, Strada del Bottaccione
 
-Nessun NPC d'ambiente: sono i luoghi della trama (A1-07, A1-08, A1-09, B-01...B-04). La spia legata resta in sacrestia dopo A1-09:
+Nessun NPC d'ambiente: sono i luoghi della trama (A1-07, A1-08, A1-09, B-01...B-04). Fa eccezione la spia legata, che resta in sacrestia dopo A1-09. Questa sezione non è un'area di `tools/genera_storia.py`: la spia entrerà nel gioco quando la sacrestia avrà un posto per lei.
 
-- SPIA: Che guardate? Non ho altro da dirvi. E l'acqua... l'acqua l'avete salvata, vero? Peccato.
+**La spia legata** (in sacrestia, da `VISIONE_BOTTACCIONE`). Prima di `CONDOTTO_SALVO` non sa ancora come è andata.
+
+- NOTTE: SPIA: Che guardate? Non ho altro da dirvi. E l'acqua... l'acqua l'avete salvata, vero? Peccato.
+- DIGIUNO (se CONDOTTO_SALVO): SPIA: Che guardate? Non ho altro da dirvi. E l'acqua... l'acqua l'avete salvata, vero? Peccato.
+- DIGIUNO: SPIA: Andate pure giù. La gola è lunga, e l'acqua corre più veloce di voi.

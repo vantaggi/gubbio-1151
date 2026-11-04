@@ -5,7 +5,7 @@ Scelte da Cioti il 1 novembre 2026: **Q-SM01** (Ferro), **Q-SA01** (Erbe), **Q-S
 Regole comuni:
 
 - **Niente equipaggiamento nella v1**: le ricompense della Sez. 31A (corazza, balsamo, spilla) diventano consumabili della Sez. 8E più una conseguenza di trama. Il Quartiere guadagna reputazione come in `quest_data.h`, anche se il suo effetto (Atto III) è fuori dalla v1.
-- **Nessuna quest si perde.** Ognuna si può prendere e consegnare fino all'epilogo (la conferma in Piazza Grande alla fine di B-05). Gli oggetti da raccogliere ci sono anche se la quest non è stata presa.
+- **Nessuna quest si perde.** Ognuna si può prendere e consegnare fino all'epilogo (la conferma in Piazza Grande alla fine di B-05). Gli oggetti da raccogliere ci sono anche se la quest non è stata presa, e i luoghi dove si raccolgono restano raggiungibili fino alla fine: anche la Strada del Bottaccione dopo B-05 (vedi Q-SA01).
 - Stato e contatore usano `quest_state` e `quest_counter` di `GameState`, come nel prototipo. Le bandiere nuove stanno nell'intervallo quest (64-127).
 
 | Quest | Datore e luogo | Si prende | Obiettivo | Ricompensa |
@@ -53,8 +53,9 @@ Dopo `CITTA_IN_DIGIUNO` la postierla di San Martino è chiusa. Se Q-SM01 è atti
 - RANIERO: Ascolta. Il ferro di Spoleto è battuto a freddo, a strati. Contro la lama regge come un muro.
 - RANIERO: Ma col fuoco gli strati si aprono come un libro bagnato. Ricordalo, coi grossi.
 - ANTONIO (calmo): Col fuoco. Sento che questa la ricorderò io.
-- RANIERO: E per la strada, prendete queste. Mia moglie le ha fatte prima che il vescovo vietasse tutto.
-- SISTEMA: Ricevi 3 Crescia di Pasqua al Formaggio.
+- RANIERO: E per la strada, prendete queste.
+- RANIERO: Mia moglie le ha fatte stamattina. Col digiuno, chissà quando ne rifà.
+- SISTEMA: Ricevi 3 Crescia di Pasqua.
 - SISTEMA: San Martino ti è grato.
 
 Regia: la fornace di Raniero si riaccende. Da qui la sua battuta cambia.
@@ -96,9 +97,11 @@ Se la quest non è attiva, alla prima radice:
 
 - UBALDO (calmo): Prendiamolo. In città qualcuno saprà che farne.
 
+**La gola resta aperta (regola «nessuna quest si perde»).** Dopo B-05 non c'è più un'altra discesa dalla Basilica, ma la Strada del Bottaccione resta percorribile: si rientra da Porta Metauro, risalendo la gola, in qualunque momento fino alla conferma di E-01. Chi l'ha attraversata senza le radici, o con meno di quattro, può tornare a prenderle di notte. Le radici non raccolte restano al loro posto; la quest si può prendere da Agnese anche in fase NOTTE, e Agnese accetta la consegna fino alla fine (la conferma in Piazza Grande che avvia E-01). Il varco di Porta Metauro verso la gola è un lavoro della mappa, non del copione.
+
 ### Consegna (contatore 4)
 
-Si consegna in qualunque momento; di solito in fase NOTTE, dopo il rientro da Porta Metauro.
+Si consegna in qualunque momento fino alla conferma di E-01; di solito in fase NOTTE, dopo il rientro da Porta Metauro.
 
 - AGNESE: Quattro radici! E sono ancora umide. Siete scesi davvero laggiù.
 - AGNESE: Non me lo dite, cosa c'era. Me lo racconterete quando sarà finita.
@@ -132,19 +135,19 @@ Se la consegna avviene dopo `CONDOTTO_SALVO`, una battuta in più:
 
 ### Gli indizi
 
-Tre NPC già presenti hanno una battuta in più finché la quest è attiva. L'ordine è libero. Ogni indizio imposta la sua bandiera (`INDIZIO_LUCIA`, `INDIZIO_VENDITORE`, `INDIZIO_FONTANIERE`). Nella v2 il mendicante della v1 è sostituito da Giordano il fontaniere (vedi [05_npc_amici.md](05_npc_amici.md)).
+Tre NPC già presenti hanno una battuta in più finché la quest è attiva. L'ordine è libero. Ogni indizio imposta la sua bandiera, scritta sotto il nome dell'NPC. Nella v2 il mendicante della v1 è sostituito da Giordano il fontaniere (vedi [05_npc_amici.md](05_npc_amici.md)).
 
-**Lucia la Tessitrice** (San Pietro):
+**Lucia la Tessitrice** (San Pietro). Imposta `INDIZIO_LUCIA`.
 
 - LUCIA: Un pellegrino? Ne ho visto uno uscire dal chiostro di corsa, con un sacco stretto al petto.
 - LUCIA: È sceso verso la piazza del mercato. I pellegrini veri non corrono mai.
 
-**Venditore delle Logge** (Piazza Quaranta Martiri):
+**Venditore delle Logge** (Piazza Quaranta Martiri). Imposta `INDIZIO_VENDITORE`.
 
 - VENDITORE: Ieri uno straniero ha pagato il pane con monete di Perugia. Mi ha detto di tacere.
 - VENDITORE: Io sto zitto. Con voi, però, no.
 
-**Giordano il fontaniere** (Piazza Quaranta Martiri, alla vasca vicino alle Logge):
+**Giordano il fontaniere** (Piazza Quaranta Martiri, alla vasca vicino alle Logge). Imposta `INDIZIO_FONTANIERE`. Regola (README): con la quest attiva Giordano dice prima la sua battuta del DIGIUNO, che accende `INDIZIO_ACQUA`, e poi queste due.
 
 - GIORDANO: Sotto le Logge dorme uno che non beve mai alla mia vasca. Strano, con questa sete.
 - GIORDANO: Di notte si alza e guarda verso il monte, come se aspettasse qualcuno.

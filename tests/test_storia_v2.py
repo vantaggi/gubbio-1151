@@ -96,8 +96,15 @@ class Scelte(unittest.TestCase):
         self.assertIn("Anche tu hai chiuso una porta, stamattina. Ricordatelo.", chiuse)
         self.assertNotIn("Anche tu hai chiuso una porta, stamattina. Ricordatelo.", offerta)
 
-    def test_la_scelta_di_b05_non_conta(self):
-        self.assertFalse(any(b["voci"] for b in PER_CODICE["B-05"]["battute"]))
+    def test_la_scelta_di_b05_accende_alba_confermata(self):
+        """«Sì, è ora» di B-05 accende ALBA_CONFERMATA, che E-01 richiede (prima la scelta si buttava)."""
+        scelte = [b for b in PER_CODICE["B-05"]["battute"] if b["voci"]]
+        self.assertEqual(len(scelte), 1)
+        self.assertEqual(GS.TUTTE[scelte[0]["accende"][0]], "ALBA_CONFERMATA")
+        self.assertEqual(scelte[0]["accende"][1], GS.NESSUNA)
+        self.assertIn("ALBA_CONFERMATA", PER_CODICE["E-01"]["richieste"])
+        _, accese = recita(PER_CODICE["B-05"], set(), 1)
+        self.assertNotIn("ALBA_CONFERMATA", accese)
 
     def test_negativa_una_scelta_senza_blocchi_resta_se_ha_i_blocchi(self):
         battute = [GS.battuta("SCELTA", None, "A / B", "x"), GS.battuta("UBALDO", None, "si", "x", ("SCELTA", 0, 0, 0))]
@@ -126,9 +133,25 @@ class Varianti(unittest.TestCase):
         self.assertNotIn("Berto dice un sacco di cose.", con)
         self.assertEqual(len(senza), len(con))
 
+    def test_b04_righe_di_battaglia_fuori_dal_dialogo(self):
+        """Le righe "- IN BATTAGLIA (evento): ..." di B-04 si mettono da parte: non si recitano prima dello scontro."""
+        s = PER_CODICE["B-04"]
+        self.assertEqual(len(s["in_battaglia"]), 7)
+        self.assertEqual(s["in_battaglia"][0][0], "turno 1, Scudo di Forgia")
+        frasi = [b["frase"] for b in s["battute"]]
+        for _, b in s["in_battaglia"]:
+            self.assertNotIn(b["frase"], frasi)
+        self.assertEqual(s["in_battaglia"][2][1]["chi"], "ANTONIO")
+        self.assertEqual(s["in_battaglia"][2][1]["espr"], "deciso")
+
+    def test_negativa_riga_di_battaglia_con_parlante_sconosciuto(self):
+        testo = "## B-04 · prova\n\n- UBALDO: Si.\n- IN BATTAGLIA (turno 1): NESSUNO: No.\n"
+        with self.assertRaises(GS.ErroreStoria):
+            GS.leggi_scene([("prova.md", testo)])
+
     def test_a109_almeno_due_indizi(self):
         s = PER_CODICE["A1-09"]
-        frase = "La carta che manca, l'acqua che cala, la pietra che non regge..."
+        frase = "Quello che ci hanno detto in città... tutte le voci portano all'acqua."
         self.assertIn(frase, recita(s, {"INDIZIO_CARTA", "INDIZIO_ACQUA"}, 0)[0])
         self.assertNotIn(frase, recita(s, {"INDIZIO_CARTA"}, 0)[0])
 
@@ -148,10 +171,10 @@ class Npc(unittest.TestCase):
 
     def test_le_varianti_stanno_sopra_e_vincono_dall_alto(self):
         """Nella tabella del gioco le righe "(se BANDIERA)" di una fase vengono prima delle altre."""
-        guido = next(p for p in NPC if p["nome"].startswith("Il console Guido"))
-        notte = [b for b in guido["frasi"] if b["fase"] == "NOTTE"]
+        popolana = next(p for p in NPC if p["nome"].startswith("Popolana"))
+        notte = [b for b in popolana["frasi"] if b["fase"] == "NOTTE"]
         self.assertEqual(notte[0]["guardia"][0], "VARIANTE_BANDIERA")
-        self.assertEqual(GS.TUTTE[notte[0]["guardia"][1]], "BORGO_DENTRO")
+        self.assertEqual(GS.TUTTE[notte[0]["guardia"][1]], "PANE_DATO")
         self.assertEqual(notte[1]["guardia"], GS.SEMPRE)
 
     def test_negativa_riga_senza_variante(self):
@@ -161,7 +184,7 @@ class Npc(unittest.TestCase):
     def test_se_non(self):
         cecco = next(p for p in NPC if p["nome"].startswith("Cecco"))
         varianti = [b for b in cecco["frasi"] if b["guardia"][0].startswith("VARIANTE")]
-        self.assertEqual([GS.TUTTE[b["guardia"][1]] for b in varianti], ["INDIZIO_ROCCIA"])
+        self.assertEqual([GS.TUTTE[b["guardia"][1]] for b in varianti], ["ESULE_LIBERATO", "INDIZIO_ROCCIA"])  # NOTTE: il ragazzo di B-03 lasciato andare
 
 
 class Bandiere(unittest.TestCase):

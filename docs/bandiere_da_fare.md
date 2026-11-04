@@ -13,3 +13,7 @@ Le scene del copione v1 le accendono, ma per ora nessuna scena e nessun sistema 
 
 Già collegate (in `LETTE_DAL_GIOCO`): `GIORGIO_NEL_GRUPPO` (il gruppo in battaglia), `IMBOSCATA_STRADONI`
 e `CORRADO_SCONFITTO` (il nemico sulla mappa non torna), `CRONACA_V1_FINITA` (il cartello dei titoli di coda).
+
+Letta dal copione, con la meccanica ancora da fare: `RUFINO_ASCOLTATO` (Rufino, battuta del DIGIUNO) cambia
+una battuta di Giorgio in B-04; la regola decisa è che con lei, o con Q-SM01 consegnata, Corrado entri nel
+duello con uno scudo in meno. Lo scudo in meno spetta al codice della battaglia (bilanciamento).

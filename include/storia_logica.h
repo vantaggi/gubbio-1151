@@ -240,6 +240,33 @@ inline constexpr int INCONTRO_DEL_TEATRO = 0;     // la Pattuglia Perugina che c
     return accesa(p, Bandiera::CITTA_IN_DIGIUNO) ? Fase::DIGIUNO : Fase::ULTIMATUM;
 }
 
+// Il giro senza camminare, quando nessuna scena e' pronta: la prima scelta di un NPC della fase che
+// accende una bandiera ancora spenta prende la prima voce. E' la conferma dell'alba del console Guido
+// (ALBA_CONFERMATA) per chi in B-05 ha detto «Non ancora». Ritorna true se ha acceso qualcosa.
+constexpr bool risposta_di_un_npc(GameState& p)
+{
+    int fase = int(fase_npc(p));
+
+    for(int i = 0; i < NPC; ++i)
+    {
+        const Npc& n = NPC_AMBIENTE[i];
+
+        for(int j = n.prima_frase[fase]; n.frasi[fase] > 0 && j < n.prima_frase[fase] + n.frasi[fase]; ++j)
+        {
+            const Battuta& b = FRASE_NPC[j];
+
+            if(b.tipo == TipoBattuta::SCELTA && b.accende[0] != NESSUNA_BANDIERA && vale(p, b.guardia, -1) &&
+               ! accesa(p, int(b.accende[0])))
+            {
+                scegli(p, b, 0);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 // Il giro di tutta la storia senza camminare: si gioca la prima scena pronta nell'ordine del copione
 // (ognuna nella sua area), finche' non ne resta nessuna. Ritorna quante scene sono state visitate; 'p' e'
 // lo stato finale. Ogni menu di scelta prende la voce 'voce'.
@@ -265,6 +292,12 @@ constexpr int gioca_tutta(GameState& p, const Scena* tabella = SCENA, int quante
                 ++visitate;
                 avanti = true;
             }
+        }
+
+        // ferma la storia, si va a parlare con chi rifa' una domanda (la conferma dell'alba)
+        if(! avanti && tabella == SCENA)
+        {
+            avanti = risposta_di_un_npc(p);
         }
     }
 

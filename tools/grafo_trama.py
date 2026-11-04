@@ -101,7 +101,7 @@ def carica_v1(cartella):
                 testi[f] = t.read()
     for i, s in enumerate(scene):
         s["i"] = i
-        s["area"] = GS.AREE.get(s["codice"], "?") or "SCHERMO_INTERO"
+        s["area"] = GS.AREE.get(s["codice"], "?") or SCHERMO_INTERO
         for k, b in enumerate(s["battute"]):
             b["id"] = f"{s['codice']}#{k}"
     for p in npc:
@@ -152,6 +152,9 @@ def frasi_npc(p, accese):
     return [b for b in della_fase if not b["guardia"][0].startswith("VARIANTE")]
 
 
+SCHERMO_INTERO = "SCHERMO_INTERO"
+
+
 def esplora(m):
     """Tutti gli stati raggiungibili. Uno stato e' (bandiere accese, scene fatte). Le azioni: entrare in
     un'area (parte la prima scena pronta, come storia::prossima_scena), salire agli Stradoni, parlare
@@ -172,6 +175,19 @@ def esplora(m):
         return (s["codice"] not in fatte and set(s["richieste"]) <= accese and not set(s["vietate"]) & accese
                 and (s["codice"] not in GS.SEGUE or GS.SEGUE[s["codice"]] in fatte))
 
+    def catena(uscita, pronta):
+        """Come Storia::aggiorna: finita una scena sulla mappa, le scene a schermo intero che diventano pronte
+        (la vetrata di E-02 dopo E-01) partono subito, senza camminare. Le uscite in fila, l'ultima libera."""
+        fila = [uscita]
+        while True:
+            accese_ora, fatte_ora = fila[-1][1]
+            t = next((t for t in scene if t["area"] == SCHERMO_INTERO and pronta(t, set(accese_ora), fatte_ora)), None)
+            if t is None:
+                return fila
+            fin, dette, voci = next(iter(recita(t["battute"], set(accese_ora))))
+            fin = fin | set(t["imposta"])
+            fila.append((f"scena {t['codice']} (subito)", (frozenset(fin), fatte_ora | {t["codice"]}), t["codice"], dette, voci))
+
     while coda:
         stato = coda.popleft()
         accese, fatte = stato
@@ -190,6 +206,8 @@ def esplora(m):
                 fin = fin | set(s["imposta"])
                 etichetta = f"scena {s['codice']}" + "".join(f" «{v}»" for _, v in voci)
                 uscite.append((etichetta, (frozenset(fin), fatte | {s["codice"]}), s["codice"], dette, voci))
+                if area != SCHERMO_INTERO:
+                    uscite[-1:] = catena(uscite[-1], pronta)
         for p in npc:
             f = fase(accese)
             for fin, dette, voci in recita(frasi_npc(p, accese), accese):
@@ -198,17 +216,24 @@ def esplora(m):
                 if dette and (fin != accese or voci or not finita):
                     etichetta = f"parla con {p['nome']}" + "".join(f" «{v}»" for _, v in voci)
                     uscite.append((etichetta, (frozenset(fin), fatte), None, dette, voci))
-        for etichetta, dopo, codice, dette, voci in uscite:
+        precedente = None
+        for n, (etichetta, dopo, codice, dette, voci) in enumerate(uscite):
+            # una scena a schermo intero in fila parte dallo stato della scena prima, non da quello libero; lo
+            # stato in mezzo alla fila non e' libero (non si cammina fra E-01 ed E-02): non va in coda
+            da = precedente if etichetta.endswith(" (subito)") else stato
+            in_mezzo = n + 1 < len(uscite) and uscite[n + 1][0].endswith(" (subito)")
+            precedente = dopo
             (dette_dopo if finita else dette_prima).update(dette)
-            if not finita and "ATTO_I_COMPLETATO" not in accese:
+            if not finita and "ATTO_I_COMPLETATO" not in da[0]:
                 dette_trama.update(dette)
             for idb, v in voci:
                 voci_viste.setdefault(idb, set()).add(v)
-            if dopo != stato:
-                passi.append((stato, etichetta, dopo, codice))
+            if dopo != da:
+                passi.append((da, etichetta, dopo, codice))
             if dopo not in padre:
-                padre[dopo] = (stato, etichetta)
-                coda.append(dopo)
+                padre[dopo] = (da, etichetta)
+                if not in_mezzo:
+                    coda.append(dopo)
     return {"stati": set(padre), "padre": padre, "passi": passi, "dette_prima": dette_prima,
             "dette_dopo": dette_dopo, "dette_trama": dette_trama, "voci": voci_viste}
 
@@ -354,7 +379,7 @@ def controlla_v1(m, e):
     finale = next((s for s in scene if FINE in s["imposta"]), {"codice": None, "area": None, "richieste": []})
     prima = [s for s in scene if set(finale["richieste"]) & set(s["imposta"])]
     for s in prima:
-        if s["area"] != finale["area"]:
+        if s["area"] != finale["area"] and finale["area"] != SCHERMO_INTERO:
             pr.append(problema(AVVISO, "EPILOGO_A_PIEDI", f"{s['codice']} → {finale['codice']}",
                                f"{finale['codice']} («{finale['titolo']}») parte solo entrando in {finale['area']}, ma {s['codice']} "
                                f"finisce in {s['area']}: dopo {s['codice']} il giocatore deve camminare fin lì, con gli NPC "
