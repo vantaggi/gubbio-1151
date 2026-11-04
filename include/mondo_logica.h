@@ -220,6 +220,41 @@ constexpr bool scivola(Esploratore& e, int dx, int dy, int chiuso)
     return false;
 }
 
+// La velocita' in diagonale (Esplorazione::muovi): un pixel per asse vale 1,41 pixel di strada, quindi in
+// diagonale si fanno 181/256 = 0,707 passi per frame. Il resto si porta da un frame all'altro in 256esimi.
+inline constexpr int DIAGONALE_256 = 181;
+
+struct PassiDiagonale
+{
+    int passi;      // i passi (un pixel per asse) da fare in questo frame
+    int resto;      // il resto da portare al frame dopo, 0..255
+};
+
+[[nodiscard]] constexpr PassiDiagonale passi_in_diagonale(int resto, int passi)
+{
+    int tot = resto + passi * DIAGONALE_256;
+    return { tot >> 8, tot & 255 };
+}
+
+namespace prova_diagonale
+{
+    // in 256 frame si fanno 181 passi camminando e 362 correndo: la velocita' dritta per 0,707
+    constexpr int passi_in(int frame, int passi)
+    {
+        int resto = 0, n = 0;
+        for(int f = 0; f < frame; ++f)
+        {
+            PassiDiagonale d = passi_in_diagonale(resto, passi);
+            n += d.passi;
+            resto = d.resto;
+        }
+        return n;
+    }
+
+    static_assert(passi_in(256, 1) == 181 && passi_in(256, 2) == 362, "la diagonale non va a 0,707");
+    static_assert(passi_in(2, 1) == 1 && passi_in(1, 2) == 1, "la diagonale si ferma a meta' del primo passo");
+}
+
 // Il navigatore: cerca la strada sulla griglia (in ampiezza, sulle celle non solide) fino a un
 // varco e la percorre un pixel alla volta con muovi(), cioe' con la stessa collisione del gioco.
 // Gli altri varchi non si attraversano: la strada li aggira.

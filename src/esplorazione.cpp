@@ -438,7 +438,24 @@ void Esplorazione::muovi(int dx, int dy, int passi)
         return;
     }
 
-    for(int p = 0; p < passi; ++p)
+    // In diagonale si andava il 41% piu' veloci che dritti: ora 0,707 passi per frame (mondo::passi_in_diagonale).
+    // Contro un muro (uno dei due assi bloccato) si scivola lungo il muro alla velocita' piena, come dritti.
+    int passi_ora = passi;
+    const mondo::Area& qui = mondo::area(_e.area);
+    bool diagonale_vera = dx && dy && mondo::libero(qui, _e.x + dx, _e.y) && mondo::libero(qui, _e.x, _e.y + dy);
+
+    if(diagonale_vera)
+    {
+        mondo::PassiDiagonale d = mondo::passi_in_diagonale(_resto_diagonale, passi);
+        passi_ora = d.passi;
+        _resto_diagonale = d.resto;
+    }
+    else
+    {
+        _resto_diagonale = 0;
+    }
+
+    for(int p = 0; p < passi_ora; ++p)
     {
         mondo::Evento evento = mondo::Evento::NESSUNO;
 

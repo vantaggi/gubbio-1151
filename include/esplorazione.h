@@ -241,6 +241,8 @@ private:
     int _mostrato = -1;
     bool _mosso = false;
     bool _corre = false;
+    // la velocita' in diagonale uguale a quella dritta (muovi): il resto dei passi in 256esimi di pixel
+    int _resto_diagonale = 0;
     // la camera morbida (giro 6): il punto inquadrato insegue il giocatore con un anticipo nella direzione
     // in cui guarda; _camera_ferma = la prossima inquadratura salta subito al bersaglio (cambio d'area)
     int _cam_x = 0;
