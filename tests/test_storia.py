@@ -210,7 +210,7 @@ class Tabelle(unittest.TestCase):
     def test_le_scene_del_copione(self):
         self.assertEqual(len(SCENE), 20)
         self.assertEqual(sum(len(s["battute"]) for s in SCENE), 229)
-        self.assertEqual(len(NPC), 14 + 24)                 # gli NPC d'ambiente (con Fra' Matteo, revisione) e gli amici
+        self.assertEqual(len(NPC), 14 + 26 + 21)            # NPC d'ambiente (con Fra' Matteo), amici (con Milia e Michelino), mestieri (VIVA)
 
     def test_ogni_bandiera_scritta_e_letta(self):
         """Letta da una scena, dal gioco (LETTE_DAL_GIOCO, ognuna col suo punto nel codice) o in elenco

@@ -183,3 +183,23 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 - NOTTE (se BORGO_FUORI): ANDREUCCIO: Hanno bruciato tre case. Ne abbiamo salvate dieci. Ho contato.
 - DIGIUNO: ANDREUCCIO: Porta Romana è mia finché c'è luce. Poi è di Dio, e un po' anche mia.
 - ULTIMATUM: ANDREUCCIO: Le mura qui sono basse. Il borgo è ancora più basso, monsignore.
+
+---
+
+## Duomo e Palazzo Ducale
+
+**Milia**, miniatrice del capitolo dei canonici, sorella di Ciotto e di Michelino (Milena, sorella di Cioti, studia storia dell'arte: aggiunta da Cioti il 4 nov 2026). Luogo: davanti alla casa dei canonici, dove c'è lo scrittoio. Figura: bassa, mora, capelli lunghi, la tavoletta e il pennello; porta le «pietre da leggere», due lenti di berillo che le ha molato il fratello (gli occhiali veri arriveranno un secolo dopo: qui sono un'invenzione di Michelino, scelta di gioco).
+
+- NOTTE: MILIA: Nell'angolo del foglio ho dipinto il monte con tre lumi. Piccoli, ma chi guarda li vede.
+- DIGIUNO: MILIA: Queste lenti le ha molate Michelino da due berilli. Ci vedo fino al pelo del pennello.
+- ULTIMATUM: MILIA: Disegno ogni chiesa, pietra per pietra. Se bruciano, qualcuno saprà com'erano.
+
+---
+
+## Sant'Andrea
+
+**Michelino**, garzone di macchine, fratello di Ciotto e di Milia (Michele, fratello di Cioti, studia ingegneria informatica e robotica ed è appassionato di Zelda: aggiunto da Cioti il 4 nov 2026). Luogo: sulle mura di Sant'Andrea, accanto alla torre. Figura: berretto verde, un ingranaggio in mano. L'omaggio è discreto: il berretto verde e i tre triangoli d'oro.
+
+- NOTTE: MICHELINO: Un giorno farò un uomo di legno che cammina da solo. Stanotte mi basta che giri la ruota.
+- DIGIUNO: MICHELINO: Sulla mia ruota ho inciso tre triangoli d'oro. Saggezza, forza e coraggio, diceva la nonna.
+- ULTIMATUM: MICHELINO: Ogni dente di questa ruota l'ho disegnato io. Ciotto dice che conto male: lui conta i denari.
