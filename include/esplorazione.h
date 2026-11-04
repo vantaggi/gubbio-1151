@@ -31,6 +31,9 @@ public:
     // Per una battaglia: lo sfondo si libera (i suoi tile servono alla scena) e il giocatore si
     // nasconde; ricompari() rimette tutto com'era.
     void sospendi();
+
+    // La citta' di notte (storia::fase_npc NOTTE): i fondali con le rampe di notte, fiaccole e drappi caldi (L5).
+    void imposta_notte(bool notte);
     void ricompari();
 
     // Uno sprite che sta sulla mappa (un nemico): sulla camera dell'area, coi piedi in (x, y) pixel.
@@ -93,6 +96,7 @@ private:
     int _riflessi = 0;              // i frame dei riflessi dell'acqua nelle stanze della gola
     int _varco_chiuso = -1;         // il varco che si urta come un muro (chiudi_varco)
     bool _urto_al_varco = false;
+    bool _notte = false;
     int _attesa_etichetta = 0;
 
     void _carica_fondale();

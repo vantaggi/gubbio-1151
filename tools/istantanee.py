@@ -150,17 +150,27 @@ def rgb_palette(cupa=False):
     return out
 
 
+def rgb_banchi(cupa=False, notte=False):
+    """I 4 banchi della palette dei fondali in RGB a 8 bit, come li vede il giocatore."""
+    palette = G.S.carica("palette")
+    out = []
+    for b, banco in enumerate(G.banchi_fondali(palette, cupa, notte)):
+        out.append([((c & 31) * 255 // 31, ((c >> 5) & 31) * 255 // 31, ((c >> 10) & 31) * 255 // 31) for c in banco])
+    return out
+
+
 def fondale(cartella, nome, scala=1):
     """Il fondale intero di un'area, con i tile e i colori della ROM: fondale_<area>[_xN].png."""
-    colori = rgb_palette(nome in G.AREE_GOLA)
+    banchi = rgb_banchi(nome in G.AREE_GOLA)
     a = [x for x in aree_finali() if x["id"] == nome][0]
     w, h = a["larghezza"], a["altezza"]
     righe = []
     for y in range(h * 8):
         riga = []
         for x in range(w * 8):
-            tile = a["tile"][a["indici"][(y // 8) * w + x // 8]]
-            riga += [colori[tile[y % 8][x % 8]]] * scala
+            i = a["indici"][(y // 8) * w + x // 8]
+            tile = a["tile"][i]
+            riga += [banchi[a["banchi"][i]][tile[y % 8][x % 8]]] * scala
         righe += [riga] * scala
     suffisso = f"_x{scala}" if scala > 1 else ""
     png(os.path.join(cartella, f"fondale_{nome}{suffisso}.png"), w * 8 * scala, h * 8 * scala, righe)

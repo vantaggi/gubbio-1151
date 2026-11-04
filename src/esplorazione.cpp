@@ -48,6 +48,29 @@ namespace
 
     constexpr Colori COLORI_FONDALI = colori(mondo::PALETTE_FONDALI);
     constexpr Colori COLORI_FONDALI_CUPI = colori(mondo::PALETTE_FONDALI_CUPA);
+
+    // I banchi della palette dei fondali (pezzo EDI): 16 colori per banco, ogni tile ne usa uno (la cella della
+    // mappa porta il banco nei bit 12-15). Il banco 0 e' PALETTE_FONDALI.
+    struct Banchi
+    {
+        bn::color colori[mondo::BANCHI_FONDALI * 16];
+    };
+
+    constexpr Banchi banchi(const uint16_t (&parole)[mondo::BANCHI_FONDALI * 16])
+    {
+        Banchi b;
+
+        for(int i = 0; i < mondo::BANCHI_FONDALI * 16; ++i)
+        {
+            b.colori[i] = bn::color(GUBBIO_VOCE(parole, i));
+        }
+
+        return b;
+    }
+
+    constexpr Banchi BANCHI_GIORNO = banchi(mondo::PALETTE_FONDALI_BANCHI);
+    constexpr Banchi BANCHI_CUPI = banchi(mondo::PALETTE_FONDALI_BANCHI_CUPA);
+    constexpr Banchi BANCHI_NOTTE = banchi(mondo::PALETTE_FONDALI_BANCHI_NOTTE);
     constexpr int FRAME_RIFLESSI = 20;             // ogni quanto i riflessi dell'acqua cambiano
     constexpr int COLORE_ACQUA = 12;               // i due colori dell'acqua nella palette dei fondali
     constexpr int COLORE_ACQUA_CHIARA = 13;
@@ -108,7 +131,7 @@ namespace
 
 Esplorazione::Esplorazione(const bn::sprite_palette_ptr& palette_testo) :
     _palette(bn::bg_palette_ptr::create(
-        bn::bg_palette_item(bn::span<const bn::color>(COLORI_FONDALI.colori), bn::bpp_mode::BPP_4))),
+        bn::bg_palette_item(bn::span<const bn::color>(BANCHI_GIORNO.colori), bn::bpp_mode::BPP_4))),
     _camera(bn::camera_ptr::create(0, 0)),
     _giocatore(crea_giocatore()),
     _cartiglio(crea_cartiglio()),
@@ -131,6 +154,19 @@ void Esplorazione::riprendi(mondo::AreaId id, int x, int y)
     _e.y = y;
     _e.varco_sotto = -1;
     _carica_fondale();
+}
+
+void Esplorazione::imposta_notte(bool notte)
+{
+    if(notte != _notte)
+    {
+        _notte = notte;
+
+        if(_fondale)
+        {
+            _carica_fondale();
+        }
+    }
 }
 
 void Esplorazione::sospendi()
@@ -164,13 +200,9 @@ void Esplorazione::_carica_fondale()
     // Ogni area ha i suoi tile (suolo e monumenti): prima si lascia la mappa vecchia, poi i suoi tile.
     _tiles.reset();
 
-    // le stanze della gola hanno la palette cupa
-    const Colori& c = a.cupa ? COLORI_FONDALI_CUPI : COLORI_FONDALI;
-
-    for(int i = 0; i < 16; ++i)
-    {
-        _palette.set_color(i, c.colori[i]);
-    }
+    // le stanze della gola hanno la palette cupa; la citta' di notte le rampe di notte (pezzo EDI)
+    const Banchi& c = a.cupa ? BANCHI_CUPI : (_notte ? BANCHI_NOTTE : BANCHI_GIORNO);
+    _palette.set_colors(bn::span<const bn::color>(c.colori));
 
     _tiles = bn::regular_bg_tiles_ptr::create(
         bn::regular_bg_tiles_item(bn::span<const bn::tile>(a.tile, a.tile_conteggio), bn::bpp_mode::BPP_4));
