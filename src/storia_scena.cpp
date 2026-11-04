@@ -923,6 +923,9 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         _prepara_npc(esplorazione);
     }
 
+    // la notte (dal rientro da Porta Metauro): anche i fondali con le rampe notte, come la gente (pezzo EDI)
+    esplorazione.imposta_notte(fase_npc(g_game_state) == Fase::NOTTE);
+
     _anima_npc();
     _folla.aggiorna(esplorazione, e.x, e.y, int(g_game_state.frames));
 
@@ -1321,6 +1324,7 @@ void prova_folla(Esplorazione& esplorazione)
         {
             Storia gente;
             esplorazione.entra(area, 0);
+            esplorazione.imposta_notte(fase == 2);
 
             for(int f = 0; f < 200; ++f)
             {
