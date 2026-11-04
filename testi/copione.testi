@@ -108,7 +108,11 @@ C_A1_01_19                | DIALOGO | Parla anche con me. Di rado, ma parla.
 C_A1_01_20                | DIALOGO | Ieri era fuori dalle mura, al Teatro Romano. E al tramonto chiudo l'ultima postierla.
 C_A1_01_21                | DIALOGO | Allora andiamo prima del tramonto.
 C_A1_01_22                | DIALOGO | Giorgio si unisce al gruppo.
-C_A1_01_23                | DIALOGO | Raggiungi il Teatro Romano, fuori dalle mura di San Martino.
+C_A1_01_23                | DIALOGO | Con A parli con chi ti sta accanto e vai avanti nei dialoghi.
+C_A1_01_24                | DIALOGO | Con la croce cammini; tieni premuto B per correre.
+C_A1_01_25                | DIALOGO | Start apre la pausa: da lì si salva la partita.
+C_A1_01_26                | DIALOGO | Select ricorda l'obiettivo e indica il varco da prendere.
+C_A1_01_27                | DIALOGO | Raggiungi il Teatro Romano, fuori dalle mura di San Martino.
 C_A1_02_00                | DIALOGO | Padre, perché tre giorni? Le battaglie non si vincono in ginocchio.
 C_A1_02_01                | DIALOGO | Nemmeno di corsa. Cammina.
 C_A1_03_00                | DIALOGO | Monsignore, fuori ci sono pattuglie perugine. Al vespro chiudo, con voi o senza.

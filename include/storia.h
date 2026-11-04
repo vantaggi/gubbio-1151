@@ -116,7 +116,7 @@ struct Scena
     uint16_t battute;
 };
 
-inline constexpr int BATTUTE = 229;
+inline constexpr int BATTUTE = 233;
 inline constexpr Battuta BATTUTA[BATTUTE] = {
     { testi::TestoId::C_P_01_00, testi::TestoId::C_P_01_00, TipoBattuta::NARRATORE, Espressione::CALMO, 0, { 255, 255 }, -1 },
     { testi::TestoId::C_P_01_01, testi::TestoId::C_P_01_01, TipoBattuta::NARRATORE, Espressione::CALMO, 0, { 255, 255 }, -1 },
@@ -151,7 +151,11 @@ inline constexpr Battuta BATTUTA[BATTUTE] = {
     { testi::TestoId::C_A1_01_20, testi::TestoId::PARLANTE_GUIDO, TipoBattuta::PERSONAGGIO, Espressione::PREOCCUPATO, 0, { 255, 255 }, -1 },
     { testi::TestoId::C_A1_01_21, testi::TestoId::PARLANTE_UBALDO, TipoBattuta::PERSONAGGIO, Espressione::DECISO, 0, { 255, 255 }, -1 },
     { testi::TestoId::C_A1_01_22, testi::TestoId::C_A1_01_22, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::C_A1_01_23, testi::TestoId::C_A1_01_23, TipoBattuta::OBIETTIVO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::C_A1_01_23, testi::TestoId::C_A1_01_23, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::C_A1_01_24, testi::TestoId::C_A1_01_24, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::C_A1_01_25, testi::TestoId::C_A1_01_25, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::C_A1_01_26, testi::TestoId::C_A1_01_26, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::C_A1_01_27, testi::TestoId::C_A1_01_27, TipoBattuta::OBIETTIVO, Espressione::CALMO, 0, { 255, 255 }, -1 },
     { testi::TestoId::C_A1_02_00, testi::TestoId::PARLANTE_GIORGIO, TipoBattuta::PERSONAGGIO, Espressione::PREOCCUPATO, 0, { 255, 255 }, -1 },
     { testi::TestoId::C_A1_02_01, testi::TestoId::PARLANTE_UBALDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
     { testi::TestoId::C_A1_03_00, testi::TestoId::PARLANTE_CECCO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
@@ -353,23 +357,23 @@ inline constexpr Scena SCENA[SCENE] = {
     { "P-00", testi::TestoId::SCENA_P_00, false, -1, NESSUNA_AREA, 0x0u, 0x0u, 0x0u, -1, -1, 0, 0 },
     { "P-01", testi::TestoId::SCENA_P_01, true, 1, NESSUNA_AREA, 0x0u, 0x0u, 0x0u, 0, -1, 0, 3 },
     { "P-02", testi::TestoId::SCENA_P_02, true, -2, NESSUNA_AREA, 0x0u, 0x0u, 0x1u, 1, -1, 3, 7 },
-    { "A1-01", testi::TestoId::SCENA_A1_01, false, -1, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x1u, 0x0u, 0x6u, -1, -1, 10, 24 },
-    { "A1-02", testi::TestoId::SCENA_A1_02, false, -1, int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 0x2u, 0x48u, 0x8u, -1, -1, 34, 2 },
-    { "A1-03", testi::TestoId::SCENA_A1_03, false, -1, int8_t(mondo::AreaId::SAN_MARTINO), 0x2u, 0x10u, 0x10u, -1, -1, 36, 8 },
-    { "A1-04", testi::TestoId::SCENA_A1_04, false, -1, int8_t(mondo::AreaId::TEATRO_ROMANO), 0x10u, 0x20u, 0x20u, -1, 0, 44, 19 },
-    { "A1-05", testi::TestoId::SCENA_A1_05, false, -1, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x20u, 0x40u, 0x40u, -1, -1, 63, 14 },
-    { "A1-05b", testi::TestoId::SCENA_A1_05B, false, -1, int8_t(mondo::AreaId::SANT_ANDREA), 0x40u, 0xC00000u, 0x0u, -1, -1, 77, 12 },
-    { "A1-06", testi::TestoId::SCENA_A1_06, false, -1, int8_t(mondo::AreaId::DUOMO_DUCALE), 0x40u, 0x80u, 0x80u, -1, -1, 89, 4 },
-    { "A1-07", testi::TestoId::SCENA_A1_07, false, -1, int8_t(mondo::AreaId::MONTE_INGINO), 0x80u, 0x0u, 0x300u, -1, 1, 93, 16 },
-    { "A1-08", testi::TestoId::SCENA_A1_08, false, -1, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x200u, 0x0u, 0xC00u, -1, 3, 109, 25 },
-    { "A1-09", testi::TestoId::SCENA_A1_09, false, -1, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x800u, 0x0u, 0x1000u, -1, -1, 134, 12 },
-    { "B-01", testi::TestoId::SCENA_B_01, false, -1, int8_t(mondo::AreaId::GOLA_STRISCIA), 0x1000u, 0x2000u, 0x2000u, -1, -1, 146, 6 },
-    { "B-02", testi::TestoId::SCENA_B_02, false, -1, int8_t(mondo::AreaId::GOLA_MIASMI), 0x0u, 0x0u, 0x4000u, 13, -1, 152, 3 },
-    { "B-03", testi::TestoId::SCENA_B_03, false, -1, int8_t(mondo::AreaId::GOLA_ARCO), 0x0u, 0x0u, 0x8000u, 14, 4, 155, 17 },
-    { "B-04", testi::TestoId::SCENA_B_04, false, -1, int8_t(mondo::AreaId::CONDOTTO), 0x0u, 0x0u, 0x230000u, 15, 2, 172, 19 },
-    { "B-05", testi::TestoId::SCENA_B_05, false, -1, int8_t(mondo::AreaId::SAN_MARTINO), 0x20000u, 0x0u, 0x40000u, -1, -1, 191, 15 },
-    { "E-01", testi::TestoId::SCENA_E_01, false, -1, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x8040000u, 0x0u, 0x80000u, -1, -1, 206, 20 },
-    { "E-02", testi::TestoId::SCENA_E_02, true, 8, NESSUNA_AREA, 0x80000u, 0x0u, 0x100000u, -1, -1, 226, 3 },
+    { "A1-01", testi::TestoId::SCENA_A1_01, false, -1, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x1u, 0x0u, 0x6u, -1, -1, 10, 28 },
+    { "A1-02", testi::TestoId::SCENA_A1_02, false, -1, int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 0x2u, 0x48u, 0x8u, -1, -1, 38, 2 },
+    { "A1-03", testi::TestoId::SCENA_A1_03, false, -1, int8_t(mondo::AreaId::SAN_MARTINO), 0x2u, 0x10u, 0x10u, -1, -1, 40, 8 },
+    { "A1-04", testi::TestoId::SCENA_A1_04, false, -1, int8_t(mondo::AreaId::TEATRO_ROMANO), 0x10u, 0x20u, 0x20u, -1, 0, 48, 19 },
+    { "A1-05", testi::TestoId::SCENA_A1_05, false, -1, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x20u, 0x40u, 0x40u, -1, -1, 67, 14 },
+    { "A1-05b", testi::TestoId::SCENA_A1_05B, false, -1, int8_t(mondo::AreaId::SANT_ANDREA), 0x40u, 0xC00000u, 0x0u, -1, -1, 81, 12 },
+    { "A1-06", testi::TestoId::SCENA_A1_06, false, -1, int8_t(mondo::AreaId::DUOMO_DUCALE), 0x40u, 0x80u, 0x80u, -1, -1, 93, 4 },
+    { "A1-07", testi::TestoId::SCENA_A1_07, false, -1, int8_t(mondo::AreaId::MONTE_INGINO), 0x80u, 0x0u, 0x300u, -1, 1, 97, 16 },
+    { "A1-08", testi::TestoId::SCENA_A1_08, false, -1, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x200u, 0x0u, 0xC00u, -1, 3, 113, 25 },
+    { "A1-09", testi::TestoId::SCENA_A1_09, false, -1, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x800u, 0x0u, 0x1000u, -1, -1, 138, 12 },
+    { "B-01", testi::TestoId::SCENA_B_01, false, -1, int8_t(mondo::AreaId::GOLA_STRISCIA), 0x1000u, 0x2000u, 0x2000u, -1, -1, 150, 6 },
+    { "B-02", testi::TestoId::SCENA_B_02, false, -1, int8_t(mondo::AreaId::GOLA_MIASMI), 0x0u, 0x0u, 0x4000u, 13, -1, 156, 3 },
+    { "B-03", testi::TestoId::SCENA_B_03, false, -1, int8_t(mondo::AreaId::GOLA_ARCO), 0x0u, 0x0u, 0x8000u, 14, 4, 159, 17 },
+    { "B-04", testi::TestoId::SCENA_B_04, false, -1, int8_t(mondo::AreaId::CONDOTTO), 0x0u, 0x0u, 0x230000u, 15, 2, 176, 19 },
+    { "B-05", testi::TestoId::SCENA_B_05, false, -1, int8_t(mondo::AreaId::SAN_MARTINO), 0x20000u, 0x0u, 0x40000u, -1, -1, 195, 15 },
+    { "E-01", testi::TestoId::SCENA_E_01, false, -1, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x8040000u, 0x0u, 0x80000u, -1, -1, 210, 20 },
+    { "E-02", testi::TestoId::SCENA_E_02, true, 8, NESSUNA_AREA, 0x80000u, 0x0u, 0x100000u, -1, -1, 230, 3 },
 };
 
 // Le cutscene dentro le scene: prima della battuta (indice in BATTUTA), la cutscene; le battute del
@@ -387,12 +391,12 @@ inline constexpr Inserto INSERTO[INSERTI > 0 ? INSERTI : 1] = {
     { 12, 6, 0 },  // A1-01 prima della battuta 2: C3G
     { 14, 2, 0 },  // A1-01 prima della battuta 4: C2
     { 18, 3, 0 },  // A1-01 prima della battuta 8: C2P
-    { 45, 4, 0 },  // A1-04 prima della battuta 1: C3A
-    { 93, 12, 0 },  // A1-07 prima della battuta 0: C7S
-    { 118, 9, 1 },  // A1-08 prima della battuta 9: C5
-    { 137, 10, 0 },  // A1-09 prima della battuta 3: C6
-    { 146, 11, 0 },  // B-01 prima della battuta 0: C7B
-    { 172, 5, 0 },  // B-04 prima della battuta 0: C3C
+    { 49, 4, 0 },  // A1-04 prima della battuta 1: C3A
+    { 97, 12, 0 },  // A1-07 prima della battuta 0: C7S
+    { 122, 9, 1 },  // A1-08 prima della battuta 9: C5
+    { 141, 10, 0 },  // A1-09 prima della battuta 3: C6
+    { 150, 11, 0 },  // B-01 prima della battuta 0: C7B
+    { 176, 5, 0 },  // B-04 prima della battuta 0: C3C
 };
 
 // Le cartoline dei luoghi che partono entrando nell'area della scena (indice in SCENA) quando la scena e'
@@ -419,7 +423,7 @@ struct BattagliaAMeta
 
 inline constexpr int BATTAGLIE_A_META = 1;
 inline constexpr BattagliaAMeta BATTAGLIA_A_META[BATTAGLIE_A_META > 0 ? BATTAGLIE_A_META : 1] = {
-    { 15, 163, 90 },  // B-03 prima della battuta 8
+    { 15, 167, 90 },  // B-03 prima della battuta 8
 };
 
 // Le righe OBIETTIVO del copione (MOB, menu/PROPOSTA.md sez. 5): il testo, l'area meta (mondo::AreaId: il
@@ -435,7 +439,7 @@ struct Obiettivo
 
 inline constexpr int OBIETTIVI = 12;
 inline constexpr Obiettivo OBIETTIVO[OBIETTIVI > 0 ? OBIETTIVI : 1] = {
-    { testi::TestoId::C_A1_01_23, int8_t(mondo::AreaId::TEATRO_ROMANO), -1, 3 },  // Raggiungi il Teatro Romano, fuori dalle mura di San Martino.
+    { testi::TestoId::C_A1_01_27, int8_t(mondo::AreaId::TEATRO_ROMANO), -1, 3 },  // Raggiungi il Teatro Romano, fuori dalle mura di San Martino.
     { testi::TestoId::C_A1_03_07, int8_t(mondo::AreaId::TEATRO_ROMANO), -1, 5 },  // Esci dalla postierla e trova Antonio.
     { testi::TestoId::C_A1_04_18, int8_t(mondo::AreaId::PIAZZA_GRANDE), -1, 6 },  // Torna in città prima che chiudano la postierla.
     { testi::TestoId::C_A1_05_13, int8_t(mondo::AreaId::DUOMO_DUCALE), -1, 7 },  // Sali al Monte Ingino passando dal Duomo.
