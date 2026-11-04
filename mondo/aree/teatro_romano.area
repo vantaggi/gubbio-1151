@@ -3,10 +3,10 @@
 id teatro_romano
 etichetta AREA_TEATRO_ROMANO
 dimensioni 64 64
-# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# Dislivello: la salita va verso nord-est (col nord in alto, in alto a destra); i gradoni corrono lungo il lato
 # lungo dell'area, a valle c'e' l'ombra.
 monte destra
-# Mura: il Teatro sta fuori le mura; la cinta passa a nord (a destra).
+# Mura: il Teatro sta fuori le mura; la cinta passa a nord (in alto).
 mura alto
 mura destra
 # Il Teatro sta nel prato, fuori dalla citta'.

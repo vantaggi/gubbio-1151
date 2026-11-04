@@ -37,8 +37,8 @@ Il dislivello si vede in tre modi, tutti ricavati da quote e lati a monte (non d
 particolari): scale davanti ai varchi fra aree con quote diverse; gradoni con il muro di
 contenimento e l'ombra a valle dove la quota dell'area sale al suo interno (uno ogni
 METRI_PER_GRADONE, al massimo GRADONI_MAX, con una scala di passaggio in ogni tratto); belvederi
-(parapetto) sul bordo a valle delle aree alte. La salita va sempre verso nord-est, cioe' in basso a
-destra: ogni .area dichiara "monte basso" o "monte destra", e un belvedere sta su un lato a valle.
+(parapetto) sul bordo a valle delle aree alte. La salita va sempre verso nord-est, cioe' (col nord in alto)
+in alto a destra: ogni .area dichiara "monte alto" o "monte destra", e un belvedere sta su un lato a valle.
 
 Vie e piazze in proporzione, dalle misure muro a muro di mondo/fonti/misure_osm.json: la .area
 nomina la sua via ("via Via dei Consoli") e la sua piazza ("piazza Piazza Grande"). La via deve
@@ -173,7 +173,7 @@ LATO_MAX = 128               # tile per lato di un'area
 LATO_MAPPA_HW = 64           # oltre, il fondale e' una big map
 TILE_MAX_PER_AREA = 1024     # tile unici di un area, suolo e monumenti insieme: il massimo di Butano per un BG (pezzo EDI)
 
-# Dislivello. La salita va verso nord-est: sullo schermo in basso (est) o a destra (nord).
+# Dislivello. La salita va verso nord-est: sullo schermo in alto (nord) o a destra (est).
 LATI_A_MONTE = ("alto", "destra")      # nord in alto: la salita verso nord-est e' in alto o a destra
 LATI_A_VALLE = {"alto": "basso", "destra": "sinistra"}
 LATI_DEGLI_INTERNI = ("basso",)         # un interno non e' orientato: resta come era disegnato
@@ -2836,7 +2836,7 @@ def scrivi_header(aree, grafo, palette_stile):
         "namespace gubbio::mondo",
         "{",
         "",
-        "// Orientamento di tutte le aree: alto = ovest, basso = est, sinistra = sud, destra = nord.",
+        "// Orientamento di tutte le aree: nord in alto (alto = nord, destra = est); la gola resta di fianco.",
         "// Scala: un tile da 8 px = 1,5 m.",
         "",
         "enum class Cella : uint8_t",

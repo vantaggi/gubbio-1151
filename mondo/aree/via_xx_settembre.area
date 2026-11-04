@@ -3,7 +3,7 @@
 id via_xx_settembre
 etichetta AREA_VIA_XX_SETTEMBRE
 dimensioni 64 22
-# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# Dislivello: la salita va verso nord-est (col nord in alto, in alto a destra); i gradoni corrono lungo il lato
 # lungo dell'area, a valle c'e' l'ombra.
 monte destra
 riferimento 32 10

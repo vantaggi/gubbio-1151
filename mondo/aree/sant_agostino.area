@@ -3,12 +3,12 @@
 id sant_agostino
 etichetta AREA_SANT_AGOSTINO
 dimensioni 64 59
-# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# Dislivello: la salita va verso nord-est (col nord in alto, in alto a destra); i gradoni corrono lungo il lato
 # lungo dell'area, a valle c'e' l'ombra.
 monte destra
 # Sant'Agostino: la facciata verso il basso, sul piazzale in fondo alla via (nord in alto, 4 nov 2026).
 facciata sant_agostino basso
-# Mura: la cinta a est, verso Porta Romana (in basso).
+# Mura: la cinta a est, verso Porta Romana (a destra).
 mura destra
 riferimento 35 38
 fattore 0.73

@@ -5,10 +5,10 @@
 id san_martino
 etichetta AREA_SAN_MARTINO
 dimensioni 87 128
-# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# Dislivello: la salita va verso nord-est (col nord in alto, in alto a destra); i gradoni corrono lungo il lato
 # lungo dell'area, a valle c'e' l'ombra.
 monte destra
-# Mura: il quartiere tocca la cinta a nord, verso Porta Metauro (a destra).
+# Mura: il quartiere tocca la cinta a nord, verso Porta Metauro (in alto).
 mura alto
 riferimento 32 84
 # Fattore ridotto: con 0,73 gli edifici e le distanze non entrano in 128 tile.

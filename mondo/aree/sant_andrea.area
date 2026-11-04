@@ -3,7 +3,7 @@
 id sant_andrea
 etichetta AREA_SANT_ANDREA
 dimensioni 43 62
-# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# Dislivello: la salita va verso nord-est (col nord in alto, in alto a destra); i gradoni corrono lungo il lato
 # lungo dell'area, a valle c'e' l'ombra.
 monte destra
 riferimento 26 18

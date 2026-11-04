@@ -3,7 +3,7 @@
 id basilica
 etichetta AREA_BASILICA
 dimensioni 64 64
-# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# Dislivello: la salita va verso nord-est (col nord in alto, in alto a destra); i gradoni corrono lungo il lato
 # lungo dell'area, a valle c'e' l'ombra.
 monte destra
 # Belvedere: parapetto sul bordo a valle, l'area e' alta sulla citta'.

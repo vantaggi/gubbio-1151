@@ -3,7 +3,7 @@
 id largo_bargello
 etichetta AREA_LARGO_BARGELLO
 dimensioni 22 29
-# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# Dislivello: la salita va verso nord-est (col nord in alto, in alto a destra); i gradoni corrono lungo il lato
 # lungo dell'area, a valle c'e' l'ombra.
 monte destra
 riferimento 11 15

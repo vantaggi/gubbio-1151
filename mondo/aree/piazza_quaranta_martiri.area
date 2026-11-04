@@ -5,7 +5,7 @@
 id piazza_quaranta_martiri
 etichetta AREA_QUARANTA_MARTIRI
 dimensioni 107 128
-# Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
+# Dislivello: la salita va verso nord-est (col nord in alto, in alto a destra); i gradoni corrono lungo il lato
 # lungo dell'area, a valle c'e' l'ombra.
 monte destra
 riferimento 33 63
