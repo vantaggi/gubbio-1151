@@ -344,7 +344,7 @@ Dopo la vittoria, ognuno risponde al proprio spettro mentre svanisce:
 | Condizione | `SPETTRI_VINTI` |
 | Imposta | `VISIONE_BOTTACCIONE`, varco verso la Strada del Bottaccione aperto |
 
-Regia: prima del vetro, gli indizi. Se il giocatore ha almeno due bandiere fra `INDIZIO_CARTA` (Bubo), `INDIZIO_ACQUA` (Giordano) e `INDIZIO_ROCCIA` (Giambono), parte questo scambio; altrimenti si passa subito alla visione.
+Regia: prima del vetro, gli indizi. Se il giocatore ha almeno due bandiere fra `INDIZIO_CARTA` (Renzo), `INDIZIO_ACQUA` (Giordano) e `INDIZIO_ROCCIA` (Giambono), parte questo scambio; altrimenti si passa subito alla visione.
 
 Se almeno due indizi:
 
