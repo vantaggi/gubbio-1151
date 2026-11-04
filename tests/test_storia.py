@@ -298,8 +298,9 @@ class Tabelle(unittest.TestCase):
         self.assertEqual(sorted(re.findall(r"^Scena (\S+)$", secondo, re.M)), sorted(s["codice"] for s in SCENE))
         self.assertIn("Giro 0: 20 scene, borgo dentro, esule prigioniero, giustizia offerta", primo)
         self.assertIn("Giro 1: 20 scene, borgo fuori, esule liberato, giustizia no", secondo)
-        self.assertEqual(primo.count("Scelta 0"), 3)
-        self.assertEqual(secondo.count("Scelta 1"), 3)
+        # quattro menu per giro: D1, D2, D3 e la conferma dell'alba di B-05 (ALBA_CONFERMATA, REVa)
+        self.assertEqual(primo.count("Scelta 0"), 4)
+        self.assertEqual(secondo.count("Scelta 1"), 4)
         self.assertIn("Cutscene C1 finita", log)
         self.assertIn("Cutscene P-02 dentro la precedente", log)
         self.assertIn("Cutscene C4 finita", log)
@@ -350,6 +351,7 @@ class Inserti(unittest.TestCase):
         prima della scena dopo."""
         for nome in ("storia_mgba.txt", "prologo_mgba.txt"):
             righe = open(os.path.join(RADICE, "tests", "dati", nome), encoding="utf-8").read().splitlines()
+            righe = [r for r in righe if not r.startswith("Istantanea ")]   # le foto del banco non contano
             a = righe.index("Scena A1-01")
             dopo = [r for r in righe[a + 1:] if not r.startswith("Cutscene C3")]
             self.assertEqual(dopo[:4], ["Cutscene C2", "Cutscene C2 finita", "Cutscene C2P", "Cutscene C2P finita"], nome)

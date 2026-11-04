@@ -43,7 +43,10 @@ class FigureNpc(unittest.TestCase):
         """Ogni figura si riconosce gia' dalla sagoma (il contorno), non solo dai colori."""
         sagome = {sagoma(r) for r in FN.FIGURE.values()}
         self.assertEqual(len(sagome), 5)
-        self.assertNotIn(sagoma(GM.GIOCATORE), sagome)
+        # il giocatore (tools/sagome_mappa.py) e' alto il doppio, 16x32: non si confonde con nessuna
+        giocatore = GM.SM.fotogramma("giu", GM.SM.RIPOSO)
+        self.assertEqual((len(giocatore), len(giocatore[0])), (32, 16))
+        self.assertTrue(all(len(r) == 16 for r in FN.FIGURE.values()))
 
     def test_negativa_due_figure_con_la_stessa_sagoma(self):
         doppie = [FN.FIGURE["popolana"], [r.replace("4", "a") for r in FN.FIGURE["popolana"]]]
