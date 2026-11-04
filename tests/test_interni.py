@@ -247,5 +247,52 @@ class FondaleNeiBanchi(unittest.TestCase):
         self.assertEqual(len(G.COMPROMESSI["prova_interni"]), 1)
 
 
+class CoseDaEsaminare(unittest.TestCase):
+    """INTC: due cose per stanza, coi loro testi, ai piedi dell'oggetto, lontane da chi sta nella stanza."""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(os.path.join(RADICE, "testi", "interni.testi"), encoding="utf-8") as f:
+            cls.testi = f.read()
+
+    def test_due_per_stanza_coi_testi(self):
+        per = {}
+        for stanza, _, _, _, testo in PI.COSE:
+            per[stanza] = per.get(stanza, 0) + 1
+            self.assertIn(testo + " ", self.testi.replace("\t", " "), testo)
+        self.assertEqual(sorted(per), sorted(PI.INTERNI))
+        self.assertEqual(set(per.values()), {2})
+
+    def test_celle_libere_e_lontane(self):
+        evita = {"BOTTEGA_CONTI_INTERNO": [(12, 9)]}
+        for area, nome, tx, ty, _ in PI.cose_di_gioco(evita):
+            st = PI.stanza_di_gioco([k for k, v in PI.INTERNI.items() if v[0] == area][0])
+            g = PI.griglia_di_gioco(st)
+            self.assertTrue(all(g[ty + j][tx + i] == "L" for i in (-1, 0, 1) for j in (-1, 0, 1)), nome)
+            for u, v in evita.get(area.upper(), []):
+                self.assertGreaterEqual(max(abs(tx - u), abs(ty - v)), PI.LONTANO_DAGLI_NPC, nome)
+
+    def test_negativa_un_npc_sposta_la_cosa(self):
+        prima = {n: (x, y) for _, n, x, y, _ in PI.cose_di_gioco()}
+        x, y = prima["camino"]
+        dopo = {n: (x, y) for _, n, x, y, _ in PI.cose_di_gioco({"TAVERNA_INTERNO": [(x, y)]})}
+        self.assertNotEqual(prima["camino"], dopo["camino"])
+
+
+class DoniDegliAmici(unittest.TestCase):
+    """INTB: Padellino da' 1 Crescia, Valenza 2 Biscotti, con bandiere libere delle quest."""
+
+    def test_doni_e_bandiere(self):
+        import genera_storia as GS
+        doni = {d["npc"]: (d["oggetto"], d["quanti"]) for d in GS.DONI}
+        self.assertEqual(doni, {"Padellino": ("CRESCIA", 1), "Valenza": ("BISCOTTI", 2)})
+        for d in GS.DONI:
+            self.assertIn(d["bandiera"], GS.BANDIERE_QUEST)
+
+    def test_negativa_nessun_dono_da_chi_non_sta_dentro(self):
+        import genera_storia as GS
+        self.assertNotIn("Ciaccio", [d["npc"] for d in GS.DONI])
+
+
 if __name__ == "__main__":
     unittest.main()

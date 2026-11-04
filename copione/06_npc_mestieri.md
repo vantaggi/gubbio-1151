@@ -120,12 +120,6 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 - DIGIUNO: CALZOLAIO: Batto piano col martelletto. La città vuole silenzio.
 - ULTIMATUM: CALZOLAIO: Suole doppie per chi sale sulle mura. Le pietre di Gubbio consumano tutto.
 
-**Il Notaio del Comune**
-
-- NOTTE: NOTAIO: Lascio una riga bianca nel registro. Domani ci scriverò com'è andata.
-- DIGIUNO: NOTAIO: Ho scritto il voto del digiuno nel registro. Così nessuno lo dimentica.
-- ULTIMATUM: NOTAIO: Scrivo i nomi di chi va sulle mura. Il ruolo dei difensori è già di tre fogli.
-
 ---
 
 ## Sant'Agostino
@@ -172,3 +166,49 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 - NOTTE: VIANDANTE: Quando apriranno le porte riprenderò la strada. Ma racconterò di questa città.
 - DIGIUNO: VIANDANTE: Digiuno anch'io. Per chi è in cammino è il pane di ogni giorno.
 - ULTIMATUM: VIANDANTE: Andavo a Roma e mi hanno chiuso dentro Gubbio. Il Signore ha i suoi piani.
+
+---
+
+## Sala dei Consoli
+
+**Il Notaio del Comune**
+
+- NOTTE: NOTAIO: Lascio una riga bianca nel registro. Domani ci scriverò com'è andata.
+- DIGIUNO: NOTAIO: Ho scritto il voto del digiuno nel registro. Così nessuno lo dimentica.
+- ULTIMATUM: NOTAIO: Scrivo i nomi di chi va sulle mura. Il ruolo dei difensori è già di tre fogli.
+
+**La Guardia della sala**
+
+- NOTTE: GUARDIA: I consoli sono sulle mura. La sala si veglia lo stesso.
+- DIGIUNO: GUARDIA: Niente pane neanche per le guardie. Sto dritto lo stesso.
+- ULTIMATUM: GUARDIA: Qui si entra con rispetto, monsignore. Per voi, sempre.
+
+---
+
+## Taverna del corso
+
+**L'Avventore**
+
+- NOTTE: AVVENTORE: Non bevo, sto qui per la compagnia. Al buio da solo non ci so stare.
+- DIGIUNO: AVVENTORE: Taverna chiusa, ma la panca è aperta. Guardo il camino spento.
+- ULTIMATUM: AVVENTORE: Un bicchiere per il coraggio, monsignore. Uno solo, lo giuro.
+
+---
+
+## Spezieria e ospizio
+
+**Il Ricoverato dell'ospizio**
+
+- NOTTE: RICOVERATO: Valenza mi ha rimboccato la coperta. Alla mia età, pensate.
+- DIGIUNO: RICOVERATO: Digiuno anch'io, monsignore. A me riesce bene da anni.
+- ULTIMATUM: RICOVERATO: Dalla finestra si vedono le tende sul piano. Tante. Io conto le stelle: sono di più.
+
+---
+
+## Bottega del carradore
+
+**Il Garzone del carradore**
+
+- NOTTE: GARZONE: Mastro Rufino dorme accanto al carro. Dice che così non glielo rubano.
+- DIGIUNO: GARZONE: Ingrasso i mozzi a stomaco vuoto. Il grasso lo guardo e basta.
+- ULTIMATUM: GARZONE: Il mastro dice che le ruote cantano, se sono fatte bene. Io sento solo cigolare.

@@ -509,26 +509,38 @@ NPC_53_00                 | DIALOGO | Ho cucito scarpe piccole tutta la notte. Q
 NPC_53_01                 | DIALOGO | Ho cucito tutta la notte. Domani in tanti dovranno camminare.
 NPC_53_02                 | DIALOGO | Batto piano col martelletto. La città vuole silenzio.
 NPC_53_03                 | DIALOGO | Suole doppie per chi sale sulle mura. Le pietre di Gubbio consumano tutto.
-NPC_54_00                 | DIALOGO | Lascio una riga bianca nel registro. Domani ci scriverò com'è andata.
-NPC_54_01                 | DIALOGO | Ho scritto il voto del digiuno nel registro. Così nessuno lo dimentica.
-NPC_54_02                 | DIALOGO | Scrivo i nomi di chi va sulle mura. Il ruolo dei difensori è già di tre fogli.
-NPC_55_00                 | DIALOGO | Domani torno all'orto. Se c'è ancora un orto.
-NPC_55_01                 | DIALOGO | Il digiuno lo faccio volentieri. I cavoli li ho portati tutti al convento.
-NPC_55_02                 | DIALOGO | Raccolgo tutto, anche il verde. Meglio acerbo che in bocca a loro.
-NPC_56_00                 | DIALOGO | Sono nero da capo a piedi. Almeno col digiuno non sporco il pane.
-NPC_56_01                 | DIALOGO | Carbone per le forge e per la pece. Tutta la città brucia il mio bosco.
-NPC_57_00                 | DIALOGO | La palizzata è finita. Ci ho inciso il mio nome in basso, dove non si vede.
-NPC_57_01                 | DIALOGO | Inchiodo piano, per rispetto. Le palizzate crescono lo stesso.
-NPC_57_02                 | DIALOGO | Palizzate dietro le porte. Il legno fresco geme, ma regge.
-NPC_58_00                 | DIALOGO | Diecimila frecce. Le ho contate una per una, con le dita nere.
-NPC_58_01                 | DIALOGO | Le oche mi guardano storto. Sanno chi è stato.
-NPC_58_02                 | DIALOGO | Penne d'oca per le frecce. Ho spennato tutte le oche del quartiere.
-NPC_59_00                 | DIALOGO | All'alba suono a festa o a martello. Speriamo a festa, monsignore.
-NPC_59_01                 | DIALOGO | La campana tace. Il silenzio della città suona più forte di lei.
-NPC_59_02                 | DIALOGO | Se arrivano, suono a martello: tre colpi, poi tre, poi tre. Ricordatevelo.
-NPC_60_00                 | DIALOGO | Quando apriranno le porte riprenderò la strada. Ma racconterò di questa città.
-NPC_60_01                 | DIALOGO | Digiuno anch'io. Per chi è in cammino è il pane di ogni giorno.
-NPC_60_02                 | DIALOGO | Andavo a Roma e mi hanno chiuso dentro Gubbio. Il Signore ha i suoi piani.
+NPC_54_00                 | DIALOGO | Domani torno all'orto. Se c'è ancora un orto.
+NPC_54_01                 | DIALOGO | Il digiuno lo faccio volentieri. I cavoli li ho portati tutti al convento.
+NPC_54_02                 | DIALOGO | Raccolgo tutto, anche il verde. Meglio acerbo che in bocca a loro.
+NPC_55_00                 | DIALOGO | Sono nero da capo a piedi. Almeno col digiuno non sporco il pane.
+NPC_55_01                 | DIALOGO | Carbone per le forge e per la pece. Tutta la città brucia il mio bosco.
+NPC_56_00                 | DIALOGO | La palizzata è finita. Ci ho inciso il mio nome in basso, dove non si vede.
+NPC_56_01                 | DIALOGO | Inchiodo piano, per rispetto. Le palizzate crescono lo stesso.
+NPC_56_02                 | DIALOGO | Palizzate dietro le porte. Il legno fresco geme, ma regge.
+NPC_57_00                 | DIALOGO | Diecimila frecce. Le ho contate una per una, con le dita nere.
+NPC_57_01                 | DIALOGO | Le oche mi guardano storto. Sanno chi è stato.
+NPC_57_02                 | DIALOGO | Penne d'oca per le frecce. Ho spennato tutte le oche del quartiere.
+NPC_58_00                 | DIALOGO | All'alba suono a festa o a martello. Speriamo a festa, monsignore.
+NPC_58_01                 | DIALOGO | La campana tace. Il silenzio della città suona più forte di lei.
+NPC_58_02                 | DIALOGO | Se arrivano, suono a martello: tre colpi, poi tre, poi tre. Ricordatevelo.
+NPC_59_00                 | DIALOGO | Quando apriranno le porte riprenderò la strada. Ma racconterò di questa città.
+NPC_59_01                 | DIALOGO | Digiuno anch'io. Per chi è in cammino è il pane di ogni giorno.
+NPC_59_02                 | DIALOGO | Andavo a Roma e mi hanno chiuso dentro Gubbio. Il Signore ha i suoi piani.
+NPC_60_00                 | DIALOGO | Lascio una riga bianca nel registro. Domani ci scriverò com'è andata.
+NPC_60_01                 | DIALOGO | Ho scritto il voto del digiuno nel registro. Così nessuno lo dimentica.
+NPC_60_02                 | DIALOGO | Scrivo i nomi di chi va sulle mura. Il ruolo dei difensori è già di tre fogli.
+NPC_61_00                 | DIALOGO | I consoli sono sulle mura. La sala si veglia lo stesso.
+NPC_61_01                 | DIALOGO | Niente pane neanche per le guardie. Sto dritto lo stesso.
+NPC_61_02                 | DIALOGO | Qui si entra con rispetto, monsignore. Per voi, sempre.
+NPC_62_00                 | DIALOGO | Non bevo, sto qui per la compagnia. Al buio da solo non ci so stare.
+NPC_62_01                 | DIALOGO | Taverna chiusa, ma la panca è aperta. Guardo il camino spento.
+NPC_62_02                 | DIALOGO | Un bicchiere per il coraggio, monsignore. Uno solo, lo giuro.
+NPC_63_00                 | DIALOGO | Valenza mi ha rimboccato la coperta. Alla mia età, pensate.
+NPC_63_01                 | DIALOGO | Digiuno anch'io, monsignore. A me riesce bene da anni.
+NPC_63_02                 | DIALOGO | Dalla finestra si vedono le tende sul piano. Tante. Io conto le stelle: sono di più.
+NPC_64_00                 | DIALOGO | Mastro Rufino dorme accanto al carro. Dice che così non glielo rubano.
+NPC_64_01                 | DIALOGO | Ingrasso i mozzi a stomaco vuoto. Il grasso lo guardo e basta.
+NPC_64_02                 | DIALOGO | Il mastro dice che le ruote cantano, se sono fatte bene. Io sento solo cigolare.
 QST_SM01_00               | DIALOGO | Fornaci spente, ragazzo. Spoleto ha bloccato al passo il ferro del Monte Calvo.
 QST_SM01_01               | DIALOGO | E il ferro già colato l'hanno ammucchiato nelle fornaci basse del Teatro Romano.
 QST_SM01_02               | DIALOGO | Riportami tre blocchi, e ti dico come si fa a bucare una corazza di Spoleto.

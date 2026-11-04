@@ -31,7 +31,7 @@ struct Punto
     uint8_t ty;
 };
 
-inline constexpr int PUNTI = 234;
+inline constexpr int PUNTI = 236;
 inline constexpr Punto PUNTO[PUNTI] = {
     { 18, 2 }, { 33, 2 }, { 33, 29 }, { 28, 29 }, { 28, 36 }, { 7, 36 }, { 7, 77 }, { 4, 77 },
     { 4, 101 }, { 16, 101 }, { 16, 103 }, { 22, 29 }, { 22, 34 }, { 7, 34 }, { 7, 77 }, { 4, 77 },
@@ -52,17 +52,17 @@ inline constexpr Punto PUNTO[PUNTI] = {
     { 120, 57 }, { 120, 13 }, { 63, 13 }, { 63, 2 }, { 124, 33 }, { 120, 33 }, { 120, 53 }, { 79, 53 },
     { 79, 70 }, { 86, 70 }, { 86, 81 }, { 83, 81 }, { 124, 33 }, { 120, 33 }, { 120, 53 }, { 67, 53 },
     { 67, 54 }, { 64, 54 }, { 64, 57 }, { 41, 57 }, { 41, 102 }, { 19, 2 }, { 19, 42 }, { 19, 35 },
-    { 19, 34 }, { 16, 34 }, { 19, 35 }, { 19, 34 }, { 16, 34 }, { 9, 2 }, { 12, 2 }, { 12, 61 },
-    { 10, 61 }, { 10, 61 }, { 12, 61 }, { 12, 27 }, { 10, 27 }, { 10, 5 }, { 9, 5 }, { 9, 2 },
-    { 3, 2 }, { 9, 2 }, { 12, 2 }, { 12, 61 }, { 10, 61 }, { 11, 32 }, { 10, 32 }, { 10, 35 },
-    { 56, 30 }, { 43, 30 }, { 43, 29 }, { 41, 29 }, { 41, 26 }, { 40, 26 }, { 40, 17 }, { 41, 37 },
-    { 44, 37 }, { 44, 35 }, { 46, 26 }, { 46, 30 }, { 45, 30 }, { 41, 37 }, { 55, 37 }, { 55, 31 },
-    { 42, 2 }, { 43, 2 }, { 43, 11 }, { 54, 11 }, { 44, 32 }, { 44, 31 }, { 41, 31 }, { 41, 27 },
-    { 2, 27 }, { 2, 24 }, { 8, 24 }, { 7, 24 }, { 7, 27 }, { 44, 32 }, { 44, 31 }, { 41, 31 },
-    { 41, 27 }, { 2, 27 }, { 2, 24 }, { 24, 2 }, { 28, 2 }, { 28, 54 }, { 30, 54 }, { 30, 60 },
-    { 31, 60 }, { 31, 61 }, { 31, 61 }, { 30, 61 }, { 30, 58 }, { 26, 58 }, { 26, 20 }, { 24, 20 },
-    { 24, 19 }, { 2, 19 }, { 2, 16 }, { 27, 53 }, { 27, 58 }, { 24, 2 }, { 26, 2 }, { 26, 51 },
-    { 31, 54 }, { 27, 54 },
+    { 19, 34 }, { 16, 34 }, { 19, 35 }, { 19, 34 }, { 16, 34 }, { 9, 2 }, { 12, 2 }, { 12, 31 },
+    { 10, 31 }, { 10, 61 }, { 10, 61 }, { 12, 61 }, { 12, 27 }, { 10, 27 }, { 10, 5 }, { 9, 5 },
+    { 9, 2 }, { 3, 2 }, { 9, 2 }, { 12, 2 }, { 12, 31 }, { 10, 31 }, { 10, 61 }, { 11, 32 },
+    { 10, 32 }, { 10, 35 }, { 56, 30 }, { 43, 30 }, { 43, 29 }, { 41, 29 }, { 41, 26 }, { 40, 26 },
+    { 40, 17 }, { 41, 37 }, { 44, 37 }, { 44, 35 }, { 46, 26 }, { 46, 30 }, { 45, 30 }, { 41, 37 },
+    { 55, 37 }, { 55, 31 }, { 42, 2 }, { 43, 2 }, { 43, 11 }, { 54, 11 }, { 44, 32 }, { 44, 31 },
+    { 41, 31 }, { 41, 27 }, { 2, 27 }, { 2, 24 }, { 8, 24 }, { 7, 24 }, { 7, 27 }, { 44, 32 },
+    { 44, 31 }, { 41, 31 }, { 41, 27 }, { 2, 27 }, { 2, 24 }, { 24, 2 }, { 28, 2 }, { 28, 54 },
+    { 30, 54 }, { 30, 60 }, { 31, 60 }, { 31, 61 }, { 31, 61 }, { 30, 61 }, { 30, 58 }, { 26, 58 },
+    { 26, 20 }, { 24, 20 }, { 24, 19 }, { 2, 19 }, { 2, 16 }, { 27, 53 }, { 27, 58 }, { 24, 2 },
+    { 26, 2 }, { 26, 51 }, { 31, 54 }, { 27, 54 },
 };
 
 struct Corrente
@@ -111,23 +111,23 @@ inline constexpr Corrente CORRENTE[CORRENTI] = {
     { int8_t(mondo::AreaId::SAN_PIETRO), 1, 0, false, 149, 2, 1, 2, true },  // portatore
     { int8_t(mondo::AreaId::SAN_PIETRO), 3, 0, true, 151, 3, 2, 2, false },  // gallina
     { int8_t(mondo::AreaId::SAN_PIETRO), 4, 2, true, 154, 3, 1, 2, false },  // cane
-    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 1, 3, false, 157, 4, 2, 2, true },  // fante
-    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 1, 2, false, 161, 8, 1, 2, true },  // acquaiola
-    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 2, 5, false, 169, 4, 2, 3, true },  // penitente
-    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 4, 1, true, 173, 3, 1, 3, false },  // gatto
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 1, 1, false, 176, 7, 2, 2, false },  // portatrice
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 1, 0, true, 183, 3, 3, 2, false },  // gallina
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 3, 2, true, 186, 3, 1, 2, false },  // cane
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 6, 7, false, 189, 3, 1, 3, false },  // frate
-    { int8_t(mondo::AreaId::SANT_ANDREA), 1, 0, false, 192, 4, 2, 2, true },  // portatore
-    { int8_t(mondo::AreaId::SANT_ANDREA), 3, 3, false, 196, 6, 2, 2, false },  // fante
-    { int8_t(mondo::AreaId::SANT_ANDREA), 1, 0, true, 202, 3, 2, 2, false },  // gallina
-    { int8_t(mondo::AreaId::SANT_ANDREA), 4, 6, false, 205, 6, 2, 3, false },  // ronda
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 1, 7, false, 211, 7, 1, 3, true },  // frate
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 1, 1, false, 218, 9, 1, 2, true },  // portatrice
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 3, 3, true, 227, 2, 2, 3, false },  // piccione
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 2, 5, false, 229, 3, 2, 3, false },  // penitente
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 4, 1, true, 232, 2, 1, 3, false },  // gatto
+    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 1, 3, false, 157, 5, 2, 2, true },  // fante
+    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 1, 2, false, 162, 8, 1, 2, true },  // acquaiola
+    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 2, 5, false, 170, 5, 2, 3, true },  // penitente
+    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 4, 1, true, 175, 3, 1, 3, false },  // gatto
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 1, 1, false, 178, 7, 2, 2, false },  // portatrice
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 1, 0, true, 185, 3, 3, 2, false },  // gallina
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 3, 2, true, 188, 3, 1, 2, false },  // cane
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 6, 7, false, 191, 3, 1, 3, false },  // frate
+    { int8_t(mondo::AreaId::SANT_ANDREA), 1, 0, false, 194, 4, 2, 2, true },  // portatore
+    { int8_t(mondo::AreaId::SANT_ANDREA), 3, 3, false, 198, 6, 2, 2, false },  // fante
+    { int8_t(mondo::AreaId::SANT_ANDREA), 1, 0, true, 204, 3, 2, 2, false },  // gallina
+    { int8_t(mondo::AreaId::SANT_ANDREA), 4, 6, false, 207, 6, 2, 3, false },  // ronda
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 1, 7, false, 213, 7, 1, 3, true },  // frate
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 1, 1, false, 220, 9, 1, 2, true },  // portatrice
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 3, 3, true, 229, 2, 2, 3, false },  // piccione
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 2, 5, false, 231, 3, 2, 3, false },  // penitente
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 4, 1, true, 234, 2, 1, 3, false },  // gatto
 };
 
 // I passanti, 16x32 (8 tile), 18 fotogrammi: giu' 0-5, su 6-11, destra 12-17 (tools/figure_popolo.py).

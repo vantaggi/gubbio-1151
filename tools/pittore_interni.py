@@ -1241,6 +1241,48 @@ def nella_rampa(q, aid):
             fatte.extend(migliore[1].items())
 
 
+# Le cose da esaminare (INTC, interni/COPIONE_INTERNI.md sez. 3): stanza, nome, cella dell'oggetto (16 px) e testo
+# (testi/interni.testi). Il gioco le segnala dalla cella libera piu' vicina sotto l'oggetto (cose_di_gioco).
+COSE = [
+    ("taverna", "camino", 8, 2, "ESAMINA_TAVERNA_CAMINO"),
+    ("taverna", "fiaschi", 5, 2, "ESAMINA_TAVERNA_FIASCHI"),
+    ("bottega_conti", "chiarina", 7, 2, "ESAMINA_CONTI_CHIARINA"),
+    ("bottega_conti", "chiavi", 5, 2, "ESAMINA_CONTI_CHIAVI"),
+    ("bottega_carradore", "carro", 4, 6, "ESAMINA_CARRADORE_CARRO"),
+    ("bottega_carradore", "ruote", 3, 2, "ESAMINA_CARRADORE_RUOTE"),
+    ("spezieria", "albarelli", 3, 2, "ESAMINA_SPEZIERIA_ALBARELLI"),
+    ("spezieria", "disegni", 5, 2, "ESAMINA_SPEZIERIA_DISEGNI"),
+    ("casa_medico", "rotoli", 4, 5, "ESAMINA_MEDICO_ROTOLI"),
+    ("casa_medico", "letto", 10, 4, "ESAMINA_MEDICO_LETTO"),
+    ("sala_consoli", "stemma", 7, 2, "ESAMINA_SALA_STEMMA"),
+    ("sala_consoli", "leggio", 12, 4, "ESAMINA_SALA_LEGGIO"),
+]
+
+
+LONTANO_DAGLI_NPC = 4   # tile: la cosa non sta a portata di parola di chi sta nella stanza (l'NPC risponderebbe prima)
+
+
+def cose_di_gioco(evita=None):
+    """[(area, nome, tx, ty, testo)]: per ogni cosa la cella da 8 px libera piu' vicina sotto l'oggetto, con un
+    3x3 libero intorno (ci si arriva coi piedi). 'evita': {area: [(tx, ty)]} i posti degli NPC, da cui la cosa sta
+    ad almeno LONTANO_DAGLI_NPC tile."""
+    evita = evita or {}
+    out = []
+    for stanza, nome, cx, cy, testo in COSE:
+        st = stanza_di_gioco(stanza)
+        g = griglia_di_gioco(st)
+        ox, oy = (st.x0 + cx * CELLA + CELLA // 2) // 8, (st.y0 + (cy + 1) * CELLA) // 8
+        libere = [(x, y) for y in range(1, len(g) - 2) for x in range(1, len(g[0]) - 1)
+                  if all(g[y + j][x + i] == "L" for i in (-1, 0, 1) for j in (-1, 0, 1))
+                  and all(max(abs(x - u), abs(y - v)) >= LONTANO_DAGLI_NPC
+                          for u, v in evita.get(INTERNI[stanza][0].upper(), []))]
+        prese = [(x, y) for a, _, x, y, _ in out if a == INTERNI[stanza][0]]
+        libere = [c for c in libere if all(max(abs(c[0] - u), abs(c[1] - v)) >= 3 for u, v in prese)]
+        tx, ty = min(libere, key=lambda c: (abs(c[0] - ox) + abs(c[1] - oy), c[1], c[0]))
+        out.append((INTERNI[stanza][0], nome, tx, ty, testo))
+    return out
+
+
 def tavole(uscita):
     """Le anteprime RGB con le figure (come i mockup di /mnt/project-files/interni/)."""
     global GIOCO, NOTTE

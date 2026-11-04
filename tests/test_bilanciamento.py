@@ -96,6 +96,20 @@ class Bilanciamento(unittest.TestCase):
         self.assertTrue(55 <= senza <= 75, senza)
         self.assertTrue(55 <= con <= 80, con)
 
+    # INTB: i doni di Padellino e Valenza, coi forzieri della gola, stanno dentro la bisaccia piena (al massimo
+    # che si porta): con tutte le scorte Corrado non cambia, senza negozio i doni aiutano ma restano nella fascia.
+    def test_doni_e_forzieri_dentro_la_bisaccia(self):
+        import genera_storia as GS
+        regalati = {}
+        for d in GS.FORZIERI + GS.DONI:
+            regalati[d["oggetto"]] = regalati.get(d["oggetto"], 0) + d["quanti"]
+        self.assertEqual(regalati, {"CRESCIA": 3, "BISCOTTI": 5})
+        self.assertLessEqual(regalati["CRESCIA"], B.BISACCIA_PIENA[M.CRESCIA])
+        self.assertLessEqual(regalati["BISCOTTI"], B.BISACCIA_PIENA[M.BISCOTTI])
+        regalo = {M.CRESCIA: regalati["CRESCIA"], M.BISCOTTI: regalati["BISCOTTI"]}
+        solo_regali = B.misura(2, B.livelli_lungo_la_storia()[2], "medio", ceri=True, scorte=regalo)[0]
+        self.assertTrue(55 <= solo_regali <= 75, solo_regali)
+
     def test_il_medio_mangia_davvero(self):
         """La prova sopra non e' vuota: col pilota medio le Crescia si mangiano contro Corrado."""
         cura = M.EVENT_KINDS.index("CURA")

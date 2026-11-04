@@ -1,0 +1,16 @@
+# Gli interni esplorabili (INTC, interni/COPIONE_INTERNI.md): le cose da esaminare e i due doni.
+# Formato come testi/prova.testi. Le posizioni sono in tools/pittore_interni.py (COSE), i doni in genera_storia (DONI).
+ESAMINA_TAVERNA_CAMINO       | DIALOGO | Il paiolo di rame sopra il camino. Padellino dice che ha visto più zuppe lui dei consoli.
+ESAMINA_TAVERNA_FIASCHI      | DIALOGO | Fiaschi di rosso di Gubbio, in fila. Uno ha il tappo segnato: «di Padellino».
+ESAMINA_CONTI_CHIARINA       | DIALOGO | La chiarina di Fazio, lucida. Il pennoncello porta lo stemma della città.
+ESAMINA_CONTI_CHIAVI         | DIALOGO | Chiavi di ogni porta del borgo. Ognuna ha un nodo di spago colorato.
+ESAMINA_CARRADORE_CARRO      | DIALOGO | Le sponde si aprono come ali. «Ai carri ci metto le ali», dice sempre Rufino.
+ESAMINA_CARRADORE_RUOTE      | DIALOGO | Ruote cerchiate col ferro, appese ad asciugare. Nessuna è uguale all'altra.
+ESAMINA_SPEZIERIA_ALBARELLI  | DIALOGO | Vasi di spezie con la fascia azzurra. Su uno c'è scritto «elleboro: non toccare».
+ESAMINA_SPEZIERIA_DISEGNI    | DIALOGO | Ritratti a carboncino. C'è anche il vostro, monsignore. Vi ha fatto più giovane.
+ESAMINA_MEDICO_ROTOLI        | DIALOGO | Rotoli sugli assedi, annotati a margine. Su tutti torna la stessa parola: «grano».
+ESAMINA_MEDICO_LETTO         | DIALOGO | Un letto pulito, pronto. Vanni dice che serve sempre, prima o poi.
+ESAMINA_SALA_STEMMA          | DIALOGO | Lo stemma della città: il monte a cinque cime, in campo rosso.
+ESAMINA_SALA_LEGGIO          | DIALOGO | Gli statuti del Comune, aperti sul leggio. Le pagine nuove sono scritte fitte.
+DONO_PADELLINO               | DIALOGO | Padellino: «Questa è per dopo.» Ricevi 1 fetta di Crescia di Pasqua.
+DONO_VALENZA                 | DIALOGO | Valenza: «Per la salita, che sul monte si sviene.» Ricevi 2 Biscotti all'anice.

@@ -1118,6 +1118,58 @@ constexpr bool apri_forziere(GameState& p, int k)
     return true;
 }
 
+
+// Le cose da esaminare negli interni (INTC): la prima a portata di parola nell'area, -1 se nessuna. Si leggono
+// sempre, non cambiano niente.
+inline constexpr int DISTANZA_COSA = 14;    // come DISTANZA_PAROLA in storia_scena.cpp
+
+[[nodiscard]] constexpr int cosa_a_portata(int area, int x, int y)
+{
+    for(int k = 0; k < COSE; ++k)
+    {
+        const Cosa& c = COSA[k];
+        int dx = x - mondo::piedi_x(c.tx);
+        int dy = y - mondo::piedi_y(c.ty);
+
+        if(c.area == area && dx > -DISTANZA_COSA && dx < DISTANZA_COSA && dy > -DISTANZA_COSA && dy < DISTANZA_COSA)
+        {
+            return k;
+        }
+    }
+
+    return -1;
+}
+
+// Il dono che l'NPC d'ambiente 'npc' fa dopo le sue battute, la prima volta; -1 se nessuno o gia' fatto.
+[[nodiscard]] constexpr int dono_dell_npc(const GameState& p, int npc)
+{
+    for(int k = 0; k < DONI; ++k)
+    {
+        if(DONO[k].npc == npc && ! accesa(p, int(DONO[k].bandiera)))
+        {
+            return k;
+        }
+    }
+
+    return -1;
+}
+
+// Fa il dono k: l'oggetto (fino al massimo che se ne porta) e la bandiera. False se era gia' fatto.
+constexpr bool dai_dono(GameState& p, int k)
+{
+    if(k < 0 || k >= DONI || accesa(p, int(DONO[k].bandiera)))
+    {
+        return false;
+    }
+
+    const Dono& d = DONO[k];
+    int quanti = p.oggetti[d.oggetto] + d.quanti;
+    int massimo = battaglia::OGGETTI[d.oggetto].massimo;
+    p.oggetti[d.oggetto] = uint8_t(quanti > massimo ? massimo : quanti);
+    accendi_una(p, d.bandiera);
+    return true;
+}
+
 }
 
 #endif

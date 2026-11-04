@@ -117,6 +117,12 @@ public:
         return _e;
     }
 
+    // L'area del fondale caricato: durante la dissolvenza resta quella vecchia (la nuova si carica a meta').
+    [[nodiscard]] mondo::AreaId area_caricata() const
+    {
+        return _area_caricata;
+    }
+
     [[nodiscard]] bool in_dissolvenza() const
     {
         return _dissolvenza != 0;
