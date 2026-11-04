@@ -20,7 +20,7 @@ MAPPA_RIGA_VIA_XX_SETTEMBRE | AREA    | La via lunga fra le case di pietra.
 MAPPA_QUOTA_VIA_XX_SETTEMBRE | HUD     | +67 a +70 m
 MAPPA_RIGA_SANT_ANDREA    | AREA    | L'arco di San Marziale e la chiesa.
 MAPPA_QUOTA_SANT_ANDREA   | HUD     | +74 m
-MAPPA_RIGA_SANT_AGOSTINO  | AREA    | Porta Romana, la calcara, i conti.
+MAPPA_RIGA_SANT_AGOSTINO  | AREA    | Porta Romana, la calcara, la bottega.
 MAPPA_QUOTA_SANT_AGOSTINO | HUD     | +54 m
 MAPPA_RIGA_MONTE_INGINO   | AREA    | Nove stradoni a zig zag fino in cima.
 MAPPA_QUOTA_MONTE_INGINO  | HUD     | +100 a +350 m
