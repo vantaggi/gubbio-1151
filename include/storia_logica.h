@@ -981,8 +981,21 @@ constexpr int gioca_tutta(GameState& p, const Scena* tabella = SCENA, int quante
 // l'uscita del Condotto verso la gola resta chiusa finche' Corrado non e' battuto: «il duello da cui non si
 // fugge». Persa la battaglia si torna all'ingresso del Condotto e Corrado e' ancora li': si riprova a PV pieni.
 // -1 se nessun varco e' chiuso.
+// La bottega dei conti sbarrata (INTp): con BORGO_DENTRO, nel digiuno e nella notte, Fazio e i suoi stanno in
+// Sant'Andrea e la porta della bottega, in Sant'Agostino, non si apre.
+[[nodiscard]] constexpr bool bottega_sbarrata(const GameState& p)
+{
+    return accesa(p, Bandiera::BORGO_DENTRO) && fase_npc(p) != Fase::ULTIMATUM;
+}
+
 [[nodiscard]] constexpr int varco_chiuso(const GameState& p, int area)
 {
+    if(area == int(mondo::AreaId::SANT_AGOSTINO))
+    {
+        return bottega_sbarrata(p) ? mondo::varco_verso(mondo::AreaId::SANT_AGOSTINO,
+                                                        mondo::AreaId::BOTTEGA_CONTI_INTERNO) : -1;
+    }
+
     if(area != int(mondo::AreaId::CONDOTTO) || ! accesa(p, Bandiera::CORRADO_INCONTRATO) ||
        accesa(p, Bandiera::CORRADO_SCONFITTO))
     {
@@ -1168,6 +1181,26 @@ constexpr bool dai_dono(GameState& p, int k)
     p.oggetti[d.oggetto] = uint8_t(quanti > massimo ? massimo : quanti);
     accendi_una(p, d.bandiera);
     return true;
+}
+
+
+// La variante di fase della stanza (mondo::VARIANTE), -1 se nessuna: la taverna nel digiuno (vuota, gli sgabelli
+// sui tavoli), la bottega dei conti nella notte con BORGO_FUORI («l'hanno rovesciata»).
+[[nodiscard]] constexpr int variante_dell_area(const GameState& p, int area)
+{
+    Fase f = fase_npc(p);
+
+    if(area == int(mondo::AreaId::TAVERNA_INTERNO) && f == Fase::DIGIUNO)
+    {
+        return int(mondo::VarianteId::TAVERNA_INTERNO_DIGIUNO);
+    }
+
+    if(area == int(mondo::AreaId::BOTTEGA_CONTI_INTERNO) && f == Fase::NOTTE && accesa(p, Bandiera::BORGO_FUORI))
+    {
+        return int(mondo::VarianteId::BOTTEGA_CONTI_INTERNO_ROVESCIATA);
+    }
+
+    return -1;
 }
 
 }

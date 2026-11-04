@@ -246,6 +246,21 @@ void Esplorazione::imposta_notte(bool notte)
     }
 }
 
+void Esplorazione::imposta_variante(int variante)
+{
+    _variante = variante;
+
+    // il fondale gia' caricato e' quello dell'area: se la variante cambia, si ricarica (alla dissolvenza ci pensa
+    // il caricamento di meta' strada)
+    bool vale = variante >= 0 && variante < mondo::VARIANTI && mondo::VARIANTE[variante].area == _area_caricata;
+    int voluta = vale ? variante : -1;
+
+    if(_fondale && _area_caricata == _e.area && voluta != _variante_caricata)
+    {
+        _carica_fondale(false);
+    }
+}
+
 void Esplorazione::sospendi()
 {
     nascondi_etichetta();
@@ -283,11 +298,24 @@ void Esplorazione::_carica_fondale(bool etichetta)
     const Banchi& c = a.cupa ? BANCHI_CUPI : (_notte ? BANCHI_NOTTE : BANCHI_GIORNO);
     _palette.set_colors(bn::span<const bn::color>(c.colori));
 
+    // una stanza che cambia con la fase (INTp): stessi lati e stessa griglia, altri tile e altro fondale
+    const bn::tile* tile = a.tile;
+    int tile_conteggio = a.tile_conteggio;
+    const uint16_t* fondale = a.fondale;
+
+    if(_variante >= 0 && _variante < mondo::VARIANTI && mondo::VARIANTE[_variante].area == _e.area)
+    {
+        tile = mondo::VARIANTE[_variante].tile;
+        tile_conteggio = mondo::VARIANTE[_variante].tile_conteggio;
+        fondale = mondo::VARIANTE[_variante].fondale;
+    }
+
+    _variante_caricata = _variante >= 0 && fondale != a.fondale ? _variante : -1;
     _tiles = bn::regular_bg_tiles_ptr::create(
-        bn::regular_bg_tiles_item(bn::span<const bn::tile>(a.tile, a.tile_conteggio), bn::bpp_mode::BPP_4));
+        bn::regular_bg_tiles_item(bn::span<const bn::tile>(tile, tile_conteggio), bn::bpp_mode::BPP_4));
 
     bn::size lati(a.larghezza_fondale, a.altezza_fondale);
-    bn::regular_bg_map_item voce(*a.fondale, lati, bn::compression_type::NONE, 1, a.fondale_grande);
+    bn::regular_bg_map_item voce(*fondale, lati, bn::compression_type::NONE, 1, a.fondale_grande);
     _mezza_larghezza_mappa = lati.width() * mondo::TILE_PX / 2;
     _mezza_altezza_mappa = lati.height() * mondo::TILE_PX / 2;
     _fondale = bn::regular_bg_ptr::create(0, 0, bn::regular_bg_map_ptr::create(voce, *_tiles, _palette));
