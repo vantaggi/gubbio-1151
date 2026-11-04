@@ -137,6 +137,29 @@ class OrdineDelleAree(unittest.TestCase):
         self.assertNotEqual(ordine[-1], "aaa_interno")
 
 
+class PortaliAperti(unittest.TestCase):
+    """Dove si entra il portone e' aperto: il vano buio sopra le celle del varco (P2)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mondo = G.mondo_del_repo()
+
+    def test_i_portali_frontali_sono_aperti(self):
+        frontali = {"taverna": "san_pietro", "spezieria": "san_pietro", "casa_medico": "san_martino",
+                    "consoli": "piazza_grande"}
+        for mid, fuori in frontali.items():
+            a = area_preparata(fuori, self.mondo)
+            G.disegna_area(a, self.mondo)
+            aperti = dict(PI.PORTALI_APERTI.get(fuori, []))
+            self.assertGreater(aperti.get(mid, 0), 40, mid)
+
+    def test_negativa_senza_ingresso_niente_portale(self):
+        a = area_preparata("via_dei_consoli", self.mondo)
+        self.assertFalse(a.get("ingressi"))
+        G.disegna_area(a, self.mondo)
+        self.assertEqual(PI.PORTALI_APERTI.get("via_dei_consoli"), [])
+
+
 class ArriviDelleAree(unittest.TestCase):
 
     def test_quaranta_martiri_ha_l_arrivo_del_carradore(self):

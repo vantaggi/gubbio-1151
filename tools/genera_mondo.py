@@ -2351,6 +2351,7 @@ def ridipingi(a, celle, tile_di, mondo, elementi):
     PC.ombre_portate(q)
     if citta:
         PC.contorno_selettivo(q)
+    PI.apri_portali(q, a)                 # i portoni da cui si entra negli interni: aperti, col vano buio
     elementi["citta"] = dict(q.elementi)
     return q
 

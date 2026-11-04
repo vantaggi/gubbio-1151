@@ -1170,6 +1170,35 @@ def dipingi(q, a):
     return q
 
 
+PORTALI_APERTI = {}   # area -> [(monumento, pixel del vano)]
+
+
+def apri_portali(q, a):
+    """Il portone di un edificio dove si entra (riga 'ingresso' dell'area) si vede aperto: l'anta di legno
+    sopra le due celle del varco diventa il vano buio (P2: il quasi nero solo nei vani), con l'anta aperta
+    verso dentro come una lista di legno di 2 px sul lato in ombra (L1: la luce viene da sinistra, la lista e'
+    a destra). Solo i portali frontali (le celle del varco in fila orizzontale, sotto la facciata)."""
+    fatti = PORTALI_APERTI.setdefault(a["id"], [])
+    fatti.clear()
+    g = a["griglia"]
+    for lettera, mid in sorted(a.get("ingressi", {}).items()):
+        celle = [(x, y) for y, r in enumerate(g) for x, c in enumerate(r) if c == lettera]
+        ys = {y for _, y in celle}
+        if not celle or len(ys) != 1:
+            continue                                   # di fianco (bottega dei conti, carradore): il loro pittore
+        y = ys.pop()
+        x0, x1 = min(x for x, _ in celle) * 8, (max(x for x, _ in celle) + 1) * 8
+        alto, basso = max(0, y * 8 - 32), y * 8 + 8
+        legno = [(px, py) for py in range(alto, basso) for px in range(x0, x1)
+                 if q.px[py][px][0] == "legno e cuoio"]
+        if not legno:
+            continue
+        destra = max(px for px, _ in legno)
+        for px, py in legno:
+            q.px[py][px] = ("legno e cuoio", 1) if px >= destra - 1 else ("neutri", 0)
+        fatti.append((mid, len(legno)))
+
+
 SOSTITUZIONI = {}   # area -> [(colore voluto, colore messo)], tutti nella stessa rampa (nota alla regola C1)
 
 
