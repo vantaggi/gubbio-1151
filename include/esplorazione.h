@@ -103,7 +103,7 @@ private:
     bool _mosso = false;
     bool _corre = false;
 
-    void _carica_fondale();
+    void _carica_fondale(bool etichetta = true);
     void _mostra_etichetta(testi::TestoId id);
     void _mostra_cartiglio(bool visibile);
     void _dopo_evento(mondo::Evento evento);

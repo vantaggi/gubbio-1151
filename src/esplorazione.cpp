@@ -150,7 +150,9 @@ void Esplorazione::sospendi()
 
 void Esplorazione::ricompari()
 {
-    _carica_fondale();
+    // dopo una battaglia o una cutscene si resta nella stessa area: il cartiglio col nome non riappare,
+    // se no resterebbe a meta' (la sola iniziale) sotto il dialogo che segue, che non fa avanzare l'etichetta
+    _carica_fondale(false);
     _giocatore.set_visible(true);
 }
 
@@ -160,7 +162,7 @@ void Esplorazione::colloca_sulla_mappa(bn::sprite_ptr& sprite, int x, int y, int
     sprite.set_position(x - _mezza_larghezza_mappa, y - altezza / 2 - _mezza_altezza_mappa);
 }
 
-void Esplorazione::_carica_fondale()
+void Esplorazione::_carica_fondale(bool etichetta)
 {
     // Le celle sono gia' in ROM (include/mondo.h): Butano le copia in VRAM, o per una big map ne
     // carica solo la parte vicina allo schermo, e aggiunge da se' gli scostamenti di tile e palette.
@@ -188,7 +190,11 @@ void Esplorazione::_carica_fondale()
     _mezza_altezza_mappa = lati.height() * mondo::TILE_PX / 2;
     _fondale = bn::regular_bg_ptr::create(0, 0, bn::regular_bg_map_ptr::create(voce, *_tiles, _palette));
     _fondale->set_camera(_camera);
-    _mostra_etichetta(a.etichetta);
+    if(etichetta)
+    {
+        _mostra_etichetta(a.etichetta);
+    }
+
     aggiorna();
 }
 
