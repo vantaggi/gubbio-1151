@@ -310,3 +310,40 @@ class PortaliInScala(unittest.TestCase):
         t.arco(32 - 8 + 4, 20, 16, 28, PM.LEGNO_SCURO)
         xs = [x for x in range(t.w) if t.px[40][x] == PM.LEGNO_SCURO]
         self.assertGreater(max(xs), (9 // 2) * 8 + 7)
+
+
+class IngressiLeggibili(unittest.TestCase):
+    """Cioti 4 nov: in citta' si deve capire dove si entra. Ogni ingresso ha il vano aperto e luminoso (l'unico
+    della citta'), la soglia e la lanterna; le botteghe dove si entra hanno la tenda del mestiere."""
+
+    def _area(self, nome):
+        a, mondo = area(nome)
+        _, _, elementi = G.disegna_area(a, mondo)
+        return a, elementi["citta"]
+
+    def test_ogni_ingresso_disegnato(self):
+        for nome in ("san_martino", "san_pietro", "sant_agostino", "piazza_quaranta_martiri", "piazza_grande"):
+            a, el = self._area(nome)
+            self.assertEqual(el.get("ingresso", 0), len(a["ingressi"]), nome)
+            tende = sum(1 for mid in a["ingressi"].values() if mid in PC.TENDE)
+            self.assertEqual(el.get("tenda", 0), tende, nome)
+
+    def test_negativa_nessun_ingresso_senza_riga(self):
+        a, el = self._area("via_dei_consoli")
+        self.assertEqual(a.get("ingressi", {}), {})
+        self.assertEqual(el.get("ingresso", 0), 0)
+
+    def test_bottega_decorativa_chiusa(self):
+        """Le botteghe delle case hanno le imposte di legno: nel vano niente luce calda (O) e niente nero."""
+        q = PC.Quadro(4, 6)
+        PC._bottega(q, 2, 47, 18, 26, 1)
+        vano = [q.px[y][x] for y in range(47 - 20, 47 - 7) for x in range(5, 17)]
+        self.assertFalse(any(c[0] == PC.O for c in vano))
+        self.assertFalse(any(c == PC.NERO for c in vano))
+
+    def test_negativa_ingresso_luminoso(self):
+        """Il vano dell'ingresso, invece, ha la luce calda: e' quello che lo distingue."""
+        q = PC.Quadro(4, 6)
+        PC.dipingi_ingresso_frontale(q, 8, 24, 47)
+        vano = [q.px[y][x] for y in range(40, 47) for x in range(12, 20)]
+        self.assertTrue(any(c[0] == PC.O for c in vano))
