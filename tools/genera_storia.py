@@ -645,7 +645,8 @@ def narratore_della_regia(codice):
     """Le battute del narratore che la cutscene 'codice' dice nelle bande (regia/*.regia), nell'ordine."""
     import glob
     for p in sorted(glob.glob(os.path.join(RADICE, "regia", "*.regia"))):
-        righe = [r.split("#", 1)[0].strip() for r in open(p, encoding="utf-8")]
+        with open(p, encoding="utf-8") as f:
+            righe = [r.split("#", 1)[0].strip() for r in f]
         if any(r.startswith("cutscene ") and r.split()[1] == codice for r in righe):
             return [r.split()[1] for r in righe if r.startswith("narratore ")]
     return []
