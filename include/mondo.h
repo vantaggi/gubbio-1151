@@ -142,6 +142,7 @@ struct Area
     uint8_t varchi;
     Varco varco[VARCHI_MAX];
     Punto spawn[SPAWN_PER_AREA];
+    bool interno;                     // un interno ('interno' nel .area): fuori dalla nebbia della mappa
     bool cupa;                        // le stanze della gola: la palette cupa (PALETTE_FONDALI_CUPA)
 };
 
@@ -16976,6 +16977,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         { { 8, 2, testi::TestoId::AREA_PIAZZA_GRANDE }, { 1, 1, testi::TestoId::AREA_PIAZZA_GRANDE }, { 24, 1, testi::TestoId::AREA_PIAZZA_GRANDE }, { DUNGEON, 0, testi::TestoId::AREA_PIAZZA_GRANDE }, { DUNGEON, 0, testi::TestoId::AREA_PIAZZA_GRANDE }, { DUNGEON, 0, testi::TestoId::AREA_PIAZZA_GRANDE } },
         { { 22, 31 }, { 22, 31 }, { 10, 101 }, { 27, 5 }, { 18, 34 }, { 22, 31 }, { 22, 31 }, { 22, 31 } },
         false,
+        false,
     },
     {   // via_xx_settembre
         GRIGLIA_VIA_XX_SETTEMBRE, MAPPA_VIA_XX_SETTEMBRE, 22, 64,
@@ -16983,6 +16985,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_VIA_XX_SETTEMBRE, 4,
         { { 0, 2, testi::TestoId::AREA_VIA_XX_SETTEMBRE }, { 17, 1, testi::TestoId::AREA_VIA_XX_SETTEMBRE }, { 14, 4, testi::TestoId::AREA_VIA_XX_SETTEMBRE }, { 2, 3, testi::TestoId::AREA_VIA_XX_SETTEMBRE }, { DUNGEON, 0, testi::TestoId::AREA_VIA_XX_SETTEMBRE }, { DUNGEON, 0, testi::TestoId::AREA_VIA_XX_SETTEMBRE } },
         { { 11, 32 }, { 11, 8 }, { 11, 54 }, { 12, 5 }, { 11, 5 }, { 11, 32 }, { 11, 32 }, { 11, 32 } },
+        false,
         false,
     },
     {   // duomo_ducale
@@ -16992,6 +16995,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         { { 7, 3, testi::TestoId::AREA_DUOMO_DUCALE }, { 3, 1, testi::TestoId::AREA_DUOMO_DUCALE }, { 1, 4, testi::TestoId::AREA_DUOMO_DUCALE }, { DUNGEON, 0, testi::TestoId::AREA_DUOMO_DUCALE }, { DUNGEON, 0, testi::TestoId::AREA_DUOMO_DUCALE }, { DUNGEON, 0, testi::TestoId::AREA_DUOMO_DUCALE } },
         { { 27, 32 }, { 26, 9 }, { 31, 55 }, { 9, 17 }, { 27, 32 }, { 27, 32 }, { 27, 32 }, { 27, 32 } },
         false,
+        false,
     },
     {   // monte_ingino
         GRIGLIA_MONTE_INGINO, MAPPA_MONTE_INGINO, 128, 64,
@@ -16999,6 +17003,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_MONTE_INGINO, 3,
         { { 2, 2, testi::TestoId::AREA_MONTE_INGINO }, { 4, 1, testi::TestoId::AREA_MONTE_INGINO }, { 17, 3, testi::TestoId::AREA_MONTE_INGINO }, { DUNGEON, 0, testi::TestoId::AREA_MONTE_INGINO }, { DUNGEON, 0, testi::TestoId::AREA_MONTE_INGINO }, { DUNGEON, 0, testi::TestoId::AREA_MONTE_INGINO } },
         { { 43, 57 }, { 7, 8 }, { 119, 47 }, { 7, 18 }, { 43, 57 }, { 43, 57 }, { 43, 57 }, { 43, 57 } },
+        false,
         false,
     },
     {   // basilica
@@ -17008,6 +17013,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         { { 3, 2, testi::TestoId::AREA_BASILICA }, { 5, 1, testi::TestoId::AREA_BASILICA }, { 9, 1, testi::TestoId::AREA_BASILICA }, { DUNGEON, 0, testi::TestoId::AREA_BASILICA }, { DUNGEON, 0, testi::TestoId::AREA_BASILICA }, { DUNGEON, 0, testi::TestoId::AREA_BASILICA } },
         { { 24, 51 }, { 8, 30 }, { 54, 30 }, { 31, 54 }, { 24, 51 }, { 24, 51 }, { 24, 51 }, { 24, 51 } },
         false,
+        false,
     },
     {   // bottaccione
         GRIGLIA_BOTTACCIONE, MAPPA_BOTTACCIONE, 64, 64,
@@ -17015,6 +17021,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_BOTTACCIONE, 3,
         { { 4, 2, testi::TestoId::AREA_BOTTACCIONE }, { 6, 3, testi::TestoId::AREA_BOTTACCIONE }, { 13, 0, testi::TestoId::AREA_BOTTACCIONE }, { DUNGEON, 0, testi::TestoId::AREA_BOTTACCIONE }, { DUNGEON, 0, testi::TestoId::AREA_BOTTACCIONE }, { DUNGEON, 0, testi::TestoId::AREA_BOTTACCIONE } },
         { { 29, 32 }, { 8, 25 }, { 8, 41 }, { 51, 49 }, { 29, 32 }, { 29, 32 }, { 29, 32 }, { 29, 32 } },
+        false,
         false,
     },
     {   // san_martino
@@ -17024,6 +17031,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         { { 7, 2, testi::TestoId::AREA_SAN_MARTINO }, { 14, 1, testi::TestoId::AREA_SAN_MARTINO }, { 5, 2, testi::TestoId::AREA_SAN_MARTINO }, { 18, 1, testi::TestoId::AREA_SAN_MARTINO }, { 23, 1, testi::TestoId::AREA_SAN_MARTINO }, { DUNGEON, 0, testi::TestoId::AREA_SAN_MARTINO } },
         { { 39, 32 }, { 38, 77 }, { 8, 4 }, { 118, 32 }, { 8, 61 }, { 70, 32 }, { 39, 32 }, { 39, 32 } },
         false,
+        false,
     },
     {   // largo_bargello
         GRIGLIA_LARGO_BARGELLO, MAPPA_LARGO_BARGELLO, 31, 22,
@@ -17031,6 +17039,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_LARGO_BARGELLO, 3,
         { { 8, 1, testi::TestoId::AREA_LARGO_BARGELLO }, { 6, 1, testi::TestoId::AREA_LARGO_BARGELLO }, { 2, 1, testi::TestoId::AREA_LARGO_BARGELLO }, { DUNGEON, 0, testi::TestoId::AREA_LARGO_BARGELLO }, { DUNGEON, 0, testi::TestoId::AREA_LARGO_BARGELLO }, { DUNGEON, 0, testi::TestoId::AREA_LARGO_BARGELLO } },
         { { 20, 11 }, { 12, 12 }, { 17, 8 }, { 20, 12 }, { 20, 11 }, { 20, 11 }, { 20, 11 }, { 20, 11 } },
+        false,
         false,
     },
     {   // via_dei_consoli
@@ -17040,6 +17049,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         { { 7, 1, testi::TestoId::AREA_VIA_DEI_CONSOLI }, { 0, 3, testi::TestoId::AREA_VIA_DEI_CONSOLI }, { 14, 2, testi::TestoId::AREA_VIA_DEI_CONSOLI }, { DUNGEON, 0, testi::TestoId::AREA_VIA_DEI_CONSOLI }, { DUNGEON, 0, testi::TestoId::AREA_VIA_DEI_CONSOLI }, { DUNGEON, 0, testi::TestoId::AREA_VIA_DEI_CONSOLI } },
         { { 11, 32 }, { 10, 8 }, { 10, 54 }, { 9, 57 }, { 11, 32 }, { 11, 32 }, { 11, 32 }, { 11, 32 } },
         false,
+        false,
     },
     {   // basilica_interno
         GRIGLIA_BASILICA_INTERNO, MAPPA_BASILICA_INTERNO, 32, 44,
@@ -17047,6 +17057,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_BASILICA_INTERNO, 1,
         { { 4, 3, testi::TestoId::AREA_BASILICA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_BASILICA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_BASILICA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_BASILICA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_BASILICA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_BASILICA_INTERNO } },
         { { 16, 9 }, { 16, 34 }, { 16, 9 }, { 16, 9 }, { 16, 9 }, { 16, 9 }, { 16, 9 }, { 16, 9 } },
+        true,
         false,
     },
     {   // condotto
@@ -17055,6 +17066,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_CONDOTTO, 1,
         { { 11, 1, testi::TestoId::AREA_CONDOTTO }, { DUNGEON, 0, testi::TestoId::AREA_CONDOTTO }, { DUNGEON, 0, testi::TestoId::AREA_CONDOTTO }, { DUNGEON, 0, testi::TestoId::AREA_CONDOTTO }, { DUNGEON, 0, testi::TestoId::AREA_CONDOTTO }, { DUNGEON, 0, testi::TestoId::AREA_CONDOTTO } },
         { { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 } },
+        false,
         true,
     },
     {   // gola_arco
@@ -17063,6 +17075,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_GOLA_ARCO, 2,
         { { 12, 1, testi::TestoId::AREA_GOLA_ARCO }, { 10, 0, testi::TestoId::AREA_GOLA_ARCO }, { DUNGEON, 0, testi::TestoId::AREA_GOLA_ARCO }, { DUNGEON, 0, testi::TestoId::AREA_GOLA_ARCO }, { DUNGEON, 0, testi::TestoId::AREA_GOLA_ARCO }, { DUNGEON, 0, testi::TestoId::AREA_GOLA_ARCO } },
         { { 8, 15 }, { 55, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 } },
+        false,
         true,
     },
     {   // gola_miasmi
@@ -17071,6 +17084,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_GOLA_MIASMI, 2,
         { { 13, 1, testi::TestoId::AREA_GOLA_MIASMI }, { 11, 0, testi::TestoId::AREA_GOLA_MIASMI }, { DUNGEON, 0, testi::TestoId::AREA_GOLA_MIASMI }, { DUNGEON, 0, testi::TestoId::AREA_GOLA_MIASMI }, { DUNGEON, 0, testi::TestoId::AREA_GOLA_MIASMI }, { DUNGEON, 0, testi::TestoId::AREA_GOLA_MIASMI } },
         { { 8, 15 }, { 55, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 } },
+        false,
         true,
     },
     {   // gola_striscia
@@ -17079,6 +17093,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_GOLA_STRISCIA, 2,
         { { 5, 3, testi::TestoId::AREA_GOLA_STRISCIA }, { 12, 0, testi::TestoId::AREA_GOLA_STRISCIA }, { DUNGEON, 0, testi::TestoId::AREA_GOLA_STRISCIA }, { DUNGEON, 0, testi::TestoId::AREA_GOLA_STRISCIA }, { DUNGEON, 0, testi::TestoId::AREA_GOLA_STRISCIA }, { DUNGEON, 0, testi::TestoId::AREA_GOLA_STRISCIA } },
         { { 8, 15 }, { 55, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 }, { 8, 15 } },
+        false,
         true,
     },
     {   // piazza_quaranta_martiri
@@ -17088,6 +17103,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         { { 6, 2, testi::TestoId::AREA_QUARANTA_MARTIRI }, { 8, 3, testi::TestoId::AREA_QUARANTA_MARTIRI }, { 15, 1, testi::TestoId::AREA_QUARANTA_MARTIRI }, { 1, 3, testi::TestoId::AREA_QUARANTA_MARTIRI }, { 18, 2, testi::TestoId::AREA_QUARANTA_MARTIRI }, { 22, 1, testi::TestoId::AREA_QUARANTA_MARTIRI } },
         { { 64, 54 }, { 118, 34 }, { 118, 72 }, { 41, 95 }, { 85, 95 }, { 63, 8 }, { 38, 56 }, { 64, 54 } },
         false,
+        false,
     },
     {   // san_pietro
         GRIGLIA_SAN_PIETRO, MAPPA_SAN_PIETRO, 55, 45,
@@ -17095,6 +17111,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_SAN_PIETRO, 4,
         { { 14, 3, testi::TestoId::AREA_SAN_PIETRO }, { 16, 2, testi::TestoId::AREA_SAN_PIETRO }, { 19, 1, testi::TestoId::AREA_SAN_PIETRO }, { 20, 1, testi::TestoId::AREA_SAN_PIETRO }, { DUNGEON, 0, testi::TestoId::AREA_SAN_PIETRO }, { DUNGEON, 0, testi::TestoId::AREA_SAN_PIETRO } },
         { { 26, 22 }, { 20, 8 }, { 19, 35 }, { 26, 15 }, { 9, 15 }, { 26, 22 }, { 26, 22 }, { 26, 22 } },
+        false,
         false,
     },
     {   // sant_agostino
@@ -17104,6 +17121,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         { { 17, 2, testi::TestoId::AREA_SANT_AGOSTINO }, { 15, 2, testi::TestoId::AREA_SANT_AGOSTINO }, { 21, 1, testi::TestoId::AREA_SANT_AGOSTINO }, { DUNGEON, 0, testi::TestoId::AREA_SANT_AGOSTINO }, { DUNGEON, 0, testi::TestoId::AREA_SANT_AGOSTINO }, { DUNGEON, 0, testi::TestoId::AREA_SANT_AGOSTINO } },
         { { 28, 28 }, { 49, 31 }, { 28, 8 }, { 45, 30 }, { 28, 28 }, { 28, 28 }, { 28, 28 }, { 28, 28 } },
         false,
+        false,
     },
     {   // sant_andrea
         GRIGLIA_SANT_ANDREA, MAPPA_SANT_ANDREA, 62, 43,
@@ -17111,6 +17129,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_SANT_ANDREA, 3,
         { { 1, 2, testi::TestoId::AREA_SANT_ANDREA }, { 16, 1, testi::TestoId::AREA_SANT_ANDREA }, { 3, 3, testi::TestoId::AREA_SANT_ANDREA }, { DUNGEON, 0, testi::TestoId::AREA_SANT_ANDREA }, { DUNGEON, 0, testi::TestoId::AREA_SANT_ANDREA }, { DUNGEON, 0, testi::TestoId::AREA_SANT_ANDREA } },
         { { 43, 26 }, { 42, 8 }, { 8, 25 }, { 52, 12 }, { 43, 26 }, { 43, 26 }, { 43, 26 }, { 43, 26 } },
+        false,
         false,
     },
     {   // teatro_romano
@@ -17120,6 +17139,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         { { 6, 4, testi::TestoId::AREA_TEATRO_ROMANO }, { 14, 5, testi::TestoId::AREA_TEATRO_ROMANO }, { DUNGEON, 0, testi::TestoId::AREA_TEATRO_ROMANO }, { DUNGEON, 0, testi::TestoId::AREA_TEATRO_ROMANO }, { DUNGEON, 0, testi::TestoId::AREA_TEATRO_ROMANO }, { DUNGEON, 0, testi::TestoId::AREA_TEATRO_ROMANO } },
         { { 48, 30 }, { 54, 30 }, { 31, 55 }, { 48, 30 }, { 48, 30 }, { 48, 30 }, { 48, 30 }, { 48, 30 } },
         false,
+        false,
     },
     {   // taverna_interno
         GRIGLIA_TAVERNA_INTERNO, MAPPA_TAVERNA_INTERNO, 30, 20,
@@ -17127,6 +17147,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_TAVERNA_INTERNO, 1,
         { { 15, 3, testi::TestoId::AREA_TAVERNA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_TAVERNA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_TAVERNA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_TAVERNA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_TAVERNA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_TAVERNA_INTERNO } },
         { { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 } },
+        true,
         false,
     },
     {   // spezieria_interno
@@ -17135,6 +17156,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_SPEZIERIA_INTERNO, 1,
         { { 15, 4, testi::TestoId::AREA_SPEZIERIA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_SPEZIERIA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_SPEZIERIA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_SPEZIERIA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_SPEZIERIA_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_SPEZIERIA_INTERNO } },
         { { 15, 13 }, { 15, 13 }, { 15, 13 }, { 15, 13 }, { 15, 13 }, { 15, 13 }, { 15, 13 }, { 15, 13 } },
+        true,
         false,
     },
     {   // bottega_conti_interno
@@ -17143,6 +17165,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_BOTTEGA_CONTI_INTERNO, 1,
         { { 16, 3, testi::TestoId::AREA_BOTTEGA_CONTI_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_BOTTEGA_CONTI_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_BOTTEGA_CONTI_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_BOTTEGA_CONTI_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_BOTTEGA_CONTI_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_BOTTEGA_CONTI_INTERNO } },
         { { 15, 13 }, { 15, 13 }, { 15, 13 }, { 15, 13 }, { 15, 13 }, { 15, 13 }, { 15, 13 }, { 15, 13 } },
+        true,
         false,
     },
     {   // carradore_interno
@@ -17151,6 +17174,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_CARRADORE_INTERNO, 1,
         { { 14, 6, testi::TestoId::AREA_CARRADORE_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_CARRADORE_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_CARRADORE_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_CARRADORE_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_CARRADORE_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_CARRADORE_INTERNO } },
         { { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 } },
+        true,
         false,
     },
     {   // casa_medico_interno
@@ -17159,6 +17183,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_CASA_MEDICO_INTERNO, 1,
         { { 6, 5, testi::TestoId::AREA_CASA_MEDICO_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_CASA_MEDICO_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_CASA_MEDICO_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_CASA_MEDICO_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_CASA_MEDICO_INTERNO }, { DUNGEON, 0, testi::TestoId::AREA_CASA_MEDICO_INTERNO } },
         { { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 }, { 16, 13 } },
+        true,
         false,
     },
     {   // sala_consoli
@@ -17167,6 +17192,7 @@ inline constexpr Area AREE[AREE_CONTEGGIO] = {
         testi::TestoId::AREA_SALA_CONSOLI, 1,
         { { 0, 4, testi::TestoId::AREA_SALA_CONSOLI }, { DUNGEON, 0, testi::TestoId::AREA_SALA_CONSOLI }, { DUNGEON, 0, testi::TestoId::AREA_SALA_CONSOLI }, { DUNGEON, 0, testi::TestoId::AREA_SALA_CONSOLI }, { DUNGEON, 0, testi::TestoId::AREA_SALA_CONSOLI }, { DUNGEON, 0, testi::TestoId::AREA_SALA_CONSOLI } },
         { { 15, 15 }, { 15, 15 }, { 15, 15 }, { 15, 15 }, { 15, 15 }, { 15, 15 }, { 15, 15 }, { 15, 15 } },
+        true,
         false,
     },
 };

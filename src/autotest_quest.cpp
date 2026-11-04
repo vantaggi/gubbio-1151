@@ -489,7 +489,7 @@ namespace
         return true;
     }
 
-    static_assert(bandiere_nell_intervallo_quest() && sizeof(GameState) == 64,
+    static_assert(bandiere_nell_intervallo_quest() && sizeof(GameState) == 80,
                   "le bandiere delle quest giocabili fuori da 64-127, doppie, o GameState cambiato");
     static_assert(QUEST_GIOCO[0].pezzi == 3 && QUEST_GIOCO[0].primo_pezzo == FERRO_1 && QUEST_GIOCO[1].pezzi == 4 &&
                   QUEST_GIOCO[1].primo_pezzo == ELLEBORO_1 && QUEST_GIOCO[2].pezzi == 1 && QUEST_GIOCO[2].primo_pezzo == ROSA_RIPRESA,

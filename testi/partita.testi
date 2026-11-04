@@ -19,3 +19,26 @@ STORIA_FINE               | DIALOGO | Fine del primo atto. La cronaca continua..
 FORZIERE_CRESCIA          | DIALOGO | Un forziere fra i sassi. Ricevi 2 fette di Crescia di Pasqua.
 FORZIERE_BISCOTTI         | DIALOGO | Un forziere fra i sassi. Ricevi 3 Biscotti all'anice.
 CONDOTTO_CHIUSO           | DIALOGO | Corrado vi sbarra il ritorno. Da qui si esce solo battendolo.
+# MOB: il cartiglio delle righe OBIETTIVO (la cronaca e gli incarichi), al posto del nome di chi parla
+ETICHETTA_OBIETTIVO       | HUD     | Obiettivo
+# MAI: gli aiuti al giocatore (menu/PROPOSTA.md sez. 3.8)
+PROMEMORIA_NESSUNO        | DIALOGO | Per ora nessun obiettivo: gira la città e ascolta la gente.
+FASE_ULTIMATUM            | AREA    | Il primo giorno
+FASE_DIGIUNO              | AREA    | Il digiuno
+FASE_NOTTE                | AREA    | La notte prima dell'alba
+FASE_DOPO_L_ALBA          | AREA    | La terza alba
+TITOLO_LIVELLI            | HUD     | Liv.
+DOVE_ERAVAMO              | HUD     | Dove eravamo
+DOVE_ERAVAMO_INCARICHI    | HUD     | Incarichi aperti:
+DOVE_ERAVAMO_TEMPO        | HUD     | Tempo
+DOVE_ERAVAMO_AIUTO        | HUD     | A per riprendere
+SCONFITTA_INGRESSO        | DIALOGO | Sconfitti, tornate all'ingresso dell'area. Il nemico è ancora lì.
+SCONFITTA_ARCO            | DIALOGO | Sconfitti, ripiegate verso i miasmi. Per andare avanti si ripassa sotto l'arco.
+SCONFITTA_SUBITO          | DIALOGO | Sconfitti. Riprendete fiato: lo scontro ricomincia.
+RIPROVA_DOMANDA           | DIALOGO | Corrado vi ha battuti. Che cosa fate?
+RIPROVA_SCONTRO           | SCELTA  | Riprova lo scontro
+RIPROVA_CARICA            | SCELTA  | Carica
+RIPROVA_TITOLO            | SCELTA  | Torna al titolo
+CARICA_SLOT_1             | SCELTA  | Slot 1
+CARICA_SLOT_2             | SCELTA  | Slot 2
+CARICA_FALLITO            | DIALOGO | Questo slot non si carica.

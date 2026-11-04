@@ -106,6 +106,26 @@ class CopioneRotto(unittest.TestCase):
         self.assertTrue({"BANDIERA_SCONOSCIUTA", "NESSUN_FINALE"} & codici(r))
 
 
+    def test_obiettivo_con_meta_sconosciuta(self):
+        # MOB: l'area meta scritta a mano dev'essere un'area del mondo
+        r = self.rompi("01_atto_I.md", "(area: TEATRO_ROMANO)", "(area: TEATRO_GRECO)")
+        self.assertIn("OBIETTIVO_SENZA_META", codici(r))
+
+    def test_obiettivo_senza_scena_dopo(self):
+        # MOB: una riga OBIETTIVO nell'ultima scena, senza «(area: ID)», non ha meta
+        r = self.rompi("02_bottaccione_epilogo.md", "## E-02 · La vetrata",
+                       "## E-02 · La vetrata\n\n- OBIETTIVO: Guarda la vetrata.\n")
+        self.assertIn("OBIETTIVO_SENZA_META", codici(r))
+
+    def test_obiettivo_irraggiungibile(self):
+        # MOB: senza il varco fra Piazza Grande e via XX Settembre la meta di A1-04 (Piazza Grande) non si raggiunge
+        archi = [a for a in GT.archi_del_mondo() if "PIAZZA_GRANDE" not in a]
+        self.assertTrue(GT.meta_raggiungibile("SAN_MARTINO", "TEATRO_ROMANO", archi))
+        self.assertFalse(GT.meta_raggiungibile("SAN_MARTINO", "PIAZZA_GRANDE", archi))
+        m = GT.carica_v1(COPIONE)
+        self.assertEqual(GT.controlla_obiettivi(m), [])
+        self.assertIn("OBIETTIVO_IRRAGGIUNGIBILE", {p["codice"] for p in GT.controlla_obiettivi(m, archi)})
+
     def test_regola_dei_nomi(self):
         # «Sant'Ubaldo» detto come persona fuori dalla Basilica; «di Sant'Ubaldo» (cose e luoghi) va bene
         r = self.rompi("02_bottaccione_epilogo.md", "- SCELTA: Sì, è ora / Non ancora",

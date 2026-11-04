@@ -1,0 +1,53 @@
+# GENERATO da tools/genera_cartelli.py da mondo/grafo.json: non modificare a mano.
+# La seconda riga dei cartelli ai varchi (MAI): la porta e dove si va oltre la destinazione.
+
+CARTELLO_PIAZZA_GRANDE_VIA_DEI_CONSOLI          | AREA | Bargello, Quaranta Martiri
+CARTELLO_PIAZZA_GRANDE_VIA_XX_SETTEMBRE         | AREA | Quaranta Martiri, Sant'Andrea, Duomo
+CARTELLO_VIA_DEI_CONSOLI_PIAZZA_GRANDE          | AREA | via XX Settembre
+CARTELLO_VIA_DEI_CONSOLI_LARGO_BARGELLO         | AREA | San Martino, Duomo
+CARTELLO_VIA_DEI_CONSOLI_PIAZZA_QUARANTA_MARTIRI| AREA | San Martino, Teatro Romano
+CARTELLO_LARGO_BARGELLO_VIA_DEI_CONSOLI         | AREA | Piazza Grande, Quaranta Martiri
+CARTELLO_LARGO_BARGELLO_SAN_MARTINO             | AREA | Bottaccione, Quaranta Martiri
+CARTELLO_LARGO_BARGELLO_DUOMO_DUCALE            | AREA | via XX Settembre, Monte Ingino
+CARTELLO_SAN_MARTINO_LARGO_BARGELLO             | AREA | via dei Consoli, Duomo
+CARTELLO_SAN_MARTINO_BOTTACCIONE                | AREA | Porta Metauro, poi Basilica, la gola
+CARTELLO_SAN_MARTINO_PIAZZA_QUARANTA_MARTIRI    | AREA | Teatro Romano, via dei Consoli
+CARTELLO_SAN_MARTINO_TEATRO_ROMANO              | AREA | Porta Castello, poi Quaranta Martiri
+CARTELLO_TEATRO_ROMANO_SAN_MARTINO              | AREA | Porta Castello, poi Bargello, Bottaccione
+CARTELLO_TEATRO_ROMANO_PIAZZA_QUARANTA_MARTIRI  | AREA | Porta degli Ortacci, poi San Martino
+CARTELLO_PIAZZA_QUARANTA_MARTIRI_SAN_MARTINO    | AREA | Bargello, Bottaccione, Teatro Romano
+CARTELLO_PIAZZA_QUARANTA_MARTIRI_TEATRO_ROMANO  | AREA | Porta degli Ortacci, poi San Martino
+CARTELLO_PIAZZA_QUARANTA_MARTIRI_VIA_DEI_CONSOLI| AREA | Piazza Grande, Bargello
+CARTELLO_PIAZZA_QUARANTA_MARTIRI_VIA_XX_SETTEMBRE| AREA | Piazza Grande, Sant'Andrea, Duomo
+CARTELLO_PIAZZA_QUARANTA_MARTIRI_SAN_PIETRO     | AREA | Sant'Agostino
+CARTELLO_SAN_PIETRO_PIAZZA_QUARANTA_MARTIRI     | AREA | San Martino, Teatro Romano, via dei Consoli
+CARTELLO_SAN_PIETRO_SANT_AGOSTINO               | AREA | Porta San Pietro, poi Sant'Andrea
+CARTELLO_VIA_XX_SETTEMBRE_PIAZZA_QUARANTA_MARTIRI| AREA | San Martino, Teatro Romano, via dei Consoli
+CARTELLO_VIA_XX_SETTEMBRE_PIAZZA_GRANDE         | AREA | via dei Consoli
+CARTELLO_VIA_XX_SETTEMBRE_SANT_ANDREA           | AREA | Sant'Agostino, Monte Ingino
+CARTELLO_VIA_XX_SETTEMBRE_DUOMO_DUCALE          | AREA | Monte Ingino, Bargello
+CARTELLO_SANT_AGOSTINO_SANT_ANDREA              | AREA | Porta Romana, poi via XX Settembre
+CARTELLO_SANT_AGOSTINO_SAN_PIETRO               | AREA | Porta San Pietro, poi Quaranta Martiri
+CARTELLO_SANT_ANDREA_VIA_XX_SETTEMBRE           | AREA | Quaranta Martiri, Piazza Grande, Duomo
+CARTELLO_SANT_ANDREA_SANT_AGOSTINO              | AREA | Porta Romana, poi San Pietro
+CARTELLO_SANT_ANDREA_MONTE_INGINO               | AREA | Porta Sant'Ubaldo, poi Duomo, Basilica
+CARTELLO_DUOMO_DUCALE_VIA_XX_SETTEMBRE          | AREA | Quaranta Martiri, Piazza Grande
+CARTELLO_DUOMO_DUCALE_MONTE_INGINO              | AREA | Porta Sant'Ubaldo, poi Sant'Andrea, Basilica
+CARTELLO_DUOMO_DUCALE_LARGO_BARGELLO            | AREA | via dei Consoli, San Martino
+CARTELLO_MONTE_INGINO_DUOMO_DUCALE              | AREA | Porta Sant'Ubaldo, poi via XX Settembre
+CARTELLO_MONTE_INGINO_SANT_ANDREA               | AREA | Porta Sant'Ubaldo, poi via XX Settembre
+CARTELLO_MONTE_INGINO_BASILICA                  | AREA | Bottaccione, dentro la Basilica
+CARTELLO_BASILICA_MONTE_INGINO                  | AREA | Duomo, Sant'Andrea
+CARTELLO_BASILICA_BOTTACCIONE                   | AREA | San Martino, la gola
+CARTELLO_BASILICA_BASILICA_INTERNO              | AREA | Qui la strada finisce.
+CARTELLO_BASILICA_INTERNO_BASILICA              | AREA | Monte Ingino, Bottaccione
+CARTELLO_BOTTACCIONE_SAN_MARTINO                | AREA | Porta Metauro, poi Bargello
+CARTELLO_BOTTACCIONE_BASILICA                   | AREA | Monte Ingino, dentro la Basilica
+CARTELLO_BOTTACCIONE_GOLA_STRISCIA              | AREA | i miasmi
+CARTELLO_GOLA_STRISCIA_BOTTACCIONE              | AREA | San Martino, Basilica
+CARTELLO_GOLA_STRISCIA_GOLA_MIASMI              | AREA | l'arco
+CARTELLO_GOLA_MIASMI_GOLA_STRISCIA              | AREA | Bottaccione
+CARTELLO_GOLA_MIASMI_GOLA_ARCO                  | AREA | il Condotto
+CARTELLO_GOLA_ARCO_GOLA_MIASMI                  | AREA | la gola
+CARTELLO_GOLA_ARCO_CONDOTTO                     | AREA | Qui la strada finisce.
+CARTELLO_CONDOTTO_GOLA_ARCO                     | AREA | i miasmi
