@@ -71,8 +71,8 @@ def fila(nome):
     t = Tela(W, H)
     gambe = alto - max(2, alto // 5) - alto * 2 // 5
     t.rett(0, piedi - gambe, W, gambe + 3, F_PRATO)
-    for x in range(0, W, 5):
-        t.punto(x + (x // 5) % 3, piedi + 1, F_FERRO_S if alto >= 12 else F_PRATO)
+    for x in range(0, W, 5):                                   # i sassi del prato, di 2 px (P3)
+        t.rett(x + (x // 5) % 3, piedi + 1, 2, 1, F_FERRO_S if alto >= 12 else F_PRATO)
     r = random.Random(len(nome))
     citta = ST.COALIZIONE
     k = 0
@@ -130,7 +130,9 @@ def colli(momento):
     for y in range(66, QUADRO):
         for x in range(W):
             campo = (x // 34 + (y - 66) // 9) % 3
-            t.punto(x, y, (7, 8, 9)[campo] if (x + y) % 5 else 6)
+            # i campi arati: i solchi orizzontali (niente tratteggio sul suolo, P5); il prato senza solchi
+            solco = campo != 2 and (y - 66) % 3 == 2
+            t.punto(x, y, (6, 7, 8)[campo] if solco else (7, 8, 9)[campo])
     for y in range(66, QUADRO):
         x = int(250 + (y - 66) * 2.2)
         t.rett(x, y, 3 + (y - 66) // 10, 1, 14)
@@ -169,6 +171,10 @@ def araldo(momento):
             t.rett(zx - 1, suolo - 2, 4, 2, F_NERO)
     # il corpo, il collo, la testa, la coda
     t.ellisse(cx, suolo - 32, 22, 10, bruno)
+    for y in range(suolo - 27, suolo - 21):                    # la pancia in ombra (L2): il cavallo e' un solido
+        for x in range(cx - 22, cx + 23):
+            if t.px[y][x] == bruno:
+                t.punto(x, y, bruno_s)
     t.linea(cx - 16, suolo - 36, cx - 25, suolo - 52, bruno, 9)          # il collo, inclinato in avanti
     t.linea(cx - 22, suolo - 56, cx - 21, suolo - 40, bruno_s, 2)        # la criniera
     t.linea(cx - 27, suolo - 54, cx - 37, suolo - 45, bruno, 6)          # la testa, il muso in basso
@@ -181,10 +187,16 @@ def araldo(momento):
     # la gualdrappa rossa col bordo d'oro e il grifo bianco
     t.rett(cx - 14, suolo - 40, 34, 18, rosso)
     t.rett(cx - 14, suolo - 23, 34, 1, oro)
+    luce_rossa = INDICI_FANTI[("vermiglio comunale", 2)]
+    t.rett(cx - 14, suolo - 40, 34, 1, luce_rossa)                 # la luce sul bordo alto e sinistro (L1)
+    t.rett(cx - 14, suolo - 40, 1, 17, luce_rossa)
+    t.rett(cx + 19, suolo - 39, 1, 16, F_NERO)                     # e l'ombra sul destro
     grifo(t, cx + 2, suolo - 37, bianco, oro)
     # il cavaliere: la gamba, il sopravveste rosso col grifo, il braccio, l'elmo
     t.rett(cx - 4, suolo - 44, 5, 16, F_FERRO)
     t.rett(cx - 6, suolo - 64, 13, 22, rosso)
+    t.rett(cx - 6, suolo - 64, 1, 22, luce_rossa)
+    t.rett(cx + 6, suolo - 64, 1, 22, F_NERO)
     grifo(t, cx - 3, suolo - 60, bianco, oro)
     t.rett(cx - 10, suolo - 60, 6, 4, F_FERRO)
     t.rett(cx - 3, suolo - 73, 8, 9, F_FERRO)

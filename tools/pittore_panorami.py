@@ -717,10 +717,18 @@ def pergamena_con(battute):
     alla loro citta'; il nome compare accanto quando il narratore lo dice (le battute date). Gubbio e'
     segnata d'oro, col suo drappo piu' grande."""
     t = Tela(W, H, P_CARTA)
-    for y in range(H):
-        for x in range(W):
-            if (x % 8, y % 8) in ((3, 5), (7, 1)):
-                t.punto(x, y, P_CARTA_S)
+    r = random.Random(13)
+    for _ in range(520):                       # le fibre della pergamena: tratti di 2-4 px, mai un punto (P3)
+        x, y = r.randrange(W), r.randrange(3, QUADRO - 3)
+        t.rett(x, y, r.choice((2, 3, 4)), 1, P_CARTA_S)
+    # la pergamena ingiallita e un po' imbarcata (L2): il bordo in alto e quello in basso piu' scuri,
+    # a lembi irregolari, cosi' il chiaro resta al centro, dove stanno i segni (C5)
+    for x in range(W):
+        sopra = 4 + int(2 * math.sin(x / 11.0) + 1.5 * math.sin(x / 4.3))
+        sotto = 5 + int(2 * math.sin(x / 9.0 + 1) + 1.5 * math.sin(x / 3.7))
+        t.rett(x, 2, 1, sopra, P_CARTA_S)
+        t.rett(x, QUADRO - 2 - sotto, 1, sotto, P_CARTA_S)
+        t.rett(x, QUADRO - 4, 1, 2, P_RILIEVO)
     t.rett(0, 0, W, 2, P_INCHIOSTRO)
     t.rett(0, QUADRO - 2, W, 2, P_INCHIOSTRO)
     # l'Appennino: colline lungo il crinale, il Monte Ingino dietro Gubbio
@@ -749,8 +757,9 @@ def pergamena_con(battute):
         t.rett(asta, fy - 2, 1, BANDIERA + 5, P_ASTA)
         ax, ay = asta, fy + BANDIERA + 2
         n = max(abs(cx - ax), abs(cy - ay), 1)
-        for i in range(0, n, 2):
-            t.punto(round(ax + (cx - ax) * i / n), round(ay + (cy - ay) * i / n), P_INCHIOSTRO)
+        for i in range(0, n, 4):                              # il filo a trattini di 2 px (P3)
+            for j in (i, i + 1):
+                t.punto(round(ax + (cx - ax) * j / n), round(ay + (cy - ay) * j / n), P_INCHIOSTRO)
         t.rett(cx - 1, cy - 1, 3, 3, ST.indici_o(INDICI_PERGAMENA, ST.CONTORNO))
         ST.drappo(t, fx, fy, ST.per_id(ident)["gioco"], INDICI_PERGAMENA, BANDIERA, BANDIERA)
         if ident in nomi:
