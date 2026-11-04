@@ -374,32 +374,13 @@ void Esplorazione::_carica_fondale(bool etichetta)
     _camera_ferma = true;
     segna(2);
 
-    // i centri dei varchi in un giro solo della griglia (come aiuti::centro_del_varco, per tutti insieme)
+    // i centri dei varchi: si cercano nei frame seguenti, un pezzo di griglia per frame (_cerca_i_varchi)
+    _varchi_cella = 0;
+    _varchi_pronti = false;
+
+    for(int k = 0; k < mondo::VARCHI_MAX; ++k)
     {
-        int sx[mondo::VARCHI_MAX] = {}, sy[mondo::VARCHI_MAX] = {}, n[mondo::VARCHI_MAX] = {};
-        const uint8_t* g = a.griglia;
-        int i = 0;
-
-        for(int ty = 0; ty < a.altezza; ++ty)
-        {
-            for(int tx = 0; tx < a.larghezza; ++tx, ++i)
-            {
-                int k = int(g[i]) - mondo::PRIMO_VARCO;
-
-                if(k >= 0 && k < a.varchi)
-                {
-                    sx[k] += tx;
-                    sy[k] += ty;
-                    ++n[k];
-                }
-            }
-        }
-
-        for(int k = 0; k < a.varchi; ++k)
-        {
-            _centri[k] = n[k] ? aiuti::Punto{ (sx[k] * mondo::TILE_PX) / n[k] + mondo::TILE_PX / 2,
-                                              (sy[k] * mondo::TILE_PX) / n[k] + mondo::TILE_PX / 2 } : aiuti::Punto{ -1, -1 };
-        }
+        _varchi_sx[k] = _varchi_sy[k] = _varchi_n[k] = 0;
     }
 
     segna(3);
@@ -407,11 +388,6 @@ void Esplorazione::_carica_fondale(bool etichetta)
     BN_LOG("PREST carica area ", int(_e.area), " palette ", tempi[0], " tile ", tempi[1], " mappa ", tempi[2], " varchi ",
            tempi[3]);
 
-    for(int k = 0; k < a.varchi; ++k)
-    {
-        aiuti::Punto c = aiuti::centro_del_varco(a, k);
-        BN_ASSERT(c.x == _centri[k].x && c.y == _centri[k].y, "Centro del varco ", k);
-    }
 #endif
 
     if(etichetta)
@@ -542,6 +518,82 @@ void Esplorazione::_anima_giocatore()
 
     _giocatore.set_horizontal_flip(_direzione == SINISTRA);
     _mosso = false;
+}
+
+// I centri dei varchi dell'area caricata (come aiuti::centro_del_varco, per tutti insieme), CELLE_PER_FRAME celle a
+// frame: tutta la griglia in un frame costava un quinto di frame in una big map, proprio nel frame gia' pesante del
+// cambio d'area. Le celle dei varchi valgono da PRIMO_VARCO (64) in su: una parola di 4 celle senza i bit 6 e 7 accesi
+// non ne ha nessuna e si salta. 'tutto' finisce subito (il promemoria di Select, che li vuole adesso).
+void Esplorazione::_cerca_i_varchi(bool tutto)
+{
+    static_assert(mondo::PRIMO_VARCO == 64, "il salto a parole cerca i bit 6 e 7 delle celle");
+    constexpr int CELLE_PER_FRAME = 2048;
+
+    if(_varchi_pronti)
+    {
+        return;
+    }
+
+    const mondo::Area& a = mondo::area(_area_caricata);
+    const uint8_t* g = a.griglia;
+    int celle = a.larghezza * a.altezza;
+    int i = _varchi_cella;
+    int fine = tutto || celle - i < CELLE_PER_FRAME ? celle : i + CELLE_PER_FRAME;
+
+    auto conta = [&](int j)
+    {
+        int k = int(g[j]) - mondo::PRIMO_VARCO;
+
+        if(k >= 0 && k < a.varchi)
+        {
+            _varchi_sx[k] += j % a.larghezza;
+            _varchi_sy[k] += j / a.larghezza;
+            ++_varchi_n[k];
+        }
+    };
+
+    for(; i < fine && (reinterpret_cast<uintptr_t>(g + i) & 3); ++i)
+    {
+        conta(i);
+    }
+
+    const uint32_t* parole = reinterpret_cast<const uint32_t*>(g + i);
+
+    for(; i + 4 <= fine; i += 4, ++parole)
+    {
+        if(*parole & 0xC0C0C0C0u)
+        {
+            for(int j = i; j < i + 4; ++j)
+            {
+                conta(j);
+            }
+        }
+    }
+
+    for(; i < fine; ++i)
+    {
+        conta(i);
+    }
+
+    _varchi_cella = i;
+
+    if(i < celle)
+    {
+        return;
+    }
+
+    for(int k = 0; k < a.varchi; ++k)
+    {
+        int n = _varchi_n[k];
+        _centri[k] = n ? aiuti::Punto{ (_varchi_sx[k] * mondo::TILE_PX) / n + mondo::TILE_PX / 2,
+                                       (_varchi_sy[k] * mondo::TILE_PX) / n + mondo::TILE_PX / 2 } : aiuti::Punto{ -1, -1 };
+#ifdef GUBBIO_PRESTAZIONI
+        aiuti::Punto c = aiuti::centro_del_varco(a, k);
+        BN_ASSERT(c.x == _centri[k].x && c.y == _centri[k].y, "Centro del varco ", k);
+#endif
+    }
+
+    _varchi_pronti = true;
 }
 
 // --- La fila: Giorgio e Antonio sulle orme di Ubaldo ---------------------------------------------------------
@@ -897,6 +949,7 @@ void Esplorazione::promemoria()
     _etichetta.nascondi();
     _mostra_cartiglio(false);
 
+    _cerca_i_varchi(true);
     int meta = storia::area_dell_obiettivo(g_game_state);
     testi::TestoId testo = meta >= 0 ? storia::OBIETTIVO[g_game_state.obiettivo].testo : testi::TestoId::PROMEMORIA_NESSUNO;
 
@@ -1016,7 +1069,7 @@ void Esplorazione::_mostra_aiuto(bn::optional<VistaTesto>& vista, testo::Contest
 
 bool Esplorazione::segnala_cartello()
 {
-    if(! _aiuti || _dissolvenza || _varco_cartello < 0)
+    if(! _aiuti || _dissolvenza || _varco_cartello < 0 || ! _varchi_pronti)
     {
         return false;
     }
@@ -1156,7 +1209,8 @@ void Esplorazione::_aggiorna_aiuti()
 
     // il cartello del varco vicino: compare a CELLE_CARTELLO celle, sparisce allontanandosi (se le opzioni lo
     // vogliono, MOP)
-    int varco = _dissolvenza || ! opzioni::g_opzioni.cartelli ? -1 : aiuti::varco_vicino(_e);
+    _cerca_i_varchi(false);
+    int varco = _dissolvenza || ! _varchi_pronti || ! opzioni::g_opzioni.cartelli ? -1 : aiuti::varco_vicino(_e);
 
     if(varco != _varco_cartello)
     {

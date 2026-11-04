@@ -213,6 +213,11 @@ private:
     // il centro di ogni varco dell'area caricata (aiuti::centro_del_varco scorre tutta la griglia: si fa una
     // volta al caricamento, a schermo nero, e non a ogni frame vicino al varco)
     aiuti::Punto _centri[mondo::VARCHI_MAX];
+    int _varchi_sx[mondo::VARCHI_MAX] = {};
+    int _varchi_sy[mondo::VARCHI_MAX] = {};
+    int _varchi_n[mondo::VARCHI_MAX] = {};
+    int _varchi_cella = 0;              // fin dove la griglia e' stata letta
+    bool _varchi_pronti = false;
     bool _aiuti = false;
     mondo::Esploratore _e;
     mondo::AreaId _area_caricata = mondo::AreaId(0);
@@ -250,6 +255,7 @@ private:
     void _azzera_orme();
     void _segna_orme();
     void _anima_compagni();
+    void _cerca_i_varchi(bool tutto);
     void _aggiorna_aiuti();
     // Crea la vista se non c'e' e ci scrive il testo tutto rivelato; _nascondi_aiuti() le distrugge.
     void _mostra_aiuto(bn::optional<VistaTesto>& vista, testo::Contesto contesto, int x, int y, int inchiostro,
