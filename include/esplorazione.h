@@ -47,6 +47,8 @@ public:
 
     void aggiorna();
 
+    // Nasconde l'etichetta d'area e gli aiuti (promemoria, cartello): un dialogo, una battaglia o la pausa
+    // stanno per prendere lo schermo. Il cartello torna da se' al prossimo aggiorna().
     void nascondi_etichetta();
 
     // Il segnale d'interazione (STANDARD I2): il fumetto coi tre puntini sopra chi o cosa risponde ad A.
@@ -55,6 +57,20 @@ public:
     // sospendi(), cosi' non resta sotto un dialogo).
     void segnala(int x, int y, int altezza);
     void spegni_segnale();
+    // Gli aiuti al giocatore (MAI): il cartello ai varchi e il promemoria di Select. Spenti nei modi di prova
+    // (le istantanee e la camminata automatica fotografano il mondo, non gli aiuti).
+    void attiva_aiuti(bool attivi)
+    {
+        _aiuti = attivi;
+    }
+
+    // Select: per 3 secondi l'obiettivo della cronaca in alto e una freccia verso il varco della strada piu'
+    // breve per la meta (include/aiuti.h). Senza obiettivo, una riga che lo dice.
+    void promemoria();
+
+    // Da pixel dell'area a pixel dello schermo (0, 0 in alto a sinistra), con la camera di adesso.
+    [[nodiscard]] int schermo_x(int x) const;
+    [[nodiscard]] int schermo_y(int y) const;
 
     // Il varco 'indice' dell'area si urta come un muro (-1: tutti aperti). Lo decide la storia a ogni frame
     // (storia::varco_chiuso(): il duello del Condotto).
@@ -100,6 +116,18 @@ private:
     bn::vector<bn::sprite_ptr, 6> _cartiglio;  // creato per primo: sta sotto il testo
     VistaTesto _ombra;              // creata prima: i suoi sprite stanno sotto quelli dell'etichetta
     VistaTesto _etichetta;
+    // MAI: il promemoria (testo con ombra e freccia) e il cartello del varco vicino (due righe con ombra)
+    bn::sprite_palette_ptr _palette_testo;
+    VistaTesto _promemoria_ombra;
+    VistaTesto _promemoria;
+    bn::optional<bn::sprite_ptr> _freccia;
+    VistaTesto _cartello_ombra;
+    VistaTesto _cartello;
+    VistaTesto _oltre_ombra;
+    VistaTesto _oltre;
+    int _attesa_promemoria = 0;
+    int _varco_cartello = -1;       // il varco del cartello a schermo, -1 nessuno
+    bool _aiuti = false;
     mondo::Esploratore _e;
     mondo::AreaId _area_caricata = mondo::AreaId(0);
     int _mezza_larghezza_mappa = 0;
@@ -129,6 +157,8 @@ private:
     void _mostra_cartiglio(bool visibile);
     void _dopo_evento(mondo::Evento evento);
     void _anima_giocatore();
+    void _aggiorna_aiuti();
+    void _nascondi_aiuti();
 };
 
 }

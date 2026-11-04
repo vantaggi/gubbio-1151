@@ -73,6 +73,9 @@ private:
     void _parla_col_datore(int quest, const bn::sprite_palette_ptr& palette_testo);
     void _affronta_l_infiltrato(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
     void _affronta_la_guardia(int guardia, Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
+    // Il duello con Corrado perso (MAI): «Riprova lo scontro / Carica / Torna al titolo». True se si e' caricato
+    // uno slot (la scena si ferma: lo stato e' un altro), false per riprovare; il titolo riavvia il gioco.
+    bool _dopo_il_duello_perso(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
 };
 
 // GUBBIO_AVVIO=8: la storia intera senza camminare, dalla prima battuta ai titoli di coda; una riga di
