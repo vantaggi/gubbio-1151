@@ -175,6 +175,51 @@ constexpr bool muovi_fino_al_varco(Esploratore& e, int dx, int dy, int chiuso)
     return ! urta_il_varco(e, dx, dy, chiuso) && muovi(e, dx, dy);
 }
 
+// La scivolata sugli spigoli: chi spinge contro uno spigolo (un portone, l'imbocco di un vicolo, l'angolo di una
+// casa) mancato di pochi pixel non si impunta, ma scivola di un pixel di lato verso il varco libero piu' vicino,
+// entro SCIVOLATA px. Solo per un passo dritto (dx o dy, l'altro zero) che non e' passato. True se ha scivolato.
+inline constexpr int SCIVOLATA = 5;
+
+constexpr bool scivola(Esploratore& e, int dx, int dy, int chiuso)
+{
+    if((dx != 0) == (dy != 0))
+    {
+        return false;
+    }
+
+    const Area& a = area(e.area);
+
+    for(int o = 1; o <= SCIVOLATA; ++o)
+    {
+        for(int verso = -1; verso <= 1; verso += 2)
+        {
+            int lx = dx ? 0 : verso;        // lo scarto di lato, perpendicolare al passo
+            int ly = dx ? verso : 0;
+            bool via = true;
+
+            // di lato fino allo scarto, tutto libero; da li' il passo avanti libero
+            for(int k = 1; k <= o && via; ++k)
+            {
+                via = libero(a, e.x + lx * k, e.y + ly * k);
+            }
+
+            Esploratore prova = e;
+            prova.x += lx * o;
+            prova.y += ly * o;
+
+            if(via && libero(a, prova.x + dx, prova.y + dy) && ! urta_il_varco(prova, dx, dy, chiuso) &&
+               ! urta_il_varco(e, lx, ly, chiuso))
+            {
+                e.x += lx;
+                e.y += ly;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 // Il navigatore: cerca la strada sulla griglia (in ampiezza, sulle celle non solide) fino a un
 // varco e la percorre un pixel alla volta con muovi(), cioe' con la stessa collisione del gioco.
 // Gli altri varchi non si attraversano: la strada li aggira.

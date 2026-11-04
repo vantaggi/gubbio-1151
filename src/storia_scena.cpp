@@ -1194,6 +1194,9 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
     // la notte (dal rientro da Porta Metauro): anche i fondali con le rampe notte, come la gente (pezzo EDI)
     esplorazione.imposta_notte(fase_npc(g_game_state) == Fase::NOTTE);
     esplorazione.imposta_variante(variante_dell_area(g_game_state, int(e.area)));
+    // la fila dietro Ubaldo: Giorgio dall'ultimatum, Antonio dal Teatro
+    esplorazione.imposta_compagni(accesa(g_game_state, Bandiera::GIORGIO_NEL_GRUPPO) ?
+                                  (accesa(g_game_state, Bandiera::ANTONIO_NEL_GRUPPO) ? 2 : 1) : 0);
 
     _anima_npc();
     _folla.aggiorna(esplorazione, e.x, e.y, int(g_game_state.frames));
@@ -1636,9 +1639,19 @@ void prova_folla(Esplorazione& esplorazione)
             esplorazione.entra(area, 0);
             esplorazione.imposta_notte(fase == 2);
 
+#ifdef GUBBIO_PRESTAZIONI
+            int peggio = 0;
+#endif
+
             for(int f = 0; f < 200; ++f)
             {
                 ++g_game_state.frames;
+#ifdef GUBBIO_PRESTAZIONI
+                // le prestazioni: Ubaldo va avanti e indietro fra la gente, e si tiene il frame piu' pesante
+                int uso = (bn::core::last_cpu_usage() * 100).right_shift_integer();
+                peggio = f > 2 && uso > peggio ? uso : peggio;
+                esplorazione.muovi((f / 50) % 2 ? -1 : 1, (f / 25) % 2 ? -1 : 1, 1);
+#endif
                 esplorazione.aggiorna();
                 gente.anima_la_gente(esplorazione);
 
@@ -1649,6 +1662,10 @@ void prova_folla(Esplorazione& esplorazione)
 
                 bn::core::update();
             }
+
+#ifdef GUBBIO_PRESTAZIONI
+            BN_LOG("PREST folla area ", int(area), " fase ", fase, " cpu ", peggio);
+#endif
         }
     }
 
