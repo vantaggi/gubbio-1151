@@ -150,6 +150,9 @@ def portale_in_scala(t, cx, base, cima_libera, largo=16, alto=28):
     lascia (sotto finestre e occhi, 'cima_libera'), largo 2 celle (16 pixel, quanto il portale aperto degli
     interni). Ritorna l'altezza; i test vogliono almeno 26."""
     hp = max(8, min(alto, base - cima_libera))
+    if abs(cx - t.w / 2) <= 8:
+        # il portale al centro sta sulle due celle 'd' del generatore (w//2 - 1 e w//2): li' si entra
+        cx = (t.w // 16) * 8
     t.arco(cx - largo // 2, base - hp, largo, hp, LEGNO_SCURO)
     return hp
 

@@ -291,3 +291,22 @@ class PortaliInScala(unittest.TestCase):
         import pittore_monumenti as PM
         t = PM.Tela(4, 6)
         self.assertLess(PM.portale_in_scala(t, 16, 48, 30), 26)
+
+    def test_portale_sulle_celle_d(self):
+        """Il portale centrato sta sulle due celle 'd' (w//2 - 1, w//2), dove gli interni mettono l'ingresso."""
+        import pittore_monumenti as PM
+        for w in (6, 7, 8, 9, 27):
+            t = PM.Tela(w, 6)
+            PM.portale_in_scala(t, t.w // 2, 48, 4)
+            xs = [x for x in range(t.w) if t.px[40][x] == PM.LEGNO_SCURO]
+            self.assertTrue(xs, w)
+            self.assertGreaterEqual(min(xs), (w // 2 - 1) * 8, w)
+            self.assertLessEqual(max(xs), (w // 2) * 8 + 7, w)
+
+    def test_negativa_portale_spostato(self):
+        """Un portale disegnato mezza cella piu' a destra esce dalle celle 'd'."""
+        import pittore_monumenti as PM
+        t = PM.Tela(9, 6)
+        t.arco(32 - 8 + 4, 20, 16, 28, PM.LEGNO_SCURO)
+        xs = [x for x in range(t.w) if t.px[40][x] == PM.LEGNO_SCURO]
+        self.assertGreater(max(xs), (9 // 2) * 8 + 7)
