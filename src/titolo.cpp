@@ -65,6 +65,10 @@ namespace
 
         s.oggetti[0] = uint8_t(n);
         s.scontri_vinti[0] = uint8_t(n);
+        // v4 (MOB): i campi nuovi, riconoscibili anche loro
+        s.obiettivo = uint8_t(n);
+        s.aree_viste[0] = uint8_t(n);
+        s.denari = uint16_t(10 * n);
         return s;
     }
 }
@@ -259,8 +263,20 @@ void prova_salvataggio()
     // dopo una corruzione si torna a salvare: la scrittura va su una banca e lo slot torna valido
     esito("risalva", salva(0, a) && carica(0, letto) && stessi_byte(letto, a));
 
+    // v4 (MOB): un salvataggio v3 nello slot 1 si carica aggiornato. I 59 byte comuni restano, il residuo
+    // nei byte che erano riservati non diventa un obiettivo; la banca 1 vuota
+    s_vuota = SaveData{};
+    bn::sram::write_offset(s_vuota, (1 * BANCHE + 1) * int(sizeof(SaveData)));
+    s_vuota = componi_v3(stato_di_prova(5), 1, 0x77);
+    bn::sram::write_offset(s_vuota, (1 * BANCHE + 0) * int(sizeof(SaveData)));
+    GameState atteso = stato_di_prova(5);
+    atteso.obiettivo = NESSUN_OBIETTIVO;
+    atteso.aree_viste[0] = 0;
+    atteso.denari = 0;
+    esito("v3 aggiornato", stato(1) == StatoSlot::VALIDO && carica(1, letto) && stessi_byte(letto, atteso));
+
     // gli slot finali per tests/test_save_system.py: slot 0 = stato 3 (due banche, l'ultima e' 3),
-    // slot 1 = stato 4
+    // slot 1 = stato 4 (nella banca 1: nella banca 0 resta il record v3, piu' vecchio)
     esito("slot finali", salva(0, stato_di_prova(3)) && salva(1, stato_di_prova(4)) &&
           carica(0, letto) && stessi_byte(letto, stato_di_prova(3)) && carica(1, letto) &&
           stessi_byte(letto, stato_di_prova(4)));

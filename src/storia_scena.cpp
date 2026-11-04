@@ -221,12 +221,21 @@ namespace
                 continue;
             }
 
+            // una riga OBIETTIVO di una scena diventa l'obiettivo della cronaca (MOB); quelle degli incarichi
+            // restano dell'incarico. Tutte e due si leggono col cartiglio «Obiettivo»
+            if(tabella == BATTUTA)
+            {
+                segna_obiettivo(g_game_state, b);
+            }
+
             if(! riquadri)
             {
                 riquadri.emplace();
             }
 
-            componi_dialogo(*riquadri, nome, b.parlante, b.tipo == TipoBattuta::PERSONAGGIO, palette_testo);
+            bool obiettivo = b.tipo != TipoBattuta::PERSONAGGIO && obiettivo_del_testo(b.testo) >= 0;
+            componi_dialogo(*riquadri, nome, obiettivo ? testi::TestoId::ETICHETTA_OBIETTIVO : b.parlante,
+                            b.tipo == TipoBattuta::PERSONAGGIO || obiettivo, palette_testo);
 
             if(! testo)
             {

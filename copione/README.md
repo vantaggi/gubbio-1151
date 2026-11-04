@@ -33,7 +33,7 @@ Ogni scena ha un codice (`P-`, `A1-`, `B-`, `E-`), una tabella con luogo, condiz
 - PARLANTE (espressione): Testo della battuta.
 ```
 
-- **PARLANTE** in maiuscolo. Parlanti speciali: `NARRATORE` (riquadro senza nome, con capolettera a inizio capitolo, scelta di stile 8), `AREA` (etichetta di luogo e tempo), `SISTEMA` (istruzioni di gioco, senza ritratto), `OBIETTIVO` (aggiorna l'obiettivo in pausa), `SCELTA` (voci separate da « / »).
+- **PARLANTE** in maiuscolo. Parlanti speciali: `NARRATORE` (riquadro senza nome, con capolettera a inizio capitolo, scelta di stile 8), `AREA` (etichetta di luogo e tempo), `SISTEMA` (istruzioni di gioco, senza ritratto), `OBIETTIVO` (aggiorna l'obiettivo della cronaca: l'area meta è quella della scena che segue nel copione, oppure si scrive a mano in fondo alla riga, `(area: ID)` con un'area del mondo; l'annotazione non va a schermo), `SCELTA` (voci separate da « / »).
 - **espressione** solo per chi ha il ritratto (Ubaldo, Giorgio, Antonio, Guido): `calmo`, `preoccupato` o `deciso`, le tre della scelta di stile 10. Senza espressione vale `calmo`. Gli altri parlano senza ritratto, con il solo cartiglio del nome.
 - Una battuta sta in **2 righe da 224 px** del riquadro del gioco. Lo script la misura con le larghezze del font 5x7 della scelta 8. Una voce di SCELTA sta in 100 px.
 - Le condizioni sulle bandiere sono righe di regia chiare (`se INDIZIO_ROCCIA:`) prima delle battute che valgono solo in quel caso.
