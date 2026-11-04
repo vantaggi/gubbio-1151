@@ -22,7 +22,9 @@ namespace
     bool s_acceso = true;
     int s_brano = colonna::NESSUNO;     // l'ultimo brano fatto partire
     int s_luogo = -1;                    // il luogo col segnale in cui si e', per suonarlo una volta
-    int s_area = -1;
+    int s_area = -1;                     // dove si e' camminato l'ultima volta: l'area e la cella
+    int s_cella_x = 0;
+    int s_cella_y = 0;
 
     [[nodiscard]] bool suona_ancora(int b)
     {
@@ -73,6 +75,9 @@ void esplorazione(const GameState& partita, int area, int cella_x, int cella_y)
         s_luogo = -1;
     }
 
+    s_cella_x = cella_x;
+    s_cella_y = cella_y;
+
     if(luogo != s_luogo)
     {
         s_luogo = luogo;
@@ -111,6 +116,15 @@ void cutscene(int c)
     if(e >= 0)
     {
         effetto(colonna::Effetto(e));
+    }
+}
+
+void fine_cutscene(int c)
+{
+    // prima della prima passeggiata (il prologo di una partita nuova) non c'e' un'area a cui tornare
+    if(GUBBIO_VOCE(colonna::BRANO_CUTSCENE, c) >= 0 && s_area >= 0)
+    {
+        brano(brano_di_fondo(g_game_state, s_area, s_cella_x, s_cella_y));
     }
 }
 

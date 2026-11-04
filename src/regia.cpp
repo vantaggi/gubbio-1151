@@ -233,6 +233,7 @@ bool recita_cutscene(int cutscene, const bn::sprite_palette_ptr& palette_testo, 
         bn::window::outside().set_show_all();
     }
 
+    audio::fine_cutscene(cutscene);
     attendi(1);
     segna_vista(g_game_state, cutscene);
     BN_LOG("Cutscene ", c.codice, saltata ? " saltata" : " finita");

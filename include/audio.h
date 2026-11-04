@@ -27,8 +27,10 @@ void brano(colonna::Brano b);
 // luogo appena ci si entra. Un jingle (vittoria, segnale di Fazio) si lascia finire prima di cambiare.
 void esplorazione(const GameState& partita, int area, int cella_x, int cella_y);
 
-// All'inizio di una cutscene (regia::CUTSCENE_DATI): il suo brano e l'effetto del primo quadro.
+// All'inizio di una cutscene (regia::CUTSCENE_DATI): il suo brano e l'effetto del primo quadro. Alla fine,
+// se aveva un brano suo, torna quello dell'area dove si era (la scena prosegue li', a dialogo).
 void cutscene(int cutscene);
+void fine_cutscene(int cutscene);
 
 // Battaglia: il brano dell'incontro all'inizio, la vittoria o la sconfitta alla fine, l'effetto di ogni evento.
 void battaglia(int incontro);
