@@ -506,6 +506,47 @@ def controlla_v1(m, e):
                     pr.append(problema(ERRORE, "CONDIZIONE_NON_CAPITA", f"{f}:{n}",
                                        f"«{r[:90]}»: il gioco non la capisce e recita le battute dopo sempre.",
                                        "Riscriverla in una forma del README (Se `BANDIERA`:, Se «voce» (`BANDIERA`):, Altrimenti:)."))
+    # 8. regola dei nomi (Cioti, 4 nov 2026): i luoghi tengono San/Sant', i tre protagonisti no; «Sant'Ubaldo»,
+    # «San Giorgio», «Sant'Antonio» come persone solo nella Basilica (A1-08, A1-09, area della Basilica) e nell'epilogo (E-01, E-02).
+    pr += controlla_nomi(m)
+    return pr
+
+
+SANTI = {"UBALDO": "Sant'Ubaldo", "GIORGIO": "San Giorgio", "ANTONIO": "Sant'Antonio"}
+SCENE_DEI_SANTI = {"A1-08", "A1-09", "E-01", "E-02"}
+AREE_DEI_SANTI = {"BASILICA", "BASILICA_INTERNO"}
+# Prima del nome, queste parole dicono che e' un luogo o una cosa (chiesa, cappella, biscotti di ...), non la persona.
+LUOGO_PRIMA = r"(?:\bdi|\bdella|\bdel|\bdei|\ball'|\bBasilica|\bchiesa|\bcappell\w*|\bporta|\bmonte|\bfesta)\s*$"
+
+
+def controlla_nomi(m):
+    pr = []
+    for chi, santo in SANTI.items():
+        schermo = GS.PARLANTI.get(chi, "")
+        if re.match(r"^Sant?'?\s", schermo + " ") or schermo.startswith(("San ", "Sant'")):
+            pr.append(problema(AVVISO, "REGOLA_NOMI", f"genera_storia.py PARLANTI[{chi}]",
+                               f"Il nome a schermo di {chi} è «{schermo}»: durante la storia i protagonisti non hanno «San».",
+                               f"PARLANTI[\"{chi}\"] = \"{santo.split()[-1].split(chr(39))[-1]}\"."))
+    regola = re.compile(r"(Sant'Ubaldo|San Giorgio|Sant'Antonio)\b")
+
+    def guarda(dove, ammesso, frase, rif):
+        if ammesso:
+            return
+        for x in regola.finditer(frase):
+            if re.search(LUOGO_PRIMA, frase[:x.start()]):
+                continue
+            pr.append(problema(AVVISO, "REGOLA_NOMI", f"{dove} ({rif})",
+                               f"«{x.group(1)}» detto come persona fuori dalla Basilica: «{frase[:80]}».",
+                               f"Scrivere «{x.group(1).split()[-1].split(chr(39))[-1]}» (o «vescovo», «padre»)."))
+    for s in m["scene"]:
+        for b in s["battute"]:
+            guarda(s["codice"], s["codice"] in SCENE_DEI_SANTI, b["frase"], b["dove"])
+    for p in m["npc"]:
+        for b in p["frasi"]:
+            guarda(p["nome"], p["area"] in AREE_DEI_SANTI, b["frase"], b["dove"])
+    for n, riga in enumerate(m["testi"].get("04_quest.md", "").splitlines(), 1):
+        if riga.startswith("- "):
+            guarda("04_quest.md", False, riga[2:], f"04_quest.md:{n}")
     return pr
 
 
@@ -858,6 +899,13 @@ def analizza(cartella, atto2=None, schede=None):
     if atto2 and os.path.exists(atto2):
         a2 = carica_atto2(atto2)
         pr += [dict(p, atto="II") for p in controlla_atto2(a2, m)]
+        lette_a2 = {f for x in a2["scene"] for f in x["legge"]}
+        for p in pr:
+            f = re.findall(r"`([A-Z_0-9]+)`", p["testo"])
+            if p["codice"] == "SCELTA_SENZA_SEGUITO" and f and f[0] in lette_a2:
+                dove = [x["codice"] for x in a2["scene"] if f[0] in x["legge"]]
+                p["gravita"] = NOTA
+                p["testo"] += f" La raccoglie l'Atto II ({', '.join(dove)})."
         grafo["atto2"] = grafo_atto2(a2)
         conti["scene_atto2"] = len(a2["scene"])
     for p in pr:
