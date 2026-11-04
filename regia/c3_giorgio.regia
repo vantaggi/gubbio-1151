@@ -1,5 +1,7 @@
 # C3 Presentazione di Giorgio (proposta approvata): fermo immagine in controluce col cartiglio
-# vermiglio del nome; le due righe le dice il narratore (testi/regia.testi).
+# vermiglio del nome; le due righe le dice il narratore (testi/regia.testi). Poi lo stacco sulla luce:
+# il protagonista vero, a colori, davanti allo stesso bagliore (pezzo SAG: Cioti voleva vedere i protagonisti).
 cutscene C3G | Presentazione di Giorgio
 inquadratura 3.5 | ritratto_giorgio | 0
 narratore R_C3_GIORGIO
+inquadratura 2 | ritratto_giorgio_sfondo ritratto_giorgio_luce | 0

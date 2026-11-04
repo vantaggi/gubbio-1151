@@ -2,9 +2,12 @@
 # salita al monte sopra la citta' e la stessa vetrata ogivale con un solo vetro colorato; al posto della
 # regia di E-02.
 cutscene C4 | La terza alba
-inquadratura 8 | cielo:alba monte:alba gubbio:alba campo:alba | 12
+inquadratura 6 | cielo:alba monte:alba gubbio:alba campo:alba | 12
 narratore R_E_02_00
-inquadratura 6 | cielo:alba monte:alba gubbio:alba | 8
+# i tre sulle mura guardano la conca vuota (pezzo SAG: i protagonisti nelle cutscene); per restare
+# lunga quanto il brano (terza_alba, 27 s) la prima e la terza inquadratura hanno ceduto 2 s ciascuna
+inquadratura 4 | cielo:alba monte:alba campo:alba mura_trio:alba | 0
+inquadratura 4 | cielo:alba monte:alba gubbio:alba | 8
 inquadratura 8 | vetrata:alba | 0
 narratore R_E_02_01
 inquadratura 6 | vetrata:alba | 0

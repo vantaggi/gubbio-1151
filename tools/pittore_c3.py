@@ -279,5 +279,45 @@ def ritratto_corrado(momento):
     return ritratto("corrado", corrado), PALETTE_RITRATTO, False
 
 
+# --- la luce (pezzo SAG): dopo la sagoma, lo stacco sul protagonista vero, a colori -----------------
+# Cioti (4 nov 2026): le cutscene sono belle ma i protagonisti non si vedono mai. Dopo il controluce
+# un secondo fermo immagine: lo stesso bagliore, il cartiglio, e davanti la figura a colori, la stessa
+# della battaglia (tools/sagome_battaglia.py) ridisegnata tre volte piu' grande. Guarda a sinistra come
+# la sagoma. Due piani: il bagliore col cartiglio (palette del ritratto) e la figura (palette sua).
+SCALA_LUCE = 3
+
+
+def sfondo_luce(chi):
+    t = Tela(W, H)
+    bagliore(t)
+    cartiglio(t, NOMI[chi])
+    return t
+
+
+def figura_luce(chi):
+    """La figura a colori sul suo piano trasparente, coi piedi sul terreno della sagoma e il centro
+    sul bagliore; torna (tela, palette)."""
+    import sagome_battaglia as SB
+    f = getattr(SB, chi)("riposo", SCALA_LUCE)
+    px = [list(reversed(r)) for r in f.pixel()]           # a sinistra, come la sagoma
+    piedi = max(y for y, r in enumerate(px) if any(r))
+    largo = [x for r in px for x, c in enumerate(r) if c]
+    centro = (min(largo) + max(largo)) // 2
+    t = Tela(W, H)
+    ox, oy = CENTRO[0] - centro, SUOLO - 1 - piedi
+    for y, riga in enumerate(px):
+        for x, c in enumerate(riga):
+            if c:
+                t.punto(ox + x, oy + y, c)
+    return t, f.palette
+
+
+def luce(chi):
+    return {f"ritratto_{chi}_sfondo": lambda momento: (sfondo_luce(chi), PALETTE_RITRATTO, False),
+            f"ritratto_{chi}_luce": lambda momento: (*figura_luce(chi), False)}
+
+
 PITTORI = {"ritratto_ubaldo": ritratto_ubaldo, "ritratto_giorgio": ritratto_giorgio,
            "ritratto_antonio": ritratto_antonio, "ritratto_corrado": ritratto_corrado}
+for _chi in ("ubaldo", "giorgio", "antonio"):
+    PITTORI.update(luce(_chi))

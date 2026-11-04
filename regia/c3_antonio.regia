@@ -1,5 +1,7 @@
 # C3 Presentazione di Antonio (proposta approvata): fermo immagine in controluce col cartiglio
-# vermiglio del nome; le due righe le dice il narratore (testi/regia.testi).
+# vermiglio del nome; le due righe le dice il narratore (testi/regia.testi). Poi lo stacco sulla luce:
+# il protagonista vero, a colori, davanti allo stesso bagliore (pezzo SAG: Cioti voleva vedere i protagonisti).
 cutscene C3A | Presentazione di Antonio
 inquadratura 3.5 | ritratto_antonio | 0
 narratore R_C3_ANTONIO
+inquadratura 2 | ritratto_antonio_sfondo ritratto_antonio_luce | 0
