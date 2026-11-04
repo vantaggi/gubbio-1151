@@ -161,7 +161,7 @@ private:
         int x = 0;
         int y = 0;
         int direzione = 0;
-        int passo = 0;
+        mondo::Camminata camminata;
         int fermo = 0;
         int mostrato = -1;
     };
@@ -236,7 +236,7 @@ private:
     // la figura del giocatore (tools/sagome_mappa.py): direzione, passo, respiro
     enum Direzione { GIU, SU, DESTRA, SINISTRA };
     int _direzione = GIU;
-    int _passo = 0;
+    mondo::Camminata _camminata;    // il ciclo della camminata (mondo_logica.h)
     int _fermo = 0;
     int _mostrato = -1;
     bool _mosso = false;

@@ -255,6 +255,61 @@ namespace prova_diagonale
     static_assert(passi_in(2, 1) == 1 && passi_in(1, 2) == 1, "la diagonale si ferma a meta' del primo passo");
 }
 
+// Il ciclo della camminata (A6) di Ubaldo e dei compagni: il fotogramma avanza col suo contatore, non con
+// frame / vblank, cosi' passando dal passo alla corsa (B) la gamba continua dal fotogramma in cui era invece di
+// saltare a un altro punto del ciclo. Dal fermo il primo passo si vede subito.
+struct Camminata
+{
+    int vblank = 0;         // i vblank passati nel fotogramma; 0 = fermo
+    int fotogramma = 0;     // 0..fotogrammi-1
+};
+
+[[nodiscard]] constexpr int avanza_camminata(Camminata& c, int vblank_per_fotogramma, int fotogrammi)
+{
+    if(c.vblank == 0)
+    {
+        c.fotogramma = 0;
+        c.vblank = vblank_per_fotogramma;
+    }
+
+    if(++c.vblank > vblank_per_fotogramma)
+    {
+        c.vblank = 1;
+        c.fotogramma = c.fotogramma + 1 == fotogrammi ? 0 : c.fotogramma + 1;
+    }
+
+    return c.fotogramma;
+}
+
+namespace prova_camminata
+{
+    // dal fermo: subito il fotogramma 1, poi uno ogni 6 vblank; passando alla corsa (4) si continua da li'
+    constexpr bool ciclo()
+    {
+        Camminata c;
+        bool ok = avanza_camminata(c, 6, 6) == 1;
+        for(int f = 0; f < 5; ++f)
+        {
+            ok = ok && avanza_camminata(c, 6, 6) == 1;
+        }
+        ok = ok && avanza_camminata(c, 6, 6) == 2;
+        ok = ok && avanza_camminata(c, 4, 6) == 2;      // la corsa non fa saltare il fotogramma
+        for(int f = 0; f < 2; ++f)
+        {
+            ok = ok && avanza_camminata(c, 4, 6) == 2;
+        }
+        ok = ok && avanza_camminata(c, 4, 6) == 3;
+        c = Camminata();
+        for(int f = 0; f < 36; ++f)
+        {
+            (void) avanza_camminata(c, 6, 6);
+        }
+        return ok && c.fotogramma == 0;                 // al vblank 31 si torna allo 0 del ciclo
+    }
+
+    static_assert(ciclo(), "il ciclo della camminata salta o si ferma");
+}
+
 // Il navigatore: cerca la strada sulla griglia (in ampiezza, sulle celle non solide) fino a un
 // varco e la percorre un pixel alla volta con muovi(), cioe' con la stessa collisione del gioco.
 // Gli altri varchi non si attraversano: la strada li aggira.

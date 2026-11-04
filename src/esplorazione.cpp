@@ -511,14 +511,13 @@ void Esplorazione::_anima_giocatore()
 
     if(_mosso)
     {
-        ++_passo;
         int vblank = _corre ? mondo::GIOCATORE_VBLANK_CORSA : mondo::GIOCATORE_VBLANK_PASSO;
-        fotogramma = (_passo / vblank) % mondo::GIOCATORE_CAMMINATA;
+        fotogramma = mondo::avanza_camminata(_camminata, vblank, mondo::GIOCATORE_CAMMINATA);
         _fermo = 0;
     }
     else
     {
-        _passo = 0;
+        _camminata = mondo::Camminata();
         ++_fermo;
         fotogramma = (_fermo / mondo::GIOCATORE_VBLANK_RESPIRO) % 2 ? mondo::GIOCATORE_RESPIRO : mondo::GIOCATORE_RIPOSO;
     }
@@ -702,7 +701,7 @@ void Esplorazione::_anima_compagni()
         sprite.set_blending_enabled(_scura);
         // il nuovo compagno esce da dietro Ubaldo: l'orma piu' vecchia che c'e'
         Orma o = _orme[_orme_n > 0 ? (_orma - (_orme_n - 1) + ORME) % ORME : _orma];
-        _fila.push_back(Compagno{ bn::move(sprite), o.x, o.y, _direzione == SINISTRA ? int(DESTRA) : _direzione });
+        _fila.push_back(Compagno{ bn::move(sprite), o.x, o.y, _direzione == SINISTRA ? int(DESTRA) : _direzione, {}, 0, -1 });
     }
 
     int indietro = 0;
@@ -738,13 +737,13 @@ void Esplorazione::_anima_compagni()
 
         if(mosso)
         {
-            ++c.passo;
             int vblank = _corre ? mondo::GIOCATORE_VBLANK_CORSA : mondo::GIOCATORE_VBLANK_PASSO;
-            fotogramma = (c.passo / vblank) % mondo::GIOCATORE_CAMMINATA;
+            fotogramma = mondo::avanza_camminata(c.camminata, vblank, mondo::GIOCATORE_CAMMINATA);
             c.fermo = 0;
         }
         else
         {
+            c.camminata = mondo::Camminata();
             ++c.fermo;
             int sfasato = c.fermo + (i + 1) * 17;
             fotogramma = (sfasato / mondo::GIOCATORE_VBLANK_RESPIRO) % 2 ? mondo::GIOCATORE_RESPIRO : mondo::GIOCATORE_RIPOSO;
