@@ -55,6 +55,7 @@ righe vietate (assert), limiti numerici, e le registrazioni in `tests/dati/*_mgb
 | prologo | 9 | il prologo col pilota, uguale a `tests/dati/prologo_mgba.txt` |
 | battaglie | 3 | i 700 scontri uguali al mirror Python e a `tests/dati/battaglia_mgba.txt` |
 | salvataggio | 6 | scrittura, ricarica, banche, CRC |
+| varchi, folla, fila | 14, 12 | prestazioni (riga PREST con `-DGUBBIO_PRESTAZIONI`): picchi limitati e al piu' 3 finestre sopra il 100% vicino ai varchi; la fila senza assert |
 
 Perche' e' veloce: ogni combinazione di modo e flag ha la sua cartella di oggetti (`banco_obj<...>/`),
 quindi make ricompila solo i file cambiati (un `.cpp` toccato: 2 s), e accanto alla ROM c'e' l'impronta dei

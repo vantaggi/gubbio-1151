@@ -1,5 +1,5 @@
 {
-  "_leggimi": "Prove in mGBA di tools/prove_mgba.py. Campi: nome, cosa, modo (GUBBIO_AVVIO), flag (altri -D, es. -DGUBBIO_PRESTAZIONI: ogni combinazione ha la sua ROM), copione (righe di tools/banco_mgba.c) o copione_file (in tests/mgba/copioni/), attese (regex che devono comparire), vietate (regex che non devono comparire; di default assert e ROM non caricata), limiti (regex col numero fra parentesi: massimo, minimo, righe = quante volte deve comparire, scarta_dopo = regex dopo cui il valore seguente non conta, quante = quanti valori scartare), registrazione (file in tests/dati/ che le righe del log scelte dal filtro devono rifare uguale; --aggiorna lo riscrive). Il log si legge senza il numero di frame iniziale. Usare 'finche' nei copioni: la prova finisce appena il gioco ha finito.",
+  "_leggimi": "Prove in mGBA di tools/prove_mgba.py. Campi: nome, cosa, modo (GUBBIO_AVVIO), flag (altri -D, es. -DGUBBIO_PRESTAZIONI: ogni combinazione ha la sua ROM), copione (righe di tools/banco_mgba.c) o copione_file (in tests/mgba/copioni/), attese (regex che devono comparire), vietate (regex che non devono comparire; di default assert e ROM non caricata), limiti (regex col numero fra parentesi: massimo, minimo, righe = quante volte deve comparire, sopra + al_piu = al piu' N valori oltre la soglia (un picco ogni tanto si', un costo fisso no), scarta_dopo = regex dopo cui il valore seguente non conta, quante = quanti valori scartare), registrazione (file in tests/dati/ che le righe del log scelte dal filtro devono rifare uguale; --aggiorna lo riscrive). Il log si legge senza il numero di frame iniziale. Usare 'finche' nei copioni: la prova finisce appena il gioco ha finito.",
   "prove": [
     {
       "nome": "camminata",
@@ -103,6 +103,13 @@
           "regex": "^PREST area \\d+ .* cpu (\\d+)",
           "massimo": 120,
           "minimo": 1,
+          "scarta_dopo": "^PREST carica area",
+          "quante": 1
+        },
+        {
+          "regex": "^PREST area \\d+ .* cpu (\\d+)",
+          "sopra": 100,
+          "al_piu": 3,
           "scarta_dopo": "^PREST carica area",
           "quante": 1
         }

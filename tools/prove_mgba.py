@@ -164,6 +164,11 @@ def gira(prova, eseguibile, gba, aggiorna):
             continue
         if "massimo" in limite and max(valori) > limite["massimo"]:
             errori.append(f"/{limite['regex']}/ arriva a {max(valori)}, il massimo e' {limite['massimo']}")
+        if "sopra" in limite:                         # un picco ogni tanto va bene, un costo fisso no
+            oltre = sum(v > limite["sopra"] for v in valori)
+            if oltre > limite.get("al_piu", 0):
+                errori.append(f"/{limite['regex']}/ supera {limite['sopra']} in {oltre} righe su {len(valori)}, "
+                              f"al piu' {limite.get('al_piu', 0)}")
         if "minimo" in limite and min(valori) < limite["minimo"]:
             errori.append(f"/{limite['regex']}/ scende a {min(valori)}, il minimo e' {limite['minimo']}")
     reg = prova.get("registrazione")
