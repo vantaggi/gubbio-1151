@@ -941,7 +941,7 @@ def maschera(bandiere):
     return v
 
 
-def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None):
+def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None, posti_guardie=None):
     codici = [s["codice"] for s in scene]
     out = ["// GENERATO da tools/genera_storia.py dal copione v1 (copione/*.md): non modificare a mano.",
            "#ifndef GUBBIO_STORIA_H", "#define GUBBIO_STORIA_H", "", "#include <cstdint>", "",
@@ -1079,6 +1079,7 @@ def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None)
             for q in QUEST] + ["};", ""]
     out += blocco_quest
     out += parte_gola(codici, posti_raccolte, figure) if posti_raccolte else []
+    out += parte_fornaci(posti_guardie) if posti_guardie else []
     out += ["// Le figure degli NPC, 16x32 (8 tile in mappatura 1D) con la palette dei popolani: quelle dei",
             "// mestieri (tools/figure_npc.py) e quelle degli amici (base e accessorio, dati/amici.json).",
             f"inline constexpr int FIGURE_NPC = {len(figure)};",
@@ -1221,6 +1222,23 @@ def parte_gola(codici, posti_raccolte, figure):
             f"inline constexpr int FIGURA_FORZIERE_APERTO = {FN.ORDINE_RACCOLTE.index('forziere_aperto')};", ""]
 
 
+def parte_fornaci(posti_guardie):
+    """Le righe di storia.h delle guardie delle fornaci (F10, Q-SM01)."""
+    righe = []
+    for gd, (tx, ty) in zip(GUARDIE_FORNACE, posti_guardie):
+        k = next(i for i, r in enumerate(RACCOLTE) if r["bandiera"] == gd["raccolta"])
+        righe.append(f"    {{ int8_t(mondo::AreaId::{RACCOLTE[k]['area']}), {tx}, {ty}, {gd['bandiera']}, {k} }},  "
+                     f"// davanti a {gd['raccolta']}")
+    return ["// --- Le guardie delle fornaci (F10, Q-SM01) -----------------------------------------------------",
+            "// Un Guerriero della Roccia davanti a ogni blocco di ferro, visibile sulla mappa: toccarlo avvia la battaglia",
+            "// (INCONTRO_FORNACE); vinta, la sua bandiera (64-127) si accende, non torna e il blocco si puo' prendere.",
+            "struct GuardiaFornace", "{", "    int8_t area;                  // mondo::AreaId", "    uint8_t tx;",
+            "    uint8_t ty;", "    uint8_t bandiera;", "    uint8_t raccolta;             // il blocco che guarda (RACCOLTA)",
+            "};", "", f"inline constexpr int INCONTRO_FORNACE = {INCONTRO_FORNACE};     // battaglia::INCONTRO",
+            f"inline constexpr int GUARDIE_FORNACE = {len(righe)};",
+            "inline constexpr GuardiaFornace GUARDIA_FORNACE[GUARDIE_FORNACE] = {"] + righe + ["};", ""]
+
+
 def testi_delle_quest(quest):
     righe = []
     for d in QUEST:
@@ -1232,13 +1250,55 @@ def testi_delle_quest(quest):
     return righe
 
 
-def posti_della_quest(npc, quest):
-    """I posti dei datori (nell'ordine di QUEST) e dell'infiltrato, poi quelli degli oggetti da raccogliere."""
+def posti_della_quest(npc, quest, con_guardie=False):
+    """I posti dei datori (nell'ordine di QUEST) e dell'infiltrato, poi quelli degli oggetti da raccogliere (e, con
+    'con_guardie', quelli delle guardie delle fornaci)."""
     occupati = {}
     altri = [(quest[d["id"]]["datore"], d["consegna"], d["ancora"]) for d in QUEST]
     altri.append(("infiltrato", INFILTRATO["area"], INFILTRATO["ancora"]))
     posti, posti_quest = posti_degli_npc(npc, altri, occupati)
-    return posti, posti_quest, posti_delle_raccolte(RACCOLTE, occupati)
+    posti_raccolte = posti_delle_raccolte(RACCOLTE, occupati)
+    if con_guardie:
+        return posti, posti_quest, posti_raccolte, posti_delle_guardie(posti_raccolte, occupati)
+    return posti, posti_quest, posti_raccolte
+
+
+def posti_delle_guardie(posti_raccolte, occupati):
+    """La cella di ogni guardia di fornace (GUARDIE_FORNACE): a due celle esatte dal suo blocco (Chebyshev), la piu'
+    vicina allo spawn 0, raggiungibile, con le otto celle intorno calpestabili e senza varchi (come
+    progressione::posto_valido), a 4 celle almeno dagli spawn, a 3 da varchi, NPC, nemici sulla mappa e dagli altri
+    oggetti, a 4 dalle altre guardie."""
+    import genera_mondo as G  # noqa: E402
+    aree = aree_del_mondo()
+    nemici = scontri_sulla_mappa()
+    posti = []
+    for gd in GUARDIE_FORNACE:
+        k = next(i for i, r in enumerate(RACCOLTE) if r["bandiera"] == gd["raccolta"])
+        area_id = RACCOLTE[k]["area"]
+        a = aree[area_id]
+        g = a["griglia"]
+        bx, by = posti_raccolte[k]
+        varchi = [(x, y) for y, riga in enumerate(g) for x, c in enumerate(riga) if c in G.VARCHI]
+        altri = [p for i, (r, p) in enumerate(zip(RACCOLTE, posti_raccolte)) if r["area"] == area_id and i != k]
+        lontani = varchi + occupati.get(area_id, []) + nemici.get(area_id, []) + altri
+        raggiunte = raggiungibili_da(a, *a["spawn"][0], G)
+        sx, sy = a["spawn"][0]
+        scelto = None
+        candidati = [(bx + i, by + j) for i in range(-2, 3) for j in range(-2, 3) if max(abs(i), abs(j)) == 2]
+        for x, y in sorted(candidati, key=lambda xy: ((xy[0] - sx) ** 2 + (xy[1] - sy) ** 2, xy[1], xy[0])):
+            libero = (x, y) in raggiunte and all(
+                0 <= y + j < a["altezza"] and 0 <= x + i < a["larghezza"] and
+                not solida_nel_gioco(g[y + j][x + i], G) and g[y + j][x + i] not in G.VARCHI
+                for i in (-1, 0, 1) for j in (-1, 0, 1))
+            if (libero and all(max(abs(x - u), abs(y - v)) >= 4 for u, v in a["spawn"].values()) and
+                    all(max(abs(x - u), abs(y - v)) >= 3 for u, v in lontani) and
+                    all(max(abs(x - u), abs(y - v)) >= 4 for u, v in posti)):
+                scelto = (x, y)
+                break
+        if not scelto:
+            raise ErroreStoria(f"nessun posto per la guardia di {gd['raccolta']} in {area_id}")
+        posti.append(scelto)
+    return posti
 
 
 def leggi_le_quest():
@@ -1249,8 +1309,8 @@ def genera():
     scene, npc = leggi_copione()
     controlla(scene)
     quest = leggi_le_quest()
-    posti, posti_quest, posti_raccolte = posti_della_quest(npc, quest)
-    return (header(scene, npc, posti, quest, posti_quest, posti_raccolte),
+    posti, posti_quest, posti_raccolte, posti_guardie = posti_della_quest(npc, quest, con_guardie=True)
+    return (header(scene, npc, posti, quest, posti_quest, posti_raccolte, posti_guardie),
             testi_del_copione(scene, npc) + "\n".join(testi_delle_quest(quest)) + "\n")
 
 

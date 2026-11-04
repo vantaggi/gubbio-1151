@@ -210,10 +210,64 @@ static_assert(int(Bandiera::CONTEGGIO) <= 64, "le bandiere della storia stanno i
     return -1;
 }
 
-// La scena finita (battute lette, battaglia vinta): accende le sue bandiere e si segna fatta.
+// --- Le battaglie a meta' scena (F10, B-03) ------------------------------------------------------------
+// L'indice in BATTAGLIA_A_META della scena k, -1 se la sua battaglia (se ne ha una) si combatte alla fine.
+[[nodiscard]] constexpr int a_meta_della_scena(int k)
+{
+    for(int i = 0; i < BATTAGLIE_A_META; ++i)
+    {
+        if(BATTAGLIA_A_META[i].scena == k)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+// Prima di quale battuta (indice in BATTUTA) si combatte la battaglia della scena k: a meta', o dopo l'ultima.
+[[nodiscard]] constexpr int battuta_della_battaglia(int k)
+{
+    int i = a_meta_della_scena(k);
+    return i >= 0 ? int(BATTAGLIA_A_META[i].battuta) : SCENA[k].prima_battuta + SCENA[k].battute;
+}
+
+// La battaglia della scena k e' ancora da combattere: ce l'ha, e se e' a meta' scena non e' gia' vinta (i
+// Guerrieri della Roccia di B-03 si battono una volta sola, GUERRIERI_VINTI).
+[[nodiscard]] constexpr bool battaglia_da_combattere(const GameState& p, int k)
+{
+    int i = a_meta_della_scena(k);
+    return SCENA[k].battaglia >= 0 && (i < 0 || ! accesa(p, int(BATTAGLIA_A_META[i].vinta)));
+}
+
+// La battaglia a meta' della scena k vinta: la sua bandiera si accende. Nulla per le altre scene.
+constexpr void vinta_a_meta(GameState& p, int k)
+{
+    int i = a_meta_della_scena(k);
+
+    if(i >= 0)
+    {
+        accendi_una(p, BATTAGLIA_A_META[i].vinta);
+    }
+}
+
+static_assert(SCENA[BATTAGLIA_A_META[0].scena].battaglia == battaglia::INCONTRO_GUERRIERI &&
+              BATTAGLIA_A_META[0].battuta > SCENA[BATTAGLIA_A_META[0].scena].prima_battuta &&
+              BATTAGLIA_A_META[0].battuta < SCENA[BATTAGLIA_A_META[0].scena].prima_battuta +
+                                              SCENA[BATTAGLIA_A_META[0].scena].battute,
+              "B-03: i Guerrieri della Roccia a meta' scena");
+
+// La scena finita (battute lette, battaglia vinta): accende le sue bandiere e si segna fatta. Una battaglia a
+// meta' scena e' vinta anche nel giro senza camminare (gioca_tutta), dove le battaglie si danno per vinte.
 constexpr void chiudi_scena(GameState& p, int k, const Scena* tabella = SCENA)
 {
     accendi(p, tabella[k].imposta);
+
+    if(tabella == SCENA)
+    {
+        vinta_a_meta(p, k);
+    }
+
     p.scene_fatte[k / 8] = uint8_t(p.scene_fatte[k / 8] | (1 << (k % 8)));
 }
 
@@ -419,7 +473,69 @@ inline constexpr int DISTANZA_RACCOLTA = 10;
     return ! accesa(p, int(RACCOLTA[k].bandiera));
 }
 
-// L'oggetto che il giocatore tocca nell'area, -1 se nessuno.
+// --- Le guardie delle fornaci (F10, Q-SM01) -------------------------------------------------------------
+// Un Guerriero della Roccia davanti a ogni blocco di ferro: c'e' finche' non e' battuto (la sua bandiera), anche
+// se la quest non e' presa, come il blocco. Toccarlo avvia la battaglia (INCONTRO_FORNACE); vinta, non torna.
+static_assert(INCONTRO_FORNACE == battaglia::INCONTRO_FORNACE, "la guardia della fornace e' l'incontro della fornace");
+
+[[nodiscard]] constexpr bool guardia_presente(const GameState& p, int k)
+{
+    return ! accesa(p, int(GUARDIA_FORNACE[k].bandiera));
+}
+
+// La guardia che il giocatore tocca nell'area (la distanza degli scontri sulla mappa), -1 se nessuna.
+[[nodiscard]] constexpr int guardia_toccata(const GameState& p, int area, int x, int y)
+{
+    for(int k = 0; k < GUARDIE_FORNACE; ++k)
+    {
+        const GuardiaFornace& g = GUARDIA_FORNACE[k];
+        int dx = x - mondo::piedi_x(g.tx);
+        int dy = y - mondo::piedi_y(g.ty);
+
+        if(g.area == area && guardia_presente(p, k) && dx > -progressione::DISTANZA_CONTATTO &&
+           dx < progressione::DISTANZA_CONTATTO && dy > -progressione::DISTANZA_CONTATTO &&
+           dy < progressione::DISTANZA_CONTATTO)
+        {
+            return k;
+        }
+    }
+
+    return -1;
+}
+
+// La battaglia con la guardia k vinta: la bandiera si accende. False (e nulla cambia) se era gia' battuta.
+constexpr bool batti_la_guardia(GameState& p, int k)
+{
+    if(k < 0 || k >= GUARDIE_FORNACE || ! guardia_presente(p, k))
+    {
+        return false;
+    }
+
+    accendi_una(p, GUARDIA_FORNACE[k].bandiera);
+    return true;
+}
+
+// L'oggetto k si puo' prendere: c'e', e nessuna guardia ancora in piedi lo guarda («battuto il guerriero, il
+// blocco si raccoglie toccando la fornace»). Le radici non hanno guardie.
+[[nodiscard]] constexpr bool raccolta_libera(const GameState& p, int k)
+{
+    if(! raccolta_presente(p, k))
+    {
+        return false;
+    }
+
+    for(int g = 0; g < GUARDIE_FORNACE; ++g)
+    {
+        if(GUARDIA_FORNACE[g].raccolta == k && guardia_presente(p, g))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// L'oggetto che il giocatore tocca nell'area, -1 se nessuno (o se una guardia lo guarda ancora).
 [[nodiscard]] constexpr int raccolta_toccata(const GameState& p, int area, int x, int y)
 {
     for(int k = 0; k < RACCOLTE; ++k)
@@ -428,7 +544,7 @@ inline constexpr int DISTANZA_RACCOLTA = 10;
         int dx = x - mondo::piedi_x(r.tx);
         int dy = y - mondo::piedi_y(r.ty);
 
-        if(r.area == area && raccolta_presente(p, k) && dx > -DISTANZA_RACCOLTA && dx < DISTANZA_RACCOLTA &&
+        if(r.area == area && raccolta_libera(p, k) && dx > -DISTANZA_RACCOLTA && dx < DISTANZA_RACCOLTA &&
            dy > -DISTANZA_RACCOLTA && dy < DISTANZA_RACCOLTA)
         {
             return k;
@@ -438,11 +554,12 @@ inline constexpr int DISTANZA_RACCOLTA = 10;
     return -1;
 }
 
-// Raccoglie l'oggetto k: accende la sua bandiera (il contatore della quest sale). False se era gia' preso.
-// Dopo, le righe di raccolta della quest (QUEST_GIOCO[q].raccolta) valgono secondo il nuovo contatore.
+// Raccoglie l'oggetto k: accende la sua bandiera (il contatore della quest sale). False se era gia' preso o se
+// la sua guardia e' ancora in piedi. Dopo, le righe di raccolta della quest (QUEST_GIOCO[q].raccolta) valgono
+// secondo il nuovo contatore.
 constexpr bool raccogli(GameState& p, int k)
 {
-    if(k < 0 || k >= RACCOLTE || ! raccolta_presente(p, k))
+    if(k < 0 || k >= RACCOLTE || ! raccolta_libera(p, k))
     {
         return false;
     }
@@ -505,6 +622,8 @@ constexpr bool trova_indizio(GameState& p, int k)
 
 static_assert(QUEST_GIOCO[QUEST_DEGLI_INDIZI].primo_pezzo == ROSA_RIPRESA && QUEST_GIOCO[QUEST_DEGLI_INDIZI].pezzi == 1,
               "l'obiettivo di Q-SP01 e' la Rosa");
+
+static_assert(INFILTRATO.incontro == battaglia::INCONTRO_INFILTRATO, "l'infiltrato ha la sua battaglia (F10)");
 
 // La battaglia con l'infiltrato vinta: la Rosa e' ripresa (l'obiettivo di Q-SP01). False se non c'era.
 constexpr bool riprendi_la_rosa(GameState& p)
