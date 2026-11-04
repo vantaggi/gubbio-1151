@@ -2,44 +2,51 @@
 # misura vera disegnati da tools/genera_mondo.py; fuori dalle vie e dalle piazze case e muro.
 id largo_bargello
 etichetta AREA_LARGO_BARGELLO
-dimensioni 31 22
+dimensioni 22 29
 # Dislivello: la salita va verso nord-est (in basso a destra); i gradoni corrono lungo il lato
 # lungo dell'area, a valle c'e' l'ombra.
-monte basso
-riferimento 18 11
+monte destra
+riferimento 11 15
 fattore 0.73
 # Largo del Bargello: 19 x 13 m, in scala.
 piazza Largo del Bargello
-# bargello: spostato di (-9, 0) tile, fuori dalla piazza o da un altro edificio.
-sposta bargello -9 0
+# Bargello: sopra il largo, con la facciata verso il basso sulla Fontana dei Matti (nord in alto, 4 nov 2026).
+sposta bargello 0 -10
 # Decoro: la Fontana dei Matti (F, 3x3) al centro del Largo.
-spawn 0 20 11
-spawn 1 12 12
-spawn 2 17 8
-spawn 3 20 12
+spawn 0 11 13
+spawn 1 12 21
+spawn 2 8 16
+spawn 3 12 13
 uscita B via_dei_consoli 1
 uscita A san_martino 2
 uscita E duomo_ducale 3
 griglia
-################AAAA###########
-################AAAA###########
-################....###########
-################....###########
-################....###########
-################....###########
-################....###########
-############.............######
-############.............######
-############.............######
-############.....FFF.....######
-############.....FFF.....######
-############.....FFF.....######
-############.............######
-############.............######
-############.............######
-########........##....#########
-########........##....#########
-########........##....#########
-########........##....#########
-########BBBB######EEEE#########
-########BBBB######EEEE#########
+######################
+######################
+######################
+######################
+######################
+######################
+######################
+######################
+######################
+#######.........######
+#######.........######
+#######.........######
+#######.............EE
+#######.............EE
+AA........FFF.......EE
+AA........FFF.......EE
+AA........FFF...######
+AA..............######
+#######.............##
+#######.............##
+#######.............##
+#######.............##
+################....BB
+################....BB
+################....BB
+################....BB
+######################
+######################
+######################

@@ -168,8 +168,8 @@ struct ScontroSullaMappa
 
 inline constexpr int SCONTRI = int(Bandiera::CONTEGGIO);
 inline constexpr ScontroSullaMappa SCONTRI_SULLA_MAPPA[SCONTRI] = {
-    { mondo::AreaId::TEATRO_ROMANO, 46, 40, 0, Bandiera::PATTUGLIA_SCONFITTA },
-    { mondo::AreaId::MONTE_INGINO, 49, 44, 1, Bandiera::IMBOSCATA_SCONFITTA },
+    { mondo::AreaId::TEATRO_ROMANO, 40, 15, 0, Bandiera::PATTUGLIA_SCONFITTA },
+    { mondo::AreaId::MONTE_INGINO, 44, 78, 1, Bandiera::IMBOSCATA_SCONFITTA },
     { mondo::AreaId::CONDOTTO, 50, 14, 2, Bandiera::CORRADO_SCONFITTO },
 };
 

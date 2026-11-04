@@ -1,24 +1,24 @@
 {
-  "_leggimi": "La mappa della citta' nel menu di pausa (MMA, menu/PROPOSTA.md sez. 3.3; mockup menu/mockup/03_mappa.png, approvato). Posizioni a schema in un riquadro 240x120, ruotato come il gioco (alto = ovest, destra = nord) e non in scala: tools/genera_mappa_menu.py le porta nei 224x88 px dentro la cornice, disegna il fondo (prati, monte, mura, Camignano, stradoni, porte, rosa dei venti) e scrive include/stile/mappa_menu.h e testi/mappa_menu.testi. Le strade fra le aree sono gli archi di mondo/grafo.json: il gioco le disegna piene fra aree viste e a puntini verso quelle no. 'riga' e' la riga della scheda sotto la mappa (i monumenti di mondo/monumenti.json, corti).",
+  "_leggimi": "La mappa della citta' nel menu di pausa (MMA, menu/PROPOSTA.md sez. 3.3; mockup menu/mockup/03_mappa.png, approvato). Posizioni a schema in un riquadro 240x120, col nord in alto come il gioco (4 nov 2026: girato dallo schema approvato, che aveva alto = ovest) e non in scala: tools/genera_mappa_menu.py le porta nei 224x88 px dentro la cornice, disegna il fondo (prati, monte, mura, Camignano, stradoni, porte, rosa dei venti) e scrive include/stile/mappa_menu.h e testi/mappa_menu.testi. Le strade fra le aree sono gli archi di mondo/grafo.json: il gioco le disegna piene fra aree viste e a puntini verso quelle no. 'riga' e' la riga della scheda sotto la mappa (i monumenti di mondo/monumenti.json, corti).",
   "nodi": {
-    "TEATRO_ROMANO": [60, 16],
-    "SAN_MARTINO": [140, 26],
-    "LARGO_BARGELLO": [128, 44],
-    "VIA_DEI_CONSOLI": [112, 56],
-    "PIAZZA_QUARANTA_MARTIRI": [80, 46],
-    "PIAZZA_GRANDE": [100, 72],
-    "DUOMO_DUCALE": [124, 80],
-    "SAN_PIETRO": [22, 66],
-    "VIA_XX_SETTEMBRE": [72, 88],
-    "SANT_ANDREA": [52, 100],
-    "SANT_AGOSTINO": [20, 108],
-    "MONTE_INGINO": [104, 100],
-    "BASILICA": [166, 104],
-    "BOTTACCIONE": [180, 42],
-    "GOLA_STRISCIA": [194, 34],
-    "GOLA_MIASMI": [207, 28],
-    "GOLA_ARCO": [220, 22],
-    "CONDOTTO": [228, 16]
+    "TEATRO_ROMANO": [24, 88],
+    "SAN_MARTINO": [44, 51],
+    "LARGO_BARGELLO": [80, 56],
+    "VIA_DEI_CONSOLI": [104, 64],
+    "PIAZZA_QUARANTA_MARTIRI": [84, 79],
+    "PIAZZA_GRANDE": [136, 69],
+    "DUOMO_DUCALE": [152, 58],
+    "SAN_PIETRO": [124, 106],
+    "VIA_XX_SETTEMBRE": [168, 82],
+    "SANT_ANDREA": [192, 92],
+    "SANT_AGOSTINO": [208, 107],
+    "MONTE_INGINO": [192, 67],
+    "BASILICA": [200, 39],
+    "BOTTACCIONE": [76, 32],
+    "GOLA_STRISCIA": [60, 25],
+    "GOLA_MIASMI": [48, 19],
+    "GOLA_ARCO": [36, 13],
+    "CONDOTTO": [24, 10]
   },
   "righe": {
     "TEATRO_ROMANO": "Il teatro dei Romani, fuori dalle mura.",
@@ -40,17 +40,17 @@
     "GOLA_ARCO": "Il grande arco di contrafforte.",
     "CONDOTTO": "Dentro il condotto, dove corre l'acqua."
   },
-  "mura": [[66, 34], [96, 28], [128, 14], [152, 18], [150, 36], [142, 58], [138, 74], [128, 92], [100, 108], [70, 112], [40, 114], [34, 100], [10, 82], [8, 58], [30, 52], [60, 36]],
+  "mura": [[60, 85], [48, 71], [20, 56], [28, 45], [64, 46], [108, 50], [140, 52], [176, 56], [208, 69], [216, 83], [220, 97], [192, 100], [156, 111], [108, 112], [96, 102], [64, 88]],
   "porte": {
-    "Metauro": [152, 22],
-    "Castello": [110, 22],
-    "Ortacci": [60, 32],
-    "San Pietro": [10, 84],
-    "Romana": [30, 104],
-    "Sant'Ubaldo": [116, 98]
+    "Metauro": [36, 45],
+    "Castello": [36, 65],
+    "Ortacci": [56, 88],
+    "San Pietro": [160, 111],
+    "Romana": [200, 102],
+    "Sant'Ubaldo": [188, 62]
   },
-  "camignano": [[240, 8], [232, 16], [220, 22], [207, 28], [194, 34], [180, 42], [160, 30], [146, 28], [132, 36], [116, 46], [96, 50], [80, 54], [50, 56], [20, 60], [0, 62]],
-  "monte": [[96, 120], [112, 106], [132, 98], [150, 76], [160, 58], [168, 48], [188, 48], [240, 32], [240, 120]],
-  "stradoni": [[108, 102], [122, 110], [126, 102], [140, 112], [144, 102], [156, 110], [166, 104]],
-  "sentiero": [[166, 104], [172, 82], [176, 62], [180, 42]]
+  "camignano": [[8, 4], [24, 8], [36, 13], [48, 19], [60, 25], [76, 32], [52, 41], [48, 48], [64, 54], [84, 62], [92, 71], [100, 79], [104, 93], [112, 107], [116, 116]],
+  "monte": [[232, 71], [204, 64], [188, 54], [144, 46], [108, 41], [88, 38], [88, 28], [56, 4], [232, 4]],
+  "stradoni": [[196, 66], [212, 59], [196, 57], [216, 51], [196, 49], [212, 43], [200, 39]],
+  "sentiero": [[200, 39], [156, 36], [116, 34], [76, 32]]
 }

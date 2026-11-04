@@ -703,66 +703,66 @@ inline constexpr Battuta FRASE_NPC[FRASI_NPC] = {
 
 inline constexpr int NPC = 65;
 inline constexpr Npc NPC_AMBIENTE[NPC] = {
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 25, 30, { 0xFFFF, 0, 1 }, { 0, 1, 5 }, 0, 255, 0, 0, 0, false },  // Il console Guido
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 19, 31, { 6, 7, 10 }, { 1, 3, 1 }, 1, 255, 0, 0, 0, false },  // Berto il Tagliapietre
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 25, 33, { 11, 12, 18 }, { 1, 6, 2 }, 2, 255, 0, 0, 0, false },  // Popolana
-    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 10, 35, { 20, 0xFFFF, 0xFFFF }, { 1, 0, 0 }, 3, 255, 0, 0, 0, false },  // Merciaio
-    { int8_t(mondo::AreaId::LARGO_BARGELLO), 20, 8, { 21, 22, 23 }, { 1, 1, 1 }, 4, 255, 0, 0, 0, false },  // Mastro Tano
-    { int8_t(mondo::AreaId::SAN_MARTINO), 37, 29, { 0xFFFF, 24, 26 }, { 0, 2, 2 }, 5, 255, 0, 0, 0, false },  // Cecco il Balestriere
-    { int8_t(mondo::AreaId::SAN_MARTINO), 40, 29, { 28, 29, 30 }, { 1, 1, 1 }, 6, 255, 0, 0, 0, false },  // Lavandaia
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 64, 51, { 31, 32, 34 }, { 1, 2, 1 }, 7, 255, 0, 0, 0, false },  // Venditore delle Logge dei Tiratori
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 61, 54, { 0xFFFF, 35, 0xFFFF }, { 0, 2, 0 }, 8, 70, 2, 0, 0, false },  // Fra' Matteo il Pescatore
-    { int8_t(mondo::AreaId::SAN_PIETRO), 23, 19, { 37, 38, 39 }, { 1, 1, 1 }, 9, 255, 0, 0, 0, false },  // Lucia la Tessitrice
-    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 10, 29, { 40, 42, 44 }, { 2, 2, 1 }, 10, 255, 0, 0, 0, false },  // Vecchio sulla scalinata
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 29, 25, { 45, 46, 48 }, { 1, 2, 2 }, 11, 255, 0, 0, 0, false },  // Frate agostiniano
-    { int8_t(mondo::AreaId::SANT_ANDREA), 42, 23, { 50, 51, 53 }, { 1, 2, 1 }, 12, 255, 0, 0, 0, false },  // Sentinella di Porta Romana
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 27, 29, { 54, 0xFFFF, 55 }, { 1, 0, 1 }, 13, 255, 0, 0, 0, false },  // Canonico
-    { int8_t(mondo::AreaId::SAN_MARTINO), 123, 32, { 56, 57, 58 }, { 1, 1, 1 }, 14, 255, 0, 0, 0, false },  // Ciaccio
-    { int8_t(mondo::AreaId::SAN_MARTINO), 15, 58, { 59, 60, 61 }, { 1, 1, 1 }, 15, 255, 0, 0, 0, false },  // Giuliana
-    { int8_t(mondo::AreaId::SAN_MARTINO), 42, 32, { 62, 63, 64 }, { 1, 1, 1 }, 16, 255, 0, 0, 0, false },  // Flaviano
-    { int8_t(mondo::AreaId::SAN_MARTINO), 75, 32, { 65, 66, 67 }, { 1, 1, 1 }, 17, 255, 0, 0, 0, false },  // Masio il Romano
-    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 7, 52, { 68, 69, 70 }, { 1, 1, 1 }, 18, 255, 0, 0, 0, false },  // Montano
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 102, 71, { 71, 72, 73 }, { 1, 1, 1 }, 19, 65, 2, 0, 0, false },  // Giordano
-    { int8_t(mondo::AreaId::SAN_PIETRO), 31, 30, { 74, 75, 76 }, { 1, 1, 1 }, 20, 255, 0, 0, 0, false },  // Febo
-    { int8_t(mondo::AreaId::SAN_PIETRO), 26, 19, { 77, 78, 79 }, { 1, 1, 1 }, 21, 66, 2, 0, 0, false },  // Giambono
-    { int8_t(mondo::AreaId::SAN_PIETRO), 29, 33, { 80, 81, 82 }, { 1, 1, 1 }, 22, 67, 7, 0, 0, false },  // Ricciardo
-    { int8_t(mondo::AreaId::SAN_PIETRO), 28, 27, { 83, 84, 85 }, { 1, 1, 1 }, 23, 255, 0, 0, 0, false },  // Aurelia
-    { int8_t(mondo::AreaId::SAN_PIETRO), 29, 19, { 86, 87, 88 }, { 1, 1, 1 }, 24, 255, 0, 0, 0, false },  // Leonora
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 41, 34, { 89, 90, 92 }, { 1, 2, 1 }, 25, 64, 2, 4, 25, true },  // Renzo
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 54, 28, { 93, 94, 95 }, { 1, 1, 1 }, 26, 255, 0, 17, 25, true },  // Valeriana
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 43, 27, { 96, 97, 98 }, { 1, 1, 2 }, 27, 255, 0, 20, 25, true },  // Ragnetto
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 39, 18, { 100, 101, 102 }, { 1, 1, 2 }, 28, 255, 0, 0, 0, false },  // Andreuccio
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 27, 50, { 104, 105, 106 }, { 1, 1, 1 }, 29, 255, 0, 0, 0, false },  // Milia
-    { int8_t(mondo::AreaId::SANT_ANDREA), 11, 25, { 107, 108, 109 }, { 1, 1, 1 }, 30, 255, 0, 0, 0, false },  // Michelino
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 30, 23, { 0xFFFF, 0, 1 }, { 0, 1, 5 }, 0, 255, 0, 0, 0, false },  // Il console Guido
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 33, 23, { 6, 7, 10 }, { 1, 3, 1 }, 1, 255, 0, 0, 0, false },  // Berto il Tagliapietre
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 34, 26, { 11, 12, 18 }, { 1, 6, 2 }, 2, 255, 0, 0, 0, false },  // Popolana
+    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 35, 10, { 20, 0xFFFF, 0xFFFF }, { 1, 0, 0 }, 3, 255, 0, 0, 0, false },  // Merciaio
+    { int8_t(mondo::AreaId::LARGO_BARGELLO), 10, 10, { 21, 22, 23 }, { 1, 1, 1 }, 4, 255, 0, 0, 0, false },  // Mastro Tano
+    { int8_t(mondo::AreaId::SAN_MARTINO), 31, 81, { 0xFFFF, 24, 26 }, { 0, 2, 2 }, 5, 255, 0, 0, 0, false },  // Cecco il Balestriere
+    { int8_t(mondo::AreaId::SAN_MARTINO), 34, 81, { 28, 29, 30 }, { 1, 1, 1 }, 6, 255, 0, 0, 0, false },  // Lavandaia
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 54, 60, { 31, 32, 34 }, { 1, 2, 1 }, 7, 255, 0, 0, 0, false },  // Venditore delle Logge dei Tiratori
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 51, 64, { 0xFFFF, 35, 0xFFFF }, { 0, 2, 0 }, 8, 70, 2, 0, 0, false },  // Fra' Matteo il Pescatore
+    { int8_t(mondo::AreaId::SAN_PIETRO), 19, 25, { 37, 38, 39 }, { 1, 1, 1 }, 9, 255, 0, 0, 0, false },  // Lucia la Tessitrice
+    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 29, 9, { 40, 42, 44 }, { 2, 2, 1 }, 10, 255, 0, 0, 0, false },  // Vecchio sulla scalinata
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 25, 27, { 45, 46, 48 }, { 1, 2, 2 }, 11, 255, 0, 0, 0, false },  // Frate agostiniano
+    { int8_t(mondo::AreaId::SANT_ANDREA), 29, 18, { 50, 51, 53 }, { 1, 2, 1 }, 12, 255, 0, 0, 0, false },  // Sentinella di Porta Romana
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 29, 36, { 54, 0xFFFF, 55 }, { 1, 0, 1 }, 13, 255, 0, 0, 0, false },  // Canonico
+    { int8_t(mondo::AreaId::SAN_MARTINO), 32, 4, { 56, 57, 58 }, { 1, 1, 1 }, 14, 255, 0, 0, 0, false },  // Ciaccio
+    { int8_t(mondo::AreaId::SAN_MARTINO), 32, 123, { 59, 60, 61 }, { 1, 1, 1 }, 15, 255, 0, 0, 0, false },  // Giuliana
+    { int8_t(mondo::AreaId::SAN_MARTINO), 29, 84, { 62, 63, 64 }, { 1, 1, 1 }, 16, 255, 0, 0, 0, false },  // Flaviano
+    { int8_t(mondo::AreaId::SAN_MARTINO), 61, 21, { 65, 66, 67 }, { 1, 1, 1 }, 17, 255, 0, 0, 0, false },  // Masio il Romano
+    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 50, 10, { 68, 69, 70 }, { 1, 1, 1 }, 18, 255, 0, 0, 0, false },  // Montano
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 64, 48, { 71, 72, 73 }, { 1, 1, 1 }, 19, 65, 2, 0, 0, false },  // Giordano
+    { int8_t(mondo::AreaId::SAN_PIETRO), 22, 23, { 74, 75, 76 }, { 1, 1, 1 }, 20, 255, 0, 0, 0, false },  // Febo
+    { int8_t(mondo::AreaId::SAN_PIETRO), 25, 25, { 77, 78, 79 }, { 1, 1, 1 }, 21, 66, 2, 0, 0, false },  // Giambono
+    { int8_t(mondo::AreaId::SAN_PIETRO), 18, 28, { 80, 81, 82 }, { 1, 1, 1 }, 22, 67, 7, 0, 0, false },  // Ricciardo
+    { int8_t(mondo::AreaId::SAN_PIETRO), 25, 28, { 83, 84, 85 }, { 1, 1, 1 }, 23, 255, 0, 0, 0, false },  // Aurelia
+    { int8_t(mondo::AreaId::SAN_PIETRO), 19, 31, { 86, 87, 88 }, { 1, 1, 1 }, 24, 255, 0, 0, 0, false },  // Leonora
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 48, 32, { 89, 90, 92 }, { 1, 2, 1 }, 25, 64, 2, 25, 57, true },  // Renzo
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 27, 4, { 93, 94, 95 }, { 1, 1, 1 }, 26, 255, 0, 25, 44, true },  // Valeriana
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 23, 19, { 96, 97, 98 }, { 1, 1, 2 }, 27, 255, 0, 25, 41, true },  // Ragnetto
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 15, 20, { 100, 101, 102 }, { 1, 1, 2 }, 28, 255, 0, 0, 0, false },  // Andreuccio
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 35, 36, { 104, 105, 106 }, { 1, 1, 1 }, 29, 255, 0, 0, 0, false },  // Milia
+    { int8_t(mondo::AreaId::SANT_ANDREA), 25, 47, { 107, 108, 109 }, { 1, 1, 1 }, 30, 255, 0, 0, 0, false },  // Michelino
     { int8_t(mondo::AreaId::TAVERNA_INTERNO), 20, 14, { 110, 111, 115 }, { 1, 4, 1 }, 31, 255, 0, 0, 0, false },  // Padellino
     { int8_t(mondo::AreaId::SPEZIERIA_INTERNO), 5, 9, { 116, 117, 118 }, { 1, 1, 1 }, 32, 255, 0, 0, 0, false },  // Gabrione
     { int8_t(mondo::AreaId::SPEZIERIA_INTERNO), 20, 12, { 119, 120, 121 }, { 1, 1, 2 }, 33, 255, 0, 0, 0, false },  // Valenza
-    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 22, 15, { 123, 124, 125 }, { 1, 1, 2 }, 34, 255, 0, 23, 25, true },  // Ciotto
-    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 24, 11, { 127, 128, 129 }, { 1, 1, 2 }, 35, 255, 0, 26, 25, true },  // Fazio
-    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 7, 14, { 131, 132, 135 }, { 1, 3, 2 }, 36, 255, 0, 29, 25, true },  // Lauretta
-    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 10, 13, { 137, 138, 139 }, { 1, 1, 1 }, 37, 255, 0, 32, 25, true },  // Nicoluccio
+    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 22, 15, { 123, 124, 125 }, { 1, 1, 2 }, 34, 255, 0, 25, 38, true },  // Ciotto
+    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 24, 11, { 127, 128, 129 }, { 1, 1, 2 }, 35, 255, 0, 25, 35, true },  // Fazio
+    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 7, 14, { 131, 132, 135 }, { 1, 3, 2 }, 36, 255, 0, 25, 32, true },  // Lauretta
+    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 10, 13, { 137, 138, 139 }, { 1, 1, 1 }, 37, 255, 0, 25, 29, true },  // Nicoluccio
     { int8_t(mondo::AreaId::CARRADORE_INTERNO), 19, 13, { 140, 141, 142 }, { 1, 1, 1 }, 38, 68, 2, 0, 0, false },  // Mastro Rufino
     { int8_t(mondo::AreaId::CASA_MEDICO_INTERNO), 13, 10, { 143, 144, 145 }, { 1, 1, 1 }, 39, 255, 0, 0, 0, false },  // Vanni
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 16, 31, { 146, 147, 148 }, { 1, 1, 1 }, 40, 255, 0, 0, 0, false },  // Il Banditore del Comune
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 19, 102, { 149, 150, 151 }, { 1, 1, 1 }, 41, 255, 0, 0, 0, false },  // Il Misuratore del grano
-    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 10, 4, { 152, 153, 154 }, { 1, 1, 1 }, 42, 255, 0, 0, 0, false },  // Il Fabbro
-    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 4, 53, { 155, 156, 157 }, { 1, 1, 1 }, 43, 255, 0, 0, 0, false },  // La Vasaia
-    { int8_t(mondo::AreaId::LARGO_BARGELLO), 19, 17, { 158, 159, 160 }, { 1, 1, 1 }, 44, 255, 0, 0, 0, false },  // L'Acquaiolo
-    { int8_t(mondo::AreaId::LARGO_BARGELLO), 9, 17, { 161, 162, 163 }, { 1, 1, 1 }, 45, 255, 0, 0, 0, false },  // Il Funaio
-    { int8_t(mondo::AreaId::SAN_MARTINO), 4, 61, { 164, 165, 166 }, { 1, 1, 1 }, 46, 255, 0, 0, 0, false },  // Il Tintore
-    { int8_t(mondo::AreaId::SAN_MARTINO), 78, 32, { 167, 168, 169 }, { 1, 1, 1 }, 47, 255, 0, 0, 0, false },  // Il Conciatore
-    { int8_t(mondo::AreaId::SAN_MARTINO), 4, 3, { 170, 171, 172 }, { 1, 1, 1 }, 48, 255, 0, 0, 0, false },  // Il Mugnaio
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 99, 71, { 173, 174, 175 }, { 1, 1, 1 }, 49, 255, 0, 0, 0, false },  // Il Lanaiolo
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 83, 78, { 176, 177, 178 }, { 1, 1, 1 }, 50, 255, 0, 0, 0, false },  // Il Pastore
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 90, 73, { 179, 180, 0xFFFF }, { 1, 1, 0 }, 51, 255, 0, 0, 0, false },  // Il Macellaio
-    { int8_t(mondo::AreaId::SAN_PIETRO), 26, 12, { 181, 182, 183 }, { 1, 1, 1 }, 52, 255, 0, 0, 0, false },  // La Fornaia
-    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 7, 4, { 184, 185, 186 }, { 1, 1, 2 }, 53, 255, 0, 0, 0, false },  // Il Calzolaio
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 42, 30, { 188, 189, 190 }, { 1, 1, 1 }, 54, 255, 0, 0, 0, false },  // L'Ortolana
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 40, 27, { 191, 192, 0xFFFF }, { 1, 1, 0 }, 55, 255, 0, 0, 0, false },  // Il Carbonaio
-    { int8_t(mondo::AreaId::SANT_ANDREA), 57, 12, { 193, 194, 195 }, { 1, 1, 1 }, 56, 255, 0, 0, 0, false },  // Il Carpentiere
-    { int8_t(mondo::AreaId::SANT_ANDREA), 14, 25, { 196, 197, 198 }, { 1, 1, 1 }, 57, 255, 0, 0, 0, false },  // Il Frecciaio
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 31, 59, { 199, 200, 201 }, { 1, 1, 1 }, 58, 255, 0, 0, 0, false },  // Il Campanaro
-    { int8_t(mondo::AreaId::DUOMO_DUCALE), 25, 4, { 202, 203, 204 }, { 1, 1, 1 }, 59, 255, 0, 0, 0, false },  // Il Viandante
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 20, 44, { 146, 147, 148 }, { 1, 1, 1 }, 40, 255, 0, 0, 0, false },  // Il Banditore del Comune
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 91, 44, { 149, 150, 151 }, { 1, 1, 1 }, 41, 255, 0, 0, 0, false },  // Il Misuratore del grano
+    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 4, 10, { 152, 153, 154 }, { 1, 1, 1 }, 42, 255, 0, 0, 0, false },  // Il Fabbro
+    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 53, 14, { 155, 156, 157 }, { 1, 1, 1 }, 43, 255, 0, 0, 0, false },  // La Vasaia
+    { int8_t(mondo::AreaId::LARGO_BARGELLO), 17, 13, { 158, 159, 160 }, { 1, 1, 1 }, 44, 255, 0, 0, 0, false },  // L'Acquaiolo
+    { int8_t(mondo::AreaId::LARGO_BARGELLO), 8, 13, { 161, 162, 163 }, { 1, 1, 1 }, 45, 255, 0, 0, 0, false },  // Il Funaio
+    { int8_t(mondo::AreaId::SAN_MARTINO), 61, 123, { 164, 165, 166 }, { 1, 1, 1 }, 46, 255, 0, 0, 0, false },  // Il Tintore
+    { int8_t(mondo::AreaId::SAN_MARTINO), 68, 21, { 167, 168, 169 }, { 1, 1, 1 }, 47, 255, 0, 0, 0, false },  // Il Conciatore
+    { int8_t(mondo::AreaId::SAN_MARTINO), 3, 123, { 170, 171, 172 }, { 1, 1, 1 }, 48, 255, 0, 0, 0, false },  // Il Mugnaio
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 61, 48, { 173, 174, 175 }, { 1, 1, 1 }, 49, 255, 0, 0, 0, false },  // Il Lanaiolo
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 87, 85, { 176, 177, 178 }, { 1, 1, 1 }, 50, 255, 0, 0, 0, false },  // Il Pastore
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 73, 17, { 179, 180, 0xFFFF }, { 1, 1, 0 }, 51, 255, 0, 0, 0, false },  // Il Macellaio
+    { int8_t(mondo::AreaId::SAN_PIETRO), 5, 34, { 181, 182, 183 }, { 1, 1, 1 }, 52, 255, 0, 0, 0, false },  // La Fornaia
+    { int8_t(mondo::AreaId::VIA_XX_SETTEMBRE), 4, 13, { 184, 185, 186 }, { 1, 1, 2 }, 53, 255, 0, 0, 0, false },  // Il Calzolaio
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 45, 32, { 188, 189, 190 }, { 1, 1, 1 }, 54, 255, 0, 0, 0, false },  // L'Ortolana
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 20, 19, { 191, 192, 0xFFFF }, { 1, 1, 0 }, 55, 255, 0, 0, 0, false },  // Il Carbonaio
+    { int8_t(mondo::AreaId::SANT_ANDREA), 12, 4, { 193, 194, 195 }, { 1, 1, 1 }, 56, 255, 0, 0, 0, false },  // Il Carpentiere
+    { int8_t(mondo::AreaId::SANT_ANDREA), 25, 50, { 196, 197, 198 }, { 1, 1, 1 }, 57, 255, 0, 0, 0, false },  // Il Frecciaio
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 59, 30, { 199, 200, 201 }, { 1, 1, 1 }, 58, 255, 0, 0, 0, false },  // Il Campanaro
+    { int8_t(mondo::AreaId::DUOMO_DUCALE), 4, 36, { 202, 203, 204 }, { 1, 1, 1 }, 59, 255, 0, 0, 0, false },  // Il Viandante
     { int8_t(mondo::AreaId::SALA_CONSOLI), 12, 14, { 205, 206, 207 }, { 1, 1, 1 }, 60, 255, 0, 0, 0, false },  // Il Notaio del Comune
     { int8_t(mondo::AreaId::SALA_CONSOLI), 28, 8, { 208, 209, 210 }, { 1, 1, 1 }, 61, 255, 0, 0, 0, false },  // La Guardia della sala
     { int8_t(mondo::AreaId::TAVERNA_INTERNO), 8, 8, { 211, 212, 213 }, { 1, 1, 1 }, 62, 255, 0, 0, 0, false },  // L'Avventore
@@ -962,9 +962,9 @@ struct QuestGioco
 };
 
 inline constexpr QuestGioco QUEST_GIOCO[QUEST] = {
-    { Q_SM01_PRESA, 80, 3, int8_t(mondo::AreaId::SAN_MARTINO), 36, 33, 65, { 0, 6 }, { 6, 1 }, { 7, 8 }, { 15, 4 }, { { 19, 1 }, { 20, 1 }, { 21, 1 } } },  // Q-SM01, Mastro Raniero
-    { Q_SA01_PRESA, 83, 4, int8_t(mondo::AreaId::SANT_ANDREA), 38, 26, 66, { 22, 8 }, { 30, 1 }, { 31, 6 }, { 37, 3 }, { { 40, 0 }, { 40, 1 }, { 41, 2 } } },  // Q-SA01, Monna Agnese
-    { Q_SP01_PRESA, 87, 1, int8_t(mondo::AreaId::SAN_PIETRO), 31, 27, 67, { 43, 6 }, { 49, 1 }, { 50, 6 }, { 56, 0 }, { { 56, 0 }, { 56, 1 }, { 57, 1 } } },  // Q-SP01, Fra' Bernardo
+    { Q_SM01_PRESA, 80, 3, int8_t(mondo::AreaId::SAN_MARTINO), 35, 84, 65, { 0, 6 }, { 6, 1 }, { 7, 8 }, { 15, 4 }, { { 19, 1 }, { 20, 1 }, { 21, 1 } } },  // Q-SM01, Mastro Raniero
+    { Q_SA01_PRESA, 83, 4, int8_t(mondo::AreaId::SANT_ANDREA), 25, 21, 66, { 22, 8 }, { 30, 1 }, { 31, 6 }, { 37, 3 }, { { 40, 0 }, { 40, 1 }, { 41, 2 } } },  // Q-SA01, Monna Agnese
+    { Q_SP01_PRESA, 87, 1, int8_t(mondo::AreaId::SAN_PIETRO), 16, 23, 67, { 43, 6 }, { 49, 1 }, { 50, 6 }, { 56, 0 }, { { 56, 0 }, { 56, 1 }, { 57, 1 } } },  // Q-SP01, Fra' Bernardo
 };
 
 // Gli oggetti da raccogliere sulla mappa: ci sono finche' la loro bandiera e' spenta (anche se la quest non
@@ -981,10 +981,10 @@ struct Raccolta
 
 inline constexpr int RACCOLTE = 7;
 inline constexpr Raccolta RACCOLTA[RACCOLTE] = {
-    { int8_t(mondo::AreaId::TEATRO_ROMANO), 38, 15, 0, FERRO_1, 0 },
-    { int8_t(mondo::AreaId::TEATRO_ROMANO), 44, 35, 0, FERRO_2, 0 },
-    { int8_t(mondo::AreaId::TEATRO_ROMANO), 34, 51, 0, FERRO_3, 0 },
-    { int8_t(mondo::AreaId::BOTTACCIONE), 47, 48, 1, ELLEBORO_1, 1 },
+    { int8_t(mondo::AreaId::TEATRO_ROMANO), 15, 25, 0, FERRO_1, 0 },
+    { int8_t(mondo::AreaId::TEATRO_ROMANO), 35, 19, 0, FERRO_2, 0 },
+    { int8_t(mondo::AreaId::TEATRO_ROMANO), 51, 29, 0, FERRO_3, 0 },
+    { int8_t(mondo::AreaId::BOTTACCIONE), 48, 16, 1, ELLEBORO_1, 1 },
     { int8_t(mondo::AreaId::GOLA_STRISCIA), 44, 10, 1, ELLEBORO_2, 1 },
     { int8_t(mondo::AreaId::GOLA_MIASMI), 32, 14, 1, ELLEBORO_3, 1 },
     { int8_t(mondo::AreaId::GOLA_ARCO), 35, 19, 1, ELLEBORO_4, 1 },
@@ -1057,7 +1057,7 @@ struct Infiltrato
     Righe dopo;
 };
 
-inline constexpr Infiltrato INFILTRATO = { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 105, 71, 68, 6, { 65, 3 }, { 68, 5 } };
+inline constexpr Infiltrato INFILTRATO = { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 67, 48, 68, 6, { 65, 3 }, { 68, 5 } };
 
 // --- La gola del Bottaccione (T2) ----------------------------------------------------------------
 // Le scene che partono su una cella dell'area (non entrando): B-02 sulla prima nebbia, B-03 sotto l'arco.
@@ -1128,9 +1128,9 @@ struct GuardiaFornace
 inline constexpr int INCONTRO_FORNACE = 5;     // battaglia::INCONTRO
 inline constexpr int GUARDIE_FORNACE = 3;
 inline constexpr GuardiaFornace GUARDIA_FORNACE[GUARDIE_FORNACE] = {
-    { int8_t(mondo::AreaId::TEATRO_ROMANO), 40, 16, GUARDIA_FORNACE_1, 0 },  // davanti a FERRO_1
-    { int8_t(mondo::AreaId::TEATRO_ROMANO), 44, 37, GUARDIA_FORNACE_2, 1 },  // davanti a FERRO_2
-    { int8_t(mondo::AreaId::TEATRO_ROMANO), 36, 50, GUARDIA_FORNACE_3, 2 },  // davanti a FERRO_3
+    { int8_t(mondo::AreaId::TEATRO_ROMANO), 16, 23, GUARDIA_FORNACE_1, 0 },  // davanti a FERRO_1
+    { int8_t(mondo::AreaId::TEATRO_ROMANO), 34, 17, GUARDIA_FORNACE_2, 1 },  // davanti a FERRO_2
+    { int8_t(mondo::AreaId::TEATRO_ROMANO), 50, 27, GUARDIA_FORNACE_3, 2 },  // davanti a FERRO_3
 };
 
 // --- Gli interni (INTC) ----------------------------------------------------------------------------

@@ -14,10 +14,12 @@ Scrive (con --scrivi):
 
 Senza argomenti controlla che i file scritti siano aggiornati (esce con 1 se no).
 
-La rotazione del gioco (decisa nel prototipo, confermata il 1 nov 2026):
-  alto dello schermo = ovest, basso = est, destra = nord, sinistra = sud.
-  In griglia x cresce verso nord, y cresce verso est.
-  Una facciata che guarda a est si vede di fronte (FRONTALE).
+L'orientamento del gioco: NORD IN ALTO (richiesta di Cioti del 4 nov 2026, dopo la
+prima prova; prima era alto = ovest). Alto = nord, basso = sud, destra = est,
+sinistra = ovest. In griglia x cresce verso est, y cresce verso sud.
+Le facciate dei monumenti si disegnano sempre verso il basso, verso chi guarda
+(scelta di stile del 4 nov 2026, come nei giochi visti dall'alto): il lato vero
+resta in facciata_lato_reale.
 
 Scala: 1 tile (8 px) = 1,5 m. Gli edifici sono in scala; le distanze fra
 edifici si possono comprimere quando si disegna l'area (qui restano reali).
@@ -58,9 +60,9 @@ ECCEZIONI_MISURE = {
 def vettore_schermo(bussola_gradi):
     """Direzione reale -> vettore sullo schermo (dx verso destra, dy verso il basso).
 
-    Nord = destra (+x), est = basso (+y)."""
+    Nord = alto (-y), est = destra (+x)."""
     r = math.radians(bussola_gradi)
-    return (math.cos(r), math.sin(r))
+    return (math.sin(r), -math.cos(r))
 
 
 def lato_schermo(bussola_gradi):
@@ -70,6 +72,9 @@ def lato_schermo(bussola_gradi):
         return "destra" if dx > 0 else "sinistra"
     return "basso" if dy > 0 else "alto"
 
+
+# Tutte le facciate verso il basso (vedi in cima).
+FACCIATA_SCHERMO = "basso"
 
 LATO_OPPOSTO = {"alto": "basso", "basso": "alto", "destra": "sinistra", "sinistra": "destra"}
 # Un arco "dentro" (grafo.json) porta all'interno di un edificio: il varco sta sul portale, in mezzo
@@ -194,12 +199,14 @@ def calcola_monumenti(grafo, censimento):
         normale = _num(r["facciata_normale_bussola"])
         if normale is not None:
             voce["facciata_bussola"] = int(normale)
-            voce["facciata_lato_schermo"] = lato_schermo(normale)
-            voce["facciata_vista"] = vista_facciata(normale)
+            # la facciata si disegna sempre verso chi guarda (in basso); il lato vero resta annotato
+            voce["facciata_lato_reale"] = lato_schermo(normale)
+            voce["facciata_lato_schermo"] = FACCIATA_SCHERMO
+            voce["facciata_vista"] = "frontale"
         p = punto(r)
         if p is not None:
             nord, est = metri_nord_est(ancora_area(area, censimento), p)
-            # Sullo schermo: x = nord (destra), y = est (basso).
+            # dall_ancora e' (nord, est); sullo schermo x = est (destra), y = -nord (in alto).
             voce["dall_ancora_m"] = [round(nord, 1), round(est, 1)]
             voce["dall_ancora_tile"] = [int(round(nord / METRI_PER_TILE)),
                                         int(round(est / METRI_PER_TILE))]
@@ -224,6 +231,15 @@ def lato_varco(verso, rilev_reale):
     return candidati[0]
 
 
+# Le stanze "coricate" (la gola) restano disegnate di fianco, col nord a destra: per loro il lato si gira
+# indietro di 90 gradi (nord in alto -> nord a destra).
+CORICATO = {"alto": "destra", "destra": "basso", "basso": "sinistra", "sinistra": "alto"}
+
+
+def lato_nell_area(area, lato):
+    return CORICATO[lato] if area.get("coricata") and lato in CORICATO else lato
+
+
 def calcola_varchi(grafo, censimento):
     aree = {a["id"]: a for a in grafo["aree"]}
     out = {aid: [] for aid in aree}
@@ -237,8 +253,9 @@ def calcola_varchi(grafo, censimento):
             rilev = rilevamento(ancora_area(aree[da], censimento), ancora_area(aree[a], censimento))
             lato = lato_varco(arco["verso"], rilev)
             ritorno = LATO_OPPOSTO[lato]
-        out[da].append({"verso": a, "bussola": arco["verso"], "lato": lato, "come": arco["come"]})
-        out[a].append({"verso": da, "bussola": verso_inv, "lato": ritorno,
+        out[da].append({"verso": a, "bussola": arco["verso"], "lato": lato_nell_area(aree[da], lato),
+                        "come": arco["come"]})
+        out[a].append({"verso": da, "bussola": verso_inv, "lato": lato_nell_area(aree[a], ritorno),
                        "come": arco["come"] + " (al contrario)"})
     for aid in out:
         out[aid].sort(key=lambda v: v["verso"])
@@ -390,8 +407,10 @@ def errori_monumenti(grafo, censimento):
     return err
 
 
-def errori_lati_varchi(varchi):
-    """Ogni area ha almeno un varco, e andata e ritorno stanno su lati opposti."""
+def errori_lati_varchi(varchi, coricate=()):
+    """Ogni area ha almeno un varco, e andata e ritorno stanno su lati opposti (per le stanze coricate,
+    contati col nord in alto)."""
+    raddrizza = {v: k for k, v in CORICATO.items()}
     err = []
     for aid, lista in varchi.items():
         if not lista:
@@ -404,7 +423,8 @@ def errori_lati_varchi(varchi):
             elif LATO_DENTRO in coppia:
                 if coppia != {LATO_DENTRO, LATO_USCITA_DENTRO}:
                     err.append("%s>%s entra dal portale ma esce a %s" % (aid, v["verso"], ritorno[0]["lato"]))
-            elif ritorno[0]["lato"] != LATO_OPPOSTO[v["lato"]]:
+            elif (raddrizza[ritorno[0]["lato"]] if v["verso"] in coricate else ritorno[0]["lato"]) != \
+                    LATO_OPPOSTO[raddrizza[v["lato"]] if aid in coricate else v["lato"]]:
                 err.append("%s>%s esce a %s ma rientra a %s"
                            % (aid, v["verso"], v["lato"], ritorno[0]["lato"]))
     return err
@@ -416,7 +436,8 @@ def tutti_gli_errori(grafo, censimento):
             + errori_eccezioni_superflue(grafo, censimento)
             + errori_accessi_esclusivi(grafo)
             + errori_monumenti(grafo, censimento)
-            + errori_lati_varchi(calcola_varchi(grafo, censimento)))
+            + errori_lati_varchi(calcola_varchi(grafo, censimento),
+                                 {a["id"] for a in grafo["aree"] if a.get("coricata")}))
 
 
 def documenti(grafo=None, censimento=None):
@@ -425,7 +446,7 @@ def documenti(grafo=None, censimento=None):
     intest = ("Generato da tools/mondo_dati.py dal censimento F3 (OSM, (c) contributori "
               "OpenStreetMap, ODbL) e da mondo/grafo.json. Non modificare a mano.")
     mon = {"_leggimi": intest, "metri_per_tile": METRI_PER_TILE,
-           "rotazione": "alto=ovest, basso=est, destra=nord, sinistra=sud",
+           "rotazione": "nord in alto: alto=nord, basso=sud, destra=est, sinistra=ovest",
            "monumenti": calcola_monumenti(grafo, censimento)}
     var = {"_leggimi": intest, "rotazione": mon["rotazione"],
            "varchi": calcola_varchi(grafo, censimento)}

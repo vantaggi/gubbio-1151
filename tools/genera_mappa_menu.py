@@ -43,9 +43,9 @@ INDICE = {nome: i + 1 for i, (nome, _) in enumerate(COLORI)}
 # Le icone disegnate nel fondo o dal gioco, a lettere come nel mockup (k scuro, S e s pietra, O oro, w luce).
 LETTERE = {"k": "k", "S": "porta", "s": "pietra", "O": "vista", "w": "luce"}
 PORTA = [".k.k.k..", ".kkkkk..", ".kSsSk..", ".kSSSk..", ".kSkSk..", ".kk.kk..", ".k...k..", "........"]
-# la freccia punta alla N, cioe' a destra (il nord, nella mappa ruotata come il gioco)
-ROSA = ["....k.....k...k.", "...kOk....kk..k.", "kOOOOkkk..k.k.k.", "kwwwwOOk..k..kk.", "kOOOOkkk..k...k.",
-        "...kOk..........", "....k..........."]
+# la freccia punta alla N, in alto (col nord in alto come il gioco, 4 nov 2026)
+ROSA = ["...k.....k...k..", "..kOk....kk..k..", ".kOwOk...k.k.k..", "kOOwOOk..k..kk..", "kkOwOkk..k...k..",
+        "..kwk...........", "..kkk..........."]
 
 
 class ErroreMappa(Exception):
