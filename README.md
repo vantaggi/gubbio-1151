@@ -17,6 +17,13 @@ Mentre si lavora c'e' il giro corto, vedi [docs/prove.md](docs/prove.md):
     python3 tools/prove.py            # solo i test toccati dalla modifica, in parallelo (+ mGBA se cambia la ROM)
     python3 tools/prove.py --tutte    # tutto, in parallelo: prima di fondere
 
+## Architettura
+
+[docs/architettura/ARCHITETTURA.md](docs/architettura/ARCHITETTURA.md): grafo dei moduli, matrice degli include,
+matrice degli asset, aree e varchi. Sono generati dal codice con `python3 tools/grafo_moduli.py` e
+`tests/test_architettura.py` fallisce se restano indietro. Lo stato della revisione a loop e' in
+[LOOP_PROGRESS.md](LOOP_PROGRESS.md). La ROM si compila con zero avvisi (`-Werror` nel Makefile).
+
 ## Quale ROM fa fede
 
 **La ROM ufficiale e' l'artifact `gubbio1151-rom` della CI** (`.github/workflows/build.yml`),

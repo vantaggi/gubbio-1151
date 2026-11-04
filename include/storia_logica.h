@@ -106,6 +106,8 @@ constexpr void accendi_una(GameState& p, int b)
             return pezzi_raccolti(p, g.a) == g.b && (g.c == NESSUNA_BANDIERA || accesa(p, int(g.c)));
         case TipoGuardia::CONTEGGIO_E_NON_BANDIERA:
             return pezzi_raccolti(p, g.a) == g.b && ! accesa(p, int(g.c));
+        default:
+            break;
     }
 
     return false;
@@ -700,6 +702,7 @@ constexpr bool prendi_quest(GameState& p, int q)
         case Momento::DOPO:
             return g.dopo[int(fase_npc(p))];
         case Momento::ASSENTE:
+        default:
             break;
     }
 

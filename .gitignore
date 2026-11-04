@@ -29,3 +29,7 @@ build_banco/
 banco_obj*/
 banco_rom*
 build_prove/
+
+# --- Log delle build e dei test (si rifanno a ogni giro) -----------------------------------------
+/build.log
+/test.log

@@ -8,7 +8,11 @@
 namespace gubbio
 {
 
+// Mai definite: chiamarle in un consteval ferma la compilazione e il messaggio dice l'indice della battaglia.
+// Fuori dallo spazio anonimo, se no gcc avvisa (-Wunused-function) che non sono definite.
 void battaglia_diversa_dal_mirror(int indice);
+void scudo_in_meno_diverso_dal_mirror(int indice);
+void ceri_diversi_dal_mirror(int indice);
 
 namespace
 {
@@ -75,7 +79,6 @@ namespace
 
     // Il duello con Corrado con uno scudo in meno (Q-SM01 o RUFINO_ASCOLTATO): le firme del C++ con
     // scudi_in_meno = 1 sono quelle del mirror con la stessa manopola.
-    void scudo_in_meno_diverso_dal_mirror(int indice);
 
     consteval int verifica_scudo_in_meno()
     {
@@ -127,7 +130,6 @@ namespace
 
     // I Ceri risvegliati (CERI_RISVEGLIATI, storia::ceri_accesi()): Corrado e i Guerrieri di B-03 con il Fervore
     // iniziale piu' alto. Le firme del C++ con ceri = true sono quelle del mirror con la stessa manopola.
-    void ceri_diversi_dal_mirror(int indice);
 
     consteval int verifica_ceri()
     {

@@ -1,0 +1,39 @@
+asset,usato_da
+graphics/logo.bmp,src/titolo.cpp
+graphics/ritratto_antonio.bmp,src/menu_pagine.cpp src/storia_scena.cpp
+graphics/ritratto_giorgio.bmp,src/menu_pagine.cpp src/storia_scena.cpp
+graphics/ritratto_guido.bmp,src/storia_scena.cpp
+graphics/ritratto_ubaldo.bmp,src/menu_pagine.cpp src/storia_scena.cpp
+graphics/titolo_fondo.bmp,src/titolo.cpp
+audio/annulla.wav,include/colonna_sonora.h
+audio/bandiere.xm,include/colonna_sonora.h
+audio/basilica.xm,include/colonna_sonora.h
+audio/battaglia.xm,include/colonna_sonora.h
+audio/bottaccione.xm,include/colonna_sonora.h
+audio/campanone.wav,include/colonna_sonora.h
+audio/canzone_di_flaviano.xm,include/colonna_sonora.h
+audio/citta.xm,include/colonna_sonora.h
+audio/colpo.wav,include/colonna_sonora.h
+audio/conferma.wav,include/colonna_sonora.h
+audio/corrado.xm,include/colonna_sonora.h
+audio/cura.wav,include/colonna_sonora.h
+audio/cursore.wav,include/colonna_sonora.h
+audio/fazio.xm,include/colonna_sonora.h
+audio/fede.wav,include/colonna_sonora.h
+audio/fuoco.wav,include/colonna_sonora.h
+audio/livello.wav,include/colonna_sonora.h
+audio/notte.xm,include/colonna_sonora.h
+audio/pastorale.xm,include/colonna_sonora.h
+audio/presentazione.xm,include/colonna_sonora.h
+audio/prologo.xm,include/colonna_sonora.h
+audio/salva.wav,include/colonna_sonora.h
+audio/sconfitta.xm,include/colonna_sonora.h
+audio/scudo.wav,include/colonna_sonora.h
+audio/stradoni.xm,include/colonna_sonora.h
+audio/svanisce.wav,include/colonna_sonora.h
+audio/taverna.xm,include/colonna_sonora.h
+audio/terza_alba.xm,include/colonna_sonora.h
+audio/testo.wav,include/colonna_sonora.h
+audio/titolo.xm,include/colonna_sonora.h
+audio/undici_bandiere.xm,include/colonna_sonora.h
+audio/vittoria.xm,include/colonna_sonora.h

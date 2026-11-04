@@ -45,5 +45,7 @@ altro nome.
 (regular_bg 256x256 nella disposizione della scelta 9), `titolo_fondo` (regular_bg 256x256: Gubbio al
 crepuscolo sotto il titolo, mockup 10 dei menu, con la palette di notte). L'indice 0 e' il trasparente. Per
 riquadri di misura variabile si usano invece i tile di `include/stile/cornice.h`.
+`logo_mono`, `cornice_dialogo`, `cornice_menu`, `ritratto_giovane` e `ritratto_soldato` si disegnano e si
+provano ma non vanno in `graphics/` (`FUORI_ROM` in `genera_bmp.py`): nessun sorgente li usa.
 `tests/test_stile_bmp.py` controlla che i BMP siano allineati ai dati e che i colori riletti
 come fa grit (canale >> 3) siano esattamente le parole BGR555 della palette.

@@ -281,6 +281,50 @@ namespace
                         return false;
                     }
                     break;
+                // le guardie delle quest (pezzi raccolti): con zero pezzi vale solo se ne chiede zero; con tutti i
+                // pezzi della quest vale solo se ne chiede tanti; la bandiera c le accende (CONTEGGIO) o le spegne
+                case TipoGuardia::CONTEGGIO:
+                case TipoGuardia::CONTEGGIO_E_NON_BANDIERA:
+                {
+                    const bool non = g.tipo == TipoGuardia::CONTEGGIO_E_NON_BANDIERA;
+                    if(g.c != NESSUNA_BANDIERA && ! non)
+                    {
+                        accendi_una(con, g.c);
+                    }
+                    if(vale(con, i, -1) != (g.b == 0))
+                    {
+                        return false;
+                    }
+                    const QuestGioco& q = QUEST_GIOCO[g.a];
+                    for(int k = 0; k < q.pezzi; ++k)
+                    {
+                        accendi_una(con, q.primo_pezzo + k);
+                    }
+                    if(vale(con, i, -1) != (g.b == q.pezzi))
+                    {
+                        return false;
+                    }
+                    if(g.c != NESSUNA_BANDIERA)
+                    {
+                        // tutti i pezzi ma la bandiera c dalla parte sbagliata: non vale
+                        GameState altro = {};
+                        for(int k = 0; k < q.pezzi; ++k)
+                        {
+                            accendi_una(altro, q.primo_pezzo + k);
+                        }
+                        if(non)
+                        {
+                            accendi_una(altro, g.c);
+                        }
+                        if(g.b == q.pezzi && vale(altro, i, -1))
+                        {
+                            return false;
+                        }
+                    }
+                    break;
+                }
+                default:
+                    return false;
             }
         }
 

@@ -18,6 +18,14 @@
 >   la cima.
 > * **Il foreground copre solo la fascia alta** (tetti, archi, chiome).
 >
+> **Aggiornamento del 4 novembre 2026 (nord in alto, interni, gola).** Le aree sono 25: le 14 della
+> citta' e del monte, le 4 stanze della gola (Striscia, Miasmi, Arco, Condotto) e 7 interni (Basilica,
+> Taverna, Spezieria, Bottega dei conti, Carradore, Casa del medico, Sala dei Consoli). I varchi sono 62,
+> cioe' 31 collegamenti nei due sensi. **Dal 4 novembre lo schermo ha il nord in alto** (prima alto =
+> ovest): le direzioni della tabella qui sotto sono bussola reale e restano valide, il lato dello schermo
+> lo calcola `tools/mondo_dati.py`. Il grafo aggiornato, generato dal codice, e'
+> [docs/architettura/aree.mmd](architettura/aree.mmd).
+>
 > Le aree non sono piu' header C++: sono i file `mondo/aree/*.area`, e `tools/genera_mondo.py`
 > ne fa `include/mondo.h`. I riferimenti a header e costanti qui sotto descrivono il prototipo.
 >

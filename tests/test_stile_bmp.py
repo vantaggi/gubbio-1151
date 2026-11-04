@@ -31,7 +31,7 @@ class BmpDiStile(unittest.TestCase):
     def test_rilettura_esatta_dei_colori(self):
         # grit porta i canali a 5 bit con >> 3: i colori in ROM devono essere le parole BGR555
         for nome, (colori, _) in self.immagini.items():
-            w, h, indici, palette = G.leggi_bmp_4bpp(self.attesi[nome + ".bmp"])
+            w, h, indici, palette = G.leggi_bmp_4bpp(G.file_attesi(tutti=True)[nome + ".bmp"])
             self.assertEqual((w, h), (len(colori[0]), len(colori)), nome)
             for y in range(h):
                 for x in range(w):

@@ -299,11 +299,20 @@ def immagini():
     return out
 
 
-def file_attesi():
-    """nome file -> contenuto in byte, per ogni BMP e JSON generato."""
+# Disegnati e provati (tests/test_stile_bmp.py) ma non in graphics/: nessun sorgente li usa (i riquadri sono i
+# tile di include/stile/cornice.h, il titolo usa il logo a colori, i dialoghi hanno i ritratti dei 4 parlanti).
+# In graphics/ Butano li convertirebbe a ogni build per niente. Revisione a loop, Loop 1 (4 nov 2026):
+# tools/grafo_moduli.py segnala come errore ogni asset di graphics/ che il codice non usa.
+FUORI_ROM = {"cornice_dialogo", "cornice_menu", "logo_mono", "ritratto_giovane", "ritratto_soldato"}
+
+
+def file_attesi(tutti=False):
+    """nome file -> contenuto in byte, per ogni BMP e JSON che va in graphics/ (con tutti=True anche FUORI_ROM)."""
     import json
     out = {}
     for nome, (colori, meta) in immagini().items():
+        if nome in FUORI_ROM and not tutti:
+            continue
         indici, palette = indicizza(colori)
         out[nome + ".bmp"] = bmp_4bpp(len(colori[0]), len(colori), indici, palette)
         out[nome + ".json"] = (json.dumps(meta, indent=4) + "\n").encode("utf-8")
@@ -323,6 +332,14 @@ def main():
         else:
             with open(percorso, "wb") as f:
                 f.write(contenuto)
+    for nome in sorted(FUORI_ROM):
+        for est in (".bmp", ".json"):
+            percorso = os.path.join(USCITA, nome + est)
+            if os.path.exists(percorso):
+                if verifica:
+                    diversi.append(nome + est)
+                else:
+                    os.remove(percorso)
     if diversi:
         print("graphics/ non allineata ai dati:", ", ".join(diversi), file=sys.stderr)
         return 1
