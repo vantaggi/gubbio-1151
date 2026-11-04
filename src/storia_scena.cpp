@@ -277,6 +277,85 @@ namespace
 
         return { n.area, n.tx, n.ty };
     }
+
+    // Dove sta una persona della lista di Storia: un NPC d'ambiente, un datore (NPC + quest), l'infiltrato.
+    Posto posto_di(int indice)
+    {
+        if(indice < NPC)
+        {
+            return posto(GUBBIO_VOCE(NPC_AMBIENTE, indice));
+        }
+
+        if(indice < NPC + QUEST)
+        {
+            const QuestGioco& g = GUBBIO_VOCE(QUEST_GIOCO, indice - NPC);
+            return { g.area, g.tx, g.ty };
+        }
+
+        return { INFILTRATO.area, INFILTRATO.tx, INFILTRATO.ty };
+    }
+
+    constexpr int ALTEZZA_RACCOLTA = 14;    // l'oggetto 16x16 poggia sui piedi della sua cella
+
+    // Un oggetto da raccogliere con la sua figura (FIGURA_RACCOLTA, 16x16) e i colori dei popolani.
+    bn::sprite_ptr crea_raccolta(const bn::sprite_palette_ptr& palette, int figura)
+    {
+        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(4, bn::bpp_mode::BPP_4);
+        bn::span<bn::tile> vram = *tiles.vram();
+
+        for(int t = 0; t < 4; ++t)
+        {
+            for(int r = 0; r < 8; ++r)
+            {
+                vram[t].data[r] = GUBBIO_VOCE(GUBBIO_VOCE(FIGURA_RACCOLTA, figura), t * 8 + r);
+            }
+        }
+
+        return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 16), bn::move(tiles), palette);
+    }
+
+    // Le righe di FRASE_QUEST nel riquadro del dialogo, con lo sfondo scurito come per gli NPC.
+    void dialogo_inizio(Esplorazione* esplorazione)
+    {
+        if(esplorazione)
+        {
+            esplorazione->nascondi_etichetta();
+        }
+
+        bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));
+        attendi(1);
+    }
+
+    void dialogo_fine()
+    {
+        bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
+        attendi(1);
+    }
+
+    void recita_righe(const Righe& r, const bn::sprite_palette_ptr& palette_testo)
+    {
+        if(r.quante > 0)
+        {
+            recita_battute(FRASE_QUEST, r.prima, r.quante, palette_testo, false);
+        }
+    }
+
+    // Chi sale di livello con l'esperienza di una quest: le stesse frasi della battaglia, come SISTEMA.
+    void annuncia_livelli(const bool (&saliti)[battaglia::EROI], const bn::sprite_palette_ptr& palette_testo)
+    {
+        constexpr testi::TestoId SALE[battaglia::EROI] = { testi::TestoId::BATT_SALE_UBALDO, testi::TestoId::BATT_SALE_GIORGIO,
+                                                          testi::TestoId::BATT_SALE_ANTONIO };
+
+        for(int e = 0; e < battaglia::EROI; ++e)
+        {
+            if(saliti[e])
+            {
+                const Battuta b = { GUBBIO_VOCE(SALE, e), GUBBIO_VOCE(SALE, e), TipoBattuta::SISTEMA, Espressione::CALMO, 0,
+                                    { NESSUNA_BANDIERA, NESSUNA_BANDIERA }, -1 };
+                recita_battute(&b, 0, 1, palette_testo, false);
+            }
+        }
+    }
 }
 
 // Una cutscene del copione di regia: usa tutti e quattro i BG, lo sfondo dell'area si libera e torna
@@ -438,6 +517,7 @@ void Storia::svuota()
 {
     _npc.clear();
     _indici.clear();
+    _raccolte.clear();
     _area = -1;
 }
 
@@ -461,6 +541,101 @@ void Storia::_prepara_npc(const Esplorazione& esplorazione)
             _npc.push_back(bn::move(sprite));
             _indici.push_back(i);
         }
+    }
+
+    // i datori delle quest, da quando la quest si prende (e, consegnata, per il dopo)
+    for(int q = 0; q < QUEST; ++q)
+    {
+        const QuestGioco& g = GUBBIO_VOCE(QUEST_GIOCO, q);
+
+        if(g.area == _area && momento_del_datore(g_game_state, q) != Momento::ASSENTE)
+        {
+            bn::sprite_ptr sprite = crea_npc(palette, g.figura);
+            esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(g.tx), mondo::piedi_y(g.ty), ALTEZZA_NPC);
+            _npc.push_back(bn::move(sprite));
+            _indici.push_back(NPC + q);
+        }
+    }
+
+    // l'infiltrato sotto le Logge, con i tre indizi
+    if(INFILTRATO.area == _area && infiltrato_presente(g_game_state))
+    {
+        bn::sprite_ptr sprite = crea_npc(palette, INFILTRATO.figura);
+        esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(INFILTRATO.tx), mondo::piedi_y(INFILTRATO.ty), ALTEZZA_NPC);
+        _npc.push_back(bn::move(sprite));
+        _indici.push_back(NPC + QUEST);
+    }
+
+    // gli oggetti da raccogliere ancora al loro posto
+    for(int k = 0; k < RACCOLTE; ++k)
+    {
+        const Raccolta& r = GUBBIO_VOCE(RACCOLTA, k);
+
+        if(r.area == _area && raccolta_presente(g_game_state, k))
+        {
+            bn::sprite_ptr sprite = crea_raccolta(palette, r.figura);
+            esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(r.tx), mondo::piedi_y(r.ty), ALTEZZA_RACCOLTA);
+            _raccolte.push_back(bn::move(sprite));
+        }
+    }
+}
+
+// Il datore di una quest: la proposta (la quest e' presa e, se l'obiettivo e' gia' finito, segue la
+// consegna), l'attesa, la consegna (storia::consegna_quest(): premio, 55 punti, una volta sola), il dopo.
+void Storia::_parla_col_datore(int q, const bn::sprite_palette_ptr& palette_testo)
+{
+    Momento m = momento_del_datore(g_game_state, q);
+    BN_LOG("Datore ", GUBBIO_VOCE(QUEST_V1, q).codice, " momento ", int(m));
+
+    if(m == Momento::PROPOSTA)
+    {
+        recita_righe(righe_del_datore(g_game_state, q, m), palette_testo);
+        prendi_quest(g_game_state, q);
+        m = momento_del_datore(g_game_state, q) == Momento::CONSEGNA ? Momento::CONSEGNA : Momento::ASSENTE;
+    }
+    else if(m == Momento::ATTESA || m == Momento::DOPO)
+    {
+        recita_righe(righe_del_datore(g_game_state, q, m), palette_testo);
+    }
+
+    if(m == Momento::CONSEGNA)
+    {
+        recita_righe(righe_del_datore(g_game_state, q, m), palette_testo);
+        bool saliti[battaglia::EROI] = {};
+
+        if(consegna_quest(g_game_state, q, saliti))
+        {
+            BN_LOG("Quest ", GUBBIO_VOCE(QUEST_V1, q).codice, " consegnata");
+            annuncia_livelli(saliti, palette_testo);
+        }
+    }
+}
+
+// L'infiltrato: le sue battute, la battaglia (non si fugge: persa, si torna all'ingresso dell'area e lui
+// resta), vinta la Rosa e le battute di dopo.
+void Storia::_affronta_l_infiltrato(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo)
+{
+    recita_righe(INFILTRATO.prima, palette_testo);
+    dialogo_fine();
+    mondo::AreaId area = esplorazione.esploratore().area;
+    svuota();
+    esplorazione.sospendi();
+    attendi(1);
+    battaglia::Esito esito = scena_battaglia(INFILTRATO.incontro, uint32_t(g_game_state.frames) | 1u, Guida::GIOCATORE,
+                                             palette_testo, false, &g_game_state);
+    BN_LOG("Infiltrato: esito ", int(esito));
+
+    if(esito != battaglia::Esito::VITTORIA)
+    {
+        mondo::colloca(esplorazione.esploratore(), area, 1);
+    }
+
+    esplorazione.ricompari();
+
+    if(esito == battaglia::Esito::VITTORIA && riprendi_la_rosa(g_game_state))
+    {
+        dialogo_inizio(&esplorazione);
+        recita_righe(INFILTRATO.dopo, palette_testo);
     }
 }
 
@@ -509,6 +684,20 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         return true;
     }
 
+    // un oggetto da raccogliere si prende toccandolo: il contatore sale, le righe di raccolta della quest
+    int r = raccolta_toccata(g_game_state, int(e.area), e.x, e.y);
+
+    if(r >= 0)
+    {
+        raccogli(g_game_state, r);
+        BN_LOG("Raccolta ", r);
+        dialogo_inizio(&esplorazione);
+        recita_righe(GUBBIO_VOCE(QUEST_GIOCO, GUBBIO_VOCE(RACCOLTA, r).quest).raccolta, palette_testo);
+        dialogo_fine();
+        svuota();       // l'oggetto sparisce: si rifa' tutto al prossimo frame
+        return true;
+    }
+
     if(! bn::keypad::a_pressed())
     {
         return false;
@@ -516,17 +705,33 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
 
     for(int j = 0; j < _indici.size(); ++j)
     {
-        const Npc& n = GUBBIO_VOCE(NPC_AMBIENTE, _indici[j]);
-        Posto qui = posto(n);
+        int indice = _indici[j];
+        Posto qui = posto_di(indice);
         int dx = e.x - mondo::piedi_x(qui.tx);
         int dy = e.y - mondo::piedi_y(qui.ty);
 
         if(dx > -DISTANZA_PAROLA && dx < DISTANZA_PAROLA && dy > -DISTANZA_PAROLA && dy < DISTANZA_PAROLA)
         {
+            dialogo_inizio(&esplorazione);
+
+            if(indice == NPC + QUEST)
+            {
+                _affronta_l_infiltrato(esplorazione, palette_testo);
+                dialogo_fine();
+                svuota();
+                return true;
+            }
+
+            if(indice >= NPC)
+            {
+                _parla_col_datore(indice - NPC, palette_testo);
+                dialogo_fine();
+                svuota();   // il datore puo' essere passato al dopo
+                return true;
+            }
+
+            const Npc& n = GUBBIO_VOCE(NPC_AMBIENTE, indice);
             int fase = int(fase_npc(g_game_state));
-            esplorazione.nascondi_etichetta();
-            bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));
-            attendi(1);
             recita_battute(FRASE_NPC, GUBBIO_VOCE(n.prima_frase, fase), GUBBIO_VOCE(n.frasi, fase), palette_testo, false,
                            true);
 
@@ -534,8 +739,23 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
             {
                 accendi_una(g_game_state, n.imposta);
             }
-            bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
-            attendi(1);
+
+            // Q-SP01: dopo le sue battute (Giordano ha gia' acceso INDIZIO_ACQUA), l'indizio; col terzo, l'infiltrato
+            int k = indizio_dell_npc(g_game_state, indice);
+
+            if(k >= 0)
+            {
+                recita_righe(GUBBIO_VOCE(INDIZIO, k).righe, palette_testo);
+
+                if(trova_indizio(g_game_state, k))
+                {
+                    recita_righe(INDIZI_COMPLETI, palette_testo);
+                }
+
+                svuota();   // l'infiltrato puo' essere comparso
+            }
+
+            dialogo_fine();
             return true;
         }
     }

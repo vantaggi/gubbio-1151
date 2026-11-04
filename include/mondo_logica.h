@@ -173,83 +173,14 @@ public:
     // Prepara la strada dalla cella del giocatore al varco 'obiettivo'. false se non esiste.
     constexpr bool prepara(const Esploratore& e, int obiettivo)
     {
-        const Area& a = area(e.area);
-        int w = a.larghezza;
-        int n = w * a.altezza;
-        BN_ASSERT(n <= CELLE_MAX, "Navigatore: area troppo grande");
+        return _prepara(e, obiettivo, -1, -1);
+    }
 
-        for(int i = 0; i < n; ++i)
-        {
-            _da[i] = -1;
-        }
-
-        int inizio = cella_x(e) + cella_y(e) * w;
-        int testa = 0;
-        int coda = 0;
-        int arrivo = -1;
-        _coda[coda++] = int16_t(inizio);
-        _da[inizio] = int16_t(inizio);
-
-        while(testa < coda && arrivo < 0)
-        {
-            int i = _coda[testa++];
-            int x = i % w;
-            int y = i / w;
-            const int passi[4][2] = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
-
-            for(const auto& p : passi)
-            {
-                int nx = x + p[0];
-                int ny = y + p[1];
-                int c = cella(a, nx, ny);
-
-                if(nx < 0 || ny < 0 || nx >= w || ny >= a.altezza || solida(c))
-                {
-                    continue;
-                }
-
-                int j = nx + ny * w;
-
-                if(_da[j] >= 0 || (varco(c) && c - PRIMO_VARCO != obiettivo))
-                {
-                    continue;
-                }
-
-                _da[j] = int16_t(i);
-
-                if(c - PRIMO_VARCO == obiettivo)
-                {
-                    arrivo = j;
-                    break;
-                }
-
-                _coda[coda++] = int16_t(j);
-            }
-        }
-
-        if(arrivo < 0)
-        {
-            return false;
-        }
-
-        // Strada al contrario, poi raddrizzata.
-        _lunghezza = 0;
-
-        for(int i = arrivo; i != inizio; i = _da[i])
-        {
-            _strada[_lunghezza++] = int16_t(i);
-        }
-
-        for(int i = 0; i < _lunghezza / 2; ++i)
-        {
-            int16_t t = _strada[i];
-            _strada[i] = _strada[_lunghezza - 1 - i];
-            _strada[_lunghezza - 1 - i] = t;
-        }
-
-        _larghezza = w;
-        _prossimo = 0;
-        return true;
+    // Prepara la strada fino alla cella (tx, ty), senza attraversare varchi (un oggetto da raccogliere,
+    // le quest). false se non esiste.
+    constexpr bool prepara_cella(const Esploratore& e, int tx, int ty)
+    {
+        return _prepara(e, -1, tx, ty);
     }
 
     // Un pixel verso la prossima cella della strada. Ritorna false se il passo e' bloccato o se
@@ -296,6 +227,88 @@ private:
     int _lunghezza = 0;
     int _larghezza = 0;
     int _prossimo = 0;
+
+    // La ricerca in ampiezza: fino al varco 'obiettivo' o, con obiettivo < 0, fino alla cella (cx, cy).
+    constexpr bool _prepara(const Esploratore& e, int obiettivo, int cx, int cy)
+    {
+        const Area& a = area(e.area);
+        int w = a.larghezza;
+        int n = w * a.altezza;
+        BN_ASSERT(n <= CELLE_MAX, "Navigatore: area troppo grande");
+
+        for(int i = 0; i < n; ++i)
+        {
+            _da[i] = -1;
+        }
+
+        int inizio = cella_x(e) + cella_y(e) * w;
+        int testa = 0;
+        int coda = 0;
+        int arrivo = obiettivo < 0 && inizio == cx + cy * w ? inizio : -1;
+        _coda[coda++] = int16_t(inizio);
+        _da[inizio] = int16_t(inizio);
+
+        while(testa < coda && arrivo < 0)
+        {
+            int i = _coda[testa++];
+            int x = i % w;
+            int y = i / w;
+            const int passi[4][2] = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+
+            for(const auto& p : passi)
+            {
+                int nx = x + p[0];
+                int ny = y + p[1];
+                int c = cella(a, nx, ny);
+
+                if(nx < 0 || ny < 0 || nx >= w || ny >= a.altezza || solida(c))
+                {
+                    continue;
+                }
+
+                int j = nx + ny * w;
+
+                if(_da[j] >= 0 || (varco(c) && (obiettivo < 0 || c - PRIMO_VARCO != obiettivo)))
+                {
+                    continue;
+                }
+
+                _da[j] = int16_t(i);
+
+                if((obiettivo >= 0 && c - PRIMO_VARCO == obiettivo) || (obiettivo < 0 && nx == cx && ny == cy))
+                {
+                    arrivo = j;
+                    break;
+                }
+
+                _coda[coda++] = int16_t(j);
+            }
+        }
+
+        if(arrivo < 0)
+        {
+            return false;
+        }
+
+        // Strada al contrario, poi raddrizzata.
+        _lunghezza = 0;
+
+        for(int i = arrivo; i != inizio; i = _da[i])
+        {
+            _strada[_lunghezza++] = int16_t(i);
+        }
+
+        for(int i = 0; i < _lunghezza / 2; ++i)
+        {
+            int16_t t = _strada[i];
+            _strada[i] = _strada[_lunghezza - 1 - i];
+            _strada[_lunghezza - 1 - i] = t;
+        }
+
+        _larghezza = w;
+        _prossimo = 0;
+        return true;
+    }
 };
 
 // Il varco dell'area 'da' che porta all'area 'verso', o -1.

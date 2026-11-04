@@ -59,7 +59,8 @@ class ErroreTesti(Exception):
 # dell'elisione ("Sant'Ubaldo", "dell'armatura") e' seguito da una lettera e resta; "po'" e' giusto.
 APOSTROFO_PER_ACCENTO = re.compile(r"\w*[aeiouAEIOU]'(?![^\W\d_])")
 # Gli imperativi tronchi ("Va'", "Di'", "Fa'", "Sta'", "Da'") si scrivono con l'apostrofo.
-ELISIONI_GIUSTE = {"po'", "va'", "di'", "fa'", "sta'", "da'", "co'"}  # co': il romanesco di Masio
+# "Fra'" (frate, davanti al nome: Fra' Bernardo) e' un troncamento e si scrive con l'apostrofo.
+ELISIONI_GIUSTE = {"po'", "va'", "di'", "fa'", "sta'", "da'", "co'", "fra'"}  # co': il romanesco di Masio
 
 
 def leggi_voci(nome, dati):

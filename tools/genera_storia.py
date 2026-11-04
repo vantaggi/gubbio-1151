@@ -6,8 +6,9 @@ scene con luogo, condizione, bandiere che accendono e battaglia, gli NPC d'ambie
 Le scene vengono da 00_prologo.md, 01_atto_I.md e 02_bottaccione_epilogo.md (tabelle Luogo,
 Condizione, Imposta, Battaglia; battute "- PARLANTE (espressione): testo"). Gli NPC da
 03_npc_ambiente.md ("- FASE: PARLANTE: testo"). Le quest di 04_quest.md sono descritte in QUEST
-qui sotto (il loro testo e i contatori arrivano in F6 parte 2) e tests/test_storia.py le controlla
-contro la tabella del copione.
+qui sotto (tests/test_storia.py le controlla contro la tabella del copione); le loro battute (proposta,
+attesa, consegna, raccolta, dopo, indizi, infiltrato) le legge leggi_quest(), e gli oggetti da raccogliere
+sulla mappa sono in RACCOLTE, con il posto scelto sulla griglia di tools/genera_mondo.py (SV2c).
 
     python tools/genera_storia.py            # controlla che i file generati siano aggiornati
     python tools/genera_storia.py --scrivi   # li riscrive
@@ -40,7 +41,11 @@ BANDIERE = ["PROLOGO_VISTO", "ULTIMATUM_RICEVUTO", "GIORGIO_NEL_GRUPPO", "CHIACC
 BANDIERE_QUEST = ["INDIZIO_CARTA", "INDIZIO_ACQUA", "INDIZIO_ROCCIA", "RICCIARDO_ASCOLTATO", "RUFINO_ASCOLTATO", "PANE_DATO",
          "DONO_MATTEO", "INDIZIO_LUCIA", "INDIZIO_VENDITORE", "INDIZIO_FONTANIERE",
          # le quest consegnate (04_quest.md): le accende storia::consegna_quest(), una volta sola
-         "Q_SM01_CONSEGNATA", "Q_SA01_CONSEGNATA", "Q_SP01_CONSEGNATA"]
+         "Q_SM01_CONSEGNATA", "Q_SA01_CONSEGNATA", "Q_SP01_CONSEGNATA",
+         # SV2c, le quest giocabili: la quest presa dal datore (la proposta), poi un bit per ogni oggetto
+         # dell'obiettivo (il contatore e' quanti sono accesi): i 3 blocchi di ferro, le 4 radici, la Rosa
+         "Q_SM01_PRESA", "Q_SA01_PRESA", "Q_SP01_PRESA", "FERRO_1", "FERRO_2", "FERRO_3",
+         "ELLEBORO_1", "ELLEBORO_2", "ELLEBORO_3", "ELLEBORO_4", "ROSA_RIPRESA"]
 PRIMA_QUEST = 64
 TUTTE = BANDIERE + [None] * (PRIMA_QUEST - len(BANDIERE)) + BANDIERE_QUEST
 
@@ -54,6 +59,21 @@ LETTE_DAL_GIOCO = {
     "Q_SM01_CONSEGNATA": "storia::scudi_in_meno() e storia::consegna_quest(): lo scudo di Corrado, una consegna sola",
     "Q_SA01_CONSEGNATA": "storia::consegna_quest(): una consegna sola",
     "Q_SP01_CONSEGNATA": "storia::consegna_quest(): una consegna sola",
+    # SV2c: le quest giocabili (storia_logica.h, QUEST_GIOCO e RACCOLTA di storia.h)
+    "Q_SM01_PRESA": "storia::momento_del_datore(): Raniero passa dalla proposta all'attesa e alla consegna",
+    "Q_SA01_PRESA": "storia::momento_del_datore() e la prima radice: Agnese, e Ubaldo se la quest non e' presa",
+    "Q_SP01_PRESA": "storia::momento_del_datore() e storia::indizio_dell_npc(): Fra' Bernardo e gli indizi",
+    "FERRO_1": "storia::pezzi_raccolti(): il contatore dei blocchi; il blocco non torna sulla mappa",
+    "FERRO_2": "storia::pezzi_raccolti(): il contatore dei blocchi; il blocco non torna sulla mappa",
+    "FERRO_3": "storia::pezzi_raccolti(): il contatore dei blocchi; il blocco non torna sulla mappa",
+    "ELLEBORO_1": "storia::pezzi_raccolti(): il contatore delle radici; la radice non torna sulla mappa",
+    "ELLEBORO_2": "storia::pezzi_raccolti(): il contatore delle radici; la radice non torna sulla mappa",
+    "ELLEBORO_3": "storia::pezzi_raccolti(): il contatore delle radici; la radice non torna sulla mappa",
+    "ELLEBORO_4": "storia::pezzi_raccolti(): il contatore delle radici; la radice non torna sulla mappa",
+    "ROSA_RIPRESA": "storia::pezzi_raccolti() e storia::infiltrato_presente(): la Rosa ripresa, l'infiltrato sparito",
+    "INDIZIO_LUCIA": "storia::infiltrato_presente(): con i tre indizi l'infiltrato compare sotto le Logge",
+    "INDIZIO_VENDITORE": "storia::infiltrato_presente(): con i tre indizi l'infiltrato compare sotto le Logge",
+    "INDIZIO_FONTANIERE": "storia::infiltrato_presente(): con i tre indizi l'infiltrato compare sotto le Logge",
 }
 
 # Quelle che il gioco non legge ancora: sono in docs/bandiere_da_fare.md, con cosa dovranno fare.
@@ -95,7 +115,10 @@ PARLANTI = {"UBALDO": "Sant'Ubaldo", "GIORGIO": "Giorgio", "ANTONIO": "Antonio",
             "ARALDO": "Araldo di Perugia", "CORRADO": "Corrado di Spoleto", "CECCO": "Cecco il Balestriere",
             "GUERRIERO": "Guerriero di Spoleto", "SPIA": "Spia umbra", "SPETTRO": "Spettro del Dubbio",
             "NELLO": "Nello", "ANDREUCCIO": "Andreuccio", "FAZIO": "Fazio", "LAURETTA": "Lauretta",
-            "FOLLA": "Folla", "RAGAZZO": "Ragazzo eugubino", "FANTE": "Fante di Perugia", "CANONICO": "Canonico"}
+            "FOLLA": "Folla", "RAGAZZO": "Ragazzo eugubino", "FANTE": "Fante di Perugia", "CANONICO": "Canonico",
+            # i datori delle quest e chi parla nelle loro battute (04_quest.md)
+            "RANIERO": "Mastro Raniero", "AGNESE": "Monna Agnese", "FRA' BERNARDO": "Fra' Bernardo",
+            "FERITO": "Ferito", "INFILTRATO": "Infiltrato"}
 SENZA_NOME = {"NARRATORE", "AREA", "SISTEMA", "OBIETTIVO", "SCELTA"}
 ESPRESSIONI = ["calmo", "preoccupato", "deciso"]
 TIPI = ["PERSONAGGIO", "NARRATORE", "AREA", "SISTEMA", "OBIETTIVO", "SCELTA"]
@@ -105,17 +128,46 @@ FASI = ["ULTIMATUM", "DIGIUNO", "NOTTE"]
 # (la conferma dell'alba che avvia E-01: dopo E-01, ATTO_I_COMPLETATO, nessuna consegna), la bandiera della
 # consegna e il premio (l'oggetto, indice di GameState::oggetti come battaglia::OggettoId, e quanti).
 OGGETTI = ["CRESCIA", "CENERE", "BACCALA", "BISCOTTI", "VINO"]     # battaglia::OggettoId, nell'ordine
+# SV2c: la bandiera della quest presa, i pezzi dell'obiettivo (bandiere consecutive: il contatore e' quante sono
+# accese) e dove sta il datore (l'ancora: un monumento dell'area, None per lo spawn 0, come per gli NPC).
 QUEST = [
     {"id": "Q-SM01", "datore": "SAN_MARTINO", "da": "ULTIMATUM_RICEVUTO", "obiettivo": "TEATRO_ROMANO",
      "consegna": "SAN_MARTINO", "entro": "ATTO_I_COMPLETATO", "consegnata": "Q_SM01_CONSEGNATA",
-     "premio": ("CRESCIA", 3), "nome_premio": "Crescia di Pasqua"},
+     "premio": ("CRESCIA", 3), "nome_premio": "Crescia di Pasqua",
+     "presa": "Q_SM01_PRESA", "pezzi": ["FERRO_1", "FERRO_2", "FERRO_3"], "ancora": None},
     {"id": "Q-SA01", "datore": "SANT_ANDREA", "da": "CITTA_IN_DIGIUNO", "obiettivo": "BOTTACCIONE",
      "consegna": "SANT_ANDREA", "entro": "ATTO_I_COMPLETATO", "consegnata": "Q_SA01_CONSEGNATA",
-     "premio": ("BISCOTTI", 3), "nome_premio": "Biscotti all'Anice"},
+     "premio": ("BISCOTTI", 3), "nome_premio": "Biscotti all'Anice",
+     "presa": "Q_SA01_PRESA", "pezzi": ["ELLEBORO_1", "ELLEBORO_2", "ELLEBORO_3", "ELLEBORO_4"], "ancora": "san_marziale"},
     {"id": "Q-SP01", "datore": "SAN_PIETRO", "da": "CITTA_IN_DIGIUNO", "obiettivo": "SAN_PIETRO",
      "consegna": "SAN_PIETRO", "entro": "ATTO_I_COMPLETATO", "consegnata": "Q_SP01_CONSEGNATA",
-     "premio": ("CENERE", 1), "nome_premio": "Crescia sotto la Cenere"},
+     "premio": ("CENERE", 1), "nome_premio": "Crescia sotto la Cenere",
+     "presa": "Q_SP01_PRESA", "pezzi": ["ROSA_RIPRESA"], "ancora": "san_pietro"},
 ]
+FILE_QUEST = "04_quest.md"
+
+# Gli oggetti da raccogliere sulla mappa (SV2c): la bandiera, l'area che dice il copione, le celle accanto a cui
+# sta (i simboli della griglia di tools/genera_mondo.py) e il punto dell'area verso cui cercarlo (frazioni di
+# larghezza e altezza). Il posto lo sceglie posti_delle_raccolte(): una cella calpestabile col gioco, raggiungibile
+# dallo spawn 0, lontana da varchi, spawn, NPC, nemici sulla mappa e dagli altri oggetti.
+# Q-SM01: le fornaci basse sotto le arcate del Teatro Romano. Q-SA01: le rocce bagnate della Strada del Bottaccione
+# e della gola, una dentro i miasmi e una sotto gli archi di B-03 (04_quest.md); si raccolgono anche dopo B-05.
+RACCOLTE = [
+    {"bandiera": "FERRO_1", "area": "TEATRO_ROMANO", "vicino": "U", "verso": (0.62, 0.22), "figura": "ferro"},
+    {"bandiera": "FERRO_2", "area": "TEATRO_ROMANO", "vicino": "U", "verso": (0.72, 0.55), "figura": "ferro"},
+    {"bandiera": "FERRO_3", "area": "TEATRO_ROMANO", "vicino": "U", "verso": (0.56, 0.86), "figura": "ferro"},
+    {"bandiera": "ELLEBORO_1", "area": "BOTTACCIONE", "vicino": "#", "verso": (0.75, 0.75), "figura": "elleboro"},
+    {"bandiera": "ELLEBORO_2", "area": "GOLA_STRISCIA", "vicino": "k", "verso": (0.70, 0.30), "figura": "elleboro"},
+    {"bandiera": "ELLEBORO_3", "area": "GOLA_MIASMI", "vicino": "g", "verso": (0.42, 0.45), "figura": "elleboro"},
+    {"bandiera": "ELLEBORO_4", "area": "GOLA_ARCO", "vicino": "J", "verso": (0.50, 0.60), "figura": "elleboro"},
+]
+# Le aree dove il copione mette gli oggetti di ogni quest (il test controlla RACCOLTE contro queste).
+AREE_DELLE_RACCOLTE = {"Q-SM01": {"TEATRO_ROMANO"},
+                       "Q-SA01": {"BOTTACCIONE", "GOLA_STRISCIA", "GOLA_MIASMI", "GOLA_ARCO"}}
+# L'infiltrato di Q-SP01: sotto le Logge dei Tiratori, con il mantello e il bastone del pellegrino; la battaglia
+# e' quella delle tre spie umbre degli Stradoni (battaglia::INCONTRO 1: nella v1 non c'e' un nemico «infiltrato»).
+INFILTRATO = {"area": "PIAZZA_QUARANTA_MARTIRI", "ancora": "loggia_tiratori", "figura": ("mercante", "lanterna_bastone"),
+              "incontro": 1}
 
 AREE_NPC = {"Piazza Grande": "PIAZZA_GRANDE", "via dei Consoli": "VIA_DEI_CONSOLI",
             "Largo del Bargello": "LARGO_BARGELLO", "San Martino": "SAN_MARTINO", "Teatro Romano": "TEATRO_ROMANO",
@@ -142,8 +194,10 @@ class ErroreStoria(Exception):
 # bandiera), "Se `BANDIERA`:" e "Altrimenti:", "Se `BANDIERA`, al posto della battuta di X:" (la battuta
 # prima vale senza la bandiera), "Se almeno due indizi:", "Poi, per tutti:"; negli NPC "Con «voce» ...".
 # Un blocco sono le battute subito dopo la sua riga, fino alla prima riga vuota.
+# CONTEGGIO e CONTEGGIO_E_NON_BANDIERA (SV2c) sono delle battute di raccolta delle quest: a e' la quest, b quanti
+# pezzi dell'obiettivo sono raccolti (dopo la raccolta), c una bandiera che deve essere accesa (o NESSUNA) o spenta.
 GUARDIE = ["SEMPRE", "BANDIERA", "NON_BANDIERA", "SCELTA", "ALMENO_DUE", "VARIANTE_BANDIERA",
-           "VARIANTE_NON_BANDIERA", "OGGETTO_E_NON_BANDIERA"]
+           "VARIANTE_NON_BANDIERA", "OGGETTO_E_NON_BANDIERA", "CONTEGGIO", "CONTEGGIO_E_NON_BANDIERA"]
 SEMPRE = ("SEMPRE", 0, 0, 0)
 INDIZI_DEL_CONDOTTO = ("INDIZIO_CARTA", "INDIZIO_ACQUA", "INDIZIO_ROCCIA")
 OGGETTO_CRESCIA = 0          # GameState::oggetti[0], la Crescia di Pasqua (battaglia_dati.h)
@@ -379,6 +433,159 @@ def leggi_npc(testo, file=FILE_NPC):
     return [p for p in npc if p["frasi"]]
 
 
+# --- le quest giocabili (SV2c) --------------------------------------------------------------------------
+# 04_quest.md: per ogni quest "## Q-XXNN · titolo", il datore (il primo nome in grassetto), le sezioni "###":
+# Proposta, Attesa, Consegna, Dopo (righe "- FASE: PARLANTE: testo"), la sezione di raccolta (titolo con i due
+# punti, "Teatro Romano: le fornaci"), Gli indizi e L'infiltrato (Q-SP01). La postierla di Q-SM01 si ignora:
+# nella v1 nessun varco si chiude. Nella raccolta le righe SISTEMA in cima valgono una per pezzo, nell'ordine,
+# se sono piu' d'una (se e' una, a ogni pezzo); "Al primo blocco, una volta sola[, ... (`BANDIERA`)]:" vale al
+# primo pezzo (con la bandiera accesa); "Se la quest non è attiva, alla prima radice:" al primo pezzo senza la
+# quest presa.
+SEZIONI_QUEST = {"Proposta": "proposta", "Attesa": "attesa", "Consegna": "consegna", "Dopo": "dopo",
+                 "Gli indizi": "indizi", "L'infiltrato": "infiltrato", "La postierla": None}
+RIGA_UNA_VOLTA = re.compile(r"^(?:Al primo|Alla prima) \w+, una volta sola(?:.*`([A-Z_0-9]+)`)?.*:$")
+RIGA_NON_ATTIVA = re.compile(r"^Se la quest non è attiva, (?:al primo|alla prima) \w+:$")
+
+
+def tipo_sezione(titolo, dove):
+    for inizio, tipo in SEZIONI_QUEST.items():
+        if titolo.startswith(inizio):
+            return tipo
+    if ":" in titolo:
+        return "raccolta"
+    raise ErroreStoria(f"{dove}: sezione «{titolo}» che il lettore delle quest non conosce")
+
+
+def leggi_quest(testo):
+    """{id: {datore, proposta, attesa, consegna, raccolta, dopo: {fase: [...]}, indizi, completi, infiltrato_prima,
+    infiltrato_dopo}} da 04_quest.md, con le guardie come nelle scene."""
+    ids = [q["id"] for q in QUEST]
+    quest, attuale, sezione = {}, None, None
+    for n, riga in enumerate(testo.splitlines(), 1):
+        dove = f"{FILE_QUEST}:{n}"
+        m = re.match(r"^## (Q-[A-Z]+\d+) · (.+)$", riga)
+        if m:
+            if m.group(1) not in ids:
+                raise ErroreStoria(f"{dove}: {m.group(1)} non e' in QUEST")
+            qi = ids.index(m.group(1))
+            attuale = {"id": m.group(1), "datore": None, "proposta": [], "attesa": [], "consegna": [], "raccolta": [],
+                       "dopo": {f: [] for f in FASI}, "indizi": [], "completi": [], "infiltrato_prima": [],
+                       "infiltrato_dopo": []}
+            quest[m.group(1)] = attuale
+            sezione = None
+            continue
+        if attuale is None:
+            continue
+        if riga.startswith("---"):
+            attuale, sezione = None, None
+            continue
+        m = re.match(r"^### (.+)$", riga)
+        if m:
+            sezione = tipo_sezione(m.group(1), dove)
+            varianti = Varianti(FILE_QUEST)
+            guardia, nel_blocco, in_testa, iniziali, bersaglio = SEMPRE, 0, True, [], None
+            if sezione == "raccolta":
+                attuale["iniziali"] = iniziali
+            continue
+        if sezione is None:
+            g = re.match(r"^\*\*(.+?)\*\*", riga)
+            if g and attuale["datore"] is None and not attuale["proposta"]:
+                attuale["datore"] = g.group(1)
+            continue
+        if sezione == "dopo":
+            d = RIGA_NPC.match(riga)
+            if d:
+                fase, non, flag, chi, espressione, frase = d.groups()
+                if flag:
+                    raise ErroreStoria(f"{dove}: nel Dopo le varianti con bandiera non servono")
+                attuale["dopo"][fase].append(battuta(chi, espressione, frase, dove))
+            elif riga.startswith("- "):
+                raise ErroreStoria(f"{dove}: riga del Dopo senza fase")
+            continue
+        b = RIGA_BATTUTA.match(riga)
+        if b:
+            chi, espressione, frase = b.groups()
+            if espressione and espressione not in ESPRESSIONI:
+                raise ErroreStoria(f"{dove}: espressione '{espressione}' sconosciuta")
+            # gli indizi li dicono NPC d'ambiente, che parlano senza cartiglio come nelle loro battute
+            if chi not in SENZA_NOME and chi not in PARLANTI and sezione != "indizi":
+                raise ErroreStoria(f"{dove}: parlante '{chi}' senza nome a schermo in PARLANTI")
+            nuova = battuta(chi, espressione, frase, dove)
+        else:
+            nuova = None
+        if sezione in ("proposta", "attesa", "consegna"):
+            if nuova:
+                if chi == "SCELTA":
+                    raise ErroreStoria(f"{dove}: nelle quest non ci sono menu")
+                varianti.aggiungi(nuova, attuale[sezione])
+            else:
+                varianti.riga(riga, n, attuale[sezione])
+        elif sezione == "raccolta":
+            r = riga.strip()
+            if nuova:
+                if in_testa and chi == "SISTEMA" and guardia == SEMPRE:
+                    iniziali.append(nuova)
+                else:
+                    in_testa = False
+                    nuova["guardia"] = guardia
+                    nel_blocco += 1
+                    attuale["raccolta"].append(nuova)
+            elif not r:
+                if nel_blocco:
+                    guardia, nel_blocco = SEMPRE, 0
+            elif RIGA_UNA_VOLTA.match(r):
+                flag = RIGA_UNA_VOLTA.match(r).group(1)
+                guardia, nel_blocco, in_testa = ("CONTEGGIO", qi, 1, indice(flag) if flag else NESSUNA), 0, False
+            elif RIGA_NON_ATTIVA.match(r):
+                guardia, nel_blocco, in_testa = ("CONTEGGIO_E_NON_BANDIERA", qi, 1, indice(QUEST[qi]["presa"])), 0, False
+        elif sezione == "indizi":
+            g = re.match(r"^\*\*(.+?)\*\*.*Imposta `([A-Z_0-9]+)`", riga)
+            if g:
+                bersaglio = {"nome": g.group(1), "bandiera": g.group(2), "frasi": []}
+                attuale["indizi"].append(bersaglio)
+            elif riga.startswith("Con i tre indizi"):
+                bersaglio = {"frasi": attuale["completi"]}
+            elif nuova:
+                if bersaglio is None:
+                    raise ErroreStoria(f"{dove}: battuta di un indizio prima del suo NPC")
+                bersaglio["frasi"].append(nuova)
+        elif sezione == "infiltrato":
+            if riga.startswith("Dopo la vittoria"):
+                in_testa = False
+            elif nuova:
+                attuale["infiltrato_prima" if in_testa else "infiltrato_dopo"].append(nuova)
+    for q in quest.values():
+        iniziali = q.pop("iniziali", [])
+        qi = ids.index(q["id"])
+        if len(iniziali) > 1:
+            for k, b in enumerate(iniziali):
+                b["guardia"] = ("CONTEGGIO", qi, k + 1, NESSUNA)
+        q["raccolta"] = iniziali + q["raccolta"]
+    mancanti = [i for i in ids if i not in quest]
+    if mancanti:
+        raise ErroreStoria(f"{FILE_QUEST}: quest senza sezione: {mancanti}")
+    for q in quest.values():
+        for k in ("datore", "proposta", "attesa", "consegna"):
+            if not q[k]:
+                raise ErroreStoria(f"{FILE_QUEST}: {q['id']} senza {k}")
+    return quest
+
+
+def frasi_della_quest(q):
+    """Tutte le battute di una quest in fila, nell'ordine di FRASE_QUEST, con le loro sezioni."""
+    sezioni = [("proposta", q["proposta"]), ("attesa", q["attesa"]), ("consegna", q["consegna"]),
+               ("raccolta", q["raccolta"])]
+    sezioni += [(f"dopo_{f}", q["dopo"][f]) for f in FASI]
+    sezioni += [(f"indizio_{k}", i["frasi"]) for k, i in enumerate(q["indizi"])]
+    sezioni += [("completi", q["completi"]), ("infiltrato_prima", q["infiltrato_prima"]),
+                ("infiltrato_dopo", q["infiltrato_dopo"])]
+    return sezioni
+
+
+def id_frase_quest(codice, k):
+    return "QST_" + codice.replace("Q-", "") + f"_{k:02d}"
+
+
 def id_battuta(codice, k):
     return "C_" + codice.replace("-", "_").upper() + f"_{k:02d}"
 
@@ -426,17 +633,29 @@ def tipo_di(chi):
     return TIPI.index(chi) if chi in SENZA_NOME else 0
 
 
-def posti_degli_npc(npc):
-    """Una cella libera per ogni NPC: vicino al centro della sua area, lontana dai varchi e dagli altri."""
-    sys.path.insert(0, os.path.join(RADICE, "tools"))
+_AREE = {}
+
+
+def aree_del_mondo():
+    """Le aree come le prepara tools/genera_mondo.py (griglia finale, spawn, edifici), per AreaId."""
+    if not _AREE:
+        sys.path.insert(0, os.path.join(RADICE, "tools"))
+        import genera_mondo as G  # noqa: E402
+        mondo = G.mondo_del_repo()
+        for nome, testo in G.sorgenti_del_repo():
+            a = G.leggi_area(nome, testo)
+            G.prepara_area(a, mondo)
+            _AREE[a["id"].upper()] = a
+    return _AREE
+
+
+def posti_degli_npc(npc, altri=(), occupati=None):
+    """Una cella libera per ogni NPC: vicino al centro della sua area, lontana dai varchi e dagli altri.
+    'altri' sono (nome, area, ancora) cercati dopo tutti gli NPC (i datori delle quest, l'infiltrato): i posti
+    degli NPC non cambiano. Con 'altri' ritorna anche i loro posti; 'occupati' raccoglie tutte le celle prese."""
     import genera_mondo as G  # noqa: E402
-    mondo = G.mondo_del_repo()
-    aree = {}
-    for nome, testo in G.sorgenti_del_repo():
-        a = G.leggi_area(nome, testo)
-        G.prepara_area(a, mondo)
-        aree[a["id"].upper()] = a
-    occupati = {}
+    aree = aree_del_mondo()
+    occupati = {} if occupati is None else occupati
     posti = []
     richieste = []
     for p in npc:
@@ -446,6 +665,9 @@ def posti_degli_npc(npc):
         if p.get("amico") and AMICI[p["amico"]].get("borgo"):
             # con il borgo dentro: accampati in Sant'Andrea, dietro Porta Romana (il varco verso Sant'Agostino)
             richieste.append((p, "SANT_ANDREA", "varco B"))
+    quanti_npc = len(richieste)
+    for nome, area_id, ancora in altri:
+        richieste.append(({"nome": nome}, area_id, ancora))
     for p, area_id, ancora in richieste:
         a = aree[area_id]
         g = a["griglia"]
@@ -473,9 +695,76 @@ def posti_degli_npc(npc):
         posti.append(scelto)
     # i primi len(npc) sono i posti di sempre; poi quelli del borgo, nell'ordine degli NPC del borgo
     principali = posti[:len(npc)]
-    borgo = iter(posti[len(npc):])
-    return [(xy, next(borgo) if p.get("amico") and AMICI[p["amico"]].get("borgo") else None)
-            for p, xy in zip(npc, principali)]
+    borgo = iter(posti[len(npc):quanti_npc])
+    degli_npc = [(xy, next(borgo) if p.get("amico") and AMICI[p["amico"]].get("borgo") else None)
+                 for p, xy in zip(npc, principali)]
+    if altri:
+        return degli_npc, posti[quanti_npc:]
+    return degli_npc
+
+
+def solida_nel_gioco(c, G):
+    """Una cella solida come la vede il gioco (mondo::solida: indice di Cella da PRIMA_CELLA_SOLIDA in su): il
+    MIASMA, che la .area dice calpestabile, nel gioco blocca. Un oggetto si raccoglie solo dove si cammina davvero."""
+    if c in G.VARCHI:
+        return False
+    nomi = list(G.CELLE)
+    return nomi.index(c) >= nomi.index("F")
+
+
+def raggiungibili_da(a, sx, sy, G):
+    """Le celle raggiungibili dallo spawn (passi di una cella, nessun varco attraversato), col gioco."""
+    g = a["griglia"]
+    viste, coda = {(sx, sy)}, [(sx, sy)]
+    while coda:
+        x, y = coda.pop()
+        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if 0 <= nx < a["larghezza"] and 0 <= ny < a["altezza"] and (nx, ny) not in viste:
+                c = g[ny][nx]
+                if not solida_nel_gioco(c, G) and c not in G.VARCHI:
+                    viste.add((nx, ny))
+                    coda.append((nx, ny))
+    return viste
+
+
+def scontri_sulla_mappa():
+    """Le celle dei nemici sulla mappa (SCONTRI_SULLA_MAPPA di include/progressione.h), per area."""
+    testo = open(os.path.join(RADICE, "include", "progressione.h"), encoding="utf-8").read()
+    celle = {}
+    for area, x, y in re.findall(r"\{ mondo::AreaId::([A-Z_]+), (\d+), (\d+), \d+, Bandiera::", testo):
+        celle.setdefault(area, []).append((int(x), int(y)))
+    return celle
+
+
+def posti_delle_raccolte(raccolte, occupati):
+    """La cella di ogni oggetto da raccogliere (RACCOLTE): la piu' vicina al suo punto 'verso' fra quelle
+    calpestabili col gioco, raggiungibili dallo spawn 0, accanto (anche in diagonale) a una cella del simbolo
+    'vicino', a 3 celle almeno da varchi, spawn, NPC e nemici sulla mappa e a 4 dagli altri oggetti."""
+    import genera_mondo as G  # noqa: E402
+    aree = aree_del_mondo()
+    nemici = scontri_sulla_mappa()
+    presi = {}
+    posti = []
+    for r in raccolte:
+        a = aree[r["area"]]
+        g = a["griglia"]
+        varchi = [(x, y) for y, riga in enumerate(g) for x, c in enumerate(riga) if c in G.VARCHI]
+        lontani = varchi + list(a["spawn"].values()) + occupati.get(r["area"], []) + nemici.get(r["area"], [])
+        raggiunte = raggiungibili_da(a, *a["spawn"][0], G)
+        vx, vy = r["verso"][0] * a["larghezza"], r["verso"][1] * a["altezza"]
+        scelto = None
+        for x, y in sorted(raggiunte, key=lambda xy: ((xy[0] - vx) ** 2 + (xy[1] - vy) ** 2, xy[1], xy[0])):
+            accanto = any(0 <= y + j < a["altezza"] and 0 <= x + i < a["larghezza"] and g[y + j][x + i] in r["vicino"]
+                          for i in (-1, 0, 1) for j in (-1, 0, 1))
+            if (accanto and all(max(abs(x - u), abs(y - v)) >= 3 for u, v in lontani) and
+                    all(max(abs(x - u), abs(y - v)) >= 4 for u, v in presi.get(r["area"], []))):
+                scelto = (x, y)
+                break
+        if not scelto:
+            raise ErroreStoria(f"nessun posto per {r['bandiera']} in {r['area']} accanto a «{r['vicino']}»")
+        presi.setdefault(r["area"], []).append(scelto)
+        posti.append(scelto)
+    return posti
 
 
 def punto_dell_ancora(a, ancora, G):
@@ -565,7 +854,7 @@ def maschera(bandiere):
     return v
 
 
-def header(scene, npc, posti):
+def header(scene, npc, posti, quest=None, posti_quest=None, posti_raccolte=None):
     codici = [s["codice"] for s in scene]
     out = ["// GENERATO da tools/genera_storia.py dal copione v1 (copione/*.md): non modificare a mano.",
            "#ifndef GUBBIO_STORIA_H", "#define GUBBIO_STORIA_H", "", "#include <cstdint>", "",
@@ -669,6 +958,7 @@ def header(scene, npc, posti):
                          f"  // {p['nome']}")
     out += [f"inline constexpr int FRASI_NPC = {len(frasi)};", "inline constexpr Battuta FRASE_NPC[FRASI_NPC] = {"] + frasi + ["};", ""]
     out += [f"inline constexpr int NPC = {len(npc)};", "inline constexpr Npc NPC_AMBIENTE[NPC] = {"] + righe_npc + ["};", ""]
+    blocco_quest = parte_quest(quest, npc, posti_quest, posti_raccolte, riga_battuta, figure) if quest else []
     out += [f"inline constexpr int GUARDIE = {len(guardie)};", "inline constexpr Guardia GUARDIA[GUARDIE] = {"]
     out += [f"    {{ TipoGuardia::{g[0]}, {g[1]}, {g[2]}, {g[3]} }}," for g in guardie] + ["};", ""]
     out += ["// Le bandiere delle quest e degli indizi (64-127, GameState::quest), per nome."]
@@ -683,6 +973,7 @@ def header(scene, npc, posti):
     out += [f"    {{ \"{q['id']}\", int8_t(mondo::AreaId::{q['consegna']}), Bandiera::{q['da']}, Bandiera::{q['entro']}, "
             f"{q['consegnata']}, {OGGETTI.index(q['premio'][0])}, {q['premio'][1]} }},  // {q['premio'][1]} {q['nome_premio']}"
             for q in QUEST] + ["};", ""]
+    out += blocco_quest
     out += ["// Le figure degli NPC, 16x32 (8 tile in mappatura 1D) con la palette dei popolani: quelle dei",
             "// mestieri (tools/figure_npc.py) e quelle degli amici (base e accessorio, dati/amici.json).",
             f"inline constexpr int FIGURE_NPC = {len(figure)};",
@@ -697,10 +988,130 @@ def header(scene, npc, posti):
     return "\n".join(out)
 
 
+def npc_dell_indizio(indizio, npc):
+    """L'NPC (indice in NPC_AMBIENTE) che dice l'indizio: quello che ha lo stesso parlante nelle sue battute."""
+    chi = {b["chi"] for b in indizio["frasi"]} - SENZA_NOME
+    trovati = [i for i, p in enumerate(npc) if chi & {b["chi"] for b in p["frasi"]}]
+    if len(chi) != 1 or len(trovati) != 1:
+        raise ErroreStoria(f"{FILE_QUEST}: l'indizio di {indizio['nome']} ({sorted(chi)}) non ha un solo NPC: {trovati}")
+    return trovati[0]
+
+
+def parte_quest(quest, npc, posti_quest, posti_raccolte, riga_battuta, figure):
+    """Le righe di storia.h delle quest giocabili: FRASE_QUEST, QUEST_GIOCO, RACCOLTA, INDIZIO, INFILTRATO."""
+    frasi, righe_q, intervalli = [], [], {}
+
+    def righe(lista, codice):
+        prima = len(frasi)
+        for b in lista:
+            frasi.append(riga_battuta(b, id_frase_quest(codice, len(frasi) - inizio[codice]), npc=True))
+        return f"{{ {prima}, {len(lista)} }}"
+
+    inizio = {}
+    for qi, d in enumerate(QUEST):
+        q = quest[d["id"]]
+        inizio[d["id"]] = len(frasi)
+        intervalli[d["id"]] = {nome: righe(lista, d["id"]) for nome, lista in frasi_della_quest(q)}
+        pezzi = [indice(b) for b in d["pezzi"]]
+        if pezzi != list(range(pezzi[0], pezzi[0] + len(pezzi))):
+            raise ErroreStoria(f"{d['id']}: i pezzi dell'obiettivo devono essere bandiere consecutive")
+        (tx, ty) = posti_quest[qi]
+        figura = FN.figura_composta(FN.figura_di(q["datore"]), None)
+        if figura not in figure:
+            figure.append(figura)
+        r = intervalli[d["id"]]
+        righe_q.append(f"    {{ {d['presa']}, {pezzi[0]}, {len(pezzi)}, int8_t(mondo::AreaId::{d['consegna']}), {tx}, {ty}, "
+                       f"{figure.index(figura)}, {r['proposta']}, {r['attesa']}, {r['consegna']}, {r['raccolta']}, "
+                       f"{{ {r['dopo_ULTIMATUM']}, {r['dopo_DIGIUNO']}, {r['dopo_NOTTE']} }} }},  // {d['id']}, {q['datore']}")
+    out = ["// --- Le quest giocabili (SV2c, copione/04_quest.md) ----------------------------------------------",
+           "// Le battute delle quest: proposta, attesa, consegna, raccolta, dopo (per fase), indizi e infiltrato.",
+           "struct Righe", "{", "    uint16_t prima;               // in FRASE_QUEST", "    uint8_t quante;", "};", "",
+           f"inline constexpr int FRASI_QUEST = {len(frasi)};", "inline constexpr Battuta FRASE_QUEST[FRASI_QUEST] = {"]
+    out += frasi + ["};", ""]
+    out += ["// Il datore di ogni quest (nell'ordine di QUEST_V1) e i pezzi dell'obiettivo: bandiere consecutive da",
+            "// primo_pezzo, il contatore e' quante sono accese (storia::pezzi_raccolti).",
+            "struct QuestGioco", "{", "    uint8_t presa;                // la bandiera della quest presa (la proposta)",
+            "    uint8_t primo_pezzo;", "    uint8_t pezzi;", "    int8_t area;                  // dove sta il datore (mondo::AreaId)",
+            "    uint8_t tx;", "    uint8_t ty;", "    uint8_t figura;               // FIGURA_NPC",
+            "    Righe proposta;", "    Righe attesa;", "    Righe consegna;", "    Righe raccolta;      // dette a ogni pezzo raccolto, con le guardie CONTEGGIO",
+            "    Righe dopo[3];               // per fase (ULTIMATUM, DIGIUNO, NOTTE)", "};", "",
+            "inline constexpr QuestGioco QUEST_GIOCO[QUEST] = {"] + righe_q + ["};", ""]
+    nomi_fig = FN.ORDINE_RACCOLTE
+    righe_r = []
+    for r, (tx, ty) in zip(RACCOLTE, posti_raccolte):
+        qi = next(i for i, d in enumerate(QUEST) if r["bandiera"] in d["pezzi"])
+        righe_r.append(f"    {{ int8_t(mondo::AreaId::{r['area']}), {tx}, {ty}, {qi}, {r['bandiera']}, {nomi_fig.index(r['figura'])} }},")
+    out += ["// Gli oggetti da raccogliere sulla mappa: ci sono finche' la loro bandiera e' spenta (anche se la quest non",
+            "// e' presa); toccarli accende la bandiera e fa dire le battute di raccolta della quest.",
+            "struct Raccolta", "{", "    int8_t area;                  // mondo::AreaId", "    uint8_t tx;", "    uint8_t ty;",
+            "    uint8_t quest;", "    uint8_t bandiera;", "    uint8_t figura;               // FIGURA_RACCOLTA", "};", "",
+            f"inline constexpr int RACCOLTE = {len(RACCOLTE)};", "inline constexpr Raccolta RACCOLTA[RACCOLTE] = {"]
+    out += righe_r + ["};", ""]
+    out += ["// Le figure degli oggetti da raccogliere, 16x16 (4 tile), con la palette dei popolani (tools/figure_npc.py).",
+            f"inline constexpr int FIGURE_RACCOLTA = {len(nomi_fig)};",
+            "inline constexpr uint32_t FIGURA_RACCOLTA[FIGURE_RACCOLTA][4 * 8] = {"]
+    for nome in nomi_fig:
+        parole = FN.parole_16(nome)
+        out.append("    {  // " + nome)
+        out += ["        " + ", ".join(f"0x{v:08X}" for v in parole[k:k + 8]) + "," for k in range(0, 32, 8)]
+        out.append("    },")
+    out += ["};", ""]
+    # gli indizi e l'infiltrato (Q-SP01)
+    qi_sp = next(i for i, d in enumerate(QUEST) if quest[d["id"]]["indizi"])
+    q = quest[QUEST[qi_sp]["id"]]
+    r = intervalli[QUEST[qi_sp]["id"]]
+    righe_i = [f"    {{ {npc_dell_indizio(ind, npc)}, {ind['bandiera']}, {r[f'indizio_{k}']} }},  // {ind['nome']}"
+               for k, ind in enumerate(q["indizi"])]
+    (ix, iy) = posti_quest[len(QUEST)]
+    fig_inf = FN.figura_composta(*INFILTRATO["figura"])
+    if fig_inf not in figure:
+        figure.append(fig_inf)
+    out += ["// Gli indizi di Q-SP01: l'NPC (NPC_AMBIENTE) che, con la quest presa e la Rosa non ancora ripresa, dopo le",
+            "// sue battute dice le righe dell'indizio e accende la bandiera. Con tutti e tre, INDIZI_COMPLETI.",
+            "struct Indizio", "{", "    uint8_t npc;", "    uint8_t bandiera;", "    Righe righe;", "};", "",
+            f"inline constexpr int QUEST_DEGLI_INDIZI = {qi_sp};", f"inline constexpr int INDIZI = {len(righe_i)};",
+            "inline constexpr Indizio INDIZIO[INDIZI] = {"] + righe_i + ["};", "",
+            f"inline constexpr Righe INDIZI_COMPLETI = {r['completi']};", "",
+            "// L'infiltrato sotto le Logge: compare con i tre indizi; parlargli fa dire le righe di prima, la battaglia,",
+            "// e se si vince quelle di dopo e ROSA_RIPRESA.",
+            "struct Infiltrato", "{", "    int8_t area;", "    uint8_t tx;", "    uint8_t ty;", "    uint8_t figura;",
+            "    int8_t incontro;              // battaglia::INCONTRO", "    Righe prima;", "    Righe dopo;", "};", "",
+            f"inline constexpr Infiltrato INFILTRATO = {{ int8_t(mondo::AreaId::{INFILTRATO['area']}), {ix}, {iy}, "
+            f"{figure.index(fig_inf)}, {INFILTRATO['incontro']}, {r['infiltrato_prima']}, {r['infiltrato_dopo']} }};", ""]
+    return out
+
+
+def testi_delle_quest(quest):
+    righe = []
+    for d in QUEST:
+        k = 0
+        for _, lista in frasi_della_quest(quest[d["id"]]):
+            for b in lista:
+                righe.append(f"{id_frase_quest(d['id'], k):26s}| DIALOGO | {b['frase']}")
+                k += 1
+    return righe
+
+
+def posti_della_quest(npc, quest):
+    """I posti dei datori (nell'ordine di QUEST) e dell'infiltrato, poi quelli degli oggetti da raccogliere."""
+    occupati = {}
+    altri = [(quest[d["id"]]["datore"], d["consegna"], d["ancora"]) for d in QUEST]
+    altri.append(("infiltrato", INFILTRATO["area"], INFILTRATO["ancora"]))
+    posti, posti_quest = posti_degli_npc(npc, altri, occupati)
+    return posti, posti_quest, posti_delle_raccolte(RACCOLTE, occupati)
+
+
+def leggi_le_quest():
+    return leggi_quest(open(os.path.join(COPIONE, FILE_QUEST), encoding="utf-8").read())
+
+
 def genera():
     scene, npc = leggi_copione()
     controlla(scene)
-    return header(scene, npc, posti_degli_npc(npc)), testi_del_copione(scene, npc)
+    quest = leggi_le_quest()
+    posti, posti_quest, posti_raccolte = posti_della_quest(npc, quest)
+    return (header(scene, npc, posti, quest, posti_quest, posti_raccolte),
+            testi_del_copione(scene, npc) + "\n".join(testi_delle_quest(quest)) + "\n")
 
 
 def main(argv):

@@ -66,7 +66,8 @@ class FigureNpc(unittest.TestCase):
 
     def test_la_tabella_del_gioco(self):
         h = open(os.path.join(RADICE, "include", "storia.h"), encoding="utf-8").read()
-        self.assertIn(f"inline constexpr int FIGURE_NPC = {len(FN.ORDINE) + len(GS.AMICI)};", h)
+        # i mestieri, gli amici e l'infiltrato di Q-SP01 (mercante col bastone); i datori usano i mestieri
+        self.assertIn(f"inline constexpr int FIGURE_NPC = {len(FN.ORDINE) + len(GS.AMICI) + 1};", h)
         for p in NPC:
             riga = next(r for r in h.splitlines() if r.endswith("// " + p["nome"]))
             figura = int(re.search(r"\}, (\d+), \d+, \d+, \d+, \d+, (?:true|false) \},\s*//", riga).group(1))

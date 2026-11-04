@@ -1,6 +1,7 @@
 # GENERATO da tools/genera_storia.py dal copione v1 (copione/*.md): non modificare a mano.
 # Le battute delle scene, i nomi di chi parla e le battute degli NPC d'ambiente.
 
+PARLANTE_AGNESE           | HUD     | Monna Agnese
 PARLANTE_ANDREUCCIO       | HUD     | Andreuccio
 PARLANTE_ANTONIO          | HUD     | Antonio
 PARLANTE_ARALDO           | HUD     | Araldo di Perugia
@@ -13,8 +14,10 @@ PARLANTE_CORRADO          | HUD     | Corrado di Spoleto
 PARLANTE_FANTE            | HUD     | Fante di Perugia
 PARLANTE_FAZIO            | HUD     | Fazio
 PARLANTE_FEBO             | HUD     | Febo
+PARLANTE_FERITO           | HUD     | Ferito
 PARLANTE_FLAVIANO         | HUD     | Flaviano
 PARLANTE_FOLLA            | HUD     | Folla
+PARLANTE_FRA__BERNARDO    | HUD     | Fra' Bernardo
 PARLANTE_GABRIONE         | HUD     | Gabrione
 PARLANTE_GIAMBONO         | HUD     | Giambono
 PARLANTE_GIORDANO         | HUD     | Giordano
@@ -22,6 +25,7 @@ PARLANTE_GIORGIO          | HUD     | Giorgio
 PARLANTE_GIULIANA         | HUD     | Giuliana
 PARLANTE_GUERRIERO        | HUD     | Guerriero di Spoleto
 PARLANTE_GUIDO            | HUD     | Console Guido
+PARLANTE_INFILTRATO       | HUD     | Infiltrato
 PARLANTE_LAURETTA         | HUD     | Lauretta
 PARLANTE_LEONORA          | HUD     | Leonora
 PARLANTE_MASIO            | HUD     | Masio il Romano
@@ -31,6 +35,7 @@ PARLANTE_NICOLUCCIO       | HUD     | Nicoluccio
 PARLANTE_PADELLINO        | HUD     | Padellino
 PARLANTE_RAGAZZO          | HUD     | Ragazzo eugubino
 PARLANTE_RAGNETTO         | HUD     | Ragnetto
+PARLANTE_RANIERO          | HUD     | Mastro Raniero
 PARLANTE_RENZO            | HUD     | Renzo
 PARLANTE_RICCIARDO        | HUD     | Ricciardo
 PARLANTE_RUFINO           | HUD     | Mastro Rufino
@@ -449,3 +454,76 @@ NPC_37_00                 | DIALOGO | Dormono tutti dentro. Io resto fuori: la m
 NPC_37_01                 | DIALOGO | Hanno bruciato tre case. Ne abbiamo salvate dieci. Ho contato.
 NPC_37_02                 | DIALOGO | Porta Romana è mia finché c'è luce. Poi è di Dio, e un po' anche mia.
 NPC_37_03                 | DIALOGO | Le mura qui sono basse. Il borgo è ancora più basso, monsignore.
+QST_SM01_00               | DIALOGO | Fornaci spente, ragazzo. Spoleto ha bloccato al passo il ferro del Monte Calvo.
+QST_SM01_01               | DIALOGO | E il ferro già colato l'hanno ammucchiato nelle fornaci basse del Teatro Romano.
+QST_SM01_02               | DIALOGO | Riportami tre blocchi, e ti dico come si fa a bucare una corazza di Spoleto.
+QST_SM01_03               | DIALOGO | Tre blocchi. Fatto.
+QST_SM01_04               | DIALOGO | Pesano, cavaliere. Non è come dire «fatto».
+QST_SM01_05               | DIALOGO | Recupera 3 blocchi di ferro alle fornaci del Teatro Romano.
+QST_SM01_06               | DIALOGO | Tre blocchi, ragazzo. Nelle fornaci basse del Teatro Romano, sotto le arcate.
+QST_SM01_07               | DIALOGO | Tre blocchi. E li hai portati tu, non i muli. Ti ho giudicato male, ragazzo.
+QST_SM01_08               | DIALOGO | Ascolta. Il ferro di Spoleto è battuto a freddo, a strati. Contro la lama regge come un muro.
+QST_SM01_09               | DIALOGO | Ma col fuoco gli strati si aprono come un libro bagnato. Ricordalo, coi grossi.
+QST_SM01_10               | DIALOGO | Col fuoco. Sento che questa la ricorderò io.
+QST_SM01_11               | DIALOGO | E per la strada, prendete queste.
+QST_SM01_12               | DIALOGO | Mia moglie le ha fatte stamattina. Col digiuno, chissà quando ne rifà.
+QST_SM01_13               | DIALOGO | Ricevi 3 Crescia di Pasqua.
+QST_SM01_14               | DIALOGO | San Martino ti è grato.
+QST_SM01_15               | DIALOGO | Hai preso un blocco di ferro. Ancora 2.
+QST_SM01_16               | DIALOGO | Hai preso un blocco di ferro. Ancora 1.
+QST_SM01_17               | DIALOGO | Hai preso l'ultimo blocco di ferro. Riportalo a Raniero.
+QST_SM01_18               | DIALOGO | Ferro buono. Peccato per chi l'ha rubato: sapeva rubare, non fondere.
+QST_SM01_19               | DIALOGO | La fornace è accesa. Spoleto si tenga pure il suo passo.
+QST_SM01_20               | DIALOGO | Le fornaci tornano a fumare. È il fumo più bello che si veda in città.
+QST_SM01_21               | DIALOGO | Ho riacceso la fornace. Lavoro di notte, per non rompere il digiuno con il rumore di giorno.
+QST_SA01_00               | DIALOGO | Cagli versa veleno nel fosso. I feriti di Porta Romana hanno le labbra viola.
+QST_SA01_01               | DIALOGO | Le bende non bastano. Mi serve l'elleboro, quello che cresce solo sulle rocce umide del Bottaccione.
+QST_SA01_02               | DIALOGO | Gabrione dice che è veratro. Lui lo riconosce, io lo curo.
+QST_SA01_03               | DIALOGO | Quattro radici. Senza, non supereranno la notte.
+QST_SA01_04               | DIALOGO | Il Bottaccione è dietro il monte, Agnese. Dentro le loro linee.
+QST_SA01_05               | DIALOGO | Lo so, monsignore. Per questo lo chiedo a voi e non a mio figlio.
+QST_SA01_06               | DIALOGO | ...acqua...
+QST_SA01_07               | DIALOGO | Raccogli 4 radici di elleboro nel Bottaccione.
+QST_SA01_08               | DIALOGO | Quattro radici di elleboro, monsignore. Sulle rocce umide del Bottaccione.
+QST_SA01_09               | DIALOGO | Quattro radici! E sono ancora umide. Siete scesi davvero laggiù.
+QST_SA01_10               | DIALOGO | Non me lo dite, cosa c'era. Me lo racconterete quando sarà finita.
+QST_SA01_11               | DIALOGO | Prendete questi biscotti all'anice. Tolgono il veleno dal sangue, e la paura dallo stomaco.
+QST_SA01_12               | DIALOGO | Ricevi 3 Biscotti all'Anice di Sant'Ubaldo.
+QST_SA01_13               | DIALOGO | Sant'Andrea ti è grato.
+QST_SA01_14               | DIALOGO | E l'acqua stanotte è tornata chiara. Questo, monsignore, non l'ha fatto l'elleboro.
+QST_SA01_15               | DIALOGO | Hai raccolto una radice di elleboro.
+QST_SA01_16               | DIALOGO | Elleboro. Cura e veleno nella stessa radice: dipende da chi lo usa.
+QST_SA01_17               | DIALOGO | Prendiamolo. In città qualcuno saprà che farne.
+QST_SA01_18               | DIALOGO | Le radici bollono già. Stanotte i feriti dormiranno, se Dio vuole.
+QST_SA01_19               | DIALOGO | Agnese dice che ho sputato veleno verde. Io dico che ho sputato Cagli.
+QST_SA01_20               | DIALOGO | Dormono. Tutti e sei. Domani si alzano, se Dio vuole e se l'alba è nostra.
+QST_SP01_00               | DIALOGO | Hanno profanato l'altare, Vescovo Ubaldo! Ci hanno rubato la Rosa d'Argento.
+QST_SP01_01               | DIALOGO | Con quella benediciamo le guardie della notte. Senza, tremano davanti al Grifo.
+QST_SP01_02               | DIALOGO | Chi è entrato, Bernardo?
+QST_SP01_03               | DIALOGO | Un pellegrino, diceva. Parlava come noi, ma pregava male. Ha preso la Rosa ed è sparito.
+QST_SP01_04               | DIALOGO | Se è ancora in città, lo troveremo. Le porte sono chiuse anche per lui.
+QST_SP01_05               | DIALOGO | Trova chi ha rubato la Rosa d'Argento. Chiedi in giro.
+QST_SP01_06               | DIALOGO | La Rosa, Vescovo Ubaldo. Chiedete in giro: qualcuno avrà visto quel pellegrino.
+QST_SP01_07               | DIALOGO | La Rosa! Integra, grazie al cielo. E grazie a voi, che col cielo avete buoni rapporti.
+QST_SP01_08               | DIALOGO | Stanotte i miliziani avranno la loro benedizione. E voi la mia, che vale meno ma è di cuore.
+QST_SP01_09               | DIALOGO | Sapete che la Rosa ce la donò Perugia? Altri tempi. Altri vescovi.
+QST_SP01_10               | DIALOGO | Prendete questa crescia sotto la cenere. Chi la mangia, si rialza anche quando è caduto.
+QST_SP01_11               | DIALOGO | Ricevi 1 Crescia sotto la Cenere.
+QST_SP01_12               | DIALOGO | San Pietro ti è grato.
+QST_SP01_13               | DIALOGO | La Rosa è tornata sull'altare. Il pellegrino, spero, in una cella.
+QST_SP01_14               | DIALOGO | Ho benedetto le guardie una per una. Nessuna ha tremato.
+QST_SP01_15               | DIALOGO | Un pellegrino? Ne ho visto uno uscire dal chiostro di corsa, con un sacco stretto al petto.
+QST_SP01_16               | DIALOGO | È sceso verso la piazza del mercato. I pellegrini veri non corrono mai.
+QST_SP01_17               | DIALOGO | Ieri uno straniero ha pagato il pane con monete di Perugia. Mi ha detto di tacere.
+QST_SP01_18               | DIALOGO | Io sto zitto. Con voi, però, no.
+QST_SP01_19               | DIALOGO | Sotto le Logge dorme uno che non beve mai alla mia vasca. Strano, con questa sete.
+QST_SP01_20               | DIALOGO | Di notte si alza e guarda verso il monte, come se aspettasse qualcuno.
+QST_SP01_21               | DIALOGO | Sotto le Logge dei Tiratori c'è qualcuno che non dorme.
+QST_SP01_22               | DIALOGO | Il vescovo in persona. Dovevo immaginarlo: in questa città ficcate il naso dappertutto.
+QST_SP01_23               | DIALOGO | Ridacci la Rosa.
+QST_SP01_24               | DIALOGO | Questa città mi ha cacciato una volta. Monaldo la Rosa la rivuole indietro.
+QST_SP01_25               | DIALOGO | Tenetevela, la vostra rosa. Tanto all'alba non ci sarà più nessuno da benedire.
+QST_SP01_26               | DIALOGO | All'alba vedremo. Intanto ci sarà qualcuno a pregare per te.
+QST_SP01_27               | DIALOGO | Parli come noi.
+QST_SP01_28               | DIALOGO | Ero dei Valmarcola. Lo sono ancora.
+QST_SP01_29               | DIALOGO | Hai ripreso la Rosa d'Argento. Riportala a Fra' Bernardo.

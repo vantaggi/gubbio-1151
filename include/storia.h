@@ -73,6 +73,8 @@ enum class TipoGuardia : uint8_t
     VARIANTE_BANDIERA,
     VARIANTE_NON_BANDIERA,
     OGGETTO_E_NON_BANDIERA,
+    CONTEGGIO,
+    CONTEGGIO_E_NON_BANDIERA,
 };
 
 // La guardia di una battuta: la si recita solo se vale (le varianti del copione v2). a, b, c sono
@@ -595,7 +597,7 @@ inline constexpr Npc NPC_AMBIENTE[NPC] = {
     { int8_t(mondo::AreaId::SANT_AGOSTINO), 39, 18, { 136, 137, 138 }, { 1, 1, 2 }, 28, 255, 0, 0, 0, false },  // Andreuccio
 };
 
-inline constexpr int GUARDIE = 22;
+inline constexpr int GUARDIE = 29;
 inline constexpr Guardia GUARDIA[GUARDIE] = {
     { TipoGuardia::SEMPRE, 0, 0, 0 },
     { TipoGuardia::SCELTA, 0, 0, 0 },
@@ -619,6 +621,13 @@ inline constexpr Guardia GUARDIA[GUARDIE] = {
     { TipoGuardia::VARIANTE_NON_BANDIERA, 64, 0, 0 },
     { TipoGuardia::VARIANTE_NON_BANDIERA, 65, 0, 0 },
     { TipoGuardia::VARIANTE_NON_BANDIERA, 66, 0, 0 },
+    { TipoGuardia::CONTEGGIO, 0, 1, 255 },
+    { TipoGuardia::CONTEGGIO, 0, 2, 255 },
+    { TipoGuardia::CONTEGGIO, 0, 3, 255 },
+    { TipoGuardia::CONTEGGIO, 0, 1, 5 },
+    { TipoGuardia::BANDIERA, 17, 0, 0 },
+    { TipoGuardia::CONTEGGIO, 1, 1, 255 },
+    { TipoGuardia::CONTEGGIO_E_NON_BANDIERA, 1, 1, 78 },
 };
 
 // Le bandiere delle quest e degli indizi (64-127, GameState::quest), per nome.
@@ -635,6 +644,17 @@ inline constexpr uint8_t INDIZIO_FONTANIERE = 73;
 inline constexpr uint8_t Q_SM01_CONSEGNATA = 74;
 inline constexpr uint8_t Q_SA01_CONSEGNATA = 75;
 inline constexpr uint8_t Q_SP01_CONSEGNATA = 76;
+inline constexpr uint8_t Q_SM01_PRESA = 77;
+inline constexpr uint8_t Q_SA01_PRESA = 78;
+inline constexpr uint8_t Q_SP01_PRESA = 79;
+inline constexpr uint8_t FERRO_1 = 80;
+inline constexpr uint8_t FERRO_2 = 81;
+inline constexpr uint8_t FERRO_3 = 82;
+inline constexpr uint8_t ELLEBORO_1 = 83;
+inline constexpr uint8_t ELLEBORO_2 = 84;
+inline constexpr uint8_t ELLEBORO_3 = 85;
+inline constexpr uint8_t ELLEBORO_4 = 86;
+inline constexpr uint8_t ROSA_RIPRESA = 87;
 
 // Le tre quest della v1 (copione/04_quest.md): dove si consegnano, da quale bandiera si prendono, entro
 // quale si consegnano, la bandiera della consegna e il premio (indice di GameState::oggetti, come
@@ -657,9 +677,192 @@ inline constexpr Quest QUEST_V1[QUEST] = {
     { "Q-SP01", int8_t(mondo::AreaId::SAN_PIETRO), Bandiera::CITTA_IN_DIGIUNO, Bandiera::ATTO_I_COMPLETATO, Q_SP01_CONSEGNATA, 1, 1 },  // 1 Crescia sotto la Cenere
 };
 
+// --- Le quest giocabili (SV2c, copione/04_quest.md) ----------------------------------------------
+// Le battute delle quest: proposta, attesa, consegna, raccolta, dopo (per fase), indizi e infiltrato.
+struct Righe
+{
+    uint16_t prima;               // in FRASE_QUEST
+    uint8_t quante;
+};
+
+inline constexpr int FRASI_QUEST = 73;
+inline constexpr Battuta FRASE_QUEST[FRASI_QUEST] = {
+    { testi::TestoId::QST_SM01_00, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_01, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_02, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_03, testi::TestoId::PARLANTE_GIORGIO, TipoBattuta::PERSONAGGIO, Espressione::DECISO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_04, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_05, testi::TestoId::QST_SM01_05, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_06, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_07, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_08, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_09, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_10, testi::TestoId::PARLANTE_ANTONIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_11, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_12, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_13, testi::TestoId::QST_SM01_13, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_14, testi::TestoId::QST_SM01_14, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_15, testi::TestoId::QST_SM01_15, TipoBattuta::SISTEMA, Espressione::CALMO, 22, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_16, testi::TestoId::QST_SM01_16, TipoBattuta::SISTEMA, Espressione::CALMO, 23, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_17, testi::TestoId::QST_SM01_17, TipoBattuta::SISTEMA, Espressione::CALMO, 24, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_18, testi::TestoId::PARLANTE_ANTONIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 25, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_19, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_20, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SM01_21, testi::TestoId::PARLANTE_RANIERO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_00, testi::TestoId::PARLANTE_AGNESE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_01, testi::TestoId::PARLANTE_AGNESE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_02, testi::TestoId::PARLANTE_AGNESE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_03, testi::TestoId::PARLANTE_AGNESE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_04, testi::TestoId::PARLANTE_UBALDO, TipoBattuta::PERSONAGGIO, Espressione::PREOCCUPATO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_05, testi::TestoId::PARLANTE_AGNESE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_06, testi::TestoId::PARLANTE_FERITO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_07, testi::TestoId::QST_SA01_07, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_08, testi::TestoId::PARLANTE_AGNESE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_09, testi::TestoId::PARLANTE_AGNESE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_10, testi::TestoId::PARLANTE_AGNESE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_11, testi::TestoId::PARLANTE_AGNESE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_12, testi::TestoId::QST_SA01_12, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_13, testi::TestoId::QST_SA01_13, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_14, testi::TestoId::PARLANTE_AGNESE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 26, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_15, testi::TestoId::QST_SA01_15, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_16, testi::TestoId::PARLANTE_ANTONIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 27, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_17, testi::TestoId::PARLANTE_UBALDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 28, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_18, testi::TestoId::PARLANTE_AGNESE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_19, testi::TestoId::PARLANTE_FERITO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SA01_20, testi::TestoId::PARLANTE_AGNESE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_00, testi::TestoId::PARLANTE_FRA__BERNARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_01, testi::TestoId::PARLANTE_FRA__BERNARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_02, testi::TestoId::PARLANTE_UBALDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_03, testi::TestoId::PARLANTE_FRA__BERNARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_04, testi::TestoId::PARLANTE_UBALDO, TipoBattuta::PERSONAGGIO, Espressione::DECISO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_05, testi::TestoId::QST_SP01_05, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_06, testi::TestoId::PARLANTE_FRA__BERNARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_07, testi::TestoId::PARLANTE_FRA__BERNARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_08, testi::TestoId::PARLANTE_FRA__BERNARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_09, testi::TestoId::PARLANTE_FRA__BERNARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_10, testi::TestoId::PARLANTE_FRA__BERNARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_11, testi::TestoId::QST_SP01_11, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_12, testi::TestoId::QST_SP01_12, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_13, testi::TestoId::PARLANTE_FRA__BERNARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_14, testi::TestoId::PARLANTE_FRA__BERNARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_15, testi::TestoId::QST_SP01_15, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_16, testi::TestoId::QST_SP01_16, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_17, testi::TestoId::QST_SP01_17, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_18, testi::TestoId::QST_SP01_18, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_19, testi::TestoId::PARLANTE_GIORDANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_20, testi::TestoId::PARLANTE_GIORDANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_21, testi::TestoId::QST_SP01_21, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_22, testi::TestoId::PARLANTE_INFILTRATO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_23, testi::TestoId::PARLANTE_GIORGIO, TipoBattuta::PERSONAGGIO, Espressione::DECISO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_24, testi::TestoId::PARLANTE_INFILTRATO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_25, testi::TestoId::PARLANTE_INFILTRATO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_26, testi::TestoId::PARLANTE_UBALDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_27, testi::TestoId::PARLANTE_UBALDO, TipoBattuta::PERSONAGGIO, Espressione::PREOCCUPATO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_28, testi::TestoId::PARLANTE_INFILTRATO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::QST_SP01_29, testi::TestoId::QST_SP01_29, TipoBattuta::SISTEMA, Espressione::CALMO, 0, { 255, 255 }, -1 },
+};
+
+// Il datore di ogni quest (nell'ordine di QUEST_V1) e i pezzi dell'obiettivo: bandiere consecutive da
+// primo_pezzo, il contatore e' quante sono accese (storia::pezzi_raccolti).
+struct QuestGioco
+{
+    uint8_t presa;                // la bandiera della quest presa (la proposta)
+    uint8_t primo_pezzo;
+    uint8_t pezzi;
+    int8_t area;                  // dove sta il datore (mondo::AreaId)
+    uint8_t tx;
+    uint8_t ty;
+    uint8_t figura;               // FIGURA_NPC
+    Righe proposta;
+    Righe attesa;
+    Righe consegna;
+    Righe raccolta;      // dette a ogni pezzo raccolto, con le guardie CONTEGGIO
+    Righe dopo[3];               // per fase (ULTIMATUM, DIGIUNO, NOTTE)
+};
+
+inline constexpr QuestGioco QUEST_GIOCO[QUEST] = {
+    { Q_SM01_PRESA, 80, 3, int8_t(mondo::AreaId::SAN_MARTINO), 36, 33, 1, { 0, 6 }, { 6, 1 }, { 7, 8 }, { 15, 4 }, { { 19, 1 }, { 20, 1 }, { 21, 1 } } },  // Q-SM01, Mastro Raniero
+    { Q_SA01_PRESA, 83, 4, int8_t(mondo::AreaId::SANT_ANDREA), 38, 26, 2, { 22, 8 }, { 30, 1 }, { 31, 6 }, { 37, 3 }, { { 40, 0 }, { 40, 1 }, { 41, 2 } } },  // Q-SA01, Monna Agnese
+    { Q_SP01_PRESA, 87, 1, int8_t(mondo::AreaId::SAN_PIETRO), 31, 27, 4, { 43, 6 }, { 49, 1 }, { 50, 6 }, { 56, 0 }, { { 56, 0 }, { 56, 1 }, { 57, 1 } } },  // Q-SP01, Fra' Bernardo
+};
+
+// Gli oggetti da raccogliere sulla mappa: ci sono finche' la loro bandiera e' spenta (anche se la quest non
+// e' presa); toccarli accende la bandiera e fa dire le battute di raccolta della quest.
+struct Raccolta
+{
+    int8_t area;                  // mondo::AreaId
+    uint8_t tx;
+    uint8_t ty;
+    uint8_t quest;
+    uint8_t bandiera;
+    uint8_t figura;               // FIGURA_RACCOLTA
+};
+
+inline constexpr int RACCOLTE = 7;
+inline constexpr Raccolta RACCOLTA[RACCOLTE] = {
+    { int8_t(mondo::AreaId::TEATRO_ROMANO), 38, 15, 0, FERRO_1, 0 },
+    { int8_t(mondo::AreaId::TEATRO_ROMANO), 44, 35, 0, FERRO_2, 0 },
+    { int8_t(mondo::AreaId::TEATRO_ROMANO), 34, 51, 0, FERRO_3, 0 },
+    { int8_t(mondo::AreaId::BOTTACCIONE), 47, 48, 1, ELLEBORO_1, 1 },
+    { int8_t(mondo::AreaId::GOLA_STRISCIA), 45, 10, 1, ELLEBORO_2, 1 },
+    { int8_t(mondo::AreaId::GOLA_MIASMI), 28, 14, 1, ELLEBORO_3, 1 },
+    { int8_t(mondo::AreaId::GOLA_ARCO), 32, 19, 1, ELLEBORO_4, 1 },
+};
+
+// Le figure degli oggetti da raccogliere, 16x16 (4 tile), con la palette dei popolani (tools/figure_npc.py).
+inline constexpr int FIGURE_RACCOLTA = 2;
+inline constexpr uint32_t FIGURA_RACCOLTA[FIGURE_RACCOLTA][4 * 8] = {
+    {  // ferro
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x11110000, 0xDDDD1000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00001111, 0x001CDDDD,
+        0xDDDDD100, 0xCCCCC100, 0xCCCCC100, 0xC7CCC100, 0x11111000, 0x00000000, 0x00000000, 0x00000000,
+        0x001CCDDD, 0x001CCCCC, 0x001CCCCC, 0x0011CCCC, 0x00011111, 0x00000000, 0x00000000, 0x00000000,
+    },
+    {  // elleboro
+        0x00000000, 0x00000000, 0x00110000, 0x01FF1000, 0x1FEF1000, 0x1FF10000, 0x1F100000, 0xF1001100,
+        0x00000000, 0x00000000, 0x00001100, 0x0001FF10, 0x0001FEF1, 0x00001FF1, 0x000001F1, 0x0011001F,
+        0xF101FF10, 0xF11FF100, 0xFFFF1000, 0xFFF10000, 0x99981000, 0x99998100, 0x11111000, 0x00000000,
+        0x01FF101F, 0x001FF11F, 0x00011FFF, 0x00001FFF, 0x00018999, 0x00189999, 0x00011111, 0x00000000,
+    },
+};
+
+// Gli indizi di Q-SP01: l'NPC (NPC_AMBIENTE) che, con la quest presa e la Rosa non ancora ripresa, dopo le
+// sue battute dice le righe dell'indizio e accende la bandiera. Con tutti e tre, INDIZI_COMPLETI.
+struct Indizio
+{
+    uint8_t npc;
+    uint8_t bandiera;
+    Righe righe;
+};
+
+inline constexpr int QUEST_DEGLI_INDIZI = 2;
+inline constexpr int INDIZI = 3;
+inline constexpr Indizio INDIZIO[INDIZI] = {
+    { 9, INDIZIO_LUCIA, { 58, 2 } },  // Lucia la Tessitrice
+    { 7, INDIZIO_VENDITORE, { 60, 2 } },  // Venditore delle Logge
+    { 21, INDIZIO_FONTANIERE, { 62, 2 } },  // Giordano il fontaniere
+};
+
+inline constexpr Righe INDIZI_COMPLETI = { 64, 1 };
+
+// L'infiltrato sotto le Logge: compare con i tre indizi; parlargli fa dire le righe di prima, la battaglia,
+// e se si vince quelle di dopo e ROSA_RIPRESA.
+struct Infiltrato
+{
+    int8_t area;
+    uint8_t tx;
+    uint8_t ty;
+    uint8_t figura;
+    int8_t incontro;              // battaglia::INCONTRO
+    Righe prima;
+    Righe dopo;
+};
+
+inline constexpr Infiltrato INFILTRATO = { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 99, 71, 29, 1, { 65, 3 }, { 68, 5 } };
+
 // Le figure degli NPC, 16x32 (8 tile in mappatura 1D) con la palette dei popolani: quelle dei
 // mestieri (tools/figure_npc.py) e quelle degli amici (base e accessorio, dati/amici.json).
-inline constexpr int FIGURE_NPC = 29;
+inline constexpr int FIGURE_NPC = 30;
 inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][8 * 8] = {
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -950,6 +1153,16 @@ inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][8 * 8] = {
         0x00D00000, 0x00D00011, 0x00B01DDD, 0x00B1DD77, 0x00B01333, 0x00B01313, 0x00B01333, 0x00B00133,
         0x44446440, 0x64466640, 0x66466640, 0x64444440, 0x44144410, 0xCCC10000, 0x01C10000, 0x00110000,
         0x00B01444, 0x00B14446, 0x00B14666, 0x00B14446, 0x00B01444, 0x00B01CCC, 0x00B01C10, 0x00B01100,
+    },
+    {
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000A00, 0x00000A00,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x55000A00, 0x55500A00, 0x55510A00, 0x33310A00, 0x31310A00, 0x33310A00, 0x33100A00, 0xBBB10A00,
+        0x00000055, 0x00000555, 0x00001555, 0x00001333, 0x00001313, 0x00001333, 0x00000133, 0x00001BBB,
+        0xBBBB1A00, 0xBBBB1A00, 0xEEEE1A00, 0xBBBB1A00, 0xBBBB1A00, 0xBBBBBA00, 0x11111A00, 0x00000000,
+        0x0011BBBB, 0x00EEBBBB, 0x00EEEEEE, 0x00EE4EBB, 0x00014BBB, 0x001BBBBB, 0x00111111, 0x00000000,
     },
 };
 

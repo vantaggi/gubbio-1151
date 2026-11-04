@@ -3,6 +3,7 @@
 
 #include "battaglia_dati.h"
 #include "game_state.h"
+#include "mondo_logica.h"
 #include "progressione.h"
 #include "storia.h"
 
@@ -63,6 +64,22 @@ constexpr void accendi_una(GameState& p, int b)
     }
 }
 
+// Quanti pezzi dell'obiettivo della quest q sono raccolti: le sue bandiere consecutive da primo_pezzo accese
+// (i blocchi di ferro, le radici, la Rosa). E' il contatore delle quest, fatto di bandiere (SV2c): nessun
+// campo nuovo in GameState, il salvataggio resta v3.
+[[nodiscard]] constexpr int pezzi_raccolti(const GameState& p, int q)
+{
+    const QuestGioco& g = QUEST_GIOCO[q];
+    int n = 0;
+
+    for(int i = 0; i < g.pezzi; ++i)
+    {
+        n += accesa(p, g.primo_pezzo + i) ? 1 : 0;
+    }
+
+    return n;
+}
+
 // La guardia di una battuta vale? 'scelta' e' la voce scelta nell'ultimo menu della recita (-1 nessuno).
 [[nodiscard]] constexpr bool vale(const GameState& p, int guardia, int scelta)
 {
@@ -84,6 +101,10 @@ constexpr void accendi_una(GameState& p, int b)
             return int(accesa(p, int(g.a))) + int(accesa(p, int(g.b))) + int(accesa(p, int(g.c))) >= 2;
         case TipoGuardia::OGGETTO_E_NON_BANDIERA:
             return p.oggetti[g.a] > 0 && ! accesa(p, int(g.b));
+        case TipoGuardia::CONTEGGIO:
+            return pezzi_raccolti(p, g.a) == g.b && (g.c == NESSUNA_BANDIERA || accesa(p, int(g.c)));
+        case TipoGuardia::CONTEGGIO_E_NON_BANDIERA:
+            return pezzi_raccolti(p, g.a) == g.b && ! accesa(p, int(g.c));
     }
 
     return false;
@@ -271,9 +292,28 @@ inline constexpr int INCONTRO_DI_CORRADO = 2;     // il duello sul Condotto (B-0
     return accesa(p, d.da) && ! accesa(p, d.entro) && ! accesa(p, int(d.consegnata));
 }
 
-// La consegna di una quest (l'obiettivo lo controlla chi la chiama: i blocchi, le radici, la Rosa):
-// accende la sua bandiera, da' il premio (fino al massimo che se ne porta) e ESPERIENZA_QUEST a ogni Santo.
-// Ritorna false, e non cambia nulla, se la quest non si puo' consegnare. 'saliti' dice chi e' salito.
+// La quest q e' stata presa dal datore (la sua proposta e' stata detta).
+[[nodiscard]] constexpr bool presa(const GameState& p, int q)
+{
+    return accesa(p, int(QUEST_GIOCO[q].presa));
+}
+
+// L'obiettivo e' finito: tutti i pezzi raccolti (3 blocchi, 4 radici, la Rosa).
+[[nodiscard]] constexpr bool obiettivo_fatto(const GameState& p, int q)
+{
+    return pezzi_raccolti(p, q) == QUEST_GIOCO[q].pezzi;
+}
+
+// Si puo' consegnare adesso: nel suo tempo, non ancora consegnata, presa e con l'obiettivo finito.
+[[nodiscard]] constexpr bool quest_pronta(const GameState& p, int q)
+{
+    return quest_consegnabile(p, q) && presa(p, q) && obiettivo_fatto(p, q);
+}
+
+// La consegna di una quest (presa e con l'obiettivo finito, quest_pronta): accende la sua bandiera, da' il
+// premio (fino al massimo che se ne porta) e ESPERIENZA_QUEST a ogni Santo. Ritorna false, e non cambia
+// nulla, se la quest non si puo' consegnare (fuori tempo, gia' consegnata, non presa, obiettivo a meta').
+// 'saliti' dice chi e' salito.
 constexpr bool consegna_quest(GameState& p, int q, bool (&saliti)[battaglia::EROI])
 {
     for(bool& s : saliti)
@@ -281,7 +321,7 @@ constexpr bool consegna_quest(GameState& p, int q, bool (&saliti)[battaglia::ERO
         s = false;
     }
 
-    if(q < 0 || q >= QUEST || ! quest_consegnabile(p, q))
+    if(q < 0 || q >= QUEST || ! quest_pronta(p, q))
     {
         return false;
     }
@@ -292,6 +332,181 @@ constexpr bool consegna_quest(GameState& p, int q, bool (&saliti)[battaglia::ERO
     int massimo = battaglia::OGGETTI[d.oggetto].massimo;
     p.oggetti[d.oggetto] = uint8_t(quanti > massimo ? massimo : quanti);
     progressione::assegna_esperienza_fissa(p, progressione::ESPERIENZA_QUEST, saliti);
+    return true;
+}
+
+// --- I datori, gli oggetti da raccogliere, gli indizi e l'infiltrato (SV2c) -----------------------------
+
+// Cosa dice il datore di una quest adesso. ASSENTE: prima che la quest si prenda (o dopo E-01) non c'e'.
+enum class Momento : uint8_t
+{
+    ASSENTE,
+    PROPOSTA,
+    ATTESA,
+    CONSEGNA,
+    DOPO,
+};
+
+[[nodiscard]] constexpr Momento momento_del_datore(const GameState& p, int q)
+{
+    if(accesa(p, int(QUEST_V1[q].consegnata)))
+    {
+        return Momento::DOPO;
+    }
+
+    if(! quest_consegnabile(p, q))
+    {
+        return Momento::ASSENTE;
+    }
+
+    if(! presa(p, q))
+    {
+        return Momento::PROPOSTA;
+    }
+
+    return obiettivo_fatto(p, q) ? Momento::CONSEGNA : Momento::ATTESA;
+}
+
+// La proposta detta: la quest e' presa. False (e nulla cambia) se il datore non era alla proposta.
+constexpr bool prendi_quest(GameState& p, int q)
+{
+    if(momento_del_datore(p, q) != Momento::PROPOSTA)
+    {
+        return false;
+    }
+
+    accendi_una(p, QUEST_GIOCO[q].presa);
+    return true;
+}
+
+// Le righe di FRASE_QUEST che il datore dice in quel momento (il dopo secondo la fase).
+[[nodiscard]] constexpr Righe righe_del_datore(const GameState& p, int q, Momento m)
+{
+    const QuestGioco& g = QUEST_GIOCO[q];
+
+    switch(m)
+    {
+        case Momento::PROPOSTA:
+            return g.proposta;
+        case Momento::ATTESA:
+            return g.attesa;
+        case Momento::CONSEGNA:
+            return g.consegna;
+        case Momento::DOPO:
+            return g.dopo[int(fase_npc(p))];
+        case Momento::ASSENTE:
+            break;
+    }
+
+    return Righe{ 0, 0 };
+}
+
+// Il contatto con un oggetto da raccogliere: i piedi a meno di tanti pixel dal centro della sua cella.
+inline constexpr int DISTANZA_RACCOLTA = 10;
+
+// Un oggetto c'e' finche' non e' raccolto, anche se la quest non e' presa (regola «nessuna quest si perde»):
+// non legge la fase ne' la storia, quindi le radici della gola ci sono anche dopo B-05.
+[[nodiscard]] constexpr bool raccolta_presente(const GameState& p, int k)
+{
+    return ! accesa(p, int(RACCOLTA[k].bandiera));
+}
+
+// L'oggetto che il giocatore tocca nell'area, -1 se nessuno.
+[[nodiscard]] constexpr int raccolta_toccata(const GameState& p, int area, int x, int y)
+{
+    for(int k = 0; k < RACCOLTE; ++k)
+    {
+        const Raccolta& r = RACCOLTA[k];
+        int dx = x - mondo::piedi_x(r.tx);
+        int dy = y - mondo::piedi_y(r.ty);
+
+        if(r.area == area && raccolta_presente(p, k) && dx > -DISTANZA_RACCOLTA && dx < DISTANZA_RACCOLTA &&
+           dy > -DISTANZA_RACCOLTA && dy < DISTANZA_RACCOLTA)
+        {
+            return k;
+        }
+    }
+
+    return -1;
+}
+
+// Raccoglie l'oggetto k: accende la sua bandiera (il contatore della quest sale). False se era gia' preso.
+// Dopo, le righe di raccolta della quest (QUEST_GIOCO[q].raccolta) valgono secondo il nuovo contatore.
+constexpr bool raccogli(GameState& p, int k)
+{
+    if(k < 0 || k >= RACCOLTE || ! raccolta_presente(p, k))
+    {
+        return false;
+    }
+
+    accendi_una(p, RACCOLTA[k].bandiera);
+    return true;
+}
+
+// Gli indizi di Q-SP01 si chiedono finche' la quest e' presa, la Rosa non e' ripresa e la quest si consegna.
+[[nodiscard]] constexpr bool indizi_attivi(const GameState& p)
+{
+    return presa(p, QUEST_DEGLI_INDIZI) && ! obiettivo_fatto(p, QUEST_DEGLI_INDIZI) &&
+           quest_consegnabile(p, QUEST_DEGLI_INDIZI);
+}
+
+// L'indizio che l'NPC d'ambiente 'npc' dice dopo le sue battute, -1 se nessuno (o se gli indizi non sono attivi).
+[[nodiscard]] constexpr int indizio_dell_npc(const GameState& p, int npc)
+{
+    if(! indizi_attivi(p))
+    {
+        return -1;
+    }
+
+    for(int k = 0; k < INDIZI; ++k)
+    {
+        if(INDIZIO[k].npc == npc)
+        {
+            return k;
+        }
+    }
+
+    return -1;
+}
+
+[[nodiscard]] constexpr int indizi_trovati(const GameState& p)
+{
+    int n = 0;
+
+    for(const Indizio& i : INDIZIO)
+    {
+        n += accesa(p, int(i.bandiera)) ? 1 : 0;
+    }
+
+    return n;
+}
+
+// Accende l'indizio k. True se e' quello che li completa (la prima volta): allora si dice INDIZI_COMPLETI.
+constexpr bool trova_indizio(GameState& p, int k)
+{
+    bool tutti_prima = indizi_trovati(p) == INDIZI;
+    accendi_una(p, INDIZIO[k].bandiera);
+    return ! tutti_prima && indizi_trovati(p) == INDIZI;
+}
+
+// L'infiltrato sta sotto le Logge con i tre indizi, finche' la Rosa non e' ripresa.
+[[nodiscard]] constexpr bool infiltrato_presente(const GameState& p)
+{
+    return indizi_attivi(p) && indizi_trovati(p) == INDIZI;
+}
+
+static_assert(QUEST_GIOCO[QUEST_DEGLI_INDIZI].primo_pezzo == ROSA_RIPRESA && QUEST_GIOCO[QUEST_DEGLI_INDIZI].pezzi == 1,
+              "l'obiettivo di Q-SP01 e' la Rosa");
+
+// La battaglia con l'infiltrato vinta: la Rosa e' ripresa (l'obiettivo di Q-SP01). False se non c'era.
+constexpr bool riprendi_la_rosa(GameState& p)
+{
+    if(! infiltrato_presente(p))
+    {
+        return false;
+    }
+
+    accendi_una(p, ROSA_RIPRESA);
     return true;
 }
 

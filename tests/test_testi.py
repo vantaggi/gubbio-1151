@@ -95,6 +95,12 @@ class Generatore(unittest.TestCase):
         """Le lettere accentate vere passano, l'elisione e "po'" pure."""
         genera("A | HUD | Su e giù, perché", "B | DIALOGO | Sant'Ubaldo e un po' di città")
 
+    def test_fra_col_troncamento(self):
+        """«Fra' Bernardo» (frate troncato, SV2c) passa; una parola qualunque con l'apostrofo finale no."""
+        genera("A | HUD | Fra' Bernardo", "B | DIALOGO | Riportala a Fra' Bernardo.")
+        with self.assertRaisesRegex(G.ErroreTesti, "'fre'' ha l'apostrofo al posto dell'accento"):
+            genera("A | HUD | fre' Bernardo")
+
     def test_negativa_apostrofo_al_posto_dell_accento(self):
         with self.assertRaisesRegex(G.ErroreTesti, "'giu'' ha l'apostrofo al posto dell'accento"):
             genera("A | HUD | Su e giu' per scegliere")
