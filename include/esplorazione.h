@@ -257,6 +257,19 @@ private:
     enum Direzione { GIU, SU, DESTRA, SINISTRA };
     int _direzione = GIU;
     mondo::Camminata _camminata;    // il ciclo della camminata (mondo_logica.h)
+    // la polvere della corsa: due sbuffi fissi riusati (un piede alla volta)
+    struct Sbuffo
+    {
+        bn::sprite_ptr sprite;
+        int vita = 0;           // vblank che restano, 0 = spento
+        int x = 0;
+        int y = 0;
+    };
+
+    static constexpr int SBUFFI = 2;
+    bn::optional<bn::sprite_palette_ptr> _palette_polvere;
+    bn::vector<Sbuffo, SBUFFI> _sbuffi;
+    int _sbuffo_prossimo = 0;
     int _fermo = 0;
     int _mostrato = -1;
     bool _mosso = false;
@@ -270,6 +283,9 @@ private:
     bool _camera_ferma = true;
 
     void _carica_fondale(bool etichetta = true);
+    void _alza_polvere(bool piede_destro);
+    void _anima_polvere();
+    void _spegni_polvere();
     void _mostra_etichetta(testi::TestoId id);
     void _mostra_cartiglio(bool visibile);
     void _dopo_evento(mondo::Evento evento);

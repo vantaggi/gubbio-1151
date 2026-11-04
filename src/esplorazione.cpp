@@ -92,6 +92,39 @@ namespace
     constexpr Colori COLORI_COMPAGNI_NOTTE[compagni::COMPAGNI] = { colori(compagni::PALETTE_GIORGIO_NOTTE),
                                                                    colori(compagni::PALETTE_ANTONIO_NOTTE) };
 
+    // La polvere della corsa (Loop 3, ok del custode visivo): uno sbuffo di 3-4 pixel dietro il piede che si
+    // stacca, nei toni 2 (P2) e 3 (P3) del suolo (banco 0 dei fondali, letti dalla palette caricata: di notte e
+    // nella gola cambiano da soli), tre fotogrammi da FRAME_SBUFFO vblank, solo sul selciato e sulla ghiaia.
+    // Ogni pixel tocca un altro pixel (P3: niente pixel orfani). 4bpp: un nibble per pixel, il basso a sinistra.
+    constexpr int FRAME_SBUFFO = 4;
+    constexpr int VITA_SBUFFO = 3 * FRAME_SBUFFO;
+
+    constexpr bn::tile riga_sbuffo(bn::tile t, int r, uint32_t pixel)
+    {
+        t.data[r] = pixel;
+        return t;
+    }
+
+    constexpr bn::tile POLVERE[3] = {
+        // nasce: due pixel scuri a terra e uno chiaro sopra
+        riga_sbuffo(riga_sbuffo(bn::tile{}, 6, 0x00001000), 7, 0x00022000),
+        // si allarga: quattro pixel scuri a terra, due chiari sopra
+        riga_sbuffo(riga_sbuffo(bn::tile{}, 6, 0x00011000), 7, 0x00222200),
+        // si posa: tre pixel chiari, piu' in alto
+        riga_sbuffo(riga_sbuffo(bn::tile{}, 5, 0x00010000), 6, 0x00001100),
+    };
+
+    // il selciato e la ghiaia: si' polvere; prato, scale, ponte, gola e acqua no
+    constexpr bool suolo_che_fa_polvere(int c)
+    {
+        mondo::Cella t = mondo::Cella(c);
+        return t == mondo::Cella::SUOLO || t == mondo::Cella::STRADA || t == mondo::Cella::LASTRICO ||
+               t == mondo::Cella::CORSO || t == mondo::Cella::VIALETTO || t == mondo::Cella::BRECCIA;
+    }
+
+    constexpr bn::sprite_tiles_item POLVERE_ITEM(bn::span<const bn::tile>(POLVERE, 3), bn::bpp_mode::BPP_4,
+                                                 bn::compression_type::NONE, 3);
+
     // La fila: lo z di Esplorazione::z_sulla_mappa, come la gente e gli NPC (prima la fila stava sempre davanti
     // alla gente, anche a chi le passava davanti piu' in basso); a pari y Ubaldo davanti; il fumetto davanti a tutti.
     constexpr int z_della_fila(int y)
@@ -227,6 +260,20 @@ Esplorazione::Esplorazione(const bn::sprite_palette_ptr& palette_testo) :
 {
     _giocatore.set_camera(_camera);
     _fumetto.set_camera(_camera);
+
+    // la polvere: due sprite fissi riusati (si alterna un piede alla volta), nascosti finche' non servono
+    bn::color colori[16] = {};
+    _palette_polvere = bn::sprite_palette_ptr::create(bn::sprite_palette_item(bn::span<const bn::color>(colori),
+                                                                              bn::bpp_mode::BPP_4));
+
+    for(int i = 0; i < SBUFFI; ++i)
+    {
+        bn::sprite_ptr sprite = bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(8, 8),
+                                                       POLVERE_ITEM.create_tiles(0), *_palette_polvere);
+        sprite.set_camera(_camera);
+        sprite.set_visible(false);
+        _sbuffi.push_back(Sbuffo{ bn::move(sprite), 0, 0, 0 });
+    }
 }
 
 void Esplorazione::entra(mondo::AreaId id, int spawn)
@@ -307,6 +354,7 @@ void Esplorazione::sospendi()
     nascondi_etichetta();
     togli_compagni();
     _giocatore.set_visible(false);
+    _spegni_polvere();
     _fondale.reset();
     _tiles.reset();
 }
@@ -339,6 +387,7 @@ void Esplorazione::_carica_fondale(bool etichetta)
     auto segna = [](int) {};
 #endif
     _area_caricata = _e.area;
+    _spegni_polvere();
     _fondale.reset();
 
     // Ogni area ha i suoi tile (suolo e monumenti): prima si lascia la mappa vecchia, poi i suoi tile.
@@ -505,6 +554,79 @@ void Esplorazione::muovi(int dx, int dy, int passi)
     }
 }
 
+void Esplorazione::_alza_polvere(bool piede_destro)
+{
+    const mondo::Area& a = mondo::area(_e.area);
+
+    if(! suolo_che_fa_polvere(mondo::cella(a, mondo::cella_x(_e), mondo::cella_y(_e))))
+    {
+        return;
+    }
+
+    // dietro il piede che si stacca: di lato, alle spalle; davanti o di schiena, dal lato di quel piede
+    int x = _e.x;
+    int y = _e.y;
+
+    if(_direzione == DESTRA || _direzione == SINISTRA)
+    {
+        x += _direzione == DESTRA ? -5 : 5;
+    }
+    else
+    {
+        // andando giu' il piede dietro sta sotto la veste: lo sbuffo esce di fianco, a terra
+        int lato = _direzione == GIU ? 5 : 3;
+        x += (piede_destro == (_direzione == GIU)) ? -lato : lato;
+        y += _direzione == GIU ? 0 : 1;
+    }
+
+    // i toni 2 e 3 del suolo (banco 0) della palette caricata, cosi' di notte e nella gola segue il fondale
+    bn::span<const bn::color> fondale = _palette.colors();
+    bn::color colori[16] = {};
+    colori[1] = fondale[3];
+    colori[2] = fondale[2];
+    _palette_polvere->set_colors(bn::span<const bn::color>(colori));
+
+    Sbuffo& b = _sbuffi[_sbuffo_prossimo];
+    _sbuffo_prossimo = (_sbuffo_prossimo + 1) % SBUFFI;
+    b.vita = VITA_SBUFFO;
+    b.x = x;
+    b.y = y;
+    b.sprite.set_tiles(POLVERE_ITEM, 0);
+    b.sprite.set_position(x - _mezza_larghezza_mappa, y - 4 - _mezza_altezza_mappa);
+    b.sprite.set_z_order(z_sulla_mappa(y) + 1);         // dietro chi sta alla stessa riga
+    b.sprite.set_blending_enabled(_scura);
+    b.sprite.set_visible(true);
+}
+
+void Esplorazione::_anima_polvere()
+{
+    for(Sbuffo& b : _sbuffi)
+    {
+        if(b.vita <= 0)
+        {
+            continue;
+        }
+
+        if(--b.vita == 0)
+        {
+            b.sprite.set_visible(false);
+        }
+        else if(b.vita % FRAME_SBUFFO == 0)
+        {
+            b.sprite.set_tiles(POLVERE_ITEM, (VITA_SBUFFO - b.vita) / FRAME_SBUFFO);
+        }
+    }
+}
+
+void Esplorazione::_spegni_polvere()
+{
+    for(Sbuffo& b : _sbuffi)
+    {
+        b.vita = 0;
+        b.sprite.set_visible(false);
+    }
+}
+
 void Esplorazione::_anima_giocatore()
 {
     // camminata (A6): 6 fotogrammi da 6 vblank, 4 se si corre; da fermi il respiro (A5), 2 x 30 vblank
@@ -513,8 +635,15 @@ void Esplorazione::_anima_giocatore()
     if(_mosso)
     {
         int vblank = _corre ? mondo::GIOCATORE_VBLANK_CORSA : mondo::GIOCATORE_VBLANK_PASSO;
+        int prima = _camminata.fotogramma;
         fotogramma = mondo::avanza_camminata(_camminata, vblank, mondo::GIOCATORE_CAMMINATA);
         _fermo = 0;
+
+        // correndo, nei due fotogrammi col passo lungo (0 e 3: un piede avanti) il piede dietro si stacca
+        if(_corre && fotogramma != prima && (fotogramma == 0 || fotogramma == 3))
+        {
+            _alza_polvere(fotogramma == 0);
+        }
     }
     else
     {
@@ -849,6 +978,7 @@ void Esplorazione::aggiorna()
     _giocatore.set_position(_e.x - _mezza_larghezza_mappa, _e.y - 15 - _mezza_altezza_mappa);
     _giocatore.set_z_order(z_della_fila(_e.y));
     _anima_giocatore();
+    _anima_polvere();
     _segna_orme();
     _anima_compagni();
 
