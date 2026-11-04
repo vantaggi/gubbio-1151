@@ -75,6 +75,7 @@ namespace
     constexpr int COLORE_ACQUA = 12;               // i due colori dell'acqua nella palette dei fondali
     constexpr int COLORE_ACQUA_CHIARA = 13;
     constexpr Colori COLORI_GIOCATORE = colori(mondo::PALETTE_GIOCATORE);
+    constexpr Colori COLORI_GIOCATORE_NOTTE = colori(mondo::PALETTE_GIOCATORE_NOTTE);
 
     // Il cartiglio: sei pezzi da 32x16 (sinistro, quattro centrali, destro) in cima allo schermo,
     // dietro il nome dell'area, con la palette dei fondali. Nascosto finche' non c'e' un nome.
@@ -219,6 +220,9 @@ void Esplorazione::imposta_notte(bool notte)
     if(notte != _notte)
     {
         _notte = notte;
+        // Ubaldo (e il fumetto, che ne usa la palette) passa alle rampe di notte con la citta'
+        bn::sprite_palette_ptr palette = _giocatore.palette();
+        palette.set_colors(bn::span<const bn::color>((notte ? COLORI_GIOCATORE_NOTTE : COLORI_GIOCATORE).colori));
 
         if(_fondale)
         {
