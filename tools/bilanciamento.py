@@ -29,6 +29,9 @@ FACOLTATIVI = [5, 5, 5, 6]
 # Il livello piu' basso con cui si puo' affrontare una facoltativa: le fornaci si raggiungono dall'ultimatum
 # (livello 1), l'infiltrato dal digiuno, dopo la Pattuglia (livello 3).
 LIVELLO_FACOLTATIVI = {5: 1, 6: 3}
+# Gli scontri della storia dopo il rito di A1-08 (CERI_RISVEGLIATI accesa a fine scena): si combattono coi Ceri,
+# il Fervore iniziale piu' alto (FERVORE_CERI del mirror). Gli Spettri, dentro A1-08, ancora senza.
+DOPO_I_CERI = (4, 2)
 
 
 def leggi_tabella(nome, testo=None):
@@ -123,12 +126,15 @@ def main():
         print("con le quest" if con_quest else "senza quest")
         for i in ORDINE_STORIA:
             riga = [f"{M.NOMI_INCONTRI[i]:26} liv {livelli[i]}"]
+            ceri = i in DOPO_I_CERI
             for p in ("forte", "medio", "debole"):
-                v, r = misura(i, livelli[i], p)
+                v, r = misura(i, livelli[i], p, ceri=ceri)
                 riga.append(f"{p} {v:3}% r{r}")
             if i == 2:
-                v, r = misura(i, livelli[i], "medio", scudo_meno=1)
+                v, r = misura(i, livelli[i], "medio", scudo_meno=1, ceri=True)
                 riga.append(f"medio scudo-1 {v}% r{r}")
+                v, r = misura(i, livelli[i], "medio")
+                riga.append(f"medio senza ceri {v}% r{r}")
             print("  " + " | ".join(riga))
     print("facoltative, al livello piu' basso")
     for i, liv in LIVELLO_FACOLTATIVI.items():
