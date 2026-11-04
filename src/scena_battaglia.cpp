@@ -67,10 +67,12 @@ namespace
     constexpr int TARGA_CIFRE_DY = -11;                 // le cifre (righe 2-8 del glifo) accanto alla barra dei PV
     constexpr int PANNELLO_Y = 104;                     // il pannello dei comandi: il riquadro del dialogo della Guida
     constexpr int INCHIOSTRO_SCURO = 1;                 // sul fondo chiaro del riquadro
-    // Le tre righe del pannello dentro la cornice (interno y 112-151): titolo, voce rientrata, aiuto.
-    constexpr int PANNELLO_TITOLO_Y = PANNELLO_Y + 8;
-    constexpr int PANNELLO_VOCE_Y = PANNELLO_Y + 20;
-    constexpr int PANNELLO_AIUTO_Y = PANNELLO_Y + 34;
+    // Le tre righe del pannello dentro la cornice (interno x 8-231, y 112-151), con 4 px di respiro dal
+    // piombo come i dialoghi: titolo, voce rientrata, aiuto.
+    constexpr int PANNELLO_X = 12;
+    constexpr int PANNELLO_TITOLO_Y = PANNELLO_Y + 12;
+    constexpr int PANNELLO_VOCE_Y = PANNELLO_Y + 23;
+    constexpr int PANNELLO_AIUTO_Y = PANNELLO_Y + 35;
     constexpr int FRAME_ESITO = 150;
     constexpr int FRAME_LIVELLO = 75;
     constexpr int FRECCIA_Y_MIN = -72;                  // la freccia del bersaglio resta tutta sullo schermo
@@ -281,9 +283,9 @@ namespace
                                                    _palette_effetti)),
             _effetto_bersaglio(bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(32, 32), _effetti_tiles.create_tiles(0),
                                                       _palette_effetti)),
-            _titolo(Contesto::DIALOGO, 8, PANNELLO_TITOLO_Y, INCHIOSTRO_SCURO, palette_testo),
-            _voce(Contesto::DIALOGO, 16, PANNELLO_VOCE_Y, INCHIOSTRO_SCURO, palette_testo),
-            _aiuto(Contesto::DIALOGO, 8, PANNELLO_AIUTO_Y, INCHIOSTRO_SCURO, palette_testo),
+            _titolo(Contesto::DIALOGO, PANNELLO_X, PANNELLO_TITOLO_Y, INCHIOSTRO_SCURO, palette_testo),
+            _voce(Contesto::DIALOGO, PANNELLO_X + 8, PANNELLO_VOCE_Y, INCHIOSTRO_SCURO, palette_testo),
+            _aiuto(Contesto::DIALOGO, PANNELLO_X, PANNELLO_AIUTO_Y, INCHIOSTRO_SCURO, palette_testo),
             _immune(Contesto::HUD, 120 + X_CORRADO - 20, 80 - 30 - 40, INCHIOSTRO_CHIARO, palette_testo),
             _numero(0, 0, INCHIOSTRO_CHIARO, palette_testo, INCHIOSTRO_CONTORNO),
             _quanti(200, PANNELLO_VOCE_Y, INCHIOSTRO_SCURO, palette_testo),
@@ -1001,8 +1003,8 @@ namespace
     {
         Riquadri riquadri;
         riquadri.cornice(0, PANNELLO_Y, stile::DIALOGO_COLONNE, stile::DIALOGO_RIGHE);
-        VistaTesto voce(Contesto::DIALOGO, 8, PANNELLO_TITOLO_Y, INCHIOSTRO_SCURO, palette_testo);
-        VistaTesto aiuto(Contesto::DIALOGO, 8, PANNELLO_AIUTO_Y, INCHIOSTRO_SCURO, palette_testo);
+        VistaTesto voce(Contesto::DIALOGO, PANNELLO_X, PANNELLO_TITOLO_Y, INCHIOSTRO_SCURO, palette_testo);
+        VistaTesto aiuto(Contesto::DIALOGO, PANNELLO_X, PANNELLO_AIUTO_Y, INCHIOSTRO_SCURO, palette_testo);
         int scelta = 0;
         voce.mostra(GUBBIO_VOCE(NOMI_INCONTRI, scelta));
         voce.rivela_tutto();

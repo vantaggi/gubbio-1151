@@ -36,9 +36,10 @@ LARGHEZZA_SPRITE = 32
 SPRITE_PER_RIGA = 7
 
 # Contesto: (larghezza massima in pixel, righe massime). Il dialogo e' il riquadro della scelta 9
-# (30 tile con un tile di margine per lato, 3 righe); l'etichetta d'area e l'HUD stanno in una riga.
+# (30 tile, interno 224 px) con 4 px di respiro per lato dentro il piombo: 216 px, 3 righe (SV2m,
+# revisione del custode visivo 4 nov); l'etichetta d'area e l'HUD stanno in una riga.
 CONTESTI = {
-    "DIALOGO": (224, 3),
+    "DIALOGO": (216, 3),
     "AREA": (192, 1),
     "HUD": (96, 1),
     # la voce del narratore nelle bande nere delle cutscene (24 px): al massimo 2 righe da 224 px

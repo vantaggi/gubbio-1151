@@ -35,9 +35,11 @@ namespace
 
     constexpr int INCHIOSTRO_CHIARO = 2;    // sul cartiglio vermiglio e sul nero dei titoli
     constexpr int INCHIOSTRO_SCURO = 1;     // sul fondo chiaro dei riquadri (Guida, scelta 9)
-    // Il dialogo della Guida: riquadro 30x7 a y=104, testo da (8, 112), nome nel cartiglio a (8, 96).
-    constexpr int TESTO_X = stile::DIALOGO_X + 8;
-    constexpr int TESTO_Y = stile::DIALOGO_Y + 8;
+    // Il dialogo della Guida: riquadro 30x7 a y=104, nome nel cartiglio a (8, 96). Il testo ha 4 px di
+    // respiro dentro il piombo (interno da (8, 112)): parte da (12, 116), righe da 216 px (genera_testi).
+    constexpr int RESPIRO = 4;
+    constexpr int TESTO_X = stile::DIALOGO_X + 8 + RESPIRO;
+    constexpr int TESTO_Y = stile::DIALOGO_Y + 8 + RESPIRO;
     constexpr int FRAME_CARTELLO = 90;
     constexpr int FRAME_TITOLI = 300;
     constexpr int FRAME_AUTOMATICA = 3;
@@ -57,8 +59,8 @@ namespace
     int s_scelte_fotografate = 0;           // le istantanee dei menu nelle prove
 
     // Le due voci di una scelta dentro il riquadro del dialogo, col cursore a triangolo della Guida a sinistra.
-    constexpr int MENU_X = TESTO_X + 14;       // il cursore a x=10: a 2 px dal piombo, non attaccato
-    constexpr int MENU_Y = TESTO_Y + 4;
+    constexpr int MENU_X = TESTO_X + 12;       // il cursore a x=12, allineato al testo dei dialoghi
+    constexpr int MENU_Y = TESTO_Y + 2;
     constexpr int MENU_PASSO = 12;
 
     // Il cursore della Guida (tile "cursore" della cornice: triangolo vermiglio col piombo).
