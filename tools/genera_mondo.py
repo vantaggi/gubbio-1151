@@ -2760,10 +2760,17 @@ def celle_fondale(a, mappa):
     return out
 
 
+# Gli interni esplorabili (pezzo INT2) vanno in coda, dopo le 19 aree di prima e in quest'ordine: i salvataggi
+# tengono l'indice dell'area (AreaId) e la nebbia della mappa ha un bit per area all'aperto (indici sotto 24).
+AREE_IN_CODA = ["taverna_interno", "spezieria_interno", "bottega_conti_interno", "carradore_interno",
+                "casa_medico_interno", "sala_consoli"]
+
+
 def ordina(aree, giro):
-    altre = sorted(a["id"] for a in aree if a["id"] not in giro)
+    coda = [i for i in AREE_IN_CODA if i in {a["id"] for a in aree}]
+    altre = sorted(a["id"] for a in aree if a["id"] not in giro and a["id"] not in coda)
     per_id = {a["id"]: a for a in aree}
-    return [per_id[i] for i in giro + altre]
+    return [per_id[i] for i in giro + altre + coda]
 
 
 def scrivi_header(aree, grafo, palette_stile):

@@ -106,6 +106,37 @@ class SiEntraESiEsce(unittest.TestCase):
             G.genera(altre + [(src[0], "\n".join(righe))], G.S.carica("palette"), self.mondo)
 
 
+class OrdineDelleAree(unittest.TestCase):
+    """I salvataggi tengono l'indice dell'area: gli interni stanno in coda, le 19 aree di prima non cambiano."""
+
+    PRIMA = ["piazza_grande", "via_xx_settembre", "duomo_ducale", "monte_ingino", "basilica", "bottaccione",
+             "san_martino", "largo_bargello", "via_dei_consoli", "basilica_interno", "condotto", "gola_arco",
+             "gola_miasmi", "gola_striscia", "piazza_quaranta_martiri", "san_pietro", "sant_agostino",
+             "sant_andrea", "teatro_romano"]
+
+    def test_interni_in_coda(self):
+        with open(G.USCITA, encoding="utf-8") as f:
+            h = f.read()
+        corpo = h[h.index("enum class AreaId"):]
+        corpo = corpo[corpo.index("{") + 1:corpo.index("};")]
+        ids = [r.strip().rstrip(",").lower() for r in corpo.split("\n") if r.strip()]
+        self.assertEqual(ids[:19], self.PRIMA)
+        self.assertEqual(ids[19:], G.AREE_IN_CODA)
+
+    def test_all_aperto_sotto_24(self):
+        """La nebbia della mappa (aree_viste, 24 bit) conta solo le aree all'aperto."""
+        ordine = [a["id"] for a in G.ordina([{"id": i} for i in self.PRIMA + G.AREE_IN_CODA],
+                                            G.anello(G.mondo_del_repo()["grafo"]))]
+        for i, aid in enumerate(ordine):
+            if aid not in G.AREE_IN_CODA and aid != "basilica_interno":
+                self.assertLess(i, 24, aid)
+
+    def test_negativa_un_interno_fuori_coda(self):
+        ordine = [a["id"] for a in G.ordina([{"id": i} for i in self.PRIMA + ["aaa_interno"]],
+                                            G.anello(G.mondo_del_repo()["grafo"]))]
+        self.assertNotEqual(ordine[-1], "aaa_interno")
+
+
 class ArriviDelleAree(unittest.TestCase):
 
     def test_quaranta_martiri_ha_l_arrivo_del_carradore(self):
