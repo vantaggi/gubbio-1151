@@ -25,6 +25,9 @@ _spec.loader.exec_module(B)
 DATI = open(os.path.join(RADICE, "include", "battaglia_dati.h"), encoding="utf-8").read()
 MOTORE = open(os.path.join(RADICE, "include", "battaglia.h"), encoding="utf-8").read()
 LOG_GBA = os.path.join(RADICE, "tests", "dati", "battaglia_mgba.txt")
+# Gli incontri del log registrato in mGBA (prima di F10): i nuovi si confrontano a tempo di compilazione
+# (src/autotest_battaglia.cpp) finche' il log non si rifa' con la ROM (GUBBIO_AVVIO=3).
+INCONTRI_DEL_LOG = 4
 FIRME = B.tutte_le_firme()
 # I tipi che il pilota puo' emettere: tutti tranne quelli dei consumabili (CURA, PURIFICA), che
 # usa solo il giocatore e che si provano a tempo di compilazione (src/autotest_oggetti.cpp).
@@ -119,12 +122,32 @@ class FirmeEMirror(unittest.TestCase):
         with open(B.USCITA, encoding="utf-8") as f:
             self.assertEqual(f.read(), B.header(FIRME), "eseguire python tools/battaglia_mirror.py")
 
-    def test_quattrocento_battaglie_confrontate(self):
-        """4 incontri (Pattuglia Perugina, Imboscata agli Stradoni, Duello con Corrado, il rito della
-        Basilica con gli Spettri del Dubbio) x 50 semi x 2 piloti."""
-        self.assertEqual(len(B.INCONTRO), 4)
-        self.assertEqual(len(FIRME), 4 * 50 * 2)
-        self.assertEqual(len({f.hash for f in FIRME.values()}), 400, "ogni seme da' una battaglia diversa")
+    def test_settecento_battaglie_confrontate(self):
+        """7 incontri (Pattuglia Perugina, Imboscata agli Stradoni, Duello con Corrado, il rito della
+        Basilica con gli Spettri del Dubbio; da F10 i Guerrieri della Roccia di B-03, la guardia della fornace e
+        l'infiltrato delle Logge) x 50 semi x 2 piloti."""
+        self.assertEqual(len(B.INCONTRO), 7)
+        self.assertEqual(len(FIRME), 7 * 50 * 2)
+        self.assertEqual(len({f.hash for f in FIRME.values()}), 700, "ogni seme da' una battaglia diversa")
+
+    def test_le_quattrocento_di_prima_non_cambiano(self):
+        """Le firme dei quattro incontri di prima di F10 sono le stesse: le prime 400 righe di ATTESE, come
+        il log del GBA (tests/dati/battaglia_mgba.txt) le ha registrate."""
+        with open(LOG_GBA, encoding="utf-8") as f:
+            righe = righe_log(f.read())
+        vecchie = {k: v for k, v in FIRME.items() if k[0] < INCONTRI_DEL_LOG}
+        self.assertEqual(len(vecchie), 400)
+        self.assertEqual(errori_log(righe, vecchie), [])
+
+    def test_i_nuovi_incontri(self):
+        """F10: i due Guerrieri della Roccia, la guardia della fornace (un Guerriero), l'infiltrato con due spie."""
+        self.assertEqual(B.INCONTRO[4:], [[5, 5], [5], [6, 3, 3]])
+        self.assertEqual(B.NEMICI[5][0][8:], (B.FIAMMA, B.FISICO), "il ferro di Spoleto: si apre col fuoco")
+        self.assertTrue(all(f.esito == B.VITTORIA for k, f in FIRME.items() if k[0] >= 4 and not k[2]))
+
+    def test_negativa_nuovi_incontri_diversi(self):
+        self.assertNotEqual(B.gioca(4, 1).hash, B.gioca(5, 1).hash)
+        self.assertNotEqual(B.gioca(6, 1).hash, B.gioca(1, 1).hash, "l'infiltrato non e' l'Imboscata")
 
     def test_scudo_in_meno_cento_battaglie(self):
         """Il duello con Corrado con uno scudo in meno (Q-SM01 o RUFINO_ASCOLTATO): 50 semi x 2 piloti, scritti
@@ -198,27 +221,36 @@ class LogDelGba(unittest.TestCase):
         with open(LOG_GBA, encoding="utf-8") as f:
             self.righe = righe_log(f.read())
 
+    def setUp_firme(self):
+        n = max(k[0] for k in self.righe) + 1
+        return {k: v for k, v in FIRME.items() if k[0] < n}
+
     def test_log_del_gba_uguale_al_mirror(self):
-        self.assertEqual(len(self.righe), 400)
-        self.assertEqual(errori_log(self.righe, FIRME), [])
+        # il log ha gli incontri che c'erano quando e' stato registrato (4, o 7 quando si rifa' con F10)
+        self.assertIn(len(self.righe), (INCONTRI_DEL_LOG * 100, len(FIRME)))
+        self.assertEqual(errori_log(self.righe, self.setUp_firme()), [])
 
     def test_negativa_riga_alterata_nel_log(self):
         righe = dict(self.righe)
         h, e, r, x, ok = righe[(0, 3, False)]
         righe[(0, 3, False)] = (h ^ 1, e, r, x, ok)
-        self.assertEqual(len(errori_log(righe, FIRME)), 1)
+        self.assertEqual(len(errori_log(righe, self.setUp_firme())), 1)
 
     def test_negativa_battaglia_diversa_segnata_nel_log(self):
         righe = dict(self.righe)
         h, e, r, x, _ = righe[(2, 50, False)]
         righe[(2, 50, False)] = (h, e, r, x, False)
-        self.assertEqual(len(errori_log(righe, FIRME)), 1)
+        self.assertEqual(len(errori_log(righe, self.setUp_firme())), 1)
+
+    def test_negativa_log_senza_nuovi_incontri_contro_tutte_le_firme(self):
+        # contro tutte le firme il log di prima di F10 non basta: i 300 nuovi mancano
+        self.assertEqual(len(errori_log(self.righe, FIRME)), len(FIRME) - len(self.righe))
 
 
 class DecisioniDelPiano(unittest.TestCase):
 
     def test_boss_due_azioni_comuni_una(self):
-        self.assertEqual([n[1] for n in B.NEMICI], [1, 1, 2, 1, 1])
+        self.assertEqual([n[1] for n in B.NEMICI], [1, 1, 2, 1, 1, 1, 1])
         self.assertIn("{ 1520, 0, 95, 60, 20, 30, 22, 4, Elemento::FIAMMA, Elemento::FISICO }, 2, true", DATI)
 
     def test_shield_break_annulla_entrambe(self):

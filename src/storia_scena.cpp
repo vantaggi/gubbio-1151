@@ -418,6 +418,37 @@ bool Storia::recita_regia(int regia, Esplorazione* esplorazione, const bn::sprit
     return true;
 }
 
+// Le battute della scena da 'da' ad 'a' (indici in BATTUTA, 'a' escluso), spezzate dove entra una cutscene
+// (INSERTO). Una scena con la battaglia a meta' (B-03) si recita in due tratti, prima e dopo la battaglia.
+void Storia::recita_tratto(int da, int a, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo,
+                           bool automatica)
+{
+    for(int i = 0; i < INSERTI; ++i)
+    {
+        const Inserto& n = GUBBIO_VOCE(INSERTO, i);
+
+        if(n.battuta >= da && n.battuta < a)
+        {
+            recita_battute(BATTUTA, da, n.battuta - da, palette_testo, automatica);
+            da = n.battuta;
+
+            // le battute del narratore che la cutscene ha detto nelle bande non si ripetono; se era gia'
+            // vista (la scena rigiocata dopo una battaglia persa) si leggono nella vista di gioco
+            if(recita_regia(n.regia, esplorazione, palette_testo, automatica))
+            {
+                da += n.copre;
+            }
+
+            if(esplorazione)
+            {
+                bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));
+            }
+        }
+    }
+
+    recita_battute(BATTUTA, da, a - da, palette_testo, automatica);
+}
+
 bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_ptr& palette_testo, bool automatica,
                     bool battaglia_col_pilota)
 {
@@ -467,33 +498,8 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
     }
     else
     {
-        // le battute, spezzate dove entra una cutscene (INSERTO)
-        int da = s.prima_battuta;
-
-        for(int i = 0; i < INSERTI; ++i)
-        {
-            const Inserto& n = GUBBIO_VOCE(INSERTO, i);
-
-            if(n.battuta >= s.prima_battuta && n.battuta < s.prima_battuta + s.battute)
-            {
-                recita_battute(BATTUTA, da, n.battuta - da, palette_testo, automatica);
-                da = n.battuta;
-
-                // le battute del narratore che la cutscene ha detto nelle bande non si ripetono; se era gia'
-                // vista (la scena rigiocata dopo una battaglia persa) si leggono nella vista di gioco
-                if(recita_regia(n.regia, esplorazione, palette_testo, automatica))
-                {
-                    da += n.copre;
-                }
-
-                if(esplorazione)
-                {
-                    bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));
-                }
-            }
-        }
-
-        recita_battute(BATTUTA, da, s.prima_battuta + s.battute - da, palette_testo, automatica);
+        // le battute fino alla battaglia (alla fine, o a meta' scena come in B-03)
+        recita_tratto(s.prima_battuta, battuta_della_battaglia(k), esplorazione, palette_testo, automatica);
     }
 
     if(esplorazione)
@@ -508,7 +514,11 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
         // l'incontro e' avvenuto anche se la battaglia si perde: l'uscita del Condotto si chiude (varco_chiuso)
         all_incontro(g_game_state, k);
 
-        if(automatica && ! battaglia_col_pilota)
+        if(! battaglia_da_combattere(g_game_state, k))
+        {
+            BN_LOG("Battaglia ", int(s.battaglia), " gia' vinta");
+        }
+        else if(automatica && ! battaglia_col_pilota)
         {
             BN_LOG("Battaglia ", int(s.battaglia), " data per vinta");
         }
@@ -520,8 +530,21 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
             battaglia::Esito esito = scena_battaglia(s.battaglia, automatica ? 1u : (uint32_t(g_game_state.frames) | 1u),
                                                      automatica ? Guida::PILOTA : Guida::GIOCATORE, palette_testo,
                                                      automatica, &g_game_state);
-            mondo::colloca(esplorazione->esploratore(), esplorazione->esploratore().area,
-                           esito == battaglia::Esito::VITTORIA ? 0 : 1);
+            // a meta' scena (B-03) vinta si resta sotto l'arco e la scena va avanti; persa si torna indietro, allo
+            // spawn 0 (dalla parte dei miasmi: lo spawn 1 e' oltre i guerrieri), e si ripassa sotto l'arco
+            if(a_meta_della_scena(k) >= 0)
+            {
+                if(esito != battaglia::Esito::VITTORIA)
+                {
+                    mondo::colloca(esplorazione->esploratore(), esplorazione->esploratore().area, 0);
+                }
+            }
+            else
+            {
+                mondo::colloca(esplorazione->esploratore(), esplorazione->esploratore().area,
+                               esito == battaglia::Esito::VITTORIA ? 0 : 1);
+            }
+
             esplorazione->ricompari();
 
             if(esito != battaglia::Esito::VITTORIA)
@@ -530,11 +553,35 @@ bool Storia::recita(int k, Esplorazione* esplorazione, const bn::sprite_palette_
             }
         }
 
+        // la battaglia a meta' scena vinta non si rigioca (B-03, GUERRIERI_VINTI)
+        vinta_a_meta(g_game_state, k);
+
         // lo scontro della scena e' quello sulla mappa: vinto, il nemico non torna
         if(s.battaglia < progressione::SCONTRI)
         {
             progressione::segna_vinto(g_game_state, progressione::Bandiera(s.battaglia));
         }
+    }
+
+    // il resto della scena dopo una battaglia a meta' (B-03: il ragazzo eugubino, il dilemma)
+    int dopo = battuta_della_battaglia(k);
+
+    if(! s.cutscene && ! salta_le_battute && dopo < s.prima_battuta + s.battute)
+    {
+        if(esplorazione)
+        {
+            esplorazione->nascondi_etichetta();
+            bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.6));
+        }
+
+        recita_tratto(dopo, s.prima_battuta + s.battute, esplorazione, palette_testo, automatica);
+
+        if(esplorazione)
+        {
+            bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
+        }
+
+        attendi(1);
     }
 
     bool finita_prima = accesa(g_game_state, Bandiera::CRONACA_V1_FINITA);
@@ -643,6 +690,21 @@ void Storia::_prepara_npc(const Esplorazione& esplorazione)
         }
     }
 
+    // le guardie delle fornaci (F10): un Guerriero della Roccia davanti a ogni blocco, finche' non e' battuto;
+    // la figura e' quella della battaglia, come i nemici sulla mappa (ScontriSullaMappa)
+    for(int k = 0; k < GUARDIE_FORNACE; ++k)
+    {
+        const GuardiaFornace& g = GUBBIO_VOCE(GUARDIA_FORNACE, k);
+
+        if(g.area == _area && guardia_presente(g_game_state, k))
+        {
+            bn::sprite_ptr sprite = sprite_sulla_mappa(INCONTRO_FORNACE);
+            esplorazione.colloca_sulla_mappa(sprite, mondo::piedi_x(g.tx), mondo::piedi_y(g.ty),
+                                             sprite.shape_size().height());
+            _gola.push_back(bn::move(sprite));
+        }
+    }
+
     // gli oggetti da raccogliere ancora al loro posto
     for(int k = 0; k < RACCOLTE; ++k)
     {
@@ -714,6 +776,31 @@ void Storia::_affronta_l_infiltrato(Esplorazione& esplorazione, const bn::sprite
         dialogo_inizio(&esplorazione);
         recita_righe(INFILTRATO.dopo, palette_testo);
     }
+}
+
+// Una guardia di fornace: la battaglia (INCONTRO_FORNACE, un Guerriero della Roccia). Vinta, la guardia non torna;
+// persa, si torna all'ingresso dell'area (spawn 1) e la guardia resta davanti al suo blocco, come un nemico sulla mappa.
+void Storia::_affronta_la_guardia(int guardia, Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo)
+{
+    mondo::AreaId area = esplorazione.esploratore().area;
+    esplorazione.nascondi_etichetta();
+    svuota();
+    esplorazione.sospendi();
+    attendi(1);
+    battaglia::Esito esito = scena_battaglia(INCONTRO_FORNACE, uint32_t(g_game_state.frames) | 1u, Guida::GIOCATORE,
+                                             palette_testo, false, &g_game_state);
+    BN_LOG("Guardia della fornace ", guardia, ": esito ", int(esito));
+
+    if(esito == battaglia::Esito::VITTORIA)
+    {
+        batti_la_guardia(g_game_state, guardia);
+    }
+    else
+    {
+        mondo::colloca(esplorazione.esploratore(), area, 1);
+    }
+
+    esplorazione.ricompari();
 }
 
 bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo)
@@ -799,6 +886,16 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         BN_LOG("Forziere ", z);
         di_sistema(GUBBIO_VOCE(FORZIERE, z).testo, &esplorazione, palette_testo);
         svuota();       // il forziere si rifa' aperto al prossimo frame
+        return true;
+    }
+
+    // una guardia di fornace si affronta toccandola (F10, Q-SM01): vinta, il blocco che guardava si puo' prendere
+    int guardia = guardia_toccata(g_game_state, int(e.area), e.x, e.y);
+
+    if(guardia >= 0)
+    {
+        _affronta_la_guardia(guardia, esplorazione, palette_testo);
+        svuota();       // la guardia battuta sparisce: si rifa' tutto al prossimo frame
         return true;
     }
 

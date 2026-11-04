@@ -26,7 +26,12 @@ inline constexpr int CRESCITA_PERCENTO[LIVELLO_MAX] = { 100, 108, 116, 125, 134,
 // L'esperienza che da' ogni nemico vinto, nell'ordine di NemicoId (F8, docs/bilanciamento.md):
 // Pattuglia 115 (livello 3), Imboscata 81 (livello 4), Spettri 120 (livello 5), cosi' a Corrado si
 // arriva al livello 5, o al 6 con le quest (55 ciascuna). Tarata con tools/bilanciamento.py.
-inline constexpr int ESPERIENZA_NEMICO[int(battaglia::NemicoId::CONTEGGIO)] = { 35, 45, 200, 27, 60 };
+// I nemici di F10 danno poco: i Guerrieri della Roccia di B-03 (40) stanno fra gli Spettri e Corrado e
+// non devono portare al 6 chi arriva senza quest (316 + 40 = 356, il 6 e' a 470); le tre guardie delle
+// fornaci (60) e l'infiltrato con le sue due spie (84) sono facoltativi e, con le tre quest, non devono
+// portare al 7 (316 + 165 + 40 + 60 + 84 = 665, il 7 e' a 680). Lo provano src/autotest_progressione.cpp
+// e tests/test_bilanciamento.py.
+inline constexpr int ESPERIENZA_NEMICO[int(battaglia::NemicoId::CONTEGGIO)] = { 35, 45, 200, 27, 60, 20, 30 };
 
 [[nodiscard]] constexpr int livello_da_esperienza(int esperienza)
 {

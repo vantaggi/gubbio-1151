@@ -21,7 +21,11 @@ sys.path.insert(0, os.path.join(RADICE, "stile"))
 import stile as S  # noqa: E402
 
 USCITA = os.path.join(RADICE, "include", "battaglia_grafica.h")
-INCONTRI = ("pattuglia", "imboscata", "duello", "rito")
+INCONTRI = ("pattuglia", "imboscata", "duello", "rito", "guerrieri", "fornace", "infiltrato")
+# Gli incontri che riusano lo sfondo di un altro (nessun tile in piu'): la guardia della fornace al Teatro Romano,
+# appena fuori dalle mura, ha le mura della Pattuglia; l'infiltrato sotto le Logge, in citta', la piazza del
+# Palazzo dei Consoli del Duello. I Guerrieri della Roccia (B-03) hanno la gola del Bottaccione.
+SFONDO_DI = {5: 0, 6: 2}
 PANNELLO_Y = 104      # da qui in giu' il pannello dei comandi
 
 # --- palette: (rampa, tono) della Guida di stile -------------------------------------------------
@@ -250,6 +254,54 @@ def spettro(azione):
     return t.contorno().specchia()
 
 
+def guerriero(azione):
+    """Guerriero della Roccia di Spoleto: la corazza di ferro battuto a freddo, a strati (le fasce scure e chiare
+    di Raniero, 04_quest.md), l'elmo tondo col nasale, lo scudo lungo, il piccone da guerra."""
+    t = Tela(32, 32)
+    b = soldato(t, N_ACCIAIO, N_ACCIAIO_L, azione)
+    t.trapezio(15, 13, 27, 11, 14, N_ACCIAIO)       # la corazza piu' larga della tunica
+    for y in range(14, 27, 3):                      # gli strati del ferro
+        t.rett(9, y, 13, 1, N_MEDIO)
+    t.rett(10, 22, 11, 2, N_ROSSO_S)                # la fascia di Spoleto
+    t.ellisse(15.5, 7.5, 4.6, 3.6, N_ACCIAIO)       # l'elmo tondo
+    t.rett(11, 8, 10, 1, N_SCURO)
+    t.rett(17, 8, 1, 4, N_ACCIAIO_L)                # il nasale
+    t.rett(5, 14, 6, 14, N_SCURO)                   # lo scudo lungo, a sinistra
+    t.rett(6, 15, 4, 12, N_MEDIO)
+    t.rett(7, 15, 1, 12, N_ROSSO)
+    if azione:
+        t.linea(22, b + 1, 29, b - 9, N_LEGNO, 2)   # il piccone alzato
+        t.linea(25, b - 11, 31, b - 7, N_ACCIAIO_L, 2)
+    else:
+        t.linea(23, b + 2, 27, b + 12, N_LEGNO, 2)
+        t.linea(24, b + 12, 30, b + 10, N_ACCIAIO_L, 2)
+    return t.contorno().specchia()
+
+
+def infiltrato(azione):
+    """L'infiltrato delle Logge (Q-SP01): il mantello da pellegrino, il cappello a tesa larga con la conchiglia, il
+    bordone; la mano sotto il mantello, e in azione il pugnale che ne esce."""
+    t = Tela(32, 32)
+    b = soldato(t, N_LEGNO, N_LEGNO_L, azione)
+    t.trapezio(15, 12, 30, 11, 18, N_LEGNO)         # il mantello fino ai piedi
+    t.rett(15, 13, 1, 16, N_LEGNO_L)
+    t.ellisse(15.5, 9.5, 3.4, 3.6, 3)               # il viso
+    t.rett(17, 9, 1, 1, C)
+    t.rett(13, 11, 4, 2, N_SCURO)                   # la barba
+    t.ellisse(15.5, 6, 7.5, 1.6, N_LEGNO)           # la tesa del cappello
+    t.ellisse(15.5, 4.5, 3.5, 2.5, N_LEGNO)
+    t.rett(14, 5, 3, 2, N_BIANCO)                   # la conchiglia
+    t.linea(9, 4, 9, 30, N_LEGNO_L, 1)              # il bordone, dietro
+    t.rett(8, 9, 3, 2, N_ORO)                       # la zucca del pellegrino
+    if azione:
+        t.rett(17, b, 5, 3, N_LEGNO)                # il braccio fuori dal mantello
+        t.rett(22, b, 2, 3, 3)
+        t.linea(23, b, 30, b - 5, N_ACCIAIO_L, 1)   # il pugnale
+    else:
+        t.rett(17, b, 7, 3, N_LEGNO)                # la mano resta sotto il mantello
+    return t.contorno().specchia()
+
+
 def corrado(azione):
     """Corrado di Spoleto, 64x64: armatura scura, l'elmo col cimiero, lo scudo, il martello d'assedio."""
     t = Tela(64, 64)
@@ -288,13 +340,14 @@ def freccia(azione):
 
 SANTI = (("UBALDO", ubaldo), ("GIORGIO", giorgio), ("ANTONIO", antonio))
 NEMICI = (("FANTE", fante), ("BALESTRIERE", balestriere), ("CORRADO", corrado), ("SPIA", spia),
-          ("SPETTRO", spettro))
+          ("SPETTRO", spettro), ("GUERRIERO", guerriero), ("INFILTRATO", infiltrato))
 ALTRI = (("FRECCIA", freccia),)
 
 
 # --- gli sfondi ------------------------------------------------------------------------------------
 def sfondo(incontro):
     """Lo sfondo 256x256 (si vedono i primi 240x160): cielo, profilo lontano, suolo."""
+    incontro = SFONDO_DI.get(incontro, incontro)
     t = Tela(256, 256, 1)
     orizzonte = 76
     for y in range(orizzonte):
@@ -337,6 +390,23 @@ def sfondo(incontro):
         for y in range(8, 50, 6):
             for x in range(106, 150, 6):
                 t.rett(x, y, 5, 5, 3 if (x + y) % 12 else 13)
+    elif incontro == 4:
+        # la gola del Bottaccione sotto l'arco: le due pareti di scaglia a fasce, rossa e bianca, che lasciano un
+        # filo di cielo; la striscia nera del limite K-Pg che corre da una parete all'altra; l'edera
+        fasce = (13, 13, 8, 14, 14, 14, 9, 9, 7, 13, 8, 8)    # strati di spessore diverso, 4 righe l'uno
+        for x in range(256):
+            colonna = x // 8                        # il bordo delle pareti a gradini di un tile
+            cielo = max(0, 30 - 3 * abs(colonna - 16) + (colonna * 5) % 3 * 2)
+            for y in range(cielo, orizzonte):
+                t.punto(x, y, fasce[(y // 4) % len(fasce)])
+        t.rett(0, 50, 256, 3, 0)                    # la striscia nera
+        for y in range(36, orizzonte, 6):           # le fratture della roccia, a tile
+            for x in range(4 + (y // 6) % 2 * 8, 256, 16):
+                t.rett(x, y, 1, 3, 6)
+        for k in range(9):                          # l'edera sulle pareti
+            cx, cy = (k * 61 + 12) % 256, 58 + (k * 23) % 14
+            t.ellisse(cx, cy, 5, 4, 10)
+            t.ellisse(cx + 2, cy - 1, 2, 2, 11)
     else:
         # Piazza Grande: il Palazzo dei Consoli con la torre, e la citta' bassa
         t.rett(0, 58, 256, orizzonte - 58, 13)
@@ -355,7 +425,7 @@ def sfondo(incontro):
     # il suolo: ghiaia o lastre a corsi sfalsati, allineato ai tile (pochi tile diversi)
     for y in range(orizzonte, 256):
         for x in range(256):
-            if incontro == 1:
+            if incontro in (1, 4):
                 c = 9 if (x * 3 + y * 5) % 7 else 8
             else:
                 riga = y // 8

@@ -14,7 +14,8 @@ e `CORRADO_SCONFITTO` (il nemico sulla mappa non torna), `CRONACA_V1_FINITA` (il
 `Q_SP01_CONSEGNATA` (una consegna sola), e quelle delle quest giocabili qui sotto (SV2c): `Q_SM01_PRESA`,
 `Q_SA01_PRESA`, `Q_SP01_PRESA`, `FERRO_1`...`FERRO_3`, `ELLEBORO_1`...`ELLEBORO_4`, `ROSA_RIPRESA`,
 `INDIZIO_LUCIA`, `INDIZIO_VENDITORE`, `INDIZIO_FONTANIERE`; e quelle della gola qui sotto (T2): `MIASMI_VISTI`,
-`PIANO_DI_CORRADO`, `CORRADO_INCONTRATO`, `FORZIERE_CRESCIA`, `FORZIERE_BISCOTTI`.
+`PIANO_DI_CORRADO`, `CORRADO_INCONTRATO`, `FORZIERE_CRESCIA`, `FORZIERE_BISCOTTI`; e quelle dei nemici di F10
+qui sotto: `GUERRIERI_VINTI`, `GUARDIA_FORNACE_1`...`GUARDIA_FORNACE_3`.
 
 ## Regole del copione ora nel codice (F10, quest)
 
@@ -41,7 +42,7 @@ collisione vera fino a ogni oggetto, il giro completo di ogni quest, le negative
 | `FERRO_1`...`FERRO_3` (80-82) | toccare un blocco alle fornaci sotto le arcate del Teatro Romano (`storia::raccogli()`) | il contatore di Q-SM01 e le righe «Ancora 2», «Ancora 1», «l'ultimo» (guardia `CONTEGGIO`); il blocco non torna sulla mappa |
 | `ELLEBORO_1`...`ELLEBORO_4` (83-86) | toccare una radice: sulla Strada del Bottaccione, nella gola (striscia nera), fra i miasmi, sotto gli archi di B-03 | il contatore di Q-SA01; le radici non leggono la storia, quindi si raccolgono anche dopo B-05 rientrando da Porta Metauro |
 | `INDIZIO_LUCIA`, `INDIZIO_VENDITORE`, `INDIZIO_FONTANIERE` (71-73) | con Q-SP01 presa, Lucia, il Venditore delle Logge e Giordano dicono l'indizio dopo le loro battute (`storia::trova_indizio()`); Giordano dopo la sua battuta del DIGIUNO, che accende `INDIZIO_ACQUA` | `storia::infiltrato_presente()`: con tutti e tre l'infiltrato compare sotto le Logge dei Tiratori |
-| `ROSA_RIPRESA` (87) | la battaglia con l'infiltrato vinta (`storia::riprendi_la_rosa()`; le tre spie umbre degli Stradoni) | l'obiettivo di Q-SP01; l'infiltrato sparisce |
+| `ROSA_RIPRESA` (87) | la battaglia con l'infiltrato vinta (`storia::riprendi_la_rosa()`; da F10 la sua battaglia: l'infiltrato e due spie umbre) | l'obiettivo di Q-SP01; l'infiltrato sparisce |
 
 La consegna chiama `storia::consegna_quest()`, che ora rifiuta una quest non presa o con l'obiettivo a metà
 (`storia::quest_pronta()`). Non ancora nel gioco: i Guerrieri della Roccia davanti alle fornaci (il nemico non
@@ -60,6 +61,15 @@ riservato (`GameState::ferite`): `sizeof(GameState)` resta 64 e il salvataggio r
 | `PIANO_DI_CORRADO` | B-03, che ora parte **sotto l'arco** del contrafforte («il gruppo è nascosto sotto l'arco») | `storia::sentinelle_presenti()`: i due soldati (la figura del soldato) stanno oltre l'arco finché il piano non è ascoltato |
 | `CORRADO_INCONTRATO` | B-04, ma già **quando parte il duello** (`storia::all_incontro()`), non alla fine | `storia::varco_chiuso()`: l'uscita del Condotto verso la gola si urta come un muro finché Corrado non è battuto («Corrado vi sbarra il ritorno»); persa la battaglia si torna all'ingresso del Condotto e si riprova a PV pieni. `storia::gia_incontrata()`: al secondo tentativo le battute di B-04 non si ripetono |
 | `FORZIERE_CRESCIA`, `FORZIERE_BISCOTTI` (88-89) | toccare il forziere nello slargo della striscia nera (2 Crescia) e in quello dell'arco (3 Biscotti) (`storia::apri_forziere()`) | `storia::forziere_chiuso()`: preso una volta, il forziere resta lì aperto |
+
+## I nemici che mancavano (F10, ramo `f10-b03`)
+
+| Bandiera | Chi la accende | Cosa fa nel gioco |
+| :-- | :-- | :-- |
+| `GUERRIERI_VINTI` (90) | B-03: la battaglia breve con i due Guerrieri della Roccia, **a metà scena** (dopo l'ascolto, prima del ragazzo eugubino; `BATTAGLIA_A_META` di `storia.h`), vinta (`storia::vinta_a_meta()`); nel giro senza camminare la accende `storia::chiudi_scena()` | `storia::battaglia_da_combattere()`: non si rigioca. Vinta, si resta sotto l'arco e la scena va avanti col ragazzo; persa, la scena resta da giocare e si torna allo spawn 0 della stanza dell'arco (dalla parte dei miasmi: lo spawn 1 è oltre i guerrieri); ripassando sotto l'arco l'ascolto si ripete e si rifà la battaglia |
+| `GUARDIA_FORNACE_1`...`GUARDIA_FORNACE_3` (91-93) | toccare la guardia (un Guerriero della Roccia, la figura della battaglia) davanti a un blocco di ferro al Teatro Romano e vincere la sua battaglia (`storia::batti_la_guardia()`) | `storia::guardia_presente()`: la guardia non torna. `storia::raccolta_libera()`: il blocco che guardava si prende solo da qui («Battuto il guerriero, il blocco si raccoglie toccando la fornace»). Persa, si torna all'ingresso del Teatro (spawn 1) e la guardia resta. Le guardie ci sono anche senza la quest presa, come i blocchi |
+
+Le battaglie e l'esperienza sono in `docs/bilanciamento.md`.
 
 Le celle che fanno partire B-02 e B-03 (la nebbia, l'arco) sbarrano la via da parete a parete: lo controllano
 `tools/disegna_gola.py` (si rifiuta di scrivere le griglie), `src/autotest_gola.cpp` (`si_passa_senza`) e

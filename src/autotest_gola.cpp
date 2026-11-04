@@ -379,6 +379,68 @@ namespace
     }
 
     static_assert(forziere_raggiungibile(0) && forziere_raggiungibile(1), "un forziere non si raggiunge camminando");
+
+    // --- La battaglia breve di B-03 (F10) ---------------------------------------------------------------
+    // I due Guerrieri della Roccia si battono a meta' scena: dopo l'ascolto (la battuta del Ricciardo compresa),
+    // prima del ragazzo eugubino e del dilemma D2. Vinta, GUERRIERI_VINTI si accende e non si rigioca.
+    constexpr int A_META = a_meta_della_scena(B03);
+
+    static_assert(A_META >= 0 && SCENA[B03].battaglia == battaglia::INCONTRO_GUERRIERI &&
+                  battaglia::INCONTRO[battaglia::INCONTRO_GUERRIERI].nemici == 2 &&
+                  battaglia::INCONTRO[battaglia::INCONTRO_GUERRIERI].schieramento[0] == battaglia::NemicoId::GUERRIERO_DELLA_ROCCIA &&
+                  battaglia::INCONTRO[battaglia::INCONTRO_GUERRIERI].schieramento[1] == battaglia::NemicoId::GUERRIERO_DELLA_ROCCIA,
+                  "B-03 non ha la battaglia con i due Guerrieri della Roccia");
+    static_assert(BATTAGLIA_A_META[A_META].vinta == GUERRIERI_VINTI && GUERRIERI_VINTI > FORZIERE_BISCOTTI &&
+                  GUERRIERI_VINTI < 128, "la bandiera della battaglia di B-03 non e' una bandiera libera delle quest");
+
+    // La battaglia cade fra l'ultima battuta dell'ascolto e la prima del ragazzo (le battute dopo la battaglia
+    // sono del ragazzo e del dilemma: la SCELTA c'e', le righe dei guerrieri no).
+    consteval bool battaglia_dopo_l_ascolto()
+    {
+        int b = battuta_della_battaglia(B03);
+        bool scelta_dopo = false;
+
+        for(int i = SCENA[B03].prima_battuta; i < SCENA[B03].prima_battuta + SCENA[B03].battute; ++i)
+        {
+            bool guerriero = BATTUTA[i].parlante == testi::TestoId::PARLANTE_GUERRIERO;
+
+            if((i < b && BATTUTA[i].tipo == TipoBattuta::SCELTA) || (i >= b && guerriero))
+            {
+                return false;
+            }
+
+            scelta_dopo = scelta_dopo || (i >= b && BATTUTA[i].tipo == TipoBattuta::SCELTA);
+        }
+
+        return scelta_dopo && BATTUTA[b].parlante == testi::TestoId::PARLANTE_RAGAZZO &&
+               BATTUTA[b - 1].parlante != testi::TestoId::PARLANTE_RAGAZZO;
+    }
+
+    static_assert(battaglia_dopo_l_ascolto(), "la battaglia di B-03 non sta fra l'ascolto e il ragazzo");
+    // Negativa: le altre scene con battaglia combattono alla fine (dopo l'ultima battuta).
+    static_assert(battuta_della_battaglia(B04) == SCENA[B04].prima_battuta + SCENA[B04].battute &&
+                  a_meta_della_scena(B04) < 0 && a_meta_della_scena(scena("A1-04")) < 0,
+                  "negativa: un'altra scena combatte a meta'");
+
+    // Da combattere prima, non dopo la vittoria; il giro senza camminare (chiudi_scena) la da' per vinta.
+    consteval bool una_volta_sola()
+    {
+        GameState p = dopo("B-02");
+        bool prima = battaglia_da_combattere(p, B03) && ! accesa(p, int(GUERRIERI_VINTI));
+        vinta_a_meta(p, B03);
+        bool dopo_vinta = ! battaglia_da_combattere(p, B03) && accesa(p, int(GUERRIERI_VINTI));
+        GameState q = dopo("B-02");
+        vinta_a_meta(q, B04);       // nulla: B-04 non ha una battaglia a meta'
+        bool altre = q.quest[(GUERRIERI_VINTI - 64) / 8] == dopo("B-02").quest[(GUERRIERI_VINTI - 64) / 8] &&
+                     battaglia_da_combattere(q, B04);
+        return prima && dopo_vinta && altre && accesa(dopo("B-03"), int(GUERRIERI_VINTI)) &&
+               ! battaglia_da_combattere(dopo("B-03"), B03);
+    }
+
+    static_assert(una_volta_sola(), "la battaglia di B-03 si rigioca o non si gioca");
+    static_assert(! accesa(dopo("B-02"), int(GUERRIERI_VINTI)), "negativa: i Guerrieri sono vinti prima di B-03");
+    // I Guerrieri si battono in tre (Antonio e' nel gruppo da A1-04) e dopo Corrado non ci sono piu'.
+    static_assert(storia::gruppo(dopo("B-02"), battaglia::INCONTRO_GUERRIERI) == 7, "a B-03 il gruppo non e' completo");
 }
 
 }

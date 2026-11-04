@@ -119,10 +119,10 @@ class Bandiere(unittest.TestCase):
         self.assertEqual(pezzi_non_consecutivi(GS.QUEST), [])
 
     def test_negativa_troppe_bandiere(self):
-        # oggi le bandiere delle quest sono 26 (64-89, con i due forzieri della gola, T2): la trentottesima in piu'
-        # cade a 128
-        self.assertEqual(len(GS.BANDIERE_QUEST), 26)
-        self.assertEqual(fuori_intervallo(GS.BANDIERE_QUEST + [f"X{i}" for i in range(64)])[:1], ["X38"])
+        # oggi le bandiere delle quest sono 30 (64-93: i due forzieri della gola, T2; la battaglia di B-03 e le tre
+        # guardie delle fornaci, F10): la trentaquattresima in piu' cade a 128
+        self.assertEqual(len(GS.BANDIERE_QUEST), 30)
+        self.assertEqual(fuori_intervallo(GS.BANDIERE_QUEST + [f"X{i}" for i in range(64)])[:1], ["X34"])
 
     def test_negativa_pezzi_sparsi(self):
         quest = copy.deepcopy(GS.QUEST)

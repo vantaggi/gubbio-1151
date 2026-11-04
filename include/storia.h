@@ -365,7 +365,7 @@ inline constexpr Scena SCENA[SCENE] = {
     { "A1-09", testi::TestoId::SCENA_A1_09, false, -1, int8_t(mondo::AreaId::BASILICA_INTERNO), 0x800u, 0x0u, 0x1000u, -1, -1, 134, 12 },
     { "B-01", testi::TestoId::SCENA_B_01, false, -1, int8_t(mondo::AreaId::GOLA_STRISCIA), 0x1000u, 0x2000u, 0x2000u, -1, -1, 146, 6 },
     { "B-02", testi::TestoId::SCENA_B_02, false, -1, int8_t(mondo::AreaId::GOLA_MIASMI), 0x0u, 0x0u, 0x4000u, 13, -1, 152, 3 },
-    { "B-03", testi::TestoId::SCENA_B_03, false, -1, int8_t(mondo::AreaId::GOLA_ARCO), 0x0u, 0x0u, 0x8000u, 14, -1, 155, 17 },
+    { "B-03", testi::TestoId::SCENA_B_03, false, -1, int8_t(mondo::AreaId::GOLA_ARCO), 0x0u, 0x0u, 0x8000u, 14, 4, 155, 17 },
     { "B-04", testi::TestoId::SCENA_B_04, false, -1, int8_t(mondo::AreaId::CONDOTTO), 0x0u, 0x0u, 0x230000u, 15, 2, 172, 19 },
     { "B-05", testi::TestoId::SCENA_B_05, false, -1, int8_t(mondo::AreaId::SAN_MARTINO), 0x20000u, 0x0u, 0x40000u, -1, -1, 191, 15 },
     { "E-01", testi::TestoId::SCENA_E_01, false, -1, int8_t(mondo::AreaId::PIAZZA_GRANDE), 0x8040000u, 0x0u, 0x80000u, -1, -1, 206, 20 },
@@ -393,6 +393,20 @@ inline constexpr Inserto INSERTO[INSERTI > 0 ? INSERTI : 1] = {
     { 137, 10, 0 },  // A1-09 prima della battuta 3: C6
     { 146, 11, 0 },  // B-01 prima della battuta 0: C7B
     { 172, 5, 0 },  // B-04 prima della battuta 0: C3C
+};
+
+// Le battaglie a meta' scena: la battaglia della scena si combatte prima della battuta (indice in BATTUTA),
+// non alla fine; vinta, accende la bandiera (64-127) e non si rigioca. B-03: dopo l'ascolto, prima del ragazzo.
+struct BattagliaAMeta
+{
+    int8_t scena;                 // indice in SCENA
+    uint16_t battuta;
+    uint8_t vinta;
+};
+
+inline constexpr int BATTAGLIE_A_META = 1;
+inline constexpr BattagliaAMeta BATTAGLIA_A_META[BATTAGLIE_A_META > 0 ? BATTAGLIE_A_META : 1] = {
+    { 15, 163, 90 },  // B-03 prima della battuta 8
 };
 
 enum class Fase : uint8_t
@@ -663,6 +677,10 @@ inline constexpr uint8_t ELLEBORO_4 = 86;
 inline constexpr uint8_t ROSA_RIPRESA = 87;
 inline constexpr uint8_t FORZIERE_CRESCIA = 88;
 inline constexpr uint8_t FORZIERE_BISCOTTI = 89;
+inline constexpr uint8_t GUERRIERI_VINTI = 90;
+inline constexpr uint8_t GUARDIA_FORNACE_1 = 91;
+inline constexpr uint8_t GUARDIA_FORNACE_2 = 92;
+inline constexpr uint8_t GUARDIA_FORNACE_3 = 93;
 
 // Le tre quest della v1 (copione/04_quest.md): dove si consegnano, da quale bandiera si prendono, entro
 // quale si consegnano, la bandiera della consegna e il premio (indice di GameState::oggetti, come
@@ -878,7 +896,7 @@ struct Infiltrato
     Righe dopo;
 };
 
-inline constexpr Infiltrato INFILTRATO = { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 99, 71, 29, 1, { 65, 3 }, { 68, 5 } };
+inline constexpr Infiltrato INFILTRATO = { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 99, 71, 29, 6, { 65, 3 }, { 68, 5 } };
 
 // --- La gola del Bottaccione (T2) ----------------------------------------------------------------
 // Le scene che partono su una cella dell'area (non entrando): B-02 sulla prima nebbia, B-03 sotto l'arco.
@@ -931,6 +949,26 @@ inline constexpr Forziere FORZIERE[FORZIERI] = {
 // Le figure del forziere in FIGURA_RACCOLTA: chiuso, e aperto (preso, resta li').
 inline constexpr int FIGURA_FORZIERE = 2;
 inline constexpr int FIGURA_FORZIERE_APERTO = 3;
+
+// --- Le guardie delle fornaci (F10, Q-SM01) -----------------------------------------------------
+// Un Guerriero della Roccia davanti a ogni blocco di ferro, visibile sulla mappa: toccarlo avvia la battaglia
+// (INCONTRO_FORNACE); vinta, la sua bandiera (64-127) si accende, non torna e il blocco si puo' prendere.
+struct GuardiaFornace
+{
+    int8_t area;                  // mondo::AreaId
+    uint8_t tx;
+    uint8_t ty;
+    uint8_t bandiera;
+    uint8_t raccolta;             // il blocco che guarda (RACCOLTA)
+};
+
+inline constexpr int INCONTRO_FORNACE = 5;     // battaglia::INCONTRO
+inline constexpr int GUARDIE_FORNACE = 3;
+inline constexpr GuardiaFornace GUARDIA_FORNACE[GUARDIE_FORNACE] = {
+    { int8_t(mondo::AreaId::TEATRO_ROMANO), 40, 16, GUARDIA_FORNACE_1, 0 },  // davanti a FERRO_1
+    { int8_t(mondo::AreaId::TEATRO_ROMANO), 44, 37, GUARDIA_FORNACE_2, 1 },  // davanti a FERRO_2
+    { int8_t(mondo::AreaId::TEATRO_ROMANO), 36, 50, GUARDIA_FORNACE_3, 2 },  // davanti a FERRO_3
+};
 
 // Le figure degli NPC, 16x32 (8 tile in mappatura 1D) con la palette dei popolani: quelle dei
 // mestieri (tools/figure_npc.py) e quelle degli amici (base e accessorio, dati/amici.json).

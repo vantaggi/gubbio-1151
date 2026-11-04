@@ -497,11 +497,25 @@ namespace
         return e;
     }
 
-    // Da ogni ingresso dell'area (lo spawn d'arrivo di ogni varco che ci porta) si arriva a toccare l'oggetto k.
+    // Le guardie delle fornaci battute tutte (F10): i blocchi di ferro sono liberi.
+    consteval GameState guardie_battute()
+    {
+        GameState p = {};
+
+        for(int g = 0; g < GUARDIE_FORNACE; ++g)
+        {
+            batti_la_guardia(p, g);
+        }
+
+        return p;
+    }
+
+    // Da ogni ingresso dell'area (lo spawn d'arrivo di ogni varco che ci porta) si arriva a toccare l'oggetto k
+    // (con le guardie delle fornaci gia' battute: davanti a una guardia in piedi il blocco non si prende).
     consteval bool raggiungibile_da_ogni_ingresso(int k)
     {
         const Raccolta& r = RACCOLTA[k];
-        GameState p = {};
+        GameState p = guardie_battute();
         int ingressi = 0;
 
         for(int d = 0; d < mondo::AREE_CONTEGGIO; ++d)
@@ -536,11 +550,114 @@ namespace
 
     // Negativa: dentro il muro del Teatro (la cavea) non si arriva; e lontano dall'oggetto non lo si tocca.
     static_assert(fino_alla_cella(mondo::AreaId::TEATRO_ROMANO, 0, 30, 30).x < 0, "negativa: si cammina dentro la cavea");
-    static_assert(raccolta_toccata(GameState{}, RACCOLTA[0].area, mondo::piedi_x(RACCOLTA[0].tx) + DISTANZA_RACCOLTA,
+    static_assert(raccolta_toccata(guardie_battute(), RACCOLTA[0].area, mondo::piedi_x(RACCOLTA[0].tx) + DISTANZA_RACCOLTA,
                                    mondo::piedi_y(RACCOLTA[0].ty)) == -1 &&
-                  raccolta_toccata(GameState{}, RACCOLTA[0].area, mondo::piedi_x(RACCOLTA[0].tx) + DISTANZA_RACCOLTA - 1,
+                  raccolta_toccata(guardie_battute(), RACCOLTA[0].area, mondo::piedi_x(RACCOLTA[0].tx) + DISTANZA_RACCOLTA - 1,
                                    mondo::piedi_y(RACCOLTA[0].ty)) == 0,
                   "il contatto con un oggetto non e' DISTANZA_RACCOLTA");
+
+    // --- Le guardie delle fornaci (F10, Q-SM01) ---------------------------------------------------------
+    // Una guardia per blocco di ferro, ognuna davanti al suo, con la sua bandiera nell'intervallo quest e libera.
+    consteval bool guardie_al_loro_posto()
+    {
+        for(int g = 0; g < GUARDIE_FORNACE; ++g)
+        {
+            const GuardiaFornace& gu = GUARDIA_FORNACE[g];
+            const Raccolta& r = RACCOLTA[gu.raccolta];
+            int dx = gu.tx - r.tx;
+            int dy = gu.ty - r.ty;
+            int lontano = (dx < 0 ? -dx : dx) > (dy < 0 ? -dy : dy) ? (dx < 0 ? -dx : dx) : (dy < 0 ? -dy : dy);
+
+            if(r.quest != 0 || gu.area != r.area || lontano != 2 || gu.bandiera != GUARDIA_FORNACE_1 + g ||
+               gu.bandiera <= FORZIERE_BISCOTTI || gu.raccolta != g)
+            {
+                return false;
+            }
+        }
+
+        return GUARDIE_FORNACE == QUEST_GIOCO[0].pezzi;
+    }
+
+    static_assert(guardie_al_loro_posto(), "le guardie delle fornaci non stanno davanti ai loro blocchi");
+
+    // Ci si arriva camminando da ogni ingresso del Teatro, su un posto buono, e arrivati la si tocca.
+    consteval bool guardia_raggiungibile(int g)
+    {
+        const GuardiaFornace& gu = GUARDIA_FORNACE[g];
+        int ingressi = 0;
+
+        for(int d = 0; d < mondo::AREE_CONTEGGIO; ++d)
+        {
+            const mondo::Area& da = mondo::area(mondo::AreaId(d));
+
+            for(int v = 0; v < da.varchi; ++v)
+            {
+                if(mondo::varco_di(da, v).destinazione != gu.area)
+                {
+                    continue;
+                }
+
+                mondo::Esploratore e = fino_alla_cella(mondo::AreaId(gu.area), mondo::varco_di(da, v).spawn, gu.tx, gu.ty);
+
+                if(e.x < 0 || guardia_toccata(GameState{}, gu.area, e.x, e.y) != g)
+                {
+                    return false;
+                }
+
+                ++ingressi;
+            }
+        }
+
+        return ingressi > 0 && progressione::posto_valido(mondo::AreaId(gu.area), gu.tx, gu.ty);
+    }
+
+    static_assert(guardia_raggiungibile(0) && guardia_raggiungibile(1) && guardia_raggiungibile(2),
+                  "una guardia delle fornaci non si raggiunge camminando");
+
+    // Davanti a una guardia in piedi il blocco non si prende (ne' toccandolo ne' con raccogli); battuta, si'. La
+    // guardia battuta non si tocca piu' e non si batte due volte; le radici non hanno guardie.
+    consteval bool il_blocco_aspetta_la_guardia()
+    {
+        GameState p = {};
+        const Raccolta& r = RACCOLTA[0];
+        const GuardiaFornace& gu = GUARDIA_FORNACE[0];
+        int x = mondo::piedi_x(r.tx);
+        int y = mondo::piedi_y(r.ty);
+        bool chiuso = raccolta_presente(p, 0) && ! raccolta_libera(p, 0) && raccolta_toccata(p, r.area, x, y) == -1 &&
+                      ! raccogli(p, 0) && pezzi_raccolti(p, 0) == 0 && raccolta_libera(p, 3);
+        bool toccata = guardia_toccata(p, gu.area, mondo::piedi_x(gu.tx) + progressione::DISTANZA_CONTATTO - 1,
+                                       mondo::piedi_y(gu.ty)) == 0 &&
+                       guardia_toccata(p, gu.area, mondo::piedi_x(gu.tx) + progressione::DISTANZA_CONTATTO,
+                                       mondo::piedi_y(gu.ty)) == -1 &&
+                       guardia_toccata(p, int(mondo::AreaId::PIAZZA_GRANDE), mondo::piedi_x(gu.tx), mondo::piedi_y(gu.ty)) == -1;
+        bool battuta = batti_la_guardia(p, 0) && ! batti_la_guardia(p, 0) && ! guardia_presente(p, 0) &&
+                       guardia_toccata(p, gu.area, mondo::piedi_x(gu.tx), mondo::piedi_y(gu.ty)) == -1 &&
+                       accesa(p, int(GUARDIA_FORNACE_1)) && ! accesa(p, int(GUARDIA_FORNACE_2));
+        bool libero = raccolta_libera(p, 0) && raccolta_toccata(p, r.area, x, y) == 0 && ! raccolta_libera(p, 1) &&
+                      raccogli(p, 0) && pezzi_raccolti(p, 0) == 1;
+        return chiuso && toccata && battuta && libero && ! batti_la_guardia(p, -1) && ! batti_la_guardia(p, GUARDIE_FORNACE);
+    }
+
+    static_assert(il_blocco_aspetta_la_guardia(), "il blocco di ferro non aspetta la sua guardia");
+
+    // Negativa: senza battere la guardia, il blocco toccato camminando non si prende.
+    consteval bool blocco_senza_guardia_battuta()
+    {
+        GameState p = {};
+        const Raccolta& r = RACCOLTA[1];
+        mondo::Esploratore e = fino_alla_cella(mondo::AreaId(r.area), 0, r.tx, r.ty);
+        return e.x >= 0 && raccolta_toccata(p, r.area, e.x, e.y) == 1;
+    }
+
+    static_assert(! blocco_senza_guardia_battuta(), "negativa: il blocco si prende con la guardia in piedi");
+
+    // La battaglia dell'infiltrato e' la sua (F10): l'infiltrato e due spie umbre, non piu' l'Imboscata.
+    static_assert(INFILTRATO.incontro == battaglia::INCONTRO_INFILTRATO && INFILTRATO.incontro != 1 &&
+                  battaglia::INCONTRO[INFILTRATO.incontro].nemici == 3 &&
+                  battaglia::INCONTRO[INFILTRATO.incontro].schieramento[0] == battaglia::NemicoId::INFILTRATO &&
+                  battaglia::INCONTRO[INFILTRATO.incontro].schieramento[1] == battaglia::NemicoId::SPIA_UMBRA &&
+                  battaglia::INCONTRO[INFILTRATO.incontro].schieramento[2] == battaglia::NemicoId::SPIA_UMBRA,
+                  "l'infiltrato e due spie umbre");
 
     // I datori e l'infiltrato stanno su un posto buono (la cella e le otto intorno calpestabili, nessun varco,
     // lontano dagli spawn) e ci si arriva camminando dallo spawn 0 della loro area.
@@ -622,6 +739,19 @@ namespace
                 if(RACCOLTA[k].quest != q)
                 {
                     continue;
+                }
+
+                // Q-SM01: prima la guardia della fornace, camminando fino a toccarla, e la sua battaglia vinta
+                for(int gu = 0; gu < GUARDIE_FORNACE; ++gu)
+                {
+                    const GuardiaFornace& gf = GUARDIA_FORNACE[gu];
+
+                    if(gf.raccolta == k)
+                    {
+                        mondo::Esploratore eg = fino_alla_cella(mondo::AreaId(gf.area), 0, gf.tx, gf.ty);
+                        g.pezzi = g.pezzi && eg.x >= 0 && guardia_toccata(p, gf.area, eg.x, eg.y) == gu &&
+                                  batti_la_guardia(p, gu);
+                    }
                 }
 
                 // camminando dallo spawn 0 dell'area fino a toccarlo
@@ -735,7 +865,7 @@ namespace
     // blocco senza Antonio nel gruppo: solo SISTEMA. Negativa: alla seconda radice, Ubaldo non parla piu'.
     consteval uint32_t prima_raccolta(int q, bool antonio, int quante)
     {
-        GameState p = {};
+        GameState p = guardie_battute();
         accendi(p, DIGIUNO | (antonio ? uint64_t(1) << int(Bandiera::ANTONIO_NEL_GRUPPO) : 0));
 
         for(int k = 0, n = 0; k < RACCOLTE && n < quante; ++k)
@@ -811,17 +941,22 @@ namespace
 
     static_assert(radici_nella_notte(), "dopo B-05 le radici non ci sono o Agnese non propone piu' la quest");
 
-    // L'infiltrato si combatte con le tre spie umbre degli Stradoni: con le tre quest e quella battaglia in piu'
-    // si arriva a Corrado ancora al livello 6 (docs/bilanciamento.md: 316 + 165 + 81 = 562 punti, il 7 e' a 680).
-    static_assert(INFILTRATO.incontro == 1 && battaglia::INCONTRO[1].schieramento[0] == battaglia::NemicoId::SPIA_UMBRA,
-                  "l'infiltrato combatte con le spie umbre");
+    // Con le tre quest e tutte le battaglie facoltative (le tre guardie delle fornaci, l'infiltrato con le sue spie)
+    // e i Guerrieri di B-03 si arriva a Corrado ancora al livello 6 (docs/bilanciamento.md: 316 + 165 + 60 + 84 + 40
+    // = 665 punti, il 7 e' a 680).
+    static_assert(progressione::esperienza_incontro(battaglia::INCONTRO_FORNACE) * 3 +
+                  progressione::esperienza_incontro(battaglia::INCONTRO_INFILTRATO) +
+                  progressione::esperienza_incontro(battaglia::INCONTRO_GUERRIERI) == 184, "l'esperienza delle battaglie di F10");
 
     consteval int livello_con_l_infiltrato()
     {
         GameState p = {};
         progressione::partita_nuova(p);
         bool saliti[battaglia::EROI] = {};
-        const int prima_di_corrado[4] = { 0, 1, 3, 1 };     // Pattuglia, Imboscata, Spettri, l'infiltrato
+        // Pattuglia, Imboscata, Spettri, le tre guardie delle fornaci, l'infiltrato, i Guerrieri di B-03 (F10)
+        const int prima_di_corrado[8] = { 0, 1, 3, battaglia::INCONTRO_FORNACE, battaglia::INCONTRO_FORNACE,
+                                          battaglia::INCONTRO_FORNACE, battaglia::INCONTRO_INFILTRATO,
+                                          battaglia::INCONTRO_GUERRIERI };
 
         for(int incontro : prima_di_corrado)
         {
@@ -839,7 +974,21 @@ namespace
         return p.livello[0];
     }
 
-    static_assert(livello_con_l_infiltrato() == 6, "con la battaglia dell'infiltrato si arriva a Corrado oltre il livello 6");
+    static_assert(livello_con_l_infiltrato() == 6, "con le battaglie facoltative si arriva a Corrado oltre il livello 6");
+
+    // Negativa: con un'altra guardia di fornace (20 punti in piu') si passerebbe al livello 7 prima di Corrado: il
+    // margine e' stretto, chi aggiunge un nemico facoltativo deve rifare i conti.
+    consteval int livello_con_un_altra_guardia()
+    {
+        GameState p = {};
+        progressione::partita_nuova(p);
+        bool saliti[battaglia::EROI] = {};
+        progressione::assegna_esperienza_fissa(p, 316 + 3 * progressione::ESPERIENZA_QUEST + 184 +
+                                                  progressione::esperienza_incontro(battaglia::INCONTRO_FORNACE), saliti);
+        return p.livello[0];
+    }
+
+    static_assert(livello_con_un_altra_guardia() == 7, "negativa: il margine prima del livello 7 non e' quello atteso");
 }
 
 }
