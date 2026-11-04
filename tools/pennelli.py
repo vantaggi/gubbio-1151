@@ -87,3 +87,16 @@ def piombi(t, piombo, griglia=(11, 13), sfasa=0):
             pannello = celle[y][x] != celle[y][x + 1] or celle[y][x] != celle[y + 1][x]
             if bordo or pannello:
                 t.punto(x, y, piombo)
+
+
+def chioma(t, cx, cy, rx, ry, luce, base, ombra):
+    """Una chioma tonda come un solido (L2): la falce chiara in alto a sinistra, il corpo, la falce
+    d'ombra in basso a destra e l'ombra portata di un pixel sotto (L4)."""
+    def dentro(x, y, ox, oy):
+        return ((x + 0.5 - cx - ox) / rx) ** 2 + ((y + 0.5 - cy - oy) / ry) ** 2 <= 1
+    for y in range(int(cy - ry) - 1, int(cy + ry) + 3):
+        for x in range(int(cx - rx) - 1, int(cx + rx) + 3):
+            if dentro(x, y, 0, 0):
+                t.punto(x, y, luce if not dentro(x, y, 1, 1) else ombra if not dentro(x, y, -1, -1) else base)
+            elif dentro(x, y, 1, 1):
+                t.punto(x, y, ombra)

@@ -15,7 +15,7 @@ import random
 
 from genera_battaglia import Tela
 import stendardi as ST
-from pennelli import ACCESO      # la voce ACCESO, la stessa per i pittori di C5-C7
+from pennelli import ACCESO, chioma      # la voce ACCESO, la stessa per i pittori di C5-C7
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 W, H = 512, 256
@@ -68,20 +68,27 @@ def monte(momento):
     t = Tela(W, H)
     r = random.Random(11)
     cima = 330
-    for x in range(W):
+
+    def profilo(x):
         d = abs(x - cima) / 260.0
-        top = int(14 + 50 * d * d + 3 * math.sin(x / 13.0))
+        return int(14 + 50 * d * d + 3 * math.sin(x / 13.0))
+    # il fianco a sinistra della vetta prende la luce (L1), quello a destra sta in ombra: il fondo e' a
+    # macchie grandi (niente righe e niente pixel orfani, P3), il crinale ha il bordo chiaro solo dove sale
+    for x in range(W):
+        top = profilo(x)
         for y in range(top, QUADRO):
-            t.punto(x, y, VERDE_S if (x * 7 + y * 3) % 11 else VERDE_M)
-        if x > 0:
-            # la luce da sinistra sul fianco che sale
-            if top < 14 + 50 * (abs(x - 1 - cima) / 260.0) ** 2:
-                t.punto(x, top, VERDE)
-    for _ in range(160):
-        cx, cy = r.randrange(W), r.randrange(30, QUADRO)
-        d = abs(cx - cima) / 260.0
-        if cy > 18 + 50 * d * d:
-            t.ellisse(cx, cy, 3, 2, VERDE_M if r.random() < 0.6 else VERDE)
+            luce = x < cima + (y - 14) * 1.4 + 6 * math.sin(y / 7.0)    # il costolone scende a destra
+            t.punto(x, y, VERDE_M if luce else VERDE_S)
+        if x > 0 and top < profilo(x - 1) + 1 and x < cima:
+            t.punto(x, top, VERDE)
+    # il bosco: chiome tonde di 3 toni (luce in alto a sinistra, ombra portata in basso a destra, L1 e L4)
+    for _ in range(340):
+        cx, cy = r.randrange(W), r.randrange(24, QUADRO + 4)
+        if cy < profilo(cx) + 5:
+            continue
+        rx, ry = r.choice((3, 3, 4)), r.choice((2, 3))
+        luce = cx < cima + (cy - 14) * 1.4
+        chioma(t, cx, cy, rx, ry, VERDE if luce else VERDE_M, VERDE_M if luce else VERDE_S, VERDE_S)
     # la Basilica in cima, un po' sotto la vetta, col campanile; la Rocca piu' su
     bx, by = cima - 30, 30
     t.rett(bx, by - 8, 18, 9, PIETRA_C)

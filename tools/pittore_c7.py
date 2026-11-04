@@ -19,7 +19,7 @@ import math
 import random
 
 from genera_battaglia import Tela
-from pennelli import contorna, poligono
+from pennelli import chioma, contorna, poligono
 
 W, H = 512, 256
 QUADRO = 112
@@ -55,18 +55,23 @@ def c7_monte(m):
     t = Tela(W, H)
     def cresta(x):
         return int(2 + 0.0016 * (x - 300) ** 2 + 2 * math.sin(x / 9.0))
+    def in_luce(x, y):
+        return x < 300 + y * 1.6 + 5 * math.sin(y / 6.0)        # il costolone: a destra il fianco in ombra
     for x in range(W):                                                            # il fianco del monte
         top = cresta(x)
         for y in range(max(0, top), QUADRO):
-            t.punto(x, y, ST_V1 if (x * 5 + y * 3) % 13 else ST_V0)
-        if top >= 0:
+            t.punto(x, y, ST_V1 if in_luce(x, y) else ST_V0)
+        if top >= 0 and x < 300:
             t.punto(x, top, ST_V3)
     r = random.Random(17)
-    for _ in range(260):                                                          # il bosco a macchie
-        cx, cy = r.randrange(W), r.randrange(4, QUADRO)
+    for _ in range(300):                                     # il bosco: chiome di tre toni (L1, L2, L4)
+        cx, cy = r.randrange(W), r.randrange(4, QUADRO + 3)
         if cy > cresta(cx) + 3:
-            t.ellisse(cx, cy, 3, 2, ST_V2 if r.random() < 0.55 else ST_V0)
-            t.punto(cx - 1, cy - 1, ST_V3)
+            rx, ry = r.choice((3, 3, 4)), r.choice((2, 3))
+            if in_luce(cx, cy):
+                chioma(t, cx, cy, rx, ry, ST_V3, ST_V2, ST_V0)
+            else:
+                chioma(t, cx, cy, rx, ry, ST_V2, ST_V1, ST_V0)
     gir = tornanti()
     for k, (x0, y0, x1, y1) in enumerate(gir):                                    # gli stradoni di ghiaia
         n = abs(x1 - x0)
@@ -87,6 +92,7 @@ def c7_monte(m):
                     t.rett(hx, hy, 2, 3, ST_GHIAIA)
         if k + 1 in CAPPELLE:                                                     # la cappelletta
             cx, cy = int(x1) + (6 if x1 > x0 else -8), int(y1) - 1
+            t.rett(cx + 4, cy - 5, 2, 6, ST_V0)                           # l'ombra portata a destra (L4)
             t.rett(cx - 3, cy - 7, 7, 7, ST_BIANCO)
             t.rett(cx + 2, cy - 7, 2, 7, ST_P2)
             poligono(t, [(cx - 4, cy - 7), (cx, cy - 10), (cx + 5, cy - 7)], ST_COTTO)
@@ -94,6 +100,7 @@ def c7_monte(m):
             t.punto(cx, cy - 3, ST_ORO)
     # la Basilica in cima, col campanile, sopra l'ultimo stradone
     bx, by = 222, 22
+    t.rett(bx + 38, by - 14, 5, 15, ST_V0)                                # l'ombra portata a destra (L4)
     t.rett(bx, by - 9, 30, 10, ST_BIANCO)
     t.rett(bx + 24, by - 9, 6, 10, ST_P2)
     poligono(t, [(bx - 1, by - 9), (bx + 15, by - 15), (bx + 31, by - 9)], ST_COTTO)
