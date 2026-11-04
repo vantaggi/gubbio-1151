@@ -63,7 +63,13 @@ Regia: l'araldo esce. Giorgio scatta verso le scale.
 - GUIDO (preoccupato): Ieri era fuori dalle mura, al Teatro Romano. E al tramonto chiudo l'ultima postierla.
 - UBALDO (deciso): Allora andiamo prima del tramonto.
 - SISTEMA: Giorgio si unisce al gruppo.
+- SISTEMA: Con A parli con chi ti sta accanto e vai avanti nei dialoghi.
+- SISTEMA: Con la croce cammini; tieni premuto B per correre.
+- SISTEMA: Start apre la pausa: da lì si salva la partita.
+- SISTEMA: Select ricorda l'obiettivo e indica il varco da prendere.
 - OBIETTIVO: Raggiungi il Teatro Romano, fuori dalle mura di San Martino. (area: TEATRO_ROMANO)
+
+> Nota (MTUT, 4 nov 2026). Le quattro righe dei comandi stanno qui, alla fine di A1-01, e non nel prologo: P-01 e P-02 sono la cutscene C1, che recita solo il narratore nelle bande, e qui il giocatore prende Ubaldo per la prima volta. La riga sulla prima pausa (L e R fra le pagine) arriva col menù di pausa nuovo (MPA): oggi la pausa non ha pagine.
 
 > Nota. «Monaldo non concederà una seconda alba» (Sez. 11 Passo 6) diventa «tre albe», così il digiuno di tre giorni ha un senso preciso e l'epilogo della v1 cade alla terza alba. Vedi le note di coerenza nel README.
 
