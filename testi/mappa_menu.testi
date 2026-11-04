@@ -1,0 +1,38 @@
+# GENERATO da tools/genera_mappa_menu.py da mondo/mappa_menu.json e mondo/grafo.json. Non modificare a mano.
+# La scheda di ogni area sotto la mappa della pausa (MMA): la riga e la quota sopra Piazza Quaranta Martiri.
+MAPPA_RIGA_TEATRO_ROMANO  | AREA    | Il teatro dei Romani, fuori dalle mura.
+MAPPA_QUOTA_TEATRO_ROMANO | HUD     | -10 m
+MAPPA_RIGA_SAN_MARTINO    | AREA    | Il ponte sul Camignano e Porta Metauro.
+MAPPA_QUOTA_SAN_MARTINO   | HUD     | +21 m
+MAPPA_RIGA_LARGO_BARGELLO | AREA    | Il Bargello e la Fontana dei Matti.
+MAPPA_QUOTA_LARGO_BARGELLO | HUD     | +27 m
+MAPPA_RIGA_VIA_DEI_CONSOLI | AREA    | Case di pietra e il banco di Montano.
+MAPPA_QUOTA_VIA_DEI_CONSOLI | HUD     | +27 a +67 m
+MAPPA_RIGA_PIAZZA_QUARANTA_MARTIRI | AREA    | La Loggia dei Tiratori e San Francesco.
+MAPPA_QUOTA_PIAZZA_QUARANTA_MARTIRI | HUD     | 0 m
+MAPPA_RIGA_PIAZZA_GRANDE  | AREA    | Consoli, Pretorio, Ranghiasci.
+MAPPA_QUOTA_PIAZZA_GRANDE | HUD     | +67 m
+MAPPA_RIGA_DUOMO_DUCALE   | AREA    | Il Duomo e il Palazzo Ducale, di fronte.
+MAPPA_QUOTA_DUOMO_DUCALE  | HUD     | +109 m
+MAPPA_RIGA_SAN_PIETRO     | AREA    | La porta doppia, l'abbazia, la taverna.
+MAPPA_QUOTA_SAN_PIETRO    | HUD     | +18 m
+MAPPA_RIGA_VIA_XX_SETTEMBRE | AREA    | La via lunga fra le case di pietra.
+MAPPA_QUOTA_VIA_XX_SETTEMBRE | HUD     | +67 a +70 m
+MAPPA_RIGA_SANT_ANDREA    | AREA    | L'arco di San Marziale e la chiesa.
+MAPPA_QUOTA_SANT_ANDREA   | HUD     | +74 m
+MAPPA_RIGA_SANT_AGOSTINO  | AREA    | Porta Romana, la calcara, la bottega.
+MAPPA_QUOTA_SANT_AGOSTINO | HUD     | +54 m
+MAPPA_RIGA_MONTE_INGINO   | AREA    | Nove stradoni a zig zag fino in cima.
+MAPPA_QUOTA_MONTE_INGINO  | HUD     | +100 a +350 m
+MAPPA_RIGA_BASILICA       | AREA    | La basilica in cima al Monte Ingino.
+MAPPA_QUOTA_BASILICA      | HUD     | +380 m
+MAPPA_RIGA_BOTTACCIONE    | AREA    | La strada nella gola, sotto il condotto.
+MAPPA_QUOTA_BOTTACCIONE   | HUD     | +30 a +300 m
+MAPPA_RIGA_GOLA_STRISCIA  | AREA    | La roccia con la striscia nera.
+MAPPA_QUOTA_GOLA_STRISCIA | HUD     | +310 m
+MAPPA_RIGA_GOLA_MIASMI    | AREA    | L'aria cattiva: meglio non correre.
+MAPPA_QUOTA_GOLA_MIASMI   | HUD     | +325 m
+MAPPA_RIGA_GOLA_ARCO      | AREA    | Il grande arco di contrafforte.
+MAPPA_QUOTA_GOLA_ARCO     | HUD     | +340 m
+MAPPA_RIGA_CONDOTTO       | AREA    | Dentro il condotto, dove corre l'acqua.
+MAPPA_QUOTA_CONDOTTO      | HUD     | +355 m

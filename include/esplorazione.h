@@ -52,6 +52,9 @@ public:
     // Nasconde l'etichetta d'area e gli aiuti (promemoria, cartello): un dialogo, una battaglia o la pausa
     // stanno per prendere lo schermo. Il cartello torna da se' al prossimo aggiorna().
     void nascondi_etichetta();
+    // I menu (MPA): la scena sotto si scurisce col fade dell'hardware, solo fondale e giocatore, cosi' le
+    // cornici e le scritte dei menu restano coi loro colori (il fade di bg_palettes scuriva anche quelle).
+    void scurisci(bool scura);
 
     // Il segnale d'interazione (STANDARD I2): il fumetto coi tre puntini sopra chi o cosa risponde ad A.
     // (x, y) sono i piedi in pixel, 'altezza' quanto e' alto in pixel (una persona 24): il fumetto sta 2 px

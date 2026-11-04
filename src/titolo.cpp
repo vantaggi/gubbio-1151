@@ -32,7 +32,6 @@ namespace
     using salvataggio::StatoSlot;
 
     constexpr int INCHIOSTRO_CHIARO = 2;
-    constexpr int FRAME_MESSAGGIO = 60;
 
     // il record vuoto della prova del salvataggio: in EWRAM, non sullo stack
     BN_DATA_EWRAM_BSS salvataggio::SaveData s_vuota;
@@ -279,70 +278,6 @@ void dove_eravamo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& pale
         {
             attendi(1);
         }
-    }
-
-    bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
-    attendi(1);
-}
-
-void pausa(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo, bool istantanea)
-{
-    esplorazione.nascondi_etichetta();
-    bn::bg_palettes::set_fade(bn::color(0, 0, 0), bn::fixed(0.65));
-    VistaTesto titolo_pausa(Contesto::DIALOGO, 24, 32, INCHIOSTRO_CHIARO, palette_testo);
-    VistaTesto voce(Contesto::DIALOGO, 32, 64, INCHIOSTRO_CHIARO, palette_testo);
-    VistaTesto nota(Contesto::DIALOGO, 32, 84, INCHIOSTRO_CHIARO, palette_testo);
-    VistaTesto aiuto(Contesto::DIALOGO, 8, 128, INCHIOSTRO_CHIARO, palette_testo);
-    constexpr TestoId VOCI[3] = { TestoId::PAUSA_RIPRENDI, TestoId::PAUSA_SALVA_1, TestoId::PAUSA_SALVA_2 };
-    titolo_pausa.mostra(TestoId::PAUSA_TITOLO);
-    titolo_pausa.rivela_tutto();
-    aiuto.mostra(TestoId::PAUSA_AIUTO);
-    aiuto.rivela_tutto();
-    int scelta = 0;
-    attendi(1);
-
-    while(true)
-    {
-        voce.mostra(VOCI[scelta]);
-        voce.rivela_tutto();
-
-        if(istantanea)
-        {
-            attendi(30);
-            BN_LOG("Istantanea pausa");
-            attendi(30);
-            break;
-        }
-
-        while(! bn::keypad::up_pressed() && ! bn::keypad::down_pressed() && ! bn::keypad::a_pressed() &&
-              ! bn::keypad::start_pressed())
-        {
-            attendi(1);
-        }
-
-        if(bn::keypad::start_pressed() || (bn::keypad::a_pressed() && scelta == 0))
-        {
-            audio::suona(bn::keypad::start_pressed() ? colonna::Suono::ANNULLA : colonna::Suono::CONFERMA);
-            break;
-        }
-
-        if(bn::keypad::a_pressed())
-        {
-            annota_posizione(esplorazione);
-            bool fatto = salvataggio::salva(scelta - 1, g_game_state);
-            audio::suona(fatto ? colonna::Suono::SALVA : colonna::Suono::ANNULLA);
-            nota.mostra(fatto ? TestoId::PAUSA_SALVATO : TestoId::PAUSA_NON_SALVATO);
-            nota.rivela_tutto();
-            attendi(FRAME_MESSAGGIO);
-            nota.nascondi();
-        }
-        else
-        {
-            scelta = (scelta + (bn::keypad::down_pressed() ? 1 : 2)) % 3;
-            audio::suona(colonna::Suono::CURSORE);
-        }
-
-        attendi(1);
     }
 
     bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);

@@ -1,6 +1,7 @@
 #include "esplorazione.h"
 
 #include "bn_bg_palette_item.h"
+#include "bn_blending.h"
 #include "bn_bg_palettes.h"
 #include "bn_color.h"
 #include "bn_fixed.h"
@@ -19,6 +20,7 @@
 
 #include "aiuti.h"
 #include "game_state.h"
+#include "opzioni.h"
 
 namespace gubbio
 {
@@ -546,6 +548,21 @@ void Esplorazione::nascondi_etichetta()
     _nascondi_aiuti();
 }
 
+void Esplorazione::scurisci(bool scura)
+{
+    // BUIO_MENU dei mockup (menu/mockup_menu.py): uno solo per tutti i menu
+    constexpr int BUIO_CENTESIMI = 65;
+
+    if(_fondale)
+    {
+        _fondale->set_blending_enabled(scura);
+    }
+
+    _giocatore.set_blending_enabled(scura);
+    bn::blending::set_black_fade_color();
+    bn::blending::set_fade_alpha(scura ? bn::fixed(BUIO_CENTESIMI) / 100 : bn::fixed(0));
+}
+
 int Esplorazione::schermo_x(int x) const
 {
     return x - _camera.x().right_shift_integer() - _mezza_larghezza_mappa + LARGHEZZA_SCHERMO / 2;
@@ -648,8 +665,9 @@ void Esplorazione::_aggiorna_aiuti()
         _freccia.reset();
     }
 
-    // il cartello del varco vicino: compare a CELLE_CARTELLO celle, sparisce allontanandosi
-    int varco = _dissolvenza ? -1 : aiuti::varco_vicino(_e);
+    // il cartello del varco vicino: compare a CELLE_CARTELLO celle, sparisce allontanandosi (se le opzioni lo
+    // vogliono, MOP)
+    int varco = _dissolvenza || ! opzioni::g_opzioni.cartelli ? -1 : aiuti::varco_vicino(_e);
 
     if(varco == _varco_cartello)
     {

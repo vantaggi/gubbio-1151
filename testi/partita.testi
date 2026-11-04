@@ -42,3 +42,100 @@ RIPROVA_TITOLO            | SCELTA  | Torna al titolo
 CARICA_SLOT_1             | SCELTA  | Slot 1
 CARICA_SLOT_2             | SCELTA  | Slot 2
 CARICA_FALLITO            | DIALOGO | Questo slot non si carica.
+# MPA: il menu di pausa a sei voci (menu/PROPOSTA.md, mockup 01 e 06)
+MENU_DIARIO               | HUD     | Diario
+MENU_MAPPA                | HUD     | Mappa
+MENU_BISACCIA             | HUD     | Bisaccia
+MENU_COMPAGNI             | HUD     | Compagni
+MENU_SALVA                | HUD     | Salva
+MENU_OPZIONI              | HUD     | Opzioni
+MENU_PV                   | HUD     | PV
+MENU_FE                   | HUD     | Fe
+MENU_L                    | HUD     | L
+MENU_R                    | HUD     | R
+MENU_AIUTO_A              | HUD     | A: apri
+MENU_AIUTO_B              | DIALOGO | B: torna al gioco
+SALVA_SLOT_1              | HUD     | Slot 1
+SALVA_SLOT_2              | HUD     | Slot 2
+SALVA_VUOTO               | HUD     | Vuoto
+SALVA_AIUTO_A             | HUD     | A: salva
+MENU_INDIETRO             | HUD     | B: indietro
+SALVA_SOVRASCRIVI         | DIALOGO | C'è già una partita: A la sovrascrive, B la lascia.
+# MDI: il diario, la cronaca e gli incarichi (mockup 02 e 02b; titoli, datori e premi da copione/04_quest.md)
+DIARIO_CRONACA            | HUD     | La cronaca
+DIARIO_INCARICHI          | HUD     | Incarichi
+DIARIO_NESSUNO            | DIALOGO | Per ora nessun incarico: chi ha bisogno di voi ve lo chiederà.
+DIARIO_COMPIUTO           | AREA    | Incarico compiuto: torna a riferire
+DIARIO_CONSEGNATO         | AREA    | Consegnato
+MENU_SCHEDA               | HUD     | A: scheda
+INC_SM01_TITOLO           | AREA    | Il ferro del Monte Calvo
+INC_SM01_DA               | AREA    | Mastro Raniero, San Martino
+INC_SM01_STORIA           | DIALOGO | Spoleto ha bloccato il ferro del Monte Calvo. Quello già colato sta nelle fornaci basse del Teatro Romano: Raniero ne vuole tre blocchi.
+INC_SM01_PREMIO           | AREA    | Premio: 3 fette di Crescia di Pasqua
+INC_SA01_TITOLO           | AREA    | Le erbe del Bottaccione
+INC_SA01_DA               | AREA    | Monna Agnese, Sant'Andrea
+INC_SA01_STORIA           | DIALOGO | Cagli avvelena il fosso e i feriti di Porta Romana peggiorano. Agnese ha bisogno di quattro radici di elleboro, dalle rocce umide del Bottaccione.
+INC_SA01_PREMIO           | AREA    | Premio: 3 Biscotti all'anice
+INC_SP01_TITOLO           | AREA    | La Rosa d'Argento
+INC_SP01_DA               | AREA    | Fra' Bernardo, San Pietro
+INC_SP01_STORIA           | DIALOGO | Un falso pellegrino ha rubato la Rosa d'Argento dall'altare di San Pietro. Se è ancora in città si trova: chiedi in giro.
+INC_SP01_PREMIO           | AREA    | Premio: 1 Crescia sotto la cenere
+# MBI: la bisaccia (mockup 04): i viveri, le cose degli incarichi, la riga che spiega quello scelto
+BISACCIA_VIVERI           | HUD     | Viveri
+BISACCIA_COSE             | AREA    | Cose dell'incarico
+BISACCIA_VUOTA            | AREA    | Nella bisaccia non c'è niente.
+BISACCIA_AIUTO_A          | HUD     | A: usa
+OGG_CENERE                | AREA    | Crescia sotto la cenere
+DESCR_CRESCIA             | NARRATORE | Crescia di Pasqua: rende 100 PV. Fuori battaglia cura le ferite dei miasmi.
+DESCR_BISCOTTI            | NARRATORE | Biscotti all'anice: spengono le bruciature, e si mangiano in un attimo.
+DESCR_CENERE              | NARRATORE | Crescia sotto la cenere: si tiene da conto per quando servirà davvero.
+BISACCIA_GUARITI          | NARRATORE | Un boccone di Crescia, e le ferite dei miasmi non pesano più.
+BISACCIA_SANI             | NARRATORE | Nessuno ha ferite da curare: la Crescia resta nella bisaccia.
+BISACCIA_NON_ORA          | NARRATORE | Questa si usa in battaglia.
+COSA_FERRO                | AREA    | Blocchi di ferro
+COSA_ELLEBORO             | AREA    | Radici di elleboro
+COSA_ROSA                 | AREA    | La Rosa d'Argento
+COSA_INDIZI               | AREA    | Indizi sul falso pellegrino
+# MBI: i compagni (mockup 05): livello, esperienza, statistiche al livello, abilità col loro costo
+COMP_LIVELLO              | HUD     | Livello
+COMP_MANCANO              | HUD     | mancano
+COMP_AL_MASSIMO           | HUD     | al massimo
+COMP_FERVORE              | HUD     | Fervore
+COMP_ATTACCO              | HUD     | Attacco
+COMP_DIFESA               | HUD     | Difesa
+COMP_MISTICO              | HUD     | Mistico
+COMP_RESISTENZA           | HUD     | Resistenza
+COMP_VELOCITA             | HUD     | Velocità
+COMP_ABILITA              | HUD     | Abilità
+COMP_AIUTO                | AREA    | Su e giù: altro compagno
+# MOP: le opzioni (mockup 07), per tutti e due gli slot
+OPZ_TESTO                 | HUD     | Testo
+OPZ_LENTO                 | HUD     | Lento
+OPZ_NORMALE               | HUD     | Normale
+OPZ_SUBITO                | HUD     | Subito
+OPZ_MUSICA                | HUD     | Musica
+OPZ_EFFETTI               | HUD     | Effetti
+OPZ_CORRERE               | HUD     | Correre
+OPZ_TIENI_B               | HUD     | Tieni B
+OPZ_SEMPRE                | HUD     | Sempre
+OPZ_SCHERMO               | HUD     | Schermo
+OPZ_PIU_CHIARO            | HUD     | Più chiaro
+OPZ_CARTELLI              | HUD     | Cartelli
+OPZ_SI                    | HUD     | Sì
+OPZ_NO                    | HUD     | No
+OPZ_NOTA                  | AREA    | Valgono per tutti e due gli slot.
+OPZ_AIUTO                 | AREA    | Destra e sinistra: cambia
+# MMA: la mappa della città (mockup 03 e 03c); le righe e le quote delle aree sono in testi/mappa_menu.testi
+MAPPA_SEI_QUI             | HUD     | , sei qui
+MAPPA_NON_VISTA           | AREA    | Qui non ci siete ancora stati.
+MAPPA_AIUTO_SELECT        | HUD     | Select: legenda
+MAPPA_AIUTO_A             | HUD     | A: libro
+LEGENDA_TITOLO            | HUD     | Legenda
+LEGENDA_SEI_QUI           | AREA    | Sei qui
+LEGENDA_CRONACA           | AREA    | La cronaca: dove andare
+LEGENDA_INCARICO          | AREA    | Incarico: dove si fa
+LEGENDA_VENDITORE         | AREA    | Il venditore delle Logge
+LEGENDA_BOTTEGA           | AREA    | Bottega di un amico
+LEGENDA_TAVERNA           | AREA    | Taverna
+LEGENDA_PORTA             | AREA    | Porta delle mura
+LEGENDA_GRIGIO            | AREA    | Grigio: aree non ancora viste.

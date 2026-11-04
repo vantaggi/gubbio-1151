@@ -17,6 +17,7 @@
 #include "battaglia_grafica.h"
 #include "esplorazione.h"
 #include "game_state.h"
+#include "opzioni.h"
 #include "progressione.h"
 #include "regia_logica.h"
 #include "regia_scena.h"
@@ -293,7 +294,17 @@ namespace
             {
                 if(! testo->completo())
                 {
-                    testo->avanza();
+                    // la velocita' delle opzioni (MOP): una lettera a frame, una ogni due, o tutta
+                    int lettere = opzioni::lettere_nel_frame(opzioni::g_opzioni, g_game_state.frames);
+
+                    if(lettere < 0)
+                    {
+                        testo->rivela_tutto();
+                    }
+                    else if(lettere > 0)
+                    {
+                        testo->avanza();
+                    }
 
                     if(bn::keypad::a_pressed())
                     {
