@@ -120,7 +120,7 @@ class Gola(unittest.TestCase):
     def test_palette_cupa_solo_nella_gola(self):
         h = open(os.path.join(RADICE, "include", "mondo.h"), encoding="utf-8").read()
         blocchi = re.findall(r"\{   // (\w+)\n(.*?)\n    \},", h, re.S)
-        self.assertEqual(len(blocchi), 19)
+        self.assertEqual(len(blocchi), 25)
         for blocco in blocchi:
             aid, corpo = blocco
             cupa = corpo.strip().endswith("true,")

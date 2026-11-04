@@ -81,7 +81,7 @@ class AreeAlloStandard(unittest.TestCase):
         for nome, a in self.aree.items():
             self.assertEqual(len(a["banchi"]), len(a["tile"]), nome)
             self.assertEqual(len(a["specchi"]), len(a["indici"]), nome)
-            self.assertTrue(all(0 <= b < 6 for b in a["banchi"]), nome)
+            self.assertTrue(all(0 <= b < len(G.BANCHI_FONDALI) for b in a["banchi"]), nome)
             self.assertTrue(all(0 <= s < 4 for s in a["specchi"]), nome)
 
     def test_due_run_uguali(self):

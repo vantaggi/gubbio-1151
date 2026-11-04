@@ -6,6 +6,8 @@ Copione v2, 3 novembre 2026. Fonte: `storia/NPC_AMICI.md` (Bibbia della storia v
 
 **Sant'Agostino.** Con `BORGO_DENTRO` gli NPC del borgo, nelle fasi DIGIUNO e NOTTE, stanno accampati in Sant'Andrea dietro Porta Romana; con `BORGO_FUORI` (anche se il giocatore non è passato da A1-05b) restano nel borgo. Andreuccio resta sempre fuori, sulla soglia.
 
+**Interni** (4 nov 2026, pezzo INTC). Chi lavora in un edificio esplorabile sta dentro: le ultime cinque sezioni hanno il nome dell'interno (`tools/pittore_interni.py`). La bottega dei conti è quella del borgo, fuori Porta Romana: vale la regola qui sopra.
+
 Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco o zimbello, nessuno muore in scena; Nicoluccio non è mai in pericolo.
 
 ---
@@ -30,12 +32,6 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 - DIGIUNO: FLAVIANO: C'è una canzone di undici anni fa, sui Valmarcola. Non la canto più.
 - ULTIMATUM: FLAVIANO: Undici stendardi e un monte solo: la rima è facile, il finale no.
 
-**Vanni**, medico, studioso di assedi. Luogo: casa del medico (edificio nuovo). Figura: anziano con la borsa del medico, senza barba bianca.
-
-- NOTTE: VANNI: Undici eserciti mangiano la piana in due settimane. Monaldo ha fretta.
-- DIGIUNO: VANNI: Nel 1140 cacciammo i Valmarcola. Chi è cacciato prima o poi torna.
-- ULTIMATUM: VANNI: Cento assedi ho studiato. Novanta finiscono con la fame, gli altri peggio.
-
 **Masio il Romano**, gabelliere romano bloccato in città. Luogo: casotto del pedaggio a Porta Metauro, con Nello. Figura: mercante con la fascia gialla e rossa.
 
 - NOTTE: MASIO: Gualdo e Nocera vogliono solo er pedaggio. Gli fate lo sconto e tornano a casa.
@@ -55,12 +51,6 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 ---
 
 ## Piazza Quaranta Martiri
-
-**Mastro Rufino**, carradore: costruisce e prepara i carri da corsa e da traino. Luogo: bottega del carradore (edificio nuovo). Figura: mercante con una ruota cerchiata di ferro. Nota: la battuta del DIGIUNO imposta `RUFINO_ASCOLTATO`.
-
-- NOTTE: RUFINO: Finito l'assedio, si rifà la corsa dei carri giù per la piana. Il mio è già unto.
-- DIGIUNO: RUFINO: Da vent'anni cerchio le ruote col ferro. Nessun ferro è stregato: col calore si apre.
-- ULTIMATUM: RUFINO: Undici eserciti e nemmeno un carro decente. Il mio arriva a Perugia prima di loro.
 
 **Giordano**, fontaniere. Luogo: vasca del fontaniere. Figura: anziano con secchio e corda, senza barba bianca. Nota: la battuta del DIGIUNO imposta `INDIZIO_ACQUA`; è anche il terzo indizio di Q-SP01.
 
@@ -84,12 +74,6 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 - DIGIUNO: GIAMBONO: La pietra nera della gola si sbriciola come pane secco. Lì scava chiunque.
 - ULTIMATUM: GIAMBONO: Cecco dice che tira meglio lui. Cecco dice tante cose.
 
-**Gabrione**, speziale, ritrae tutto a carboncino. Luogo: spezieria e ospizio (edificio nuovo). Figura: figura nuova: una testa più alta, pelata, carboncino in mano.
-
-- NOTTE: GABRIONE: Ho ritratto chi passava stanotte. Uno aveva l'abito da canonico.
-- DIGIUNO: GABRIONE: Quest'acqua sa di veratro, l'elleboro bianco. Agnese lo sa curare.
-- ULTIMATUM: GABRIONE: Fermi un momento. Così. Vi ritraggo, che domani chissà.
-
 **Ricciardo**, interprete dell'abate. Luogo: chiostro dell'abbazia di San Pietro. Figura: mercante con tavoletta di cera e stilo. Nota: una qualunque sua battuta imposta `RICCIARDO_ASCOLTATO`.
 
 - NOTTE: RICCIARDO: La Rosa la donò Perugia, in un anno di pace. L'abate se lo ricorda.
@@ -108,12 +92,40 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 - DIGIUNO: LEONORA: Un pellegrino si era messo nei turni di guardia. Mai visto alla torre. Strano.
 - ULTIMATUM: LEONORA: Febo al tamburo, Giambono sulle mura, gli altri a turno. Il ruolo è fatto.
 
-**Valenza**, tiene l'ospizio dei poveri e dei matti, moglie di Gabrione. Luogo: spezieria e ospizio. Figura: popolana col grembiule e la ciotola.
+---
 
-- NOTTE (se PANE_DATO): VALENZA: La popolana mi ha portato mezza crescia per gli altri. Viene da voi?
-- NOTTE: VALENZA: Gabrione ha ritratto anche me, stanotte. Dice che ho la faccia dell'alba.
-- DIGIUNO: VALENZA: Il pane dei poveri basta per oggi. Domani lo dividiamo per due.
-- ULTIMATUM: VALENZA: Tano dice che i matti veri stanno fuori le mura. Qui ci sono solo i miei.
+## Sant'Agostino (fuori Porta Romana)
+
+**Renzo**, custode delle carte della pieve. Luogo: cella delle carte nella chiesa. Figura: frate senza tonsura, con un rotolo. Nota: la battuta del DIGIUNO imposta `INDIZIO_CARTA`.
+
+- NOTTE: RENZO: Le carte le ho salvate tutte. Una sola manca, e lo sapete già quale.
+- DIGIUNO: RENZO: Manca il disegno dell'acquedotto. L'aveva chiesto il capitolo, e non torna.
+- DIGIUNO: RENZO: Ho visto il sigillo dei consoli su una lettera in uscita. Non era per il papa.
+- ULTIMATUM: RENZO: Guarda: un gioco inciso dai romani. Mille anni e ancora si gioca.
+
+**Valeriana**, guardia di ronda del borgo, fidanzata di Renzo. Luogo: strada verso Porta Romana. Figura: popolana con lanterna e bastone.
+
+- NOTTE: VALERIANA: Stanotte un canonico ha preso la strada di San Girolamo. Verso il monte, da solo.
+- DIGIUNO: VALERIANA: Botteghe chiuse anche nel borgo. Renzo, quel rotolo lo leggi domani.
+- ULTIMATUM: VALERIANA: Bando dei consoli: chi ha un carro lo porta a Porta Romana. Subito.
+
+**Ragnetto**, lavorante della calcara. Luogo: la calcara (edificio nuovo). Figura: soldato senza elmo, braccia nude, trave in spalla.
+
+- NOTTE (se BORGO_FUORI): RAGNETTO: Il fuoco ha preso la calcara. La calce no: quella non brucia, è già bruciata.
+- NOTTE: RAGNETTO: Il vescovo nella calce, una volta. E ha perdonato. Io non ci riuscirei.
+- DIGIUNO: RAGNETTO: Mia nonna diceva che il fuoco del borgo fu un male che salvò. Non so cosa vuol dire.
+- ULTIMATUM: RAGNETTO: Datemi un'ora e questa trave sta sulle mura. Due, se ci metto la calce.
+
+**Andreuccio**, miliziano di Porta Romana. Luogo: fuori Porta Romana. Figura: soldato con lo scudo col monte bianco.
+
+- NOTTE (se BORGO_DENTRO): ANDREUCCIO: Dormono tutti dentro. Io resto fuori: la mia porta è questa.
+- NOTTE (se BORGO_FUORI): ANDREUCCIO: Hanno bruciato tre case. Ne abbiamo salvate dieci. Ho contato.
+- DIGIUNO: ANDREUCCIO: Porta Romana è mia finché c'è luce. Poi è di Dio, e un po' anche mia.
+- ULTIMATUM: ANDREUCCIO: Le mura qui sono basse. Il borgo è ancora più basso, monsignore.
+
+---
+
+## Taverna del corso
 
 **Padellino**, oste. Luogo: taverna del corso, verso Sant'Andrea (edificio nuovo). Figura: mercante col fiasco e il grembiule. Nota: le tre righe «se non INDIZIO_...» sono l'aiuto: dicono dove cercare l'indizio che manca.
 
@@ -126,7 +138,24 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 
 ---
 
-## Sant'Agostino (fuori Porta Romana)
+## Spezieria e ospizio
+
+**Gabrione**, speziale, ritrae tutto a carboncino. Luogo: spezieria e ospizio (edificio nuovo). Figura: figura nuova: una testa più alta, pelata, carboncino in mano.
+
+- NOTTE: GABRIONE: Ho ritratto chi passava stanotte. Uno aveva l'abito da canonico.
+- DIGIUNO: GABRIONE: Quest'acqua sa di veratro, l'elleboro bianco. Agnese lo sa curare.
+- ULTIMATUM: GABRIONE: Fermi un momento. Così. Vi ritraggo, che domani chissà.
+
+**Valenza**, tiene l'ospizio dei poveri e dei matti, moglie di Gabrione. Luogo: spezieria e ospizio. Figura: popolana col grembiule e la ciotola.
+
+- NOTTE (se PANE_DATO): VALENZA: La popolana mi ha portato mezza crescia per gli altri. Viene da voi?
+- NOTTE: VALENZA: Gabrione ha ritratto anche me, stanotte. Dice che ho la faccia dell'alba.
+- DIGIUNO: VALENZA: Il pane dei poveri basta per oggi. Domani lo dividiamo per due.
+- ULTIMATUM: VALENZA: Tano dice che i matti veri stanno fuori le mura. Qui ci sono solo i miei.
+
+---
+
+## Bottega dei conti e dei congegni
 
 **Ciotto**, maestro dei conti e giocatore di tavola. Luogo: bottega dei conti e dei congegni (edificio nuovo). Figura: mercante col tavoliere sotto il braccio.
 
@@ -157,29 +186,22 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 - DIGIUNO: NICOLUCCIO: Ciotto mi ha insegnato il filetto. Gli ho vinto tre volte. Quasi.
 - ULTIMATUM: NICOLUCCIO: Mamma dice che undici è più di dieci. Io lo sapevo già.
 
-**Renzo**, custode delle carte della pieve. Luogo: cella delle carte nella chiesa. Figura: frate senza tonsura, con un rotolo. Nota: la battuta del DIGIUNO imposta `INDIZIO_CARTA`.
+---
 
-- NOTTE: RENZO: Le carte le ho salvate tutte. Una sola manca, e lo sapete già quale.
-- DIGIUNO: RENZO: Manca il disegno dell'acquedotto. L'aveva chiesto il capitolo, e non torna.
-- DIGIUNO: RENZO: Ho visto il sigillo dei consoli su una lettera in uscita. Non era per il papa.
-- ULTIMATUM: RENZO: Guarda: un gioco inciso dai romani. Mille anni e ancora si gioca.
+## Bottega del carradore
 
-**Valeriana**, guardia di ronda del borgo, fidanzata di Renzo. Luogo: strada verso Porta Romana. Figura: popolana con lanterna e bastone.
+**Mastro Rufino**, carradore: costruisce e prepara i carri da corsa e da traino. Luogo: bottega del carradore (edificio nuovo). Figura: mercante con una ruota cerchiata di ferro. Nota: la battuta del DIGIUNO imposta `RUFINO_ASCOLTATO`.
 
-- NOTTE: VALERIANA: Stanotte un canonico ha preso la strada di San Girolamo. Verso il monte, da solo.
-- DIGIUNO: VALERIANA: Botteghe chiuse anche nel borgo. Renzo, quel rotolo lo leggi domani.
-- ULTIMATUM: VALERIANA: Bando dei consoli: chi ha un carro lo porta a Porta Romana. Subito.
+- NOTTE: RUFINO: Finito l'assedio, si rifà la corsa dei carri giù per la piana. Il mio è già unto.
+- DIGIUNO: RUFINO: Da vent'anni cerchio le ruote col ferro. Nessun ferro è stregato: col calore si apre.
+- ULTIMATUM: RUFINO: Undici eserciti e nemmeno un carro decente. Il mio arriva a Perugia prima di loro.
 
-**Ragnetto**, lavorante della calcara. Luogo: la calcara (edificio nuovo). Figura: soldato senza elmo, braccia nude, trave in spalla.
+---
 
-- NOTTE (se BORGO_FUORI): RAGNETTO: Il fuoco ha preso la calcara. La calce no: quella non brucia, è già bruciata.
-- NOTTE: RAGNETTO: Il vescovo nella calce, una volta. E ha perdonato. Io non ci riuscirei.
-- DIGIUNO: RAGNETTO: Mia nonna diceva che il fuoco del borgo fu un male che salvò. Non so cosa vuol dire.
-- ULTIMATUM: RAGNETTO: Datemi un'ora e questa trave sta sulle mura. Due, se ci metto la calce.
+## Casa del medico
 
-**Andreuccio**, miliziano di Porta Romana. Luogo: fuori Porta Romana. Figura: soldato con lo scudo col monte bianco.
+**Vanni**, medico, studioso di assedi. Luogo: casa del medico (edificio nuovo). Figura: anziano con la borsa del medico, senza barba bianca.
 
-- NOTTE (se BORGO_DENTRO): ANDREUCCIO: Dormono tutti dentro. Io resto fuori: la mia porta è questa.
-- NOTTE (se BORGO_FUORI): ANDREUCCIO: Hanno bruciato tre case. Ne abbiamo salvate dieci. Ho contato.
-- DIGIUNO: ANDREUCCIO: Porta Romana è mia finché c'è luce. Poi è di Dio, e un po' anche mia.
-- ULTIMATUM: ANDREUCCIO: Le mura qui sono basse. Il borgo è ancora più basso, monsignore.
+- NOTTE: VANNI: Undici eserciti mangiano la piana in due settimane. Monaldo ha fretta.
+- DIGIUNO: VANNI: Nel 1140 cacciammo i Valmarcola. Chi è cacciato prima o poi torna.
+- ULTIMATUM: VANNI: Cento assedi ho studiato. Novanta finiscono con la fame, gli altri peggio.

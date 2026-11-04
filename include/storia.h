@@ -511,88 +511,88 @@ inline constexpr Battuta FRASE_NPC[FRASI_NPC] = {
     { testi::TestoId::NPC_16_02, testi::TestoId::PARLANTE_FLAVIANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
     { testi::TestoId::NPC_16_01, testi::TestoId::PARLANTE_FLAVIANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
     { testi::TestoId::NPC_16_00, testi::TestoId::PARLANTE_FLAVIANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_17_02, testi::TestoId::PARLANTE_VANNI, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_17_01, testi::TestoId::PARLANTE_VANNI, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_17_00, testi::TestoId::PARLANTE_VANNI, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_18_02, testi::TestoId::PARLANTE_MASIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_18_01, testi::TestoId::PARLANTE_MASIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_18_00, testi::TestoId::PARLANTE_MASIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_19_02, testi::TestoId::PARLANTE_MONTANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_19_01, testi::TestoId::PARLANTE_MONTANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_19_00, testi::TestoId::PARLANTE_MONTANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_20_02, testi::TestoId::PARLANTE_RUFINO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_20_01, testi::TestoId::PARLANTE_RUFINO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_20_00, testi::TestoId::PARLANTE_RUFINO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_21_02, testi::TestoId::PARLANTE_GIORDANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_21_01, testi::TestoId::PARLANTE_GIORDANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_21_00, testi::TestoId::PARLANTE_GIORDANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_22_02, testi::TestoId::PARLANTE_FEBO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_22_01, testi::TestoId::PARLANTE_FEBO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_22_00, testi::TestoId::PARLANTE_FEBO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_23_02, testi::TestoId::PARLANTE_GIAMBONO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_23_01, testi::TestoId::PARLANTE_GIAMBONO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_23_00, testi::TestoId::PARLANTE_GIAMBONO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_24_02, testi::TestoId::PARLANTE_GABRIONE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_24_01, testi::TestoId::PARLANTE_GABRIONE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_24_00, testi::TestoId::PARLANTE_GABRIONE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_25_02, testi::TestoId::PARLANTE_RICCIARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_25_01, testi::TestoId::PARLANTE_RICCIARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_25_00, testi::TestoId::PARLANTE_RICCIARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_26_02, testi::TestoId::PARLANTE_AURELIA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_26_01, testi::TestoId::PARLANTE_AURELIA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_26_00, testi::TestoId::PARLANTE_AURELIA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_27_02, testi::TestoId::PARLANTE_LEONORA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_27_01, testi::TestoId::PARLANTE_LEONORA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_27_00, testi::TestoId::PARLANTE_LEONORA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_28_03, testi::TestoId::PARLANTE_VALENZA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_28_02, testi::TestoId::PARLANTE_VALENZA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_28_00, testi::TestoId::PARLANTE_VALENZA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 12, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_28_01, testi::TestoId::PARLANTE_VALENZA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_17_02, testi::TestoId::PARLANTE_MASIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_17_01, testi::TestoId::PARLANTE_MASIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_17_00, testi::TestoId::PARLANTE_MASIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_18_02, testi::TestoId::PARLANTE_MONTANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_18_01, testi::TestoId::PARLANTE_MONTANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_18_00, testi::TestoId::PARLANTE_MONTANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_19_02, testi::TestoId::PARLANTE_GIORDANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_19_01, testi::TestoId::PARLANTE_GIORDANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_19_00, testi::TestoId::PARLANTE_GIORDANO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_20_02, testi::TestoId::PARLANTE_FEBO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_20_01, testi::TestoId::PARLANTE_FEBO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_20_00, testi::TestoId::PARLANTE_FEBO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_21_02, testi::TestoId::PARLANTE_GIAMBONO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_21_01, testi::TestoId::PARLANTE_GIAMBONO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_21_00, testi::TestoId::PARLANTE_GIAMBONO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_22_02, testi::TestoId::PARLANTE_RICCIARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_22_01, testi::TestoId::PARLANTE_RICCIARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_22_00, testi::TestoId::PARLANTE_RICCIARDO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_23_02, testi::TestoId::PARLANTE_AURELIA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_23_01, testi::TestoId::PARLANTE_AURELIA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_23_00, testi::TestoId::PARLANTE_AURELIA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_24_02, testi::TestoId::PARLANTE_LEONORA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_24_01, testi::TestoId::PARLANTE_LEONORA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_24_00, testi::TestoId::PARLANTE_LEONORA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_25_03, testi::TestoId::PARLANTE_RENZO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_25_01, testi::TestoId::PARLANTE_RENZO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_25_02, testi::TestoId::PARLANTE_RENZO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_25_00, testi::TestoId::PARLANTE_RENZO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_26_02, testi::TestoId::PARLANTE_VALERIANA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_26_01, testi::TestoId::PARLANTE_VALERIANA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_26_00, testi::TestoId::PARLANTE_VALERIANA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_27_03, testi::TestoId::PARLANTE_RAGNETTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_27_02, testi::TestoId::PARLANTE_RAGNETTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_27_00, testi::TestoId::PARLANTE_RAGNETTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 18, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_27_01, testi::TestoId::PARLANTE_RAGNETTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_28_03, testi::TestoId::PARLANTE_ANDREUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_28_02, testi::TestoId::PARLANTE_ANDREUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_28_00, testi::TestoId::PARLANTE_ANDREUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 16, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_28_01, testi::TestoId::PARLANTE_ANDREUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 18, { 255, 255 }, -1 },
     { testi::TestoId::NPC_29_05, testi::TestoId::PARLANTE_PADELLINO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
     { testi::TestoId::NPC_29_01, testi::TestoId::PARLANTE_PADELLINO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 19, { 255, 255 }, -1 },
     { testi::TestoId::NPC_29_02, testi::TestoId::PARLANTE_PADELLINO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 20, { 255, 255 }, -1 },
     { testi::TestoId::NPC_29_03, testi::TestoId::PARLANTE_PADELLINO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 21, { 255, 255 }, -1 },
     { testi::TestoId::NPC_29_04, testi::TestoId::PARLANTE_PADELLINO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
     { testi::TestoId::NPC_29_00, testi::TestoId::PARLANTE_PADELLINO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_30_03, testi::TestoId::PARLANTE_CIOTTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_30_02, testi::TestoId::PARLANTE_CIOTTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_30_00, testi::TestoId::PARLANTE_CIOTTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 16, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_30_01, testi::TestoId::PARLANTE_CIOTTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 18, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_31_03, testi::TestoId::PARLANTE_FAZIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_31_02, testi::TestoId::PARLANTE_FAZIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_31_00, testi::TestoId::PARLANTE_FAZIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 18, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_31_01, testi::TestoId::PARLANTE_FAZIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_32_05, testi::TestoId::PARLANTE_LAURETTA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_32_02, testi::TestoId::PARLANTE_LAURETTA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 16, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_32_03, testi::TestoId::PARLANTE_LAURETTA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 18, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_32_04, testi::TestoId::PARLANTE_LAURETTA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_32_00, testi::TestoId::PARLANTE_LAURETTA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 18, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_32_01, testi::TestoId::PARLANTE_LAURETTA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_33_02, testi::TestoId::PARLANTE_NICOLUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_33_01, testi::TestoId::PARLANTE_NICOLUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_33_00, testi::TestoId::PARLANTE_NICOLUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_34_03, testi::TestoId::PARLANTE_RENZO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_34_01, testi::TestoId::PARLANTE_RENZO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_34_02, testi::TestoId::PARLANTE_RENZO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_34_00, testi::TestoId::PARLANTE_RENZO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_35_02, testi::TestoId::PARLANTE_VALERIANA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_35_01, testi::TestoId::PARLANTE_VALERIANA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_35_00, testi::TestoId::PARLANTE_VALERIANA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_36_03, testi::TestoId::PARLANTE_RAGNETTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_36_02, testi::TestoId::PARLANTE_RAGNETTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_36_00, testi::TestoId::PARLANTE_RAGNETTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 18, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_36_01, testi::TestoId::PARLANTE_RAGNETTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_37_03, testi::TestoId::PARLANTE_ANDREUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_37_02, testi::TestoId::PARLANTE_ANDREUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_37_00, testi::TestoId::PARLANTE_ANDREUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 16, { 255, 255 }, -1 },
-    { testi::TestoId::NPC_37_01, testi::TestoId::PARLANTE_ANDREUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 18, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_30_02, testi::TestoId::PARLANTE_GABRIONE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_30_01, testi::TestoId::PARLANTE_GABRIONE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_30_00, testi::TestoId::PARLANTE_GABRIONE, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_31_03, testi::TestoId::PARLANTE_VALENZA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_31_02, testi::TestoId::PARLANTE_VALENZA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_31_00, testi::TestoId::PARLANTE_VALENZA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 12, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_31_01, testi::TestoId::PARLANTE_VALENZA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_32_03, testi::TestoId::PARLANTE_CIOTTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_32_02, testi::TestoId::PARLANTE_CIOTTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_32_00, testi::TestoId::PARLANTE_CIOTTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 16, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_32_01, testi::TestoId::PARLANTE_CIOTTO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 18, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_33_03, testi::TestoId::PARLANTE_FAZIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_33_02, testi::TestoId::PARLANTE_FAZIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_33_00, testi::TestoId::PARLANTE_FAZIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 18, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_33_01, testi::TestoId::PARLANTE_FAZIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_34_05, testi::TestoId::PARLANTE_LAURETTA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_34_02, testi::TestoId::PARLANTE_LAURETTA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 16, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_34_03, testi::TestoId::PARLANTE_LAURETTA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 18, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_34_04, testi::TestoId::PARLANTE_LAURETTA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_34_00, testi::TestoId::PARLANTE_LAURETTA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 18, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_34_01, testi::TestoId::PARLANTE_LAURETTA, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_35_02, testi::TestoId::PARLANTE_NICOLUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_35_01, testi::TestoId::PARLANTE_NICOLUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_35_00, testi::TestoId::PARLANTE_NICOLUCCIO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_36_02, testi::TestoId::PARLANTE_RUFINO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_36_01, testi::TestoId::PARLANTE_RUFINO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_36_00, testi::TestoId::PARLANTE_RUFINO, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_37_02, testi::TestoId::PARLANTE_VANNI, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_37_01, testi::TestoId::PARLANTE_VANNI, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
+    { testi::TestoId::NPC_37_00, testi::TestoId::PARLANTE_VANNI, TipoBattuta::PERSONAGGIO, Espressione::CALMO, 0, { 255, 255 }, -1 },
 };
 
 inline constexpr int NPC = 38;
 inline constexpr Npc NPC_AMBIENTE[NPC] = {
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 19, 30, { 0xFFFF, 0, 1 }, { 0, 1, 5 }, 0, 255, 0, 0, 0, false },  // Il console Guido
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 25, 30, { 6, 7, 10 }, { 1, 3, 1 }, 1, 255, 0, 0, 0, false },  // Berto il Tagliapietre
-    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 19, 33, { 11, 12, 18 }, { 1, 6, 2 }, 2, 255, 0, 0, 0, false },  // Popolana
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 25, 30, { 0xFFFF, 0, 1 }, { 0, 1, 5 }, 0, 255, 0, 0, 0, false },  // Il console Guido
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 19, 31, { 6, 7, 10 }, { 1, 3, 1 }, 1, 255, 0, 0, 0, false },  // Berto il Tagliapietre
+    { int8_t(mondo::AreaId::PIAZZA_GRANDE), 25, 33, { 11, 12, 18 }, { 1, 6, 2 }, 2, 255, 0, 0, 0, false },  // Popolana
     { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 10, 35, { 20, 0xFFFF, 0xFFFF }, { 1, 0, 0 }, 0, 255, 0, 0, 0, false },  // Merciaio
     { int8_t(mondo::AreaId::LARGO_BARGELLO), 20, 8, { 21, 22, 23 }, { 1, 1, 1 }, 1, 255, 0, 0, 0, false },  // Mastro Tano
     { int8_t(mondo::AreaId::SAN_MARTINO), 37, 29, { 0xFFFF, 24, 26 }, { 0, 2, 2 }, 3, 255, 0, 0, 0, false },  // Cecco il Balestriere
@@ -607,27 +607,27 @@ inline constexpr Npc NPC_AMBIENTE[NPC] = {
     { int8_t(mondo::AreaId::SAN_MARTINO), 123, 32, { 56, 57, 58 }, { 1, 1, 1 }, 5, 255, 0, 0, 0, false },  // Ciaccio
     { int8_t(mondo::AreaId::SAN_MARTINO), 15, 58, { 59, 60, 61 }, { 1, 1, 1 }, 6, 255, 0, 0, 0, false },  // Giuliana
     { int8_t(mondo::AreaId::SAN_MARTINO), 42, 32, { 62, 63, 64 }, { 1, 1, 1 }, 7, 255, 0, 0, 0, false },  // Flaviano
-    { int8_t(mondo::AreaId::SAN_MARTINO), 64, 32, { 65, 66, 67 }, { 1, 1, 1 }, 8, 255, 0, 0, 0, false },  // Vanni
-    { int8_t(mondo::AreaId::SAN_MARTINO), 75, 32, { 68, 69, 70 }, { 1, 1, 1 }, 9, 255, 0, 0, 0, false },  // Masio il Romano
-    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 7, 52, { 71, 72, 73 }, { 1, 1, 1 }, 10, 255, 0, 0, 0, false },  // Montano
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 42, 58, { 74, 75, 76 }, { 1, 1, 1 }, 11, 68, 2, 0, 0, false },  // Mastro Rufino
-    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 102, 71, { 77, 78, 79 }, { 1, 1, 1 }, 12, 65, 2, 0, 0, false },  // Giordano
-    { int8_t(mondo::AreaId::SAN_PIETRO), 31, 30, { 80, 81, 82 }, { 1, 1, 1 }, 13, 255, 0, 0, 0, false },  // Febo
-    { int8_t(mondo::AreaId::SAN_PIETRO), 26, 19, { 83, 84, 85 }, { 1, 1, 1 }, 14, 66, 2, 0, 0, false },  // Giambono
-    { int8_t(mondo::AreaId::SAN_PIETRO), 10, 11, { 86, 87, 88 }, { 1, 1, 1 }, 15, 255, 0, 0, 0, false },  // Gabrione
-    { int8_t(mondo::AreaId::SAN_PIETRO), 29, 33, { 89, 90, 91 }, { 1, 1, 1 }, 16, 67, 7, 0, 0, false },  // Ricciardo
-    { int8_t(mondo::AreaId::SAN_PIETRO), 28, 27, { 92, 93, 94 }, { 1, 1, 1 }, 17, 255, 0, 0, 0, false },  // Aurelia
-    { int8_t(mondo::AreaId::SAN_PIETRO), 29, 19, { 95, 96, 97 }, { 1, 1, 1 }, 18, 255, 0, 0, 0, false },  // Leonora
-    { int8_t(mondo::AreaId::SAN_PIETRO), 13, 11, { 98, 99, 100 }, { 1, 1, 2 }, 19, 255, 0, 0, 0, false },  // Valenza
-    { int8_t(mondo::AreaId::SAN_PIETRO), 27, 11, { 102, 103, 107 }, { 1, 4, 1 }, 20, 255, 0, 0, 0, false },  // Padellino
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 41, 30, { 108, 109, 110 }, { 1, 1, 2 }, 21, 255, 0, 4, 25, true },  // Ciotto
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 41, 33, { 112, 113, 114 }, { 1, 1, 2 }, 22, 255, 0, 11, 25, true },  // Fazio
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 41, 36, { 116, 117, 120 }, { 1, 3, 2 }, 23, 255, 0, 14, 25, true },  // Lauretta
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 32, 27, { 122, 123, 124 }, { 1, 1, 1 }, 24, 255, 0, 17, 25, true },  // Nicoluccio
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 35, 27, { 125, 126, 128 }, { 1, 2, 1 }, 25, 64, 2, 20, 25, true },  // Renzo
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 54, 28, { 129, 130, 131 }, { 1, 1, 1 }, 26, 255, 0, 23, 25, true },  // Valeriana
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 43, 27, { 132, 133, 134 }, { 1, 1, 2 }, 27, 255, 0, 26, 25, true },  // Ragnetto
-    { int8_t(mondo::AreaId::SANT_AGOSTINO), 39, 18, { 136, 137, 138 }, { 1, 1, 2 }, 28, 255, 0, 0, 0, false },  // Andreuccio
+    { int8_t(mondo::AreaId::SAN_MARTINO), 75, 32, { 65, 66, 67 }, { 1, 1, 1 }, 8, 255, 0, 0, 0, false },  // Masio il Romano
+    { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 7, 52, { 68, 69, 70 }, { 1, 1, 1 }, 9, 255, 0, 0, 0, false },  // Montano
+    { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 102, 71, { 71, 72, 73 }, { 1, 1, 1 }, 10, 65, 2, 0, 0, false },  // Giordano
+    { int8_t(mondo::AreaId::SAN_PIETRO), 31, 30, { 74, 75, 76 }, { 1, 1, 1 }, 11, 255, 0, 0, 0, false },  // Febo
+    { int8_t(mondo::AreaId::SAN_PIETRO), 26, 19, { 77, 78, 79 }, { 1, 1, 1 }, 12, 66, 2, 0, 0, false },  // Giambono
+    { int8_t(mondo::AreaId::SAN_PIETRO), 29, 33, { 80, 81, 82 }, { 1, 1, 1 }, 13, 67, 7, 0, 0, false },  // Ricciardo
+    { int8_t(mondo::AreaId::SAN_PIETRO), 28, 27, { 83, 84, 85 }, { 1, 1, 1 }, 14, 255, 0, 0, 0, false },  // Aurelia
+    { int8_t(mondo::AreaId::SAN_PIETRO), 29, 19, { 86, 87, 88 }, { 1, 1, 1 }, 15, 255, 0, 0, 0, false },  // Leonora
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 41, 34, { 89, 90, 92 }, { 1, 2, 1 }, 16, 64, 2, 4, 25, true },  // Renzo
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 54, 28, { 93, 94, 95 }, { 1, 1, 1 }, 17, 255, 0, 11, 25, true },  // Valeriana
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 43, 27, { 96, 97, 98 }, { 1, 1, 2 }, 18, 255, 0, 14, 25, true },  // Ragnetto
+    { int8_t(mondo::AreaId::SANT_AGOSTINO), 39, 18, { 100, 101, 102 }, { 1, 1, 2 }, 19, 255, 0, 0, 0, false },  // Andreuccio
+    { int8_t(mondo::AreaId::TAVERNA_INTERNO), 20, 14, { 104, 105, 109 }, { 1, 4, 1 }, 20, 255, 0, 0, 0, false },  // Padellino
+    { int8_t(mondo::AreaId::SPEZIERIA_INTERNO), 5, 9, { 110, 111, 112 }, { 1, 1, 1 }, 21, 255, 0, 0, 0, false },  // Gabrione
+    { int8_t(mondo::AreaId::SPEZIERIA_INTERNO), 20, 12, { 113, 114, 115 }, { 1, 1, 2 }, 22, 255, 0, 0, 0, false },  // Valenza
+    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 22, 15, { 117, 118, 119 }, { 1, 1, 2 }, 23, 255, 0, 17, 25, true },  // Ciotto
+    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 24, 11, { 121, 122, 123 }, { 1, 1, 2 }, 24, 255, 0, 20, 25, true },  // Fazio
+    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 12, 9, { 125, 126, 129 }, { 1, 3, 2 }, 25, 255, 0, 23, 25, true },  // Lauretta
+    { int8_t(mondo::AreaId::BOTTEGA_CONTI_INTERNO), 10, 13, { 131, 132, 133 }, { 1, 1, 1 }, 26, 255, 0, 26, 25, true },  // Nicoluccio
+    { int8_t(mondo::AreaId::CARRADORE_INTERNO), 19, 13, { 134, 135, 136 }, { 1, 1, 1 }, 27, 68, 2, 0, 0, false },  // Mastro Rufino
+    { int8_t(mondo::AreaId::CASA_MEDICO_INTERNO), 13, 10, { 137, 138, 139 }, { 1, 1, 1 }, 28, 255, 0, 0, 0, false },  // Vanni
 };
 
 inline constexpr int GUARDIE = 29;
@@ -897,7 +897,7 @@ inline constexpr int INDIZI = 3;
 inline constexpr Indizio INDIZIO[INDIZI] = {
     { 9, INDIZIO_LUCIA, { 58, 2 } },  // Lucia la Tessitrice
     { 7, INDIZIO_VENDITORE, { 60, 2 } },  // Venditore delle Logge
-    { 21, INDIZIO_FONTANIERE, { 62, 2 } },  // Giordano il fontaniere
+    { 19, INDIZIO_FONTANIERE, { 62, 2 } },  // Giordano il fontaniere
 };
 
 inline constexpr Righe INDIZI_COMPLETI = { 64, 1 };
@@ -1080,16 +1080,6 @@ inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][8 * 8] = {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x11000000, 0xDD100000, 0x33D10000, 0x13D10000, 0x33D10000, 0x33100000, 0x68810000,
-        0x00000000, 0x00000011, 0x000001DD, 0x00001D33, 0x00001D33, 0x00001D33, 0x00000133, 0x00001886,
-        0x88881A00, 0x88881300, 0x88881A00, 0x88881A00, 0x88810A00, 0x88810A00, 0x0A100A00, 0x01100A00,
-        0x00188888, 0x00188888, 0x0AAA8888, 0x0AAA8888, 0x0AAA8888, 0x00018888, 0x00001A10, 0x00001110,
-    },
-    {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x55000000, 0x55500000, 0x55510000, 0x33310000, 0x31310000, 0x33310000, 0x33100000, 0xB4E10000,
         0x00000055, 0x00000555, 0x00001555, 0x00001333, 0x00001313, 0x00001333, 0x00000133, 0x00001BBB,
         0x4EBB1000, 0xEBBB1000, 0xEEEE1000, 0xBBBB1000, 0xBBBB1000, 0xBBBBB100, 0x11111100, 0x00000000,
@@ -1104,16 +1094,6 @@ inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][8 * 8] = {
         0x00000055, 0x00000555, 0x00001555, 0x00001333, 0x00001313, 0x00001333, 0x0EEEE133, 0x0EE4EBBB,
         0xBBBB1000, 0xBBBB1000, 0xEEEE1000, 0xCBCB1000, 0xBCBB1000, 0xBBBBB100, 0x11111100, 0x00000000,
         0x0E4EEBBB, 0x0EEEEBBB, 0x0001EEEE, 0x00014EBB, 0x00014BBB, 0x001BBBBB, 0x00111111, 0x00000000,
-    },
-    {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x55000000, 0x55500000, 0x55510000, 0x33310000, 0x31310000, 0x33310000, 0x33100000, 0xBBB10000,
-        0x00000055, 0x00000555, 0x00001555, 0x00001333, 0x00001313, 0x00001333, 0x00CC0133, 0x0C00CBBB,
-        0xBBBB1000, 0xBBBB1000, 0xEEEE1000, 0xBBBB1000, 0xBBBB1000, 0xBBBBB100, 0x11111100, 0x00000000,
-        0xC0AABCBB, 0xC0AABCBB, 0x0C01CEEE, 0x00CC4EBB, 0x00014BBB, 0x001BBBBB, 0x00111111, 0x00000000,
     },
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -1144,16 +1124,6 @@ inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][8 * 8] = {
         0x00D00000, 0x00D00011, 0x00B01DDD, 0x00B1DD77, 0x00B01333, 0x00B01313, 0x00B01333, 0x00BAAAAA,
         0x44410D00, 0x64441D00, 0x66641000, 0x64441000, 0x44410000, 0xCCC10000, 0x01C10000, 0x00110000,
         0x00B01444, 0x00B14446, 0x00B14666, 0x00B14446, 0x00B01444, 0x00B01CCC, 0x00B01C10, 0x00B01100,
-    },
-    {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x11100000, 0x33310000, 0x39310000, 0x31310000, 0x33310000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x00000013, 0x00000013, 0x00000013, 0x00000013,
-        0x33100000, 0x77710000, 0x77771000, 0x77771000, 0x77771000, 0x77D71000, 0x77771000, 0x77771000,
-        0x00000001, 0x00000017, 0x00000177, 0x00000177, 0x00000177, 0x0000017D, 0x00000177, 0x00000177,
-        0x77710000, 0x77710000, 0x00710000, 0x00A10000, 0x00110000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000017, 0x00000017, 0x00000017, 0x0001001A, 0x00010011, 0x00000000, 0x00000000, 0x00000000,
     },
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -1190,10 +1160,40 @@ inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][8 * 8] = {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x11000000, 0x66100000, 0x66610000, 0x33610000, 0x31610000, 0x33610000, 0x33100000, 0x44410000,
+        0x00000000, 0xAA100000, 0x3AA10000, 0x33AA1000, 0x313A1000, 0x333A1000, 0x33A10000, 0xAAAA1000,
+        0x00000000, 0x000001AA, 0x00001AA3, 0x0001AA33, 0x0001A313, 0x0001A333, 0x00001A33, 0x0001AAAA,
+        0xAAABA100, 0xAAABA100, 0x6666A100, 0x6AAA1000, 0x6AAA1000, 0xAAAA1000, 0x00210000, 0x00110000,
+        0x0099DAAA, 0x00D99AAA, 0x001A6666, 0x0001AAAA, 0x0001AAAA, 0x0001AAAA, 0x00001200, 0x00001100,
+    },
+    {
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000A00, 0x00000A00,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x11000A00, 0x66100A00, 0x66610A00, 0x33610A00, 0x31610A00, 0x33610A00, 0x33100A00, 0x44410A00,
         0x00000011, 0x00000166, 0x00001666, 0x00001633, 0x00001631, 0x00001633, 0x00000133, 0x00001444,
-        0x6B441000, 0xBB441000, 0x66441000, 0x66441000, 0x44441000, 0x44444100, 0x11111000, 0x00000000,
-        0x000144B6, 0x000144BB, 0x00014466, 0x00014466, 0x00014444, 0x00144444, 0x00011111, 0x00000000,
+        0x66441A00, 0x66441A00, 0x66441A00, 0x66441A00, 0x44441A00, 0x44444A00, 0x11111A00, 0x00000000,
+        0x00114466, 0x00EE4466, 0x00EE4466, 0x00EE4466, 0x00014444, 0x00144444, 0x00011111, 0x00000000,
+    },
+    {
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0xBBBBBBBB, 0xBABBABBA, 0xAAAA1000, 0x33310000, 0x31310000, 0x33310000, 0x33100000,
+        0x00D00000, 0xBBBBBBBB, 0xABBABBAB, 0x00B1AAAA, 0x00B01333, 0x00B01313, 0x00B01333, 0x00B00133,
+        0x44410000, 0x64443000, 0x66643000, 0x64443000, 0x44410000, 0xCCC10000, 0x01C10000, 0x00110000,
+        0x00B01444, 0x00B14446, 0x00B14666, 0x00B14446, 0x00B01444, 0x00B01CCC, 0x00B01C10, 0x00B01100,
+    },
+    {
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x11000000, 0xDDD10000, 0x77DD1000, 0x33310000, 0x31310000, 0x33310000, 0x33444440,
+        0x00D00000, 0x00D00011, 0x00B01DDD, 0x00B1DD77, 0x00B01333, 0x00B01313, 0x00B01333, 0x00B00133,
+        0x44446440, 0x64466640, 0x66466640, 0x64444440, 0x44144410, 0xCCC10000, 0x01C10000, 0x00110000,
+        0x00B01444, 0x00B14446, 0x00B14666, 0x00B14446, 0x00B01444, 0x00B01CCC, 0x00B01C10, 0x00B01100,
     },
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -1204,6 +1204,26 @@ inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][8 * 8] = {
         0x00000055, 0x00000555, 0x00001555, 0x00001333, 0x00001313, 0x00001333, 0x00000133, 0x00001BBB,
         0x666B1000, 0x666B1000, 0xEEEE1000, 0x666B1000, 0x666B1000, 0xBBBBB100, 0x11111100, 0x00000000,
         0x0001B666, 0x00A1B666, 0x0FFFEEEE, 0x0FFF4E66, 0x0FFF4666, 0x001BBBBB, 0x00111111, 0x00000000,
+    },
+    {
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x11100000, 0x33310000, 0x39310000, 0x31310000, 0x33310000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x00000013, 0x00000013, 0x00000013, 0x00000013,
+        0x33100000, 0x77710000, 0x77771000, 0x77771000, 0x77771000, 0x77D71000, 0x77771000, 0x77771000,
+        0x00000001, 0x00000017, 0x00000177, 0x00000177, 0x00000177, 0x0000017D, 0x00000177, 0x00000177,
+        0x77710000, 0x77710000, 0x00710000, 0x00A10000, 0x00110000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000017, 0x00000017, 0x00000017, 0x0001001A, 0x00010011, 0x00000000, 0x00000000, 0x00000000,
+    },
+    {
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+        0x11000000, 0x66100000, 0x66610000, 0x33610000, 0x31610000, 0x33610000, 0x33100000, 0x44410000,
+        0x00000011, 0x00000166, 0x00001666, 0x00001633, 0x00001631, 0x00001633, 0x00000133, 0x00001444,
+        0x6B441000, 0xBB441000, 0x66441000, 0x66441000, 0x44441000, 0x44444100, 0x11111000, 0x00000000,
+        0x000144B6, 0x000144BB, 0x00014466, 0x00014466, 0x00014444, 0x00144444, 0x00011111, 0x00000000,
     },
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -1250,40 +1270,20 @@ inline constexpr uint32_t FIGURA_NPC[FIGURE_NPC][8 * 8] = {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0xAA100000, 0x3AA10000, 0x33AA1000, 0x313A1000, 0x333A1000, 0x33A10000, 0xAAAA1000,
-        0x00000000, 0x000001AA, 0x00001AA3, 0x0001AA33, 0x0001A313, 0x0001A333, 0x00001A33, 0x0001AAAA,
-        0xAAABA100, 0xAAABA100, 0x6666A100, 0x6AAA1000, 0x6AAA1000, 0xAAAA1000, 0x00210000, 0x00110000,
-        0x0099DAAA, 0x00D99AAA, 0x001A6666, 0x0001AAAA, 0x0001AAAA, 0x0001AAAA, 0x00001200, 0x00001100,
-    },
-    {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000A00, 0x00000A00,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x11000A00, 0x66100A00, 0x66610A00, 0x33610A00, 0x31610A00, 0x33610A00, 0x33100A00, 0x44410A00,
-        0x00000011, 0x00000166, 0x00001666, 0x00001633, 0x00001631, 0x00001633, 0x00000133, 0x00001444,
-        0x66441A00, 0x66441A00, 0x66441A00, 0x66441A00, 0x44441A00, 0x44444A00, 0x11111A00, 0x00000000,
-        0x00114466, 0x00EE4466, 0x00EE4466, 0x00EE4466, 0x00014444, 0x00144444, 0x00011111, 0x00000000,
+        0x55000000, 0x55500000, 0x55510000, 0x33310000, 0x31310000, 0x33310000, 0x33100000, 0xBBB10000,
+        0x00000055, 0x00000555, 0x00001555, 0x00001333, 0x00001313, 0x00001333, 0x00CC0133, 0x0C00CBBB,
+        0xBBBB1000, 0xBBBB1000, 0xEEEE1000, 0xBBBB1000, 0xBBBB1000, 0xBBBBB100, 0x11111100, 0x00000000,
+        0xC0AABCBB, 0xC0AABCBB, 0x0C01CEEE, 0x00CC4EBB, 0x00014BBB, 0x001BBBBB, 0x00111111, 0x00000000,
     },
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0xBBBBBBBB, 0xBABBABBA, 0xAAAA1000, 0x33310000, 0x31310000, 0x33310000, 0x33100000,
-        0x00D00000, 0xBBBBBBBB, 0xABBABBAB, 0x00B1AAAA, 0x00B01333, 0x00B01313, 0x00B01333, 0x00B00133,
-        0x44410000, 0x64443000, 0x66643000, 0x64443000, 0x44410000, 0xCCC10000, 0x01C10000, 0x00110000,
-        0x00B01444, 0x00B14446, 0x00B14666, 0x00B14446, 0x00B01444, 0x00B01CCC, 0x00B01C10, 0x00B01100,
-    },
-    {
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x11000000, 0xDDD10000, 0x77DD1000, 0x33310000, 0x31310000, 0x33310000, 0x33444440,
-        0x00D00000, 0x00D00011, 0x00B01DDD, 0x00B1DD77, 0x00B01333, 0x00B01313, 0x00B01333, 0x00B00133,
-        0x44446440, 0x64466640, 0x66466640, 0x64444440, 0x44144410, 0xCCC10000, 0x01C10000, 0x00110000,
-        0x00B01444, 0x00B14446, 0x00B14666, 0x00B14446, 0x00B01444, 0x00B01CCC, 0x00B01C10, 0x00B01100,
+        0x00000000, 0x11000000, 0xDD100000, 0x33D10000, 0x13D10000, 0x33D10000, 0x33100000, 0x68810000,
+        0x00000000, 0x00000011, 0x000001DD, 0x00001D33, 0x00001D33, 0x00001D33, 0x00000133, 0x00001886,
+        0x88881A00, 0x88881300, 0x88881A00, 0x88881A00, 0x88810A00, 0x88810A00, 0x0A100A00, 0x01100A00,
+        0x00188888, 0x00188888, 0x0AAA8888, 0x0AAA8888, 0x0AAA8888, 0x00018888, 0x00001A10, 0x00001110,
     },
     {
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,

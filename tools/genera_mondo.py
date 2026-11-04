@@ -104,6 +104,8 @@ DISTANZA_MIN_SPAWN = 3
 # Dalla propria uscita, quella da cui si e' entrati, lo spawn sta piu' lontano: si arriva gia'
 # dentro l'area, non sulla soglia.
 DISTANZA_MIN_SPAWN_USCITA = 6
+# Gli arrivi di un'area (0-7): Quaranta Martiri ne ha 7, l'ultimo e' davanti alla bottega del carradore (INT2).
+SPAWN_PER_AREA = 8
 
 # Celle della griglia: carattere del file .area -> (nome C++, solida). L'ordine conta: il gioco
 # (mondo::solida in include/mondo_logica.h) dice solida ogni cella da PRIMA_CELLA_SOLIDA in su, quindi
@@ -1259,6 +1261,8 @@ def leggi_area(nome_file, testo):
             elif t[0] == "dimensioni":
                 a["larghezza"], a["altezza"] = int(t[1]), int(t[2])
             elif t[0] == "spawn":
+                if not 0 <= int(t[1]) < SPAWN_PER_AREA:
+                    raise ErroreMondo(f"{nome_file}:{n}: spawn {t[1]} oltre SPAWN_PER_AREA ({SPAWN_PER_AREA})")
                 a["spawn"][int(t[1])] = (int(t[2]), int(t[3]))
             elif t[0] == "uscita":
                 if t[2] in DUNGEON:
@@ -2801,7 +2805,7 @@ def scrivi_header(aree, grafo, palette_stile):
         f"inline constexpr int DISTANZA_MIN_SPAWN = {DISTANZA_MIN_SPAWN};",
         f"inline constexpr int DISTANZA_MIN_SPAWN_USCITA = {DISTANZA_MIN_SPAWN_USCITA};",
         f"inline constexpr int LATO_MAX = {LATO_MAX};          // tile per lato di un'area",
-        f"inline constexpr int SPAWN_PER_AREA = 6;",
+        f"inline constexpr int SPAWN_PER_AREA = {SPAWN_PER_AREA};",
         f"inline constexpr int VARCHI_MAX = {len(VARCHI)};",
         "",
         "enum class AreaId : uint8_t",
@@ -2895,7 +2899,7 @@ def scrivi_header(aree, grafo, palette_stile):
                 varchi.append(f"{{ {indice[dest]}, {arrivo}, testi::TestoId::{a['etichetta']} }}")
         while len(varchi) < len(VARCHI):
             varchi.append(f"{{ DUNGEON, 0, testi::TestoId::{a['etichetta']} }}")
-        spawn = [a["spawn"].get(i, a["spawn"][0]) for i in range(6)]
+        spawn = [a["spawn"].get(i, a["spawn"][0]) for i in range(SPAWN_PER_AREA)]
         out += [
             f"    {{   // {a['id']}",
             f"        GRIGLIA_{nome}, MAPPA_{nome}, {a['larghezza']}, {a['altezza']},",

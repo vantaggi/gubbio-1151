@@ -47,12 +47,14 @@ GIOCO = True          # True: riferimenti (rampa, tono) per il fondale; False: R
 
 # Il banco degli interni (il settimo della palette dei fondali, in coda a pittore_citta.BANCHI_NUOVI): i colori
 # che le stanze usano di piu', tutti insieme. Assi e banconi hanno i quattro toni del legno; i neutri restano il
-# quasi nero e il 2 degli altri banchi, il ferro e il lino passano alla pietra.
+# quasi nero e il 2 degli altri banchi, il ferro e il lino passano alla pietra, il bronzo scuro al legno
+# scuro, il blu piu' scuro al tono sopra.
 L_, T_, P_, O_, N_ = "legno e cuoio", "cotto e coppi", "pietra calcarea", "oro e bronzo", "neutri"
 BANCO_INTERNI = [(N_, 0), (N_, 0), (L_, 0), (L_, 1), (L_, 2), (L_, 3), (T_, 1), (T_, 2), (T_, 3), (T_, 4),
                  (P_, 1), (P_, 2), (P_, 3), (P_, 4), (P_, 5), (O_, 2)]
 NEL_BANCO = {("neutri", 1): ("pietra calcarea", 1), ("neutri", 3): ("pietra calcarea", 4),
-             ("neutri", 4): ("pietra calcarea", 5)}
+             ("neutri", 4): ("pietra calcarea", 5), ("oro e bronzo", 0): ("legno e cuoio", 0),
+             ("cielo e acqua", 0): ("cielo e acqua", 1)}
 
 
 def C(rampa, tono):
