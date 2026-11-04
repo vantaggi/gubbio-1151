@@ -38,6 +38,10 @@ private:
     testo::Contesto _contesto;
     int _sprite_per_riga;
     int _inchiostro;
+    int _x;
+    int _y;
+    bn::sprite_palette_ptr _palette;
+    int _primo[3] = {};             // il primo sprite di ogni riga del testo mostrato
     const testo::Testo* _testo = nullptr;
     int _rivelati = 0;
     int _riga = 0;
@@ -60,6 +64,15 @@ public:
     void mostra_tempo(int secondi);             // "h:mm" (formatta_tempo)
     void mostra_livelli(int a, int b, int c);   // "4 4 3" (formatta_livelli)
     void colloca(int x, int y);     // angolo in alto a sinistra, in pixel dello schermo
+    // Con il bordo destro in x_destra (i numeri allineati a destra dei menu, MPA).
+    void colloca_a_destra(int x_destra, int y)
+    {
+        colloca(x_destra + 1 - _larghezza, y);
+    }
+    [[nodiscard]] int larghezza() const
+    {
+        return _larghezza;
+    }
     void nascondi();
 
 private:
@@ -67,6 +80,7 @@ private:
 
     int _inchiostro;
     int _contorno;
+    int _larghezza = 0;
     bn::sprite_tiles_ptr _tiles;
     bn::sprite_ptr _sprite;
 };

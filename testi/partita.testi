@@ -42,3 +42,22 @@ RIPROVA_TITOLO            | SCELTA  | Torna al titolo
 CARICA_SLOT_1             | SCELTA  | Slot 1
 CARICA_SLOT_2             | SCELTA  | Slot 2
 CARICA_FALLITO            | DIALOGO | Questo slot non si carica.
+# MPA: il menu di pausa a sei voci (menu/PROPOSTA.md, mockup 01 e 06)
+MENU_DIARIO               | HUD     | Diario
+MENU_MAPPA                | HUD     | Mappa
+MENU_BISACCIA             | HUD     | Bisaccia
+MENU_COMPAGNI             | HUD     | Compagni
+MENU_SALVA                | HUD     | Salva
+MENU_OPZIONI              | HUD     | Opzioni
+MENU_PV                   | HUD     | PV
+MENU_FE                   | HUD     | Fe
+MENU_L                    | HUD     | L
+MENU_R                    | HUD     | R
+MENU_AIUTO_A              | HUD     | A: apri
+MENU_AIUTO_B              | DIALOGO | B: torna al gioco
+SALVA_SLOT_1              | HUD     | Slot 1
+SALVA_SLOT_2              | HUD     | Slot 2
+SALVA_VUOTO               | HUD     | Vuoto
+SALVA_AIUTO_A             | HUD     | A: salva
+MENU_INDIETRO             | HUD     | B: indietro
+SALVA_SOVRASCRIVI         | DIALOGO | C'è già una partita: A la sovrascrive, B la lascia.

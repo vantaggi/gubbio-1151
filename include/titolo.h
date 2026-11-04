@@ -13,9 +13,9 @@ class Esplorazione;
 // Con istantanea=true non aspetta tasti: si mostra, scrive "Istantanea titolo" e ritorna -1.
 [[nodiscard]] int titolo(const bn::sprite_palette_ptr& palette_testo, bool istantanea = false);
 
-// La pausa (Start durante l'esplorazione): riprendere o salvare in uno dei due slot. Lo sfondo si
-// scurisce, il testo resta chiaro. Ritorna quando il giocatore riprende.
-// Con istantanea=true non aspetta tasti: si mostra, scrive "Istantanea pausa" e ritorna.
+// La pausa (Start durante l'esplorazione, MPA, src/menu_pausa.cpp): i compagni, le sei voci e l'obiettivo; A apre
+// la pagina della voce. Ritorna quando il giocatore riprende.
+// Con istantanea=true non aspetta tasti: mostra la pausa e ogni pagina, con "Istantanea pausa..." nel log.
 void pausa(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo, bool istantanea = false);
 
 // «Dove eravamo» (MAI): dopo «Continua», una volta, area, fase della cronaca, obiettivo, incarichi aperti e

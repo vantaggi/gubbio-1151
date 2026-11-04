@@ -218,6 +218,10 @@ int main()
 
         if(bn::keypad::start_pressed() && ! esplorazione.in_dissolvenza())
         {
+            // la gente e i nemici sulla mappa si tolgono, come per una battaglia: i loro sprite servono alla
+            // pausa (gli sprite sono 128 in tutto). Al frame dopo si rifanno quelli dell'area.
+            storia.svuota();
+            scontri.svuota();
             gubbio::pausa(esplorazione, palette);
         }
 

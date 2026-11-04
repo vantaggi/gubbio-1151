@@ -87,38 +87,25 @@ namespace
     static_assert(larghezza_numero_max() <= testi::LARGHEZZA_SPRITE, "\"-32768\" deve stare in uno sprite");
 }
 
+// Gli sprite si creano in mostra(), solo quelli che il testo tocca (MPA): un menu ha decine di scritte e gli
+// sprite sono 128 in tutto. Prima ogni VistaTesto teneva sempre tutti gli sprite del suo contesto (21 per un
+// dialogo anche per una riga corta).
 VistaTesto::VistaTesto(testo::Contesto contesto, int x, int y, int inchiostro,
                        const bn::sprite_palette_ptr& palette) :
     _contesto(contesto),
     _sprite_per_riga(testo::sprite_per_riga(contesto)),
-    _inchiostro(inchiostro)
+    _inchiostro(inchiostro),
+    _x(x),
+    _y(y),
+    _palette(palette)
 {
-    int righe = testo::righe_contesto(contesto);
-    BN_ASSERT(righe * _sprite_per_riga <= SPRITE_MAX, "VistaTesto: contesto troppo grande");
-
-    for(int r = 0; r < righe; ++r)
-    {
-        for(int k = 0; k < _sprite_per_riga; ++k)
-        {
-            _tiles.push_back(bn::sprite_tiles_ptr::allocate(8, bn::bpp_mode::BPP_4));
-            _sprite.push_back(crea_sprite(x + k * testi::LARGHEZZA_SPRITE,
-                                          y + r * stile::FONT_INTERLINEA, _tiles.back(), palette));
-            _sprite.back().set_visible(false);
-        }
-    }
+    BN_ASSERT(testo::righe_contesto(contesto) * _sprite_per_riga <= SPRITE_MAX, "VistaTesto: contesto troppo grande");
 }
 
 void VistaTesto::_pulisci()
 {
-    for(bn::sprite_tiles_ptr& tiles : _tiles)
-    {
-        pulisci_tiles(tiles);
-    }
-
-    for(bn::sprite_ptr& sprite : _sprite)
-    {
-        sprite.set_visible(false);
-    }
+    _sprite.clear();
+    _tiles.clear();
 }
 
 void VistaTesto::mostra(testo::TestoId id)
@@ -131,6 +118,23 @@ void VistaTesto::mostra(testo::TestoId id)
     _rivelati = 0;
     _riga = 0;
     _nella_riga = 0;
+
+    for(int r = 0; r < t.righe; ++r)
+    {
+        int ir = testo::indice_riga(t, r);
+        int quanti = testo::sprite_accesi(ir, testo::riga(ir).glifi);
+        BN_ASSERT(quanti <= _sprite_per_riga, "VistaTesto: riga oltre il contesto");
+        _primo[r] = _sprite.size();
+
+        for(int k = 0; k < quanti; ++k)
+        {
+            _tiles.push_back(bn::sprite_tiles_ptr::allocate(8, bn::bpp_mode::BPP_4));
+            pulisci_tiles(_tiles.back());
+            _sprite.push_back(crea_sprite(_x + k * testi::LARGHEZZA_SPRITE, _y + r * stile::FONT_INTERLINEA,
+                                          _tiles.back(), _palette));
+            _sprite.back().set_visible(false);
+        }
+    }
 }
 
 void VistaTesto::avanza()
@@ -153,7 +157,7 @@ void VistaTesto::avanza()
     ++_nella_riga;
     ++_rivelati;
 
-    int primo_sprite = _riga * _sprite_per_riga;
+    int primo_sprite = _primo[_riga];
     int accesi = testo::sprite_accesi(ir, _nella_riga);
     BN_ASSERT(accesi <= _sprite_per_riga, "VistaTesto: punto di taglio oltre la riga");
 
@@ -247,6 +251,8 @@ void VistaNumero::_scrivi(const char* caratteri, int n)
 
         x += g->larghezza + stile::FONT_SPAZIATURA;
     }
+
+    _larghezza = n > 0 ? x - stile::FONT_SPAZIATURA : 0;
 
     if(_contorno < 0)
     {

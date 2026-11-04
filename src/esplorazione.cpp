@@ -1,6 +1,7 @@
 #include "esplorazione.h"
 
 #include "bn_bg_palette_item.h"
+#include "bn_blending.h"
 #include "bn_bg_palettes.h"
 #include "bn_color.h"
 #include "bn_fixed.h"
@@ -544,6 +545,21 @@ void Esplorazione::nascondi_etichetta()
     _etichetta.nascondi();
     _mostra_cartiglio(false);
     _nascondi_aiuti();
+}
+
+void Esplorazione::scurisci(bool scura)
+{
+    // BUIO_MENU dei mockup (menu/mockup_menu.py): uno solo per tutti i menu
+    constexpr int BUIO_CENTESIMI = 65;
+
+    if(_fondale)
+    {
+        _fondale->set_blending_enabled(scura);
+    }
+
+    _giocatore.set_blending_enabled(scura);
+    bn::blending::set_black_fade_color();
+    bn::blending::set_fade_alpha(scura ? bn::fixed(BUIO_CENTESIMI) / 100 : bn::fixed(0));
 }
 
 int Esplorazione::schermo_x(int x) const
