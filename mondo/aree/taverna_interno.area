@@ -1,6 +1,6 @@
 # GENERATO da tools/pittore_interni.py --aree: non modificare a mano (la stanza e' scritta li').
 # La taverna del corso, di Padellino (San Pietro): il banco con le botti, il camino, tre tavoli.
-# Nel DIGIUNO i tavoli sono vuoti e le panche stanno capovolte sopra (l'ordine di Ubaldo, A1-05).
+# Nel DIGIUNO i tavoli sono vuoti con gli sgabelli capovolti sopra (l'ordine di Ubaldo, A1-05).
 id taverna_interno
 etichetta AREA_TAVERNA_INTERNO
 dimensioni 30 20

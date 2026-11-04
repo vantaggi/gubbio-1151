@@ -294,5 +294,50 @@ class DoniDegliAmici(unittest.TestCase):
         self.assertNotIn("Ciaccio", [d["npc"] for d in GS.DONI])
 
 
+class VariantiDiFase(unittest.TestCase):
+    """INTp: le stanze che cambiano con la fase hanno un fondale loro, con la stessa griglia della stanza di giorno."""
+
+    def test_stessa_griglia(self):
+        for aid, var in PI.VARIANTI_DI_GIOCO:
+            nome = PI.STANZA_DELL_AREA[aid]
+            self.assertIn(var, PI.VARIANTI[nome])
+            self.assertEqual(PI.griglia_di_gioco(PI.stanza_di_gioco(nome)),
+                             PI.griglia_di_gioco(PI.stanza_di_gioco(nome, var)), aid)
+
+    def test_nel_mondo_e_diverse(self):
+        with open(os.path.join(RADICE, "include", "mondo.h"), encoding="utf-8") as f:
+            h = f.read()
+        for aid, var in PI.VARIANTI_DI_GIOCO:
+            n = f"{aid.upper()}_{var.upper()}"
+            self.assertIn(f"{{ AreaId::{aid.upper()}, FONDALE_{n}, TILE_{n},", h)
+            base = h.split(f"inline constexpr uint16_t FONDALE_{aid.upper()}[")[1].split("};")[0]
+            altro = h.split(f"inline constexpr uint16_t FONDALE_{n}[")[1].split("};")[0]
+            self.assertNotEqual(base, altro, n)
+
+    def test_negativa_una_panca_tolta_cambia_la_griglia(self):
+        st = PI.stanza_di_gioco("taverna", "digiuno")
+        g = PI.griglia_di_gioco(st)
+        self.assertNotEqual(g, PI.griglia_di_gioco(PI.stanza_di_gioco("sala_consoli")))
+
+
+class NotteDentro(unittest.TestCase):
+    """Di notte negli interni anche oro e vermiglio vanno alle rampe di notte (il tappeto della soglia non brilla)."""
+
+    def test_vermiglio_di_notte_dentro(self):
+        pal = G.S.carica("palette")
+        fuori = G.banchi_fondali(pal, notte=True)
+        dentro = G.banchi_fondali(pal, notte=True, dentro=True)
+        rossi = [i for i, r in enumerate(G.BANCHI_FONDALI[3]) if r[0] == G.PC.R]
+        self.assertTrue(rossi)
+        for i in rossi:
+            self.assertNotEqual(fuori[3][i], dentro[3][i])
+
+    def test_negativa_gli_altri_banchi_uguali(self):
+        pal = G.S.carica("palette")
+        fuori = G.banchi_fondali(pal, notte=True)
+        dentro = G.banchi_fondali(pal, notte=True, dentro=True)
+        self.assertEqual([b for k, b in enumerate(fuori) if k != 3], [b for k, b in enumerate(dentro) if k != 3])
+
+
 if __name__ == "__main__":
     unittest.main()

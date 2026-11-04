@@ -42,11 +42,11 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 
 ## Via dei Consoli
 
-**Montano**, cavadenti e ritrattista, eugubino che lavora a Bergamo. Tornato per la madre, è rimasto chiuso dentro dall'assedio. Luogo: un banco all'aperto sotto le case di via dei Consoli (nessun edificio nuovo). Figura: mercante con le pinze alla cintura e una tavoletta dipinta. Galante con tutte, ma sempre con garbo: nessuna battuta lo mette in ridicolo.
+**Montano**, cavadenti e ritrattista, eugubino che lavora a Bergamo. Tornato per affari del mestiere (pinze e ferri dai fabbri eugubini), è rimasto chiuso dentro dall'assedio. Luogo: un banco all'aperto sotto le case di via dei Consoli (nessun edificio nuovo). Figura: mercante con le pinze alla cintura e una tavoletta dipinta. Galante con tutte, ma sempre con garbo: nessuna battuta lo mette in ridicolo.
 
 - NOTTE: MONTANO: Stanotte ho ritratto le ragazze di guardia. Tutte più belle del Grifo, s'intende.
 - DIGIUNO: MONTANO: A Bergamo cavo denti da dieci anni. Qui li cavo gratis, finché dura l'assedio.
-- ULTIMATUM: MONTANO: Torno da Bergamo per mia madre e trovo undici eserciti. Gubbio sa accogliere.
+- ULTIMATUM: MONTANO: Torno da Bergamo per comprare pinze nuove e trovo undici eserciti. Gubbio sa accogliere.
 
 ---
 
