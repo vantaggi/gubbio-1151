@@ -74,6 +74,9 @@ def errori_tabelle(testo):
         c = [int(v) for v in re.search(r"%s\[[^\]]*\] = \{([^}]*)\}" % nome, testo).group(1).split(",")]
         if c != getattr(B, nome):
             err.append(f"{nome}: C++ {c}, mirror {getattr(B, nome)}")
+    ceri = int(re.search(r"inline constexpr int FERVORE_CERI = (\d+);", testo).group(1))
+    if ceri != B.FERVORE_CERI:
+        err.append(f"FERVORE_CERI: C++ {ceri}, mirror {B.FERVORE_CERI}")
     return err
 
 
@@ -163,6 +166,29 @@ class FirmeEMirror(unittest.TestCase):
         firme = B.firme_scudo_in_meno()
         self.assertTrue(any(firme[k].hash != FIRME[k].hash for k in firme))
         self.assertEqual(B.gioca(2, 7, scudi_in_meno=0).hash, FIRME[(2, 7, False)].hash)
+
+    def test_ceri_duecento_battaglie(self):
+        """I Ceri risvegliati (CERI_RISVEGLIATI): Corrado e i Guerrieri di B-03, 50 semi x 2 piloti, scritti a parte
+        in battaglia_attese.h (ATTESE_CERI) e confrontati col C++ da src/autotest_battaglia.cpp."""
+        firme = B.firme_ceri()
+        self.assertEqual(len(firme), 200)
+        self.assertEqual({k[0] for k in firme}, {2, 4})
+        self.assertIn(f"ATTESE_CERI_CONTEGGIO = {len(firme)};", open(B.USCITA, encoding="utf-8").read())
+        # il Fervore iniziale: 80, 45, 20 per cento senza, 95, 60, 35 con
+        senza, con = B.Battaglia(2, 1), B.Battaglia(2, 1, ceri=True)
+        self.assertEqual([u.fervore * 100 // u.fervore_max for u in senza.eroi], [80, 45, 20])
+        self.assertEqual([u.fervore for u in con.eroi], [u.fervore_max * p // 100 for u, p in zip(con.eroi, (95, 60, 35))])
+
+    def test_negativa_ceri_cambiano_la_battaglia(self):
+        """Stesso seme, firma diversa con i Ceri; senza la manopola e' la battaglia di sempre."""
+        firme = B.firme_ceri()
+        self.assertTrue(any(firme[k].hash != FIRME[k].hash for k in firme))
+        self.assertEqual(B.gioca(2, 7, ceri=False).hash, FIRME[(2, 7, False)].hash)
+
+    def test_negativa_fervore_ceri_diverso(self):
+        """Un FERVORE_CERI diverso fra C++ e mirror viene segnalato."""
+        alterato = re.sub(r"FERVORE_CERI = \d+;", "FERVORE_CERI = 99;", DATI)
+        self.assertEqual(errori_tabelle(alterato), [f"FERVORE_CERI: C++ 99, mirror {B.FERVORE_CERI}"])
 
     def test_con_il_pilota_debole_si_perde(self):
         perse = [k for k, f in FIRME.items() if k[2] and f.esito == B.SCONFITTA]

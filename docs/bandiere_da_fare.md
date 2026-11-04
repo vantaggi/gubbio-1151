@@ -6,7 +6,8 @@ Le scene del copione v1 le accendono, ma per ora nessuna scena e nessun sistema 
 
 | Bandiera | Chi la accende | Cosa dovrà fare | Quando |
 | :-- | :-- | :-- | :-- |
-| `CERI_RISVEGLIATI` | A1-08 | I tre Ceri accesi nell'interno della Basilica (la grafica dei ceri che brillano) e il Fervore che parte più alto in battaglia | Rifinitura della Basilica |
+
+Nessuna, da F10: `CERI_RISVEGLIATI` era l'ultima ed è ora letta dal gioco (qui sotto, «I Ceri risvegliati»).
 
 Già collegate (in `LETTE_DAL_GIOCO`): `GIORGIO_NEL_GRUPPO` (il gruppo in battaglia), `IMBOSCATA_STRADONI`
 e `CORRADO_SCONFITTO` (il nemico sulla mappa non torna), `CRONACA_V1_FINITA` (il cartello dei titoli di coda),
@@ -15,7 +16,7 @@ e `CORRADO_SCONFITTO` (il nemico sulla mappa non torna), `CRONACA_V1_FINITA` (il
 `Q_SA01_PRESA`, `Q_SP01_PRESA`, `FERRO_1`...`FERRO_3`, `ELLEBORO_1`...`ELLEBORO_4`, `ROSA_RIPRESA`,
 `INDIZIO_LUCIA`, `INDIZIO_VENDITORE`, `INDIZIO_FONTANIERE`; e quelle della gola qui sotto (T2): `MIASMI_VISTI`,
 `PIANO_DI_CORRADO`, `CORRADO_INCONTRATO`, `FORZIERE_CRESCIA`, `FORZIERE_BISCOTTI`; e quelle dei nemici di F10
-qui sotto: `GUERRIERI_VINTI`, `GUARDIA_FORNACE_1`...`GUARDIA_FORNACE_3`.
+qui sotto: `GUERRIERI_VINTI`, `GUARDIA_FORNACE_1`...`GUARDIA_FORNACE_3`; e `CERI_RISVEGLIATI` (i Ceri, qui sotto).
 
 ## Regole del copione ora nel codice (F10, quest)
 
