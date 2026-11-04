@@ -72,7 +72,7 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 
 - NOTTE: GIAMBONO: Il frate dice che il concilio vieta la balestra. Tiro ai perugini: pregano male.
 - DIGIUNO: GIAMBONO: La pietra nera della gola si sbriciola come pane secco. Lì scava chiunque.
-- ULTIMATUM: GIAMBONO: Cecco dice che tira meglio lui. Cecco dice tante cose.
+- ULTIMATUM: GIAMBONO: Cecco della postierla dice che tira meglio lui. Cecco dice tante cose.
 
 **Ricciardo**, interprete dell'abate. Luogo: chiostro dell'abbazia di San Pietro. Figura: mercante con tavoletta di cera e stilo. Nota: una qualunque sua battuta imposta `RICCIARDO_ASCOLTATO`.
 
@@ -84,7 +84,7 @@ Regola di rispetto (approvata da Cioti): nessuno di loro è traditore, vigliacco
 
 - NOTTE: AURELIA: Ho insegnato una parola nuova: «alba». La scrivono tutti, storta ma la scrivono.
 - DIGIUNO: AURELIA: I bambini sono nel chiostro. Imparano le lettere, così non sentono i tamburi.
-- ULTIMATUM: AURELIA: Giambono dice che tira meglio di Cecco. Io dico che parlano meglio di come tirano.
+- ULTIMATUM: AURELIA: Giambono dice che tira meglio di Cecco della postierla. Io dico che parlano meglio di come tirano.
 
 **Leonora**, tiene i turni di guardia, fidanzata di Febo. Luogo: torre della porta di San Pietro. Figura: popolana col rotolo dei turni.
 
