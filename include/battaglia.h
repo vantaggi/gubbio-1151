@@ -263,9 +263,12 @@ public:
     // consumabili e nessuno li usa su di lui. Il pilota non usa oggetti: le firme non cambiano.
     // 'ferite': i PV in meno con cui parte ogni Santo (i miasmi della gola, GameState::ferite), mai sotto 1:
     // le ferite non uccidono. Senza (nullptr), tutti a PV pieni come nel mirror.
+    // 'ceri': i Ceri risvegliati (storia::ceri_accesi()): il Fervore iniziale di ogni Santo sale di
+    // FERVORE_CERI punti percentuali del massimo, mai oltre; il mirror Python ha la stessa manopola.
     constexpr void ricomincia(int incontro, uint32_t seme, bool pilota_debole = false,
                               const Statistiche* eroi = nullptr, uint8_t presenti = TUTTI_PRESENTI,
-                              int scudi_in_meno = 0, uint8_t a_digiuno = 0, const uint8_t* ferite = nullptr)
+                              int scudi_in_meno = 0, uint8_t a_digiuno = 0, const uint8_t* ferite = nullptr,
+                              bool ceri = false)
     {
         _caso = Caso(seme);
         _pilota_debole = pilota_debole;
@@ -277,7 +280,8 @@ public:
         for(int e = 0; e < EROI; ++e)
         {
             _eroi[e] = da_statistiche(eroi ? eroi[e] : STATISTICHE_EROI[e], false);
-            _eroi[e].fervore = (_eroi[e].fervore_max * FERVORE_INIZIALE[e]) / 100;
+            int percento = FERVORE_INIZIALE[e] + (ceri ? FERVORE_CERI : 0);
+            _eroi[e].fervore = (_eroi[e].fervore_max * (percento > 100 ? 100 : percento)) / 100;
             _eroi[e].a_digiuno = (a_digiuno >> e) & 1;
 
             if(ferite)
@@ -1069,13 +1073,14 @@ private:
     }
 };
 
-[[nodiscard]] constexpr Firma gioca(int incontro, uint32_t seme, bool pilota_debole = false, int scudi_in_meno = 0)
+[[nodiscard]] constexpr Firma gioca(int incontro, uint32_t seme, bool pilota_debole = false, int scudi_in_meno = 0,
+                                   bool ceri = false)
 {
     Battaglia b(incontro, seme, pilota_debole);
 
-    if(scudi_in_meno)
+    if(scudi_in_meno || ceri)
     {
-        b.ricomincia(incontro, seme, pilota_debole, nullptr, TUTTI_PRESENTI, scudi_in_meno);
+        b.ricomincia(incontro, seme, pilota_debole, nullptr, TUTTI_PRESENTI, scudi_in_meno, 0, nullptr, ceri);
     }
 
     return b.gioca();

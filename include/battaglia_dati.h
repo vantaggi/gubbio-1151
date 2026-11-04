@@ -128,6 +128,10 @@ inline constexpr Statistiche STATISTICHE_EROI[EROI] = {
     { 210, 210, 18, 28, 95, 56, 38, 0, Elemento::NESSUNO, Elemento::NESSUNO },   // Sant'Antonio
 };
 inline constexpr int FERVORE_INIZIALE[EROI] = { 80, 45, 20 };
+// Con i Ceri risvegliati (CERI_RISVEGLIATI, A1-08: «il Fervore che parte piu' alto in battaglia») ogni Santo
+// parte con questi punti percentuali in piu' del suo Fervore massimo, mai oltre il massimo: 95, 60, 35.
+// Il mirror Python ha lo stesso numero (FERVORE_CERI di tools/battaglia_mirror.py).
+inline constexpr int FERVORE_CERI = 15;
 inline constexpr AbilitaId ABILITA_FIRMA[EROI] = {
     AbilitaId::GIUDIZIO_DELLA_VERGA, AbilitaId::FENDENTE_DEL_DRAGO, AbilitaId::FUOCO_DI_SANTANTONIO };
 

@@ -369,6 +369,14 @@ inline constexpr int INCONTRO_DI_CORRADO = 2;     // il duello sul Condotto (B-0
            ? uint8_t(1 << battaglia::UBALDO) : uint8_t(0);
 }
 
+// I Ceri risvegliati in battaglia (Battaglia::ricomincia(..., ceri)): da A1-08 (CERI_RISVEGLIATI) il Fervore dei
+// Santi parte piu' alto (battaglia::FERVORE_CERI). La bandiera si accende a fine scena: gli Spettri del Dubbio,
+// nella stessa scena, si combattono ancora senza.
+[[nodiscard]] constexpr bool ceri_accesi(const GameState& p)
+{
+    return accesa(p, Bandiera::CERI_RISVEGLIATI);
+}
+
 // Una quest si consegna se e' gia' stata data (la sua bandiera di partenza), prima della sua scadenza
 // (ATTO_I_COMPLETATO: la conferma dell'alba che avvia E-01; regola «nessuna quest si perde») e una volta sola.
 [[nodiscard]] constexpr bool quest_consegnabile(const GameState& p, int q)
