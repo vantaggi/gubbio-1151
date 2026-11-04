@@ -14,6 +14,7 @@
 // solo per il duello con Corrado. Ogni prova ha la sua negativa.
 
 #include "aiuti.h"
+#include "stile/cornice.h"
 #include "formatta.h"
 #include "progressione.h"
 #include "storia_logica.h"
@@ -588,7 +589,161 @@ namespace
                   posto_della_freccia(120, 80).x == 112 && posto_della_freccia(120, 80).y == 72,
                   "la freccia esce dallo schermo o non sta sul varco quando il varco si vede");
 
+    static_assert(dentro_la_freccia(Verso::DESTRA, 14, 7) && ! dentro_la_freccia(Verso::DESTRA, 14, 1) &&
+                  dentro_la_freccia(Verso::SU, 7, 1) && ! dentro_la_freccia(Verso::SU, 7, 14) &&
+                  dentro_la_freccia(Verso::SINISTRA, 1, 8) && dentro_la_freccia(Verso::GIU, 8, 14),
+                  "la freccia non punta dove dice");
+
+    // --- Il contorno della freccia (STANDARD P1, P3): quasi nero e chiuso sugli 8 vicini, niente pixel orfani ---
+    // Chiuso: nessun pixel del pieno chiaro tocca il fuori (il lastrico chiaro), nemmeno in diagonale.
+    consteval bool contorno_chiuso(Verso verso, bool vicini_in_croce)
+    {
+        for(int y = 0; y < 16; ++y)
+        {
+            for(int x = 0; x < 16; ++x)
+            {
+                if(tono_della_freccia(verso, x, y, vicini_in_croce) != TONO_FRECCIA_PIENO)
+                {
+                    continue;
+                }
+
+                for(int dy = -1; dy <= 1; ++dy)
+                {
+                    for(int dx = -1; dx <= 1; ++dx)
+                    {
+                        if(! dentro_la_freccia(verso, x + dx, y + dy))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    // Orfano (P3): un pixel pieno o di contorno con un tono diverso da tutti gli 8 vicini. 'buco' (x, y) toglie
+    // il contorno a un pixel e lo fa pieno: la prova negativa.
+    consteval bool senza_orfani(Verso verso, int buco_x = -1, int buco_y = -1)
+    {
+        auto tono = [&](int x, int y) {
+            int t = x >= 0 && y >= 0 && x < 16 && y < 16 ? tono_della_freccia(verso, x, y) : 0;
+            return x == buco_x && y == buco_y && t != 0 ? TONO_FRECCIA_PIENO + 1 : t;
+        };
+
+        for(int y = 0; y < 16; ++y)
+        {
+            for(int x = 0; x < 16; ++x)
+            {
+                int t = tono(x, y);
+                bool uguale = false;
+
+                for(int dy = -1; dy <= 1 && t != 0; ++dy)
+                {
+                    for(int dx = -1; dx <= 1; ++dx)
+                    {
+                        uguale = uguale || ((dx != 0 || dy != 0) && tono(x + dx, y + dy) == t);
+                    }
+                }
+
+                if(t != 0 && ! uguale)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    consteval bool freccia_a_standard()
+    {
+        for(int k = 0; k < 4; ++k)
+        {
+            Verso v = Verso(k);
+            int pieni = 0;
+
+            for(int i = 0; i < 256; ++i)
+            {
+                pieni += tono_della_freccia(v, i % 16, i / 16) == TONO_FRECCIA_PIENO;
+            }
+
+            if(! contorno_chiuso(v, false) || ! senza_orfani(v) || pieni < 20)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    static_assert(freccia_a_standard(), "la freccia ha il contorno aperto, un pixel orfano o niente pieno");
+    // prove negative: il contorno sui soli 4 vicini in croce lascia il pieno a contatto col fuori in diagonale;
+    // un pixel di un tono diverso in mezzo al pieno e' un orfano
+    static_assert(! contorno_chiuso(Verso::DESTRA, true) && ! contorno_chiuso(Verso::SU, true),
+                  "la prova del contorno chiuso non vede i lati obliqui");
+    static_assert(! senza_orfani(Verso::DESTRA, 6, 7), "la prova dei pixel orfani non vede un orfano");
+    static_assert(TONO_FRECCIA_CONTORNO == 1 && stile::CORNICE_PALETTE[TONO_FRECCIA_CONTORNO] == 0x1085 &&
+                  TONO_FRECCIA_PIENO == 2 && stile::CORNICE_PALETTE[TONO_FRECCIA_PIENO] == 0x7BBD,
+                  "il contorno della freccia non e' il piombo quasi nero (neutri 0) o il pieno non e' il fondo chiaro");
+
     static_assert(CELLE_CARTELLO == 3, "il cartello compare a 3 celle dal varco (menu/PROPOSTA.md sez. 3.8)");
+
+    // --- Il fumetto sopra il cartello: a 13 px dalla cella del varco si', a 14 no (come DISTANZA_PAROLA) -------
+    // La cella piu' a destra del varco 0 di Piazza Grande e il giocatore a (dx, dy) px dai suoi piedi: con dx > 0
+    // nessun'altra cella del varco e' piu' vicina in orizzontale. -2 se il punto trovato non e' una cella del varco.
+    consteval Punto cartello_spostato(int dx, int dy)
+    {
+        const mondo::Area& a = mondo::area(mondo::AreaId::PIAZZA_GRANDE);
+        int destra = -1;
+
+        for(int i = 0; i < a.larghezza * a.altezza; ++i)
+        {
+            if(a.griglia[i] == mondo::PRIMO_VARCO && (destra < 0 || i % a.larghezza > destra % a.larghezza))
+            {
+                destra = i;
+            }
+        }
+
+        if(destra < 0)
+        {
+            return { -2, -2 };
+        }
+
+        mondo::Esploratore e;
+        e.area = mondo::AreaId::PIAZZA_GRANDE;
+        e.x = mondo::piedi_x(destra % a.larghezza) + dx;
+        e.y = mondo::piedi_y(destra / a.larghezza) + dy;
+        Punto p = cartello_a_portata(e, 0);
+
+        if(p.x < 0)
+        {
+            return p;
+        }
+
+        int tx = (p.x - mondo::TILE_PX / 2) / mondo::TILE_PX;
+        int ty = (p.y + 2 - mondo::TILE_PX) / mondo::TILE_PX;
+        return a.griglia[tx + ty * a.larghezza] == mondo::PRIMO_VARCO ? p : Punto{ -2, -2 };
+    }
+
+    static_assert(PORTATA_CARTELLO == 14, "il fumetto del cartello ha la portata del tasto A (14 px)");
+    static_assert(cartello_spostato(0, 0).x >= 0 && cartello_spostato(13, 0).x >= 0 && cartello_spostato(13, 13).x >= 0 &&
+                  cartello_spostato(13, -13).x >= 0, "a portata del cartello il fumetto non si accende");
+    // negative: a 14 px (in orizzontale o in diagonale) il fumetto resta spento; un varco che l'area non ha non
+    // ha cartello
+    static_assert(cartello_spostato(14, 0).x == -1 && cartello_spostato(20, 0).x == -1,
+                  "il fumetto del cartello si accende oltre la portata del tasto A");
+    consteval bool varco_che_non_c_e()
+    {
+        mondo::Esploratore e;
+        e.area = mondo::AreaId::PIAZZA_GRANDE;
+        e.x = 0;
+        e.y = 0;
+        return cartello_a_portata(e, mondo::area(e.area).varchi).x == -1 && cartello_a_portata(e, -1).x == -1;
+    }
+
+    static_assert(varco_che_non_c_e(), "un varco che l'area non ha accende il fumetto");
 
     // --- I cartelli: vicino a un varco (entro 3 celle) si', sopra il varco o lontano no -----------------------
     consteval bool cartello_vicino_al_varco()

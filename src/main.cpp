@@ -28,6 +28,10 @@
     #define GUBBIO_AVVIO 0
 #endif
 
+// Gli aiuti al giocatore (cartelli ai varchi, promemoria di Select): il gioco vero (0) e la partita senza
+// titolo ne' prologo (14). «Dove eravamo» resta solo nel gioco vero, dopo Continua.
+constexpr bool AIUTI_ATTIVI = GUBBIO_AVVIO == 0 || GUBBIO_AVVIO == 14;
+
 int main()
 {
     bn::core::init();
@@ -181,8 +185,9 @@ int main()
     gubbio::Storia storia;
     gubbio::ScontriSullaMappa scontri(GUBBIO_AVVIO == 0 ? &storia : nullptr);
 
-    // gli aiuti (MAI: cartelli ai varchi, promemoria di Select) solo nel gioco vero
-    esplorazione.attiva_aiuti(GUBBIO_AVVIO == 0);
+    // gli aiuti (MAI: cartelli ai varchi, promemoria di Select) nel gioco vero e nella partita senza titolo ne'
+    // prologo (14), che serve a fotografarli; spenti negli altri modi di prova
+    esplorazione.attiva_aiuti(AIUTI_ATTIVI);
 
     while(true)
     {
@@ -200,7 +205,7 @@ int main()
             gubbio::pausa(esplorazione, palette);
         }
 
-        if(bn::keypad::select_pressed() && GUBBIO_AVVIO == 0)
+        if(bn::keypad::select_pressed() && AIUTI_ATTIVI)
         {
             esplorazione.promemoria();
         }

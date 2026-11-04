@@ -1246,7 +1246,8 @@ bool Storia::aggiorna(Esplorazione& esplorazione, const bn::sprite_palette_ptr& 
         }
     }
 
-    if(! a_portata)
+    // nessuno a portata: il cartello del varco, se e' a portata, accende lo stesso fumetto (STANDARD I2)
+    if(! a_portata && ! esplorazione.segnala_cartello())
     {
         esplorazione.spegni_segnale();
     }

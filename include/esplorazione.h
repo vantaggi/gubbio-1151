@@ -77,6 +77,12 @@ public:
     // breve per la meta (include/aiuti.h). Senza obiettivo, una riga che lo dice.
     void promemoria();
 
+    // Il fumetto sopra il cartello del varco (STANDARD I2: vale anche per i cartelli): se gli aiuti sono attivi,
+    // il cartello e' a schermo e la sua cella sta a portata (aiuti::cartello_a_portata, 14 px come il tasto A),
+    // chiama segnala() e dice true. Niente lettera «A». La storia lo chiama quando nessuna persona e' a portata,
+    // e spegne il fumetto se dice false.
+    bool segnala_cartello();
+
     // Da pixel dell'area a pixel dello schermo (0, 0 in alto a sinistra), con la camera di adesso.
     [[nodiscard]] int schermo_x(int x) const;
     [[nodiscard]] int schermo_y(int y) const;

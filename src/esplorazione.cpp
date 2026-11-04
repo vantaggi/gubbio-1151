@@ -177,30 +177,9 @@ namespace
     constexpr int CARTELLO_TESTO_Y = 128;
     constexpr int CARTELLO_OLTRE_Y = 140;
 
-    // La freccia del promemoria, 16x16 nella palette del testo: un triangolo chiaro col bordo scuro, verso
-    // destra, giu', sinistra o su (aiuti::Verso). Quattro tile in mappatura 1D: alto-sinistra, alto-destra,
-    // basso-sinistra, basso-destra.
-    // Il pixel (x, y) del quadrato 16x16 e' dentro la freccia? Verso destra: un triangolo con la base sulla
-    // colonna 2 (righe 1-14) e la punta sulla colonna 14; gli altri versi lo ruotano.
-    constexpr bool dentro_la_freccia(aiuti::Verso verso, int x, int y)
-    {
-        if(x < 0 || y < 0 || x > 15 || y > 15)
-        {
-            return false;
-        }
-
-        int u = verso == aiuti::Verso::DESTRA ? x : (verso == aiuti::Verso::SINISTRA ? 15 - x :
-                (verso == aiuti::Verso::GIU ? y : 15 - y));
-        int v = verso == aiuti::Verso::DESTRA || verso == aiuti::Verso::SINISTRA ? y : x;
-        int distanza = v < 8 ? 7 - v : v - 8;           // dalla mezzeria, 0..7
-        return u >= 2 && distanza <= 6 && u <= 14 - distanza * 12 / 7;
-    }
-
-    static_assert(dentro_la_freccia(aiuti::Verso::DESTRA, 14, 7) && ! dentro_la_freccia(aiuti::Verso::DESTRA, 14, 1) &&
-                  dentro_la_freccia(aiuti::Verso::SU, 7, 1) && ! dentro_la_freccia(aiuti::Verso::SU, 7, 14) &&
-                  dentro_la_freccia(aiuti::Verso::SINISTRA, 1, 8) && dentro_la_freccia(aiuti::Verso::GIU, 8, 14),
-                  "la freccia non punta dove dice");
-
+    // La freccia del promemoria, 16x16 nella palette del testo: il disegno e i toni in include/aiuti.h
+    // (tono_della_freccia, contorno quasi nero sugli 8 vicini). Quattro tile in mappatura 1D: alto-sinistra,
+    // alto-destra, basso-sinistra, basso-destra.
     bn::sprite_ptr crea_freccia(const bn::sprite_palette_ptr& palette, aiuti::Verso verso)
     {
         bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(4, bn::bpp_mode::BPP_4);
@@ -218,16 +197,8 @@ namespace
         {
             for(int x = 0; x < 16; ++x)
             {
-                if(! dentro_la_freccia(verso, x, y))
-                {
-                    continue;
-                }
-
-                // il bordo: un pixel dentro con un vicino fuori
-                bool bordo = ! dentro_la_freccia(verso, x - 1, y) || ! dentro_la_freccia(verso, x + 1, y) ||
-                             ! dentro_la_freccia(verso, x, y - 1) || ! dentro_la_freccia(verso, x, y + 1);
                 int tile = (y / 8) * 2 + (x / 8);
-                vram[tile].data[y % 8] |= uint32_t(bordo ? 1 : 2) << (4 * (x % 8));
+                vram[tile].data[y % 8] |= uint32_t(aiuti::tono_della_freccia(verso, x, y)) << (4 * (x % 8));
             }
         }
 
@@ -639,6 +610,24 @@ void Esplorazione::promemoria()
     }
 
     BN_LOG("Promemoria: obiettivo ", int(g_game_state.obiettivo), " meta ", meta, " varco ", varco);
+}
+
+bool Esplorazione::segnala_cartello()
+{
+    if(! _aiuti || _dissolvenza || _varco_cartello < 0)
+    {
+        return false;
+    }
+
+    aiuti::Punto p = aiuti::cartello_a_portata(_e, _varco_cartello);
+
+    if(p.x < 0)
+    {
+        return false;
+    }
+
+    segnala(p.x, p.y, aiuti::ALTEZZA_CARTELLO);
+    return true;
 }
 
 void Esplorazione::_aggiorna_aiuti()
