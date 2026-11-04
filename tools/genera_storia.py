@@ -38,7 +38,9 @@ BANDIERE = ["PROLOGO_VISTO", "ULTIMATUM_RICEVUTO", "GIORGIO_NEL_GRUPPO", "CHIACC
             "ESULE_LIBERATO", "GIUSTIZIA_OFFERTA", "ALBA_CONFERMATA"]
 # Le bandiere delle quest, degli indizi e degli ascolti (intervallo 64-127): stanno in GameState::quest.
 BANDIERE_QUEST = ["INDIZIO_CARTA", "INDIZIO_ACQUA", "INDIZIO_ROCCIA", "RICCIARDO_ASCOLTATO", "RUFINO_ASCOLTATO", "PANE_DATO",
-         "DONO_MATTEO", "INDIZIO_LUCIA", "INDIZIO_VENDITORE", "INDIZIO_FONTANIERE"]
+         "DONO_MATTEO", "INDIZIO_LUCIA", "INDIZIO_VENDITORE", "INDIZIO_FONTANIERE",
+         # le quest consegnate (04_quest.md): le accende storia::consegna_quest(), una volta sola
+         "Q_SM01_CONSEGNATA", "Q_SA01_CONSEGNATA", "Q_SP01_CONSEGNATA"]
 PRIMA_QUEST = 64
 TUTTE = BANDIERE + [None] * (PRIMA_QUEST - len(BANDIERE)) + BANDIERE_QUEST
 
@@ -48,6 +50,10 @@ LETTE_DAL_GIOCO = {
     "IMBOSCATA_STRADONI": "storia::scontro_attivo(): l'Imboscata sulla mappa non torna",
     "CORRADO_SCONFITTO": "storia::scontro_attivo(): Corrado sulla mappa non torna",
     "CRONACA_V1_FINITA": "Storia::recita(): il cartello dei titoli di coda",
+    "RUFINO_ASCOLTATO": "storia::scudi_in_meno(): Corrado entra nel duello con uno scudo in meno",
+    "Q_SM01_CONSEGNATA": "storia::scudi_in_meno() e storia::consegna_quest(): lo scudo di Corrado, una consegna sola",
+    "Q_SA01_CONSEGNATA": "storia::consegna_quest(): una consegna sola",
+    "Q_SP01_CONSEGNATA": "storia::consegna_quest(): una consegna sola",
 }
 
 # Quelle che il gioco non legge ancora: sono in docs/bandiere_da_fare.md, con cosa dovranno fare.
@@ -95,14 +101,20 @@ ESPRESSIONI = ["calmo", "preoccupato", "deciso"]
 TIPI = ["PERSONAGGIO", "NARRATORE", "AREA", "SISTEMA", "OBIETTIVO", "SCELTA"]
 FASI = ["ULTIMATUM", "DIGIUNO", "NOTTE"]
 
-# Le tre quest (04_quest.md): chi le da', da quando, dove si compiono, dove si consegnano, entro quando.
+# Le tre quest (04_quest.md): chi le da', da quando, dove si compiono, dove si consegnano, entro quando
+# (la conferma dell'alba che avvia E-01: dopo E-01, ATTO_I_COMPLETATO, nessuna consegna), la bandiera della
+# consegna e il premio (l'oggetto, indice di GameState::oggetti come battaglia::OggettoId, e quanti).
+OGGETTI = ["CRESCIA", "CENERE", "BACCALA", "BISCOTTI", "VINO"]     # battaglia::OggettoId, nell'ordine
 QUEST = [
     {"id": "Q-SM01", "datore": "SAN_MARTINO", "da": "ULTIMATUM_RICEVUTO", "obiettivo": "TEATRO_ROMANO",
-     "consegna": "SAN_MARTINO", "entro": "ATTO_I_COMPLETATO"},
+     "consegna": "SAN_MARTINO", "entro": "ATTO_I_COMPLETATO", "consegnata": "Q_SM01_CONSEGNATA",
+     "premio": ("CRESCIA", 3), "nome_premio": "Crescia di Pasqua"},
     {"id": "Q-SA01", "datore": "SANT_ANDREA", "da": "CITTA_IN_DIGIUNO", "obiettivo": "BOTTACCIONE",
-     "consegna": "SANT_ANDREA", "entro": "ATTO_I_COMPLETATO"},
+     "consegna": "SANT_ANDREA", "entro": "ATTO_I_COMPLETATO", "consegnata": "Q_SA01_CONSEGNATA",
+     "premio": ("BISCOTTI", 3), "nome_premio": "Biscotti all'Anice"},
     {"id": "Q-SP01", "datore": "SAN_PIETRO", "da": "CITTA_IN_DIGIUNO", "obiettivo": "SAN_PIETRO",
-     "consegna": "SAN_PIETRO", "entro": "ATTO_I_COMPLETATO"},
+     "consegna": "SAN_PIETRO", "entro": "ATTO_I_COMPLETATO", "consegnata": "Q_SP01_CONSEGNATA",
+     "premio": ("CENERE", 1), "nome_premio": "Crescia sotto la Cenere"},
 ]
 
 AREE_NPC = {"Piazza Grande": "PIAZZA_GRANDE", "via dei Consoli": "VIA_DEI_CONSOLI",
@@ -661,6 +673,16 @@ def header(scene, npc, posti):
     out += [f"    {{ TipoGuardia::{g[0]}, {g[1]}, {g[2]}, {g[3]} }}," for g in guardie] + ["};", ""]
     out += ["// Le bandiere delle quest e degli indizi (64-127, GameState::quest), per nome."]
     out += [f"inline constexpr uint8_t {b} = {PRIMA_QUEST + i};" for i, b in enumerate(BANDIERE_QUEST)] + [""]
+    out += ["// Le tre quest della v1 (copione/04_quest.md): dove si consegnano, da quale bandiera si prendono, entro",
+            "// quale si consegnano, la bandiera della consegna e il premio (indice di GameState::oggetti, come",
+            "// battaglia::OggettoId). Le legge storia::consegna_quest().",
+            "struct Quest", "{", "    const char* codice;", "    int8_t consegna;             // mondo::AreaId",
+            "    Bandiera da;", "    Bandiera entro;", "    uint8_t consegnata;          // bandiera 64-127",
+            "    uint8_t oggetto;", "    uint8_t quanti;", "};", "",
+            f"inline constexpr int QUEST = {len(QUEST)};", "inline constexpr Quest QUEST_V1[QUEST] = {"]
+    out += [f"    {{ \"{q['id']}\", int8_t(mondo::AreaId::{q['consegna']}), Bandiera::{q['da']}, Bandiera::{q['entro']}, "
+            f"{q['consegnata']}, {OGGETTI.index(q['premio'][0])}, {q['premio'][1]} }},  // {q['premio'][1]} {q['nome_premio']}"
+            for q in QUEST] + ["};", ""]
     out += ["// Le figure degli NPC, 16x32 (8 tile in mappatura 1D) con la palette dei popolani: quelle dei",
             "// mestieri (tools/figure_npc.py) e quelle degli amici (base e accessorio, dati/amici.json).",
             f"inline constexpr int FIGURE_NPC = {len(figure)};",

@@ -18,7 +18,7 @@ Prima di F8 a Corrado si arrivava al **livello 3** (55 + 36 + 60 = 151 punti) e 
 | Spettri del Dubbio | 120 | 4 | 5 |
 | Corrado | 200 | 5 | 6 |
 
-Ogni quest dà **55 punti** (da applicare in SV2c, quest giocabili).
+Ogni quest dà **55 punti** a ogni Santo (`progressione::ESPERIENZA_QUEST`, data da `storia::consegna_quest()`; `tools/bilanciamento.py` legge il numero dal C++). Lo scudo in meno passa da `scudi_in_meno` del mirror, la stessa manopola del C++.
 
 ## Risultati (200 semi)
 
@@ -34,5 +34,5 @@ Obiettivi: scontri normali vinti oltre il 90% in 3-6 round (forte e medio); Corr
 
 ## Da rifare dopo
 - Quando le quest diventano giocabili (SV2c): ricontrollare con le quest fatte una alla volta e non tutte all'inizio.
-- La regola "Ubaldo non usa il cibo da DIGIUNO a B-05" tocca solo gli oggetti, che i piloti non usano: nessun effetto qui.
+- La regola "Ubaldo non usa il cibo da DIGIUNO a B-05" (ora nel codice, `storia::a_digiuno()`) tocca solo gli oggetti, che i piloti non usano: nessun effetto qui.
 - Prova a mano di Cioti: se Corrado risulta troppo duro o troppo facile, si tocca solo la sua scheda in `battaglia_dati.h` e si rigenera.

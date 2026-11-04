@@ -170,6 +170,36 @@ namespace
         return true;
     }
 
+    // Il bersaglio di un consumabile: chi mangia. Con Ubaldo a digiuno (storia::a_digiuno()) il cursore non
+    // ci si ferma mai e il predefinito e' un altro; la negativa: senza digiuno Ubaldo si sceglie, e il
+    // Muro della Fede (che non e' cibo) lo sceglie anche a digiuno.
+    consteval bool chi_mangia(uint8_t digiuno, bool atteso_ubaldo)
+    {
+        Battaglia b(0, 1);
+        b.ricomincia(0, 1, false, nullptr, TUTTI_PRESENTI, 0, digiuno);
+        Comando oggetto;
+        oggetto.tipo = TipoComando::OGGETTO;
+
+        if(mira_del_comando(oggetto) != Puntamento::CHI_MANGIA || ! sceglibile(b, Puntamento::ALLEATO, UBALDO))
+        {
+            return false;
+        }
+
+        bool trovato = bersaglio_predefinito(b, Puntamento::CHI_MANGIA) == UBALDO;
+
+        for(int da = 0; da < EROI; ++da)
+        {
+            trovato = trovato || prossimo_bersaglio(b, Puntamento::CHI_MANGIA, da, 1) == UBALDO ||
+                      prossimo_bersaglio(b, Puntamento::CHI_MANGIA, da, -1) == UBALDO;
+        }
+
+        return sceglibile(b, Puntamento::CHI_MANGIA, UBALDO) == atteso_ubaldo && trovato == atteso_ubaldo &&
+               bersaglio_predefinito(b, Puntamento::CHI_MANGIA) >= 0;
+    }
+
+    static_assert(chi_mangia(1 << UBALDO, false), "Ubaldo a digiuno si sceglie per un consumabile");
+    static_assert(chi_mangia(0, true), "negativa: senza digiuno Ubaldo non si sceglie per un consumabile");
+
     // La negativa: girare "al prossimo slot" senza guardare chi e' caduto finirebbe su un morto.
     consteval bool giro_cieco_finisce_su_un_caduto()
     {

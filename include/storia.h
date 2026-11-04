@@ -632,6 +632,30 @@ inline constexpr uint8_t DONO_MATTEO = 70;
 inline constexpr uint8_t INDIZIO_LUCIA = 71;
 inline constexpr uint8_t INDIZIO_VENDITORE = 72;
 inline constexpr uint8_t INDIZIO_FONTANIERE = 73;
+inline constexpr uint8_t Q_SM01_CONSEGNATA = 74;
+inline constexpr uint8_t Q_SA01_CONSEGNATA = 75;
+inline constexpr uint8_t Q_SP01_CONSEGNATA = 76;
+
+// Le tre quest della v1 (copione/04_quest.md): dove si consegnano, da quale bandiera si prendono, entro
+// quale si consegnano, la bandiera della consegna e il premio (indice di GameState::oggetti, come
+// battaglia::OggettoId). Le legge storia::consegna_quest().
+struct Quest
+{
+    const char* codice;
+    int8_t consegna;             // mondo::AreaId
+    Bandiera da;
+    Bandiera entro;
+    uint8_t consegnata;          // bandiera 64-127
+    uint8_t oggetto;
+    uint8_t quanti;
+};
+
+inline constexpr int QUEST = 3;
+inline constexpr Quest QUEST_V1[QUEST] = {
+    { "Q-SM01", int8_t(mondo::AreaId::SAN_MARTINO), Bandiera::ULTIMATUM_RICEVUTO, Bandiera::ATTO_I_COMPLETATO, Q_SM01_CONSEGNATA, 0, 3 },  // 3 Crescia di Pasqua
+    { "Q-SA01", int8_t(mondo::AreaId::SANT_ANDREA), Bandiera::CITTA_IN_DIGIUNO, Bandiera::ATTO_I_COMPLETATO, Q_SA01_CONSEGNATA, 3, 3 },  // 3 Biscotti all'Anice
+    { "Q-SP01", int8_t(mondo::AreaId::SAN_PIETRO), Bandiera::CITTA_IN_DIGIUNO, Bandiera::ATTO_I_COMPLETATO, Q_SP01_CONSEGNATA, 1, 1 },  // 1 Crescia sotto la Cenere
+};
 
 // Le figure degli NPC, 16x32 (8 tile in mappatura 1D) con la palette dei popolani: quelle dei
 // mestieri (tools/figure_npc.py) e quelle degli amici (base e accessorio, dati/amici.json).

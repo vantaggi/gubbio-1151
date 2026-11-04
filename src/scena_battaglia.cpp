@@ -552,11 +552,13 @@ namespace
                         opzioni.push_back({ TestoId::BATT_CARICA, { TipoComando::CARICA, firma, -1, 0 } });
                     }
 
-                    // i consumabili dell'inventario (quelli usabili, se ne restano)
+                    // i consumabili dell'inventario (quelli usabili, se ne restano); chi e' a digiuno non
+                    // li usa, e servono un alleato che mangi (Ubaldo nel DIGIUNO non mangia)
                     const OggettoId usabili[2] = { OggettoId::CRESCIA, OggettoId::BISCOTTI };
                     const TestoId nomi_oggetti[2] = { TestoId::BATT_CRESCIA, TestoId::BATT_BISCOTTI };
+                    bool puo_dare = ! eroe.a_digiuno && bersaglio_predefinito(g_scena, Puntamento::CHI_MANGIA) >= 0;
 
-                    for(int k = 0; k < 2; ++k)
+                    for(int k = 0; k < 2 && puo_dare; ++k)
                     {
                         if(disponibili(usabili[k]) > 0)
                         {
@@ -807,7 +809,10 @@ Esito scena_battaglia(int incontro, uint32_t seme, Guida guida, const bn::sprite
 
     // il gruppo della storia (Giorgio dall'ultimatum, Antonio dal Teatro); senza partita, tutti e tre
     uint8_t presenti = partita ? storia::gruppo(*partita, incontro) : TUTTI_PRESENTI;
-    g_scena.ricomincia(incontro, seme, false, eroi, presenti);
+    // Corrado con uno scudo in meno (Q-SM01 o Rufino), Ubaldo che nel DIGIUNO non mangia
+    int scudi_in_meno = partita ? storia::scudi_in_meno(*partita, incontro) : 0;
+    uint8_t a_digiuno = partita ? storia::a_digiuno(*partita) : 0;
+    g_scena.ricomincia(incontro, seme, false, eroi, presenti, scudi_in_meno, a_digiuno);
     Esito esito;
 
     {

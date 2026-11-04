@@ -126,6 +126,21 @@ class FirmeEMirror(unittest.TestCase):
         self.assertEqual(len(FIRME), 4 * 50 * 2)
         self.assertEqual(len({f.hash for f in FIRME.values()}), 400, "ogni seme da' una battaglia diversa")
 
+    def test_scudo_in_meno_cento_battaglie(self):
+        """Il duello con Corrado con uno scudo in meno (Q-SM01 o RUFINO_ASCOLTATO): 50 semi x 2 piloti, scritti
+        a parte in battaglia_attese.h (ATTESE_SCUDO_IN_MENO) e confrontati col C++ da src/autotest_battaglia.cpp."""
+        firme = B.firme_scudo_in_meno()
+        self.assertEqual(len(firme), 100)
+        self.assertIn(f"ATTESE_SCUDO_IN_MENO_CONTEGGIO = {len(firme)};", open(B.USCITA, encoding="utf-8").read())
+        self.assertEqual(B.Battaglia(2, 1, scudi_in_meno=1).nemici[0].scudo, 3)
+        self.assertEqual(B.Battaglia(2, 1, scudi_in_meno=9).nemici[0].scudo_max, 0)
+
+    def test_negativa_scudo_in_meno_cambia_la_battaglia(self):
+        """Stesso seme, firma diversa con lo scudo in meno; con la manopola a 0 e' la battaglia di sempre."""
+        firme = B.firme_scudo_in_meno()
+        self.assertTrue(any(firme[k].hash != FIRME[k].hash for k in firme))
+        self.assertEqual(B.gioca(2, 7, scudi_in_meno=0).hash, FIRME[(2, 7, False)].hash)
+
     def test_con_il_pilota_debole_si_perde(self):
         perse = [k for k, f in FIRME.items() if k[2] and f.esito == B.SCONFITTA]
         self.assertGreater(len(perse), 0)

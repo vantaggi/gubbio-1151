@@ -184,13 +184,14 @@ enum class Puntamento : uint8_t
     NESSUNO,        // il comando non sceglie (Bastione su se stesso, Carica, la Suprema su tutti)
     NEMICO,
     ALLEATO,        // il Muro della Fede
+    CHI_MANGIA,     // un consumabile: un alleato che non e' a digiuno (Ubaldo nel DIGIUNO non mangia)
 };
 
 [[nodiscard]] constexpr Puntamento mira_del_comando(const Comando& c)
 {
     if(c.tipo == TipoComando::OGGETTO)
     {
-        return Puntamento::ALLEATO;
+        return Puntamento::CHI_MANGIA;
     }
 
     if(c.tipo != TipoComando::USA_ABILITA)
@@ -211,11 +212,13 @@ enum class Puntamento : uint8_t
 [[nodiscard]] constexpr bool sceglibile(const Battaglia& b, Puntamento m, int i)
 {
     return m == Puntamento::NEMICO ? i >= 0 && i < NEMICI_MAX && b.nemico(i).vivo() :
-                               i >= 0 && i < EROI && b.eroe(i).vivo();
+                               i >= 0 && i < EROI && b.eroe(i).vivo() &&
+                               ! (m == Puntamento::CHI_MANGIA && b.eroe(i).a_digiuno);
 }
 
 // Il bersaglio da cui parte il cursore: lo stesso che il modello sceglierebbe da solo con -1 (il primo
-// nemico vivo; per il Muro l'alleato piu' ferito), cosi' chi preme subito A ha il comportamento di prima.
+// nemico vivo; per il Muro l'alleato piu' ferito, per un consumabile il piu' ferito fra chi mangia), cosi'
+// chi preme subito A ha il comportamento di prima. -1 se nessuno si puo' scegliere.
 [[nodiscard]] constexpr int bersaglio_predefinito(const Battaglia& b, Puntamento m)
 {
     int scelto = -1;
@@ -227,13 +230,13 @@ enum class Puntamento : uint8_t
             scelto = sceglibile(b, m, i) ? i : -1;
         }
     }
-    else if(m == Puntamento::ALLEATO)
+    else if(m == Puntamento::ALLEATO || m == Puntamento::CHI_MANGIA)
     {
         for(int e = 0; e < EROI; ++e)
         {
             const Unita& u = b.eroe(e);
 
-            if(u.vivo() && (scelto < 0 || u.pv * 100 / u.pv_max < b.eroe(scelto).pv * 100 / b.eroe(scelto).pv_max))
+            if(sceglibile(b, m, e) && (scelto < 0 || u.pv * 100 / u.pv_max < b.eroe(scelto).pv * 100 / b.eroe(scelto).pv_max))
             {
                 scelto = e;
             }

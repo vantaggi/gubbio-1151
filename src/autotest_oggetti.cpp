@@ -103,6 +103,45 @@ namespace
     static_assert(OGGETTI[int(OggettoId::BISCOTTI)].priorita > ABILITA[int(AbilitaId::BASTIONE_AZZURRO)].priorita,
                   "i Biscotti devono precedere il Bastione");
 
+    // Il digiuno (Ubaldo da CITTA_IN_DIGIUNO al rientro di B-05, storia::a_digiuno()): chi e' a digiuno
+    // non usa consumabili e nessuno li usa su di lui. Al primo round 'chi' usa la Crescia su 'su_chi':
+    // ritorna chi e' stato curato (anche di 0 PV, se era intero), -1 se nessuno.
+    consteval int crescia_al_primo_round(int chi, int su_chi, uint8_t digiuno)
+    {
+        Battaglia b(0, 1);
+        b.ricomincia(0, 1, false, nullptr, TUTTI_PRESENTI, 0, digiuno);
+        b.avanza();     // SCELTA_COMANDI
+        Comando c;
+        c.tipo = TipoComando::OGGETTO;
+        c.bersaglio = su_chi;
+        c.oggetto = OggettoId::CRESCIA;
+        b.imposta_comando(chi, c);
+        b.avanza();     // CODA
+        b.avanza();     // ESECUZIONE
+
+        for(int i = 0; i < b.eventi_round(); ++i)
+        {
+            if(b.evento(i).kind == EventKind::CURA)
+            {
+                return b.evento(i).bersaglio;
+            }
+        }
+
+        return -1;
+    }
+
+    constexpr uint8_t UBALDO_A_DIGIUNO = 1 << UBALDO;
+
+    // Negativa: senza digiuno Giorgio da' la Crescia a Ubaldo, e Ubaldo la da' a Giorgio.
+    static_assert(crescia_al_primo_round(GIORGIO, UBALDO, 0) == UBALDO && crescia_al_primo_round(UBALDO, GIORGIO, 0) == GIORGIO,
+                  "senza digiuno la Crescia va a chi la riceve");
+    // Col digiuno Ubaldo non la riceve (va al piu' ferito fra chi mangia) e non la da'.
+    static_assert(crescia_al_primo_round(GIORGIO, UBALDO, UBALDO_A_DIGIUNO) >= 0 &&
+                  crescia_al_primo_round(GIORGIO, UBALDO, UBALDO_A_DIGIUNO) != UBALDO, "Ubaldo a digiuno ha mangiato");
+    static_assert(crescia_al_primo_round(UBALDO, GIORGIO, UBALDO_A_DIGIUNO) == -1, "Ubaldo a digiuno ha usato il cibo");
+    // Gli altri mangiano: il digiuno e' solo di Ubaldo.
+    static_assert(crescia_al_primo_round(ANTONIO, GIORGIO, UBALDO_A_DIGIUNO) == GIORGIO, "il digiuno di Ubaldo tocca gli altri");
+
     // Il Baccala' restituisce tutto il Fervore: se ne porta uno solo (dal prototipo).
     static_assert(OGGETTI[int(OggettoId::BACCALA)].massimo == 1, "il Baccala' si porta uno solo");
 }

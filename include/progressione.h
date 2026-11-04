@@ -77,20 +77,29 @@ inline constexpr int ESPERIENZA_NEMICO[int(battaglia::NemicoId::CONTEGGIO)] = { 
 
 inline constexpr int ESPERIENZA_MASSIMA = 65535;
 
-// Dopo una vittoria: ogni Santo prende l'esperienza dello scontro e sale di livello se ne ha
-// abbastanza. 'saliti' dice chi e' salito, per il messaggio.
-constexpr void assegna_esperienza(GameState& partita, int incontro, bool (&saliti)[battaglia::EROI])
-{
-    int guadagno = esperienza_incontro(incontro);
+// L'esperienza di ogni quest consegnata (docs/bilanciamento.md, tools/bilanciamento.py): a ogni Santo,
+// la stessa per tutte e tre.
+inline constexpr int ESPERIENZA_QUEST = 55;
 
+// Ogni Santo prende 'punti' di esperienza (fino a ESPERIENZA_MASSIMA) e sale di livello se ne ha
+// abbastanza. 'saliti' dice chi e' salito, per il messaggio. Anche chi non e' ancora nel gruppo: la
+// quest e' di tutti e tre, come l'esperienza degli scontri.
+constexpr void assegna_esperienza_fissa(GameState& partita, int punti, bool (&saliti)[battaglia::EROI])
+{
     for(int e = 0; e < battaglia::EROI; ++e)
     {
         int prima = partita.livello[e];
-        int totale = partita.esperienza[e] + guadagno;
+        int totale = partita.esperienza[e] + punti;
         partita.esperienza[e] = uint16_t(totale > ESPERIENZA_MASSIMA ? ESPERIENZA_MASSIMA : totale);
         partita.livello[e] = uint8_t(livello_da_esperienza(partita.esperienza[e]));
         saliti[e] = partita.livello[e] > prima;
     }
+}
+
+// Dopo una vittoria: ogni Santo prende l'esperienza dello scontro.
+constexpr void assegna_esperienza(GameState& partita, int incontro, bool (&saliti)[battaglia::EROI])
+{
+    assegna_esperienza_fissa(partita, esperienza_incontro(incontro), saliti);
 }
 
 // La partita nuova: livello 1, nessuna esperienza, nessuno scontro vinto, qualche consumabile.

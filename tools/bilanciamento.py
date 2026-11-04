@@ -22,7 +22,6 @@ import battaglia_mirror as M  # noqa: E402
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROGRESSIONE = os.path.join(RADICE, "include", "progressione.h")
 ORDINE_STORIA = [0, 1, 3, 2]          # Pattuglia, Imboscata, Spettri, Corrado (indici di INCONTRO)
-ESPERIENZA_QUEST = 55                 # ricompensa di ogni quest (docs/bilanciamento.md)
 QUEST = 3
 
 
@@ -30,6 +29,14 @@ def leggi_tabella(nome, testo=None):
     testo = testo or open(PROGRESSIONE, encoding="utf-8").read()
     m = re.search(nome + r"\[[^\]]*\]\s*=\s*\{([^}]*)\}", testo)
     return [int(x) for x in m.group(1).split(",")]
+
+
+def leggi_costante(nome, testo=None):
+    testo = testo or open(PROGRESSIONE, encoding="utf-8").read()
+    return int(re.search(r"inline constexpr int " + nome + r"\s*=\s*(\d+);", testo).group(1))
+
+
+ESPERIENZA_QUEST = leggi_costante("ESPERIENZA_QUEST")     # ricompensa di ogni quest (docs/bilanciamento.md)
 
 
 def livello(esperienza, soglie):
@@ -80,24 +87,19 @@ class Medio(M.Battaglia):
 
 def gioca(incontro, liv, pilota, seme, scudo_meno=0):
     crescita = leggi_tabella("CRESCITA_PERCENTO")
-    base, nemici = M.STATISTICHE_EROI, M.NEMICI
+    base = M.STATISTICHE_EROI
     try:
         M.STATISTICHE_EROI = [tuple(v * crescita[liv - 1] // 100 if k < 6 else v for k, v in enumerate(s))
                               for s in base]
-        if scudo_meno:
-            n = list(nemici)
-            s = list(n[2][0])
-            s[7] -= scudo_meno
-            n[2] = (tuple(s),) + n[2][1:]
-            M.NEMICI = n
+        # lo scudo in meno passa dalla stessa manopola del C++ (Battaglia::ricomincia, scudi_in_meno)
         if pilota == "medio":
-            b = Medio(incontro, seme)
+            b = Medio(incontro, seme, scudi_in_meno=scudo_meno)
             b.rng = random.Random(seme * 7919)
         else:
-            b = M.Battaglia(incontro, seme, pilota_debole=(pilota == "debole"))
+            b = M.Battaglia(incontro, seme, pilota_debole=(pilota == "debole"), scudi_in_meno=scudo_meno)
         return b.gioca()
     finally:
-        M.STATISTICHE_EROI, M.NEMICI = base, nemici
+        M.STATISTICHE_EROI = base
 
 
 def misura(incontro, liv, pilota, semi=200, scudo_meno=0):
