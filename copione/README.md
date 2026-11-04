@@ -10,14 +10,15 @@ Bozza del 1 novembre 2026, per la fase F6 del [piano di ripartenza](https://clau
 | :-- | :-- | --: |
 | [00_prologo.md](00_prologo.md) | Avvio, la vetrata chiara, la mappa che annerisce | 10 |
 | [01_atto_I.md](01_atto_I.md) | Dall'ultimatum al rito della Basilica e alla visione; il borgo (D1) | 140 |
-| [02_bottaccione_epilogo.md](02_bottaccione_epilogo.md) | Il dungeon, il ragazzo esule (D2), Corrado, il rientro, la terza alba (D4), la vetrata | 90 |
+| [02_bottaccione_epilogo.md](02_bottaccione_epilogo.md) | Il dungeon, il ragazzo esule (D2), Corrado, il rientro, la terza alba (D4), la vetrata | 91 |
 | [03_npc_ambiente.md](03_npc_ambiente.md) | NPC d'ambiente delle 14 aree, per fase; il pane (D3) | 59 |
 | [04_quest.md](04_quest.md) | Le 3 quest scelte: il Ferro (San Martino), le Erbe (Sant'Andrea), la Rosa (San Pietro) | 74 |
-| [05_npc_amici.md](05_npc_amici.md) | Gli amici di Cioti e le loro famiglie come NPC del 1151, per area e fase | 84 |
+| [05_npc_amici.md](05_npc_amici.md) | Gli amici di Cioti e le loro famiglie, e i fratelli Milia e Michelino, come NPC del 1151, per area e fase | 90 |
+| [06_npc_mestieri.md](06_npc_mestieri.md) | I mestieri di contorno della città (pezzo VIVA), senza nome proprio e senza bandiere | 74 |
 | [verifica_copione.py](verifica_copione.py) | Controllo di caratteri e righe | |
 | [v1/](v1/) | Copia del copione v1 (297 battute), prima della storia v2 | |
 
-`python3 verifica_copione.py` dalla cartella `copione/`: oggi 457 battute, 0 errori (dopo la revisione indipendente, 4 nov 2026, e le battute di attesa e di dopo delle quest giocabili, SV2c), con la misura v2 (2 righe da 224 px). La v1 misurava 3 righe da 180 px. Prova negativa fatta: una «ñ», una battuta da 10 righe e un'espressione inventata danno 3 errori e uscita 1.
+`python3 verifica_copione.py` dalla cartella `copione/`: oggi 538 battute, 0 errori (dal 4 nov 2026 conta anche Milia, Michelino e i mestieri: i parlanti si leggono da `dati/amici.json` e da `06_npc_mestieri.md`) (dopo la revisione indipendente, 4 nov 2026, e le battute di attesa e di dopo delle quest giocabili, SV2c), con la misura v2 (2 righe da 224 px). La v1 misurava 3 righe da 180 px. Prova negativa fatta: una «ñ», una battuta da 10 righe e un'espressione inventata danno 3 errori e uscita 1.
 
 ## La storia della v1 in breve
 
@@ -72,7 +73,8 @@ Tema: **una città si giudica da chi lascia fuori dalle porte.** L'assedio resta
 | Corrado di Spoleto | Il Colosso delle Forge | Spaccone, gode della fatica | Boss della v1, si salva cadendo nel Camignano |
 | Monaldo da Perugia | Il tiranno | Non compare: parla per bocca dell'araldo | Lasciato agli aggiornamenti |
 | Rinaldo di Valmarcola | Capo degli esuli eugubini | Non compare nella v1: lo nominano l'araldo, Corrado e l'infiltrato | Atto II |
-| Gli amici (24 NPC) | Mestieri del 1151 nei quartieri | Una voce ciascuno, vedi [05_npc_amici.md](05_npc_amici.md) | Indizi, aiuti e colore; nessuno è traditore, vigliacco o zimbello, nessuno muore in scena |
+| Gli amici (26 NPC) | Mestieri del 1151 nei quartieri: Ciaccio, Giuliana, Flaviano, Vanni, Masio il Romano, Montano, Mastro Rufino, Giordano, Febo, Giambono, Gabrione, Ricciardo, Aurelia, Leonora, Valenza, Padellino, Ciotto, Fazio, Lauretta, Nicoluccio, Renzo, Valeriana, Ragnetto, Andreuccio, Milia, Michelino | Una voce ciascuno, vedi [05_npc_amici.md](05_npc_amici.md); nomi e figure in `dati/amici.json` | Indizi, aiuti e colore; nessuno è traditore, vigliacco o zimbello, nessuno muore in scena |
+| La gente della città (25 NPC) | Mestieri di contorno, senza nome proprio: il Banditore del Comune, il Misuratore del grano, il Fabbro, la Vasaia, l'Acquaiolo, il Funaio, il Tintore, il Conciatore, il Mugnaio, il Lanaiolo, il Pastore, il Macellaio, la Fornaia, il Calzolaio, il Notaio del Comune, l'Ortolana, il Carbonaio, il Carpentiere, il Frecciaio, il Campanaro, il Viandante, la Guardia della sala, l'Avventore, il Ricoverato dell'ospizio, il Garzone del carradore | Una battuta per fase, vedi [06_npc_mestieri.md](06_npc_mestieri.md); figure in `dati/mestieri.json` | Colore: nessuna bandiera |
 
 ## Bandiere della storia
 

@@ -95,7 +95,7 @@ inline constexpr Abilita ABILITA[int(AbilitaId::CONTEGGIO)] = {
     { Elemento::FEDE,    Bersaglio::NEMICO,  Effetto::NESSUNO,        20,   0, 35,  0, 0 },  // Giudizio della Verga
     { Elemento::FISICO,  Bersaglio::NEMICO,  Effetto::NESSUNO,        20, 160,  0, 50, 0 },  // Fendente del Drago
     { Elemento::NESSUNO, Bersaglio::ALLEATO, Effetto::BASTIONE,       15,   0,  0,  0, 8 },  // Bastione Azzurro
-    { Elemento::FIAMMA,  Bersaglio::NEMICO,  Effetto::USTIONE,        15,   0, 40,  0, 0 },  // Fuoco di Sant'Antonio
+    { Elemento::FIAMMA,  Bersaglio::NEMICO,  Effetto::USTIONE,        15,   0, 40,  0, 0 },  // Fuoco di Antonio
     { Elemento::FISICO,  Bersaglio::NEMICO,  Effetto::NESSUNO,         0, 100,  0,  0, 0 },  // Colpo (nemici)
     // Le due abilita' di Corrado, da docs/piano_ia_boss.md del prototipo (Sezione 26A del GDD).
     { Elemento::NESSUNO, Bersaglio::SE_STESSO, Effetto::DIFESA_SU,     0,   0,  0,  0, 6 },  // Scudo di Forgia
@@ -123,9 +123,9 @@ struct Statistiche
 };
 
 inline constexpr Statistiche STATISTICHE_EROI[EROI] = {
-    { 240, 180, 25, 45, 95, 72, 30, 0, Elemento::NESSUNO, Elemento::NESSUNO },   // Sant'Ubaldo
-    { 380, 120, 90, 80, 25, 40, 42, 0, Elemento::NESSUNO, Elemento::NESSUNO },   // San Giorgio
-    { 210, 210, 18, 28, 95, 56, 38, 0, Elemento::NESSUNO, Elemento::NESSUNO },   // Sant'Antonio
+    { 240, 180, 25, 45, 95, 72, 30, 0, Elemento::NESSUNO, Elemento::NESSUNO },   // Ubaldo
+    { 380, 120, 90, 80, 25, 40, 42, 0, Elemento::NESSUNO, Elemento::NESSUNO },   // Giorgio
+    { 210, 210, 18, 28, 95, 56, 38, 0, Elemento::NESSUNO, Elemento::NESSUNO },   // Antonio
 };
 inline constexpr int FERVORE_INIZIALE[EROI] = { 80, 45, 20 };
 // Con i Ceri risvegliati (CERI_RISVEGLIATI, A1-08: «il Fervore che parte piu' alto in battaglia») ogni Santo
@@ -196,7 +196,7 @@ inline constexpr Regola REGOLE[] = {
     // 1. la spia umbra: colpisce chi ha meno PV
     { Condizione::SEMPRE, 0, Limite::RIPETIBILE, AbilitaId::COLPO_NEMICO, Mira::MENO_PV, 0 },
     // 2-4. Corrado di Spoleto: al primo round lo Scudo di Forgia su se stesso (una volta per
-    // battaglia), nei round pari il Martello d'Assedio su San Giorgio (una volta per round), sempre
+    // battaglia), nei round pari il Martello d'Assedio su Giorgio (una volta per round), sempre
     // il Colpo su chi ha meno Difesa
     { Condizione::ROUND_UGUALE, 1, Limite::UNA_PER_BATTAGLIA, AbilitaId::SCUDO_DI_FORGIA, Mira::SE_STESSO, 0 },
     { Condizione::ROUND_PARI, 0, Limite::UNA_PER_ROUND, AbilitaId::MARTELLO_DASSEDIO, Mira::EROE, GIORGIO },
@@ -267,7 +267,7 @@ enum class OggettoId : uint8_t
     CRESCIA,        // Crescia di Pasqua al Formaggio
     CENERE,         // Crescia sotto la Cenere
     BACCALA,        // Baccala' alla Ceraiola
-    BISCOTTI,       // Biscotti all'Anice di Sant'Ubaldo
+    BISCOTTI,       // Biscotti all'anice
     VINO,           // Vino Rosso delle Colline Eugubine
     CONTEGGIO,
 };

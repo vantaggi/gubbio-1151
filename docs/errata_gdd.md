@@ -25,6 +25,7 @@ un altro modo; **verde** = solo una segnalazione.
 | E7 | Tre albe, non «una seconda alba» | Sez. 11 Passo 6; Sez. 4 e 7 Atto IV | gialla |
 | E8 | «Gubbio è salva» solo all'ultimo aggiornamento | Sez. 37B | gialla |
 | E9 | Festa dei Ceri, maggio 1151, elenco delle undici città | testata, Sez. 3, 7, 8E, 11 Passo 1 | verde |
+| E10 | Nomi: protagonisti senza «San», amici, fratelli, mestieri di contorno | tutto il GDD (87 volte «Sant'Ubaldo», «San Giorgio», «Sant'Antonio») | rossa |
 
 ## E1 · Araldica di Perugia (rossa)
 
@@ -130,3 +131,21 @@ Trecento, non una carica del 1151.
 - **Le undici città** sono quelle della Sez. 3 (Perugia, Spoleto, Cagli, Foligno, Todi, Nocera, Gualdo
   Tadino, Fossato, Assisi, Bettona, Spello); le fonti storiche non concordano tutte. Va bene per il
   gioco, ed è segnata come scelta.
+
+## E10 · I nomi dei personaggi (rossa)
+
+Aggiunta il 4 novembre 2026. Il GDD è del prototipo e non conosce i personaggi della storia v2.
+
+- **Protagonisti senza «San».** Il GDD chiama i tre eroi «Sant'Ubaldo», «San Giorgio», «Sant'Antonio» (87
+  volte). Nel 1151 non sono ancora santi: nel gioco sono **Ubaldo** (anche «il vescovo Ubaldo»), **Giorgio** e
+  **Antonio**. «San»/«Sant'» restano nei nomi dei luoghi (Basilica, cappellette degli Stradoni, chiese,
+  quartieri, porte) e nelle scene in Basilica e nell'epilogo; «S.» abbreviato solo sulla mappa. Regola nel
+  `copione/README.md`, controllata da `tests/test_nomi_santi.py`.
+- **Gli amici di Cioti, i fratelli e la gente della città** non ci sono nel GDD. Valgono `dati/amici.json`
+  (26 nomi a schermo, con figura e posto) e `copione/05_npc_amici.md`; i mestieri di contorno sono in
+  `dati/mestieri.json` e `copione/06_npc_mestieri.md`. Nomi cambiati dopo la prima stesura: il medico è
+  **Vanni** (non «Compagno»), il custode delle carte **Renzo** (non «Bubo»), il carradore **Mastro Rufino**, il
+  cavadenti **Montano**; i fratelli di Ciotto sono **Milia** e **Michelino**. I nomi ritirati sono controllati
+  da `tests/test_nomi_coerenti.py`.
+- **Ordine in scena.** Ubaldo davanti o al centro, Giorgio secondo a destra, Antonio terzo a sinistra
+  (cutscene, battaglia, ovunque).
