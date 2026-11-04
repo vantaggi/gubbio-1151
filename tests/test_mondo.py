@@ -130,20 +130,22 @@ class Mondo(unittest.TestCase):
         self.assertIn(("G", "gola_striscia"), [(u[0], u[1]) for u in self.aree["bottaccione"]["uscite"]])
 
     def test_orientamento_della_piazza(self):
-        """Alto = ovest: i Consoli stanno piu' in alto del Pretorio, che sta piu' a est."""
+        """Nord in alto: i Consoli a ovest (a sinistra) del Pretorio, il Ranghiasci a nord (in alto)."""
         _, posati, _ = area_finale("piazza_grande")
-        self.assertLess(posati["consoli"][1], posati["pretorio"][1])
+        self.assertLess(posati["consoli"][0], posati["pretorio"][0])
+        self.assertLess(posati["ranghiasci"][1], posati["consoli"][1])
         self.assertNotIn("piazza_grande", posati, "la piazza e' uno spazio aperto, non un blocco")
 
     def test_scala_dei_fronti(self):
-        """1 tile = 1,5 m, mai compresso: Consoli 26x23 con la facciata e il portone in basso,
-        Pretorio con la facciata in alto (si vede il retro), Bargello frontale, Basilica 33x15."""
+        """1 tile = 1,5 m, mai compresso: col nord in alto i Consoli sono 23x26 con la facciata e
+        il portone in basso; anche il Pretorio e' frontale, con la porta in basso;
+        Bargello frontale, Basilica 33x15."""
         a, posati, _ = area_finale("piazza_grande")
         x, y, w, h = posati["consoli"]
-        self.assertEqual((w, h), (26, 23))
+        self.assertEqual((w, h), (23, 26))
         self.assertEqual(set(a["griglia"][y + h - 1][x:x + w]), {"C", "d"})
         x, y, w, h = posati["pretorio"]
-        self.assertEqual({c for r in a["griglia"][y:y + h] for c in r[x:x + w]}, {"#"})
+        self.assertIn("d", a["griglia"][y + h - 1][x:x + w])
         a, posati, _ = area_finale("largo_bargello")
         x, y, w, h = posati["bargello"]
         self.assertIn("d", a["griglia"][y + h - 1][x:x + w])
@@ -161,14 +163,14 @@ class Mondo(unittest.TestCase):
         a, posati, monumenti = area_finale("piazza_grande")
         x, y, w, h = posati["consoli"]
         posati["consoli"] = (x, y, w - 1, h)
-        with self.assertRaisesRegex(G.ErroreMondo, "l'edificio consoli e' 25x23 tile, il censimento lo vuole 26x23"):
+        with self.assertRaisesRegex(G.ErroreMondo, "l'edificio consoli e' 22x26 tile, il censimento lo vuole 23x26"):
             G.controlla_edifici(a, posati, monumenti)
 
     def test_negativa_edificio_che_esce_dalla_griglia(self):
         """Una misura cambiata nel censimento si propaga: un Bargello di 40 tile non ci sta piu'."""
         mondo = copy.deepcopy(G.mondo_del_repo())
         mondo["monumenti"]["bargello"]["misure_tile"] = [40, 6]
-        with self.assertRaisesRegex(G.ErroreMondo, "l'edificio bargello \\(6x40 tile in .*\\) esce dalla griglia"):
+        with self.assertRaisesRegex(G.ErroreMondo, "l'edificio bargello \\(40x6 tile in .*\\) esce dalla griglia"):
             G.genera(G.sorgenti_del_repo(), PALETTE, mondo)
 
     def test_negativa_edifici_sovrapposti(self):
@@ -289,13 +291,13 @@ class Mondo(unittest.TestCase):
             G.genera(G.sorgenti_del_repo(), PALETTE, mondo)
 
     def test_negativa_varco_sul_lato_sbagliato(self):
-        """(b) Le destinazioni di via dei Consoli come nel prototipo: Piazza Grande in alto."""
+        """(b) Le destinazioni di via dei Consoli scambiate: Piazza Grande a sinistra."""
         def scambia(testo):
             testo = testo.replace("uscita A largo_bargello", "uscita A X")
             testo = testo.replace("uscita B piazza_grande", "uscita B largo_bargello")
             return testo.replace("uscita A X", "uscita A piazza_grande")
-        with self.assertRaisesRegex(G.ErroreMondo, "il varco 'A' verso piazza_grande sta su alto, "
-                                                   "varchi.json lo vuole a basso"):
+        with self.assertRaisesRegex(G.ErroreMondo, "il varco 'A' verso piazza_grande sta su sinistra, "
+                                                   "varchi.json lo vuole a destra"):
             G.genera(sorgenti_con("via_dei_consoli.area", scambia), PALETTE)
 
     def test_negativa_lato_cambiato_in_varchi_json(self):
@@ -303,14 +305,14 @@ class Mondo(unittest.TestCase):
         mondo = copy.deepcopy(self.mondo)
         for v in mondo["varchi"]["SANT_ANDREA"]:
             v["lato"] = "basso"
-        with self.assertRaisesRegex(G.ErroreMondo, "sta su alto, varchi.json lo vuole a basso"):
+        with self.assertRaisesRegex(G.ErroreMondo, "sta su sinistra, varchi.json lo vuole a basso"):
             G.genera(G.sorgenti_del_repo(), PALETTE, mondo)
 
     def test_negativa_varco_lontano_dal_bordo(self):
         """(b) Il varco di Sant'Andrea spostato dentro la griglia, su nessun bordo."""
         def sposta(testo):
             testo = togli_varco("A")(testo)
-            return cambia_griglia(testo, 12, 31, "A")
+            return cambia_griglia(testo, 30, 25, "A")
         with self.assertRaisesRegex(G.ErroreMondo, "sta su nessun bordo"):
             G.genera(sorgenti_con("sant_andrea.area", sposta), PALETTE)
 
@@ -416,13 +418,15 @@ def celle(a, carattere):
 class Dislivello(unittest.TestCase):
     """Il dislivello in tre modi: scale ai varchi, gradoni, belvederi. Tutto da quote e lati a monte."""
 
-    def test_la_salita_va_in_basso_a_destra(self):
+    def test_la_salita_va_in_alto_a_destra(self):
+        """Nord in alto: la salita verso nord-est e' in alto o a destra; gli interni non hanno bussola."""
         for n, t in G.sorgenti_del_repo():
-            self.assertIn(G.leggi_area(n, t)["monte"], ("basso", "destra"), n)
+            a = G.leggi_area(n, t)
+            self.assertIn(a["monte"], ("alto", "destra") + (("basso",) if a.get("interno") else ()), n)
 
-    def test_negativa_lato_a_monte_in_alto(self):
-        sorgenti = sorgenti_con("san_pietro.area", lambda t: t.replace("monte basso", "monte alto"))
-        with self.assertRaisesRegex(G.ErroreMondo, "lato a monte 'alto': la salita va verso nord-est"):
+    def test_negativa_lato_a_monte_in_basso(self):
+        sorgenti = sorgenti_con("san_pietro.area", lambda t: t.replace("\nmonte destra", "\nmonte basso"))
+        with self.assertRaisesRegex(G.ErroreMondo, "lato a monte 'basso': la salita va verso nord-est"):
             G.genera(sorgenti, PALETTE)
 
     def test_belvederi_delle_aree_alte(self):
@@ -433,21 +437,22 @@ class Dislivello(unittest.TestCase):
             self.assertGreater(celle(a, "="), 0, nome)
 
     def test_negativa_belvedere_sul_lato_a_monte(self):
-        with self.assertRaisesRegex(G.ErroreMondo, "belvedere sul lato a monte \\(basso\\)"):
-            area_con_dislivello("piazza_grande", modifica=lambda t: t.replace("belvedere sinistra", "belvedere basso"))
+        with self.assertRaisesRegex(G.ErroreMondo, "belvedere sul lato a monte \\(destra\\)"):
+            area_con_dislivello("piazza_grande", modifica=lambda t: t.replace("belvedere basso", "belvedere destra"))
 
     def test_negativa_belvedere_in_un_area_bassa(self):
         with self.assertRaisesRegex(G.ErroreMondo, "belvedere a 0 m: un'area sotto 60 m"):
             area_con_dislivello("piazza_quaranta_martiri",
-                                modifica=lambda t: t.replace("monte basso", "monte basso\nbelvedere alto"))
+                                modifica=lambda t: t.replace("\nmonte destra", "\nmonte destra\nbelvedere sinistra"))
 
     def test_gradoni_dalla_quota(self):
         """Via dei Consoli sale da 27 a 67 m: due gradoni da 15 m, con muro e scala di passaggio.
-        Piazza Grande e' in piano: nessun gradone."""
+        Piazza Grande e' in piano: nessun gradone. Col nord in alto la via sale verso destra: i
+        gradoni sono colonne."""
         a = area_con_dislivello("via_dei_consoli")
         self.assertEqual(len(a["gradoni"]), 2)
-        for y in a["gradoni"]:
-            self.assertIn("S", a["griglia"][y])
+        for x in a["gradoni"]:
+            self.assertIn("S", "".join(r[x] for r in a["griglia"]))
         self.assertEqual(area_con_dislivello("piazza_grande")["gradoni"], [])
         # dove la strada e' larga, il gradone e' muro di contenimento con la scala in mezzo
         monte = area_con_dislivello("monte_ingino")
@@ -464,9 +469,9 @@ class Dislivello(unittest.TestCase):
         self.assertEqual((a["gradoni"], celle(a, "M")), ([], 0))
 
     def test_ombra_a_valle_del_gradone(self):
-        """Un'area che sale verso destra: l'ombra del gradone cade sul suolo a sinistra. (Monte Ingino,
-        l'unica area "monte destra", ora sale con i tornanti degli stradoni e non ha gradoni.)"""
-        self.assertEqual(area_con_dislivello("monte_ingino")["monte"], "destra")
+        """Un'area che sale verso destra (via dei Consoli, col nord in alto): l'ombra del gradone
+        cade sul suolo a sinistra."""
+        self.assertEqual(area_con_dislivello("via_dei_consoli")["monte"], "destra")
         g, x, y = ["...", ".M.", "..."], 1, 1
         valle = G.tile_per_cella(g, x - 1, y, False, "destra")
         monte = G.tile_per_cella(g, x + 1, y, False, "destra")
@@ -478,13 +483,13 @@ class Dislivello(unittest.TestCase):
         verso il Largo del Bargello (27 m) la via e' allo stesso livello e non c'e' scala."""
         a = area_con_dislivello("via_dei_consoli")
         g = a["griglia"]
-        interne = [(x, y) for x, y in G.celle_varco(a, "G") if g[y][x + 1] != "G"]
+        interne = [(x, y) for x, y in G.celle_varco(a, "G") if g[y - 1][x] != "G"]
         self.assertTrue(interne)
         for x, y in interne:
-            self.assertEqual(g[y][x + 1: x + 1 + G.PROFONDITA_SCALE], "S" * G.PROFONDITA_SCALE)
+            self.assertEqual("".join(g[y - 1 - k][x] for k in range(G.PROFONDITA_SCALE)), "S" * G.PROFONDITA_SCALE)
         for x, y in G.celle_varco(a, "A"):
-            if y == 1:
-                self.assertNotEqual(g[y + 1][x], "S")
+            if x == 1:
+                self.assertNotEqual(g[y][x + 1], "S")
 
     def test_negativa_stessa_quota_niente_scala(self):
         mondo = copy.deepcopy(G.mondo_del_repo())
@@ -585,31 +590,31 @@ class Proporzioni(unittest.TestCase):
 
     def test_piazze_in_scala(self):
         mondo = G.mondo_del_repo()
-        attese = {"largo_bargello": (13, 9), "san_pietro": (26, 25), "sant_andrea": (4, 15)}
+        attese = {"largo_bargello": (9, 13), "san_pietro": (25, 26), "sant_andrea": (15, 4)}
         for nome, wh in attese.items():
             a = self.aree_lette()[nome]
             self.assertNotIn("fattore_piazza", a, nome)
             self.assertEqual(G.misure_piazza_tile(mondo["misure"]["piazze"][a["piazza"][0]]), wh, nome)
 
     def test_piazze_grandi_a_misura_vera(self):
-        """Piazza Grande (51x27, in fila con Consoli e Pretorio), Piazza 40 Martiri (120x49) e Piazza
-        Giordano Bruno (21x15) a misura vera, senza fattore, in aree oltre i 64 tile."""
+        """Piazza Grande (51x27, in fila con Consoli e Pretorio), Piazza 40 Martiri (49x120) e Piazza
+        Giordano Bruno (15x21) a misura vera, senza fattore, in aree oltre i 64 tile."""
         mondo = G.mondo_del_repo()
-        attese = {"piazza_grande": (27, 51), "piazza_quaranta_martiri": (120, 49), "san_martino": (21, 15)}
+        attese = {"piazza_grande": (51, 27), "piazza_quaranta_martiri": (49, 120), "san_martino": (15, 21)}
         for nome, wh in attese.items():
             a = self.aree_lette()[nome]
             self.assertNotIn("fattore_piazza", a, nome)
             self.assertEqual(G.misure_piazza_tile(mondo["misure"]["piazze"][a["piazza"][0]]), wh, nome)
             self.assertTrue(G.grande(a), nome)
         _, posati, _ = area_finale("piazza_grande")
-        self.assertLess(posati["consoli"][1], self.aree_lette()["piazza_grande"]["riferimento"][1] - 25,
-                        "i Consoli stanno in cima alla piazza, in fila")
+        self.assertLess(posati["consoli"][0], self.aree_lette()["piazza_grande"]["riferimento"][0] - 25,
+                        "i Consoli stanno a ovest della piazza, in fila")
 
     def test_negativa_piazza_fuori_misura_senza_fattore(self):
         """Una Piazza 40 Martiri di 300 m non sta nemmeno in 128 tile: senza fattore e' rifiutata."""
         mondo = copy.deepcopy(G.mondo_del_repo())
         mondo["misure"]["piazze"]["Piazza 40 Martiri"]["lato_lungo_m"] = 300
-        with self.assertRaisesRegex(G.ErroreMondo, "Piazza 40 Martiri in scala e' 200x49 tile e non sta nella "
+        with self.assertRaisesRegex(G.ErroreMondo, "Piazza 40 Martiri in scala e' 49x200 tile e non sta nella "
                                                    "griglia .*: serve un fattore_piazza"):
             G.genera(G.sorgenti_del_repo(), PALETTE, mondo)
 
@@ -623,8 +628,8 @@ class Proporzioni(unittest.TestCase):
         """Un muro nel Largo del Bargello: la piazza non e' piu' libera nella sua misura."""
         a = self.aree_lette()["largo_bargello"]
         rx, ry = a["riferimento"]
-        sorgenti = sorgenti_con("largo_bargello.area", lambda t: cambia_griglia(t, ry + 3, rx + 5, "#"))
-        with self.assertRaisesRegex(G.ErroreMondo, "Largo del Bargello \\(13x9 tile intorno al riferimento\\) non e' libera"):
+        sorgenti = sorgenti_con("largo_bargello.area", lambda t: cambia_griglia(t, ry + 5, rx + 3, "#"))
+        with self.assertRaisesRegex(G.ErroreMondo, "Largo del Bargello \\(9x13 tile intorno al riferimento\\) non e' libera"):
             G.genera(sorgenti, PALETTE)
 
     def aree_lette(self):
@@ -804,13 +809,13 @@ class BelvederiECase(unittest.TestCase):
             self.assertGreater(celle(a, "V"), 0, nome)
             self.assertEqual(G.errori_belvedere(a), [], nome)
 
-    def test_piazza_grande_aperta_a_sinistra(self):
-        """Il parapetto corre sul lato sinistro della piazza (sud-ovest reale), fra Consoli e Pretorio."""
+    def test_piazza_grande_aperta_in_basso(self):
+        """Col nord in alto il parapetto corre sul lato basso della piazza (a sud), fra Consoli e Pretorio."""
         a = self.aree["piazza_grande"]
         x0, y0, w, h = G.rettangolo_piazza(a)
-        self.assertEqual(a["belvedere"][0][0], "sinistra")
-        parapetti = [y for y in range(y0, y0 + h) if a["griglia"][y][x0 - 1] == "="]
-        self.assertGreater(len(parapetti), h // 3)
+        self.assertEqual(a["belvedere"][0][0], "basso")
+        parapetti = [x for x in range(x0, x0 + w) if a["griglia"][y0 + h][x] == "="]
+        self.assertGreater(len(parapetti), w // 3)
 
     def test_negativa_tetto_oltre_il_parapetto(self):
         a = copy.deepcopy(self.aree["piazza_grande"])
@@ -869,10 +874,11 @@ class TerzoLotto(unittest.TestCase):
                          {"finestra_regolare": 10})
 
     def test_facciate_scelte(self):
-        """Duomo verso la stradina del Ducale (destra, pezzo O), Sant'Agostino a ovest (alto), San Pietro
-        verso la piazza (sinistra): scelte dichiarate nelle .area, il censimento non da' il lato."""
-        attese = {("duomo_ducale", "duomo"): "destra", ("sant_agostino", "sant_agostino"): "alto",
-                  ("san_pietro", "san_pietro"): "sinistra"}
+        """Col nord in alto le facciate si disegnano di fronte (in basso): Duomo verso la stradina del
+        Ducale, Sant'Agostino e San Pietro verso la piazza. Scelte dichiarate nelle .area, il censimento
+        non da' il lato."""
+        attese = {("duomo_ducale", "duomo"): "basso", ("sant_agostino", "sant_agostino"): "basso",
+                  ("san_pietro", "san_pietro"): "basso"}
         for (nome, mid), lato in attese.items():
             a = self.aree[nome]
             self.assertIsNone(self.mondo["monumenti"][mid].get("facciata_lato_schermo"))
@@ -880,10 +886,10 @@ class TerzoLotto(unittest.TestCase):
             self.assertEqual(G.faccia_di(a, mid, self.mondo["monumenti"]), lato)
 
     def test_negativa_facciata_contro_il_censimento(self):
-        """Il censimento vuole la facciata del Ranghiasci a sinistra: una .area che dice destra e' rifiutata."""
+        """Il censimento vuole la facciata del Ranghiasci di fronte (in basso): una .area che dice destra e' rifiutata."""
         sorgenti = sorgenti_con("piazza_grande.area", lambda t: t.replace("\nfattore ", "\nfacciata ranghiasci destra\nfattore "))
         with self.assertRaisesRegex(G.ErroreMondo, "facciata di ranghiasci a destra, ma il censimento la vuole a "
-                                                   "sinistra: vince il dato"):
+                                                   "basso: vince il dato"):
             G.genera(sorgenti, PALETTE)
 
     def test_negativa_facciata_di_un_monumento_altrove(self):
@@ -892,8 +898,8 @@ class TerzoLotto(unittest.TestCase):
             G.genera(sorgenti, PALETTE)
 
     def test_mura_sul_perimetro(self):
-        for nome, lati in (("san_martino", ["destra"]), ("sant_agostino", ["basso"]), ("san_pietro", ["sinistra"]),
-                           ("teatro_romano", ["destra", "basso"])):
+        for nome, lati in (("san_martino", ["alto"]), ("sant_agostino", ["destra"]), ("san_pietro", ["basso"]),
+                           ("teatro_romano", ["alto", "destra"])):
             a = self.aree[nome]
             self.assertEqual(a["mura"], lati, nome)
             lato = lati[0]
@@ -903,7 +909,7 @@ class TerzoLotto(unittest.TestCase):
             self.assertGreater(bordo.count("W"), len(bordo) // 2, nome)
 
     def test_negativa_mura_su_un_lato_sconosciuto(self):
-        sorgenti = sorgenti_con("san_pietro.area", lambda t: t.replace("mura sinistra", "mura sopra"))
+        sorgenti = sorgenti_con("san_pietro.area", lambda t: t.replace("mura basso", "mura sopra"))
         with self.assertRaisesRegex(G.ErroreMondo, "lato delle mura 'sopra' sconosciuto"):
             G.genera(sorgenti, PALETTE)
 
@@ -1109,27 +1115,28 @@ class LaCitta(unittest.TestCase):
         self.assertTrue(any("senza porta" in e for e in G.errori_cinta(grafo)))
 
     def facciate_duomo_ducale(self, a):
-        """(distanza in tile fra le due facciate, righe in cui si guardano) per Duomo e Ducale."""
+        """(distanza in tile fra le due facciate, colonne in cui si guardano) per Duomo e Ducale: col
+        nord in alto il Duomo sta sopra la stradina e il Ducale sotto."""
         dx, dy, dw, dh = a["edifici"]["duomo"]
         cx, cy, cw, ch = a["edifici"]["ducale"]
-        righe = set(range(dy, dy + dh)) & set(range(cy, cy + ch))
-        if dx < cx:
-            return cx - (dx + dw), righe
-        return dx - (cx + cw), righe
+        colonne = set(range(dx, dx + dw)) & set(range(cx, cx + cw))
+        if dy < cy:
+            return cy - (dy + dh), colonne
+        return dy - (cy + ch), colonne
 
     def test_duomo_e_ducale_sulla_stradina(self):
         """Davanti al Duomo non c'e' una piazza: le facciate di Duomo e Ducale si guardano attraverso
         una stradina di al massimo 3 tile, e fra loro c'e' solo la strada."""
         a = self.aree["duomo_ducale"]
-        distanza, righe = self.facciate_duomo_ducale(a)
+        distanza, colonne = self.facciate_duomo_ducale(a)
         self.assertLessEqual(distanza, 3)
-        self.assertGreaterEqual(len(righe), 10)
-        self.assertEqual(G.faccia_di(a, "duomo", self.mondo["monumenti"]), "destra")
-        self.assertEqual(G.faccia_di(a, "ducale", self.mondo["monumenti"]), "sinistra")
-        dx, _, dw, _ = a["edifici"]["duomo"]
-        for y in righe:
-            fra = a["griglia"][y][dx + dw:dx + dw + distanza]
-            self.assertTrue(all(c in ",.S" for c in fra), (y, fra))
+        self.assertGreaterEqual(len(colonne), 10)
+        self.assertEqual(G.faccia_di(a, "duomo", self.mondo["monumenti"]), "basso")
+        self.assertEqual(G.faccia_di(a, "ducale", self.mondo["monumenti"]), "alto")
+        _, dy, _, dh = a["edifici"]["duomo"]
+        for x in colonne:
+            fra = "".join(a["griglia"][y][x] for y in range(dy + dh, dy + dh + distanza))
+            self.assertTrue(all(c in ",.S" for c in fra), (x, fra))
         visti, nudo = G.composizione(a)
         self.assertTrue({"duomo", "ducale"} <= visti)
         self.assertLessEqual(nudo, 0.60)
@@ -1138,7 +1145,7 @@ class LaCitta(unittest.TestCase):
         """Il Ducale spostato di 3 tile (una piazzetta davanti al Duomo): la stradina e' troppo larga."""
         a = copy.deepcopy(self.aree["duomo_ducale"])
         x, y, w, h = a["edifici"]["ducale"]
-        a["edifici"]["ducale"] = (x + 3, y, w, h)
+        a["edifici"]["ducale"] = (x, y + 3, w, h)
         self.assertGreater(self.facciate_duomo_ducale(a)[0], 3)
 
     def test_le_piazze_e_i_loro_monumenti(self):
@@ -1159,15 +1166,21 @@ class LaCitta(unittest.TestCase):
     def semicerchio(self, a):
         """Sulla griglia: per ogni riga della cavea l'ultima gradinata sta a sqrt(r^2 - dy^2) dal centro."""
         x0, y0, w, h = a["edifici"]["teatro_romano"]
-        cx, cy, r, _ = G.geometria_teatro(x0, y0, w, h)
+        cx, cy, r, _, orizzontale = G.geometria_teatro(x0, y0, w, h)
+        g = a["griglia"]
+        if orizzontale:  # col nord in alto la cavea e' coricata: si legge per colonne, l'arco verso l'alto
+            g = ["".join(g[y][x] for y in range(len(g) - 1, -1, -1)) for x in range(len(g[0]))]
+            x0, y0, w, h = len(g[0]) - (y0 + h), x0, h, w
+            cx, cy = len(g[0]) - 1 - cy, cx
         scarti = []
         for y in range(y0, y0 + h):
-            cavea = [x for x in range(x0, x0 + w) if a["griglia"][y][x] in "RU"]
+            cavea = [x for x in range(x0, x0 + w) if g[y][x] in "RU"]
             atteso = (r * r - (y - cy) ** 2) ** 0.5 if abs(y - cy) <= r else None
             if atteso is None:
                 scarti.append(len(cavea))
             else:
                 scarti.append(abs((max(cavea) - cx if cavea else 0) - atteso))
+        x0, y0, w, h = a["edifici"]["teatro_romano"]
         return max(scarti), G.errori_semicerchio(a, (x0, y0, w, h))
 
     def test_la_cavea_e_un_semicerchio(self):
@@ -1183,8 +1196,8 @@ class LaCitta(unittest.TestCase):
         a = copy.deepcopy(self.aree["teatro_romano"])
         x0, y0, w, h = a["edifici"]["teatro_romano"]
         g = [list(r) for r in a["griglia"]]
-        for y in range(y0, y0 + h):
-            for x in range(x0 + 3, x0 + w):
+        for y in range(y0, y0 + h - 3):
+            for x in range(x0, x0 + w):
                 g[y][x] = "R"
         a["griglia"] = ["".join(r) for r in g]
         scarto, err = self.semicerchio(a)
@@ -1225,7 +1238,7 @@ class GliStradoni(unittest.TestCase):
         tornanti = G.tornanti_degli_stradoni(self.a, G.tratti_degli_stradoni(self.a))
         self.assertEqual(len(tornanti), 8)
         trovati = []
-        for blocco in G.blocchi(self.a["griglia"], "c"):
+        for blocco in G.blocchi(G.coricata(self.a)["griglia"], "c"):
             accanto = {(x + dx, y + dy) for x, y in blocco for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))}
             trovati += [n for n, celle in enumerate(tornanti, 1) if accanto & celle]
         self.assertEqual(sorted(trovati), [3, 6, 7])
@@ -1245,7 +1258,8 @@ class GliStradoni(unittest.TestCase):
         self.assertTrue(any(e.startswith("tratti") for e in err), err)
 
     def test_ogni_tornante_si_raggiunge(self):
-        tornanti = G.tornanti_degli_stradoni(self.a, G.tratti_degli_stradoni(self.a))
+        tornanti = [G.celle_dalla_coricata(self.a, c)
+                    for c in G.tornanti_degli_stradoni(self.a, G.tratti_degli_stradoni(self.a))]
         for s, xy in self.a["spawn"].items():
             visti = G.raggiungibili(self.a, xy)
             for n, celle in enumerate(tornanti, 1):
@@ -1257,10 +1271,10 @@ class GliStradoni(unittest.TestCase):
         tratti = G.tratti_degli_stradoni(a)
         x0, x1, y0, y1 = tratti[3]
         g = [list(r) for r in a["griglia"]]
-        for x in range(x0, x1 + 1):
-            g[(y0 + y1) // 2][x] = "k"
+        for x, y in G.celle_dalla_coricata(a, {(x, (y0 + y1) // 2) for x in range(x0, x1 + 1)}):
+            g[y][x] = "k"
         a["griglia"] = ["".join(r) for r in g]
-        tornanti = G.tornanti_degli_stradoni(a, tratti)
+        tornanti = [G.celle_dalla_coricata(a, c) for c in G.tornanti_degli_stradoni(a, tratti)]
         visti = G.raggiungibili(a, a["spawn"][1])
         self.assertTrue(tornanti[2] & visti)
         self.assertFalse(tornanti[3] & visti)
@@ -1279,9 +1293,9 @@ class GliStradoni(unittest.TestCase):
         a = self.a
         self.assertEqual(sorted(a["porte"]), ["A", "E"])
         self.assertTrue(all(n == "Porta Sant'Ubaldo" for n, _, _, _ in a["porte"].values()))
-        self.assertEqual(G.lati_del_varco(a, "B"), {"destra"})
+        self.assertEqual(G.lati_del_varco(a, "B"), {"alto"})
         tratti = G.tratti_degli_stradoni(a)
-        self.assertLess(tratti[0][0], tratti[-1][0], "si sale verso destra")
+        self.assertLess(tratti[0][0], tratti[-1][0], "si sale verso nord (verso destra sulla griglia coricata)")
 
 
 class LaBasilica(unittest.TestCase):
@@ -1467,7 +1481,7 @@ class LaRifinitura(unittest.TestCase):
         """Tornanti con il gomito tondo e il muretto a secco fuori, paracarri, ghiaia a due toni coi
         solchi, la cappelletta col gradino."""
         a = self.aree["monte_ingino"]
-        g = a["griglia"]
+        g = G.coricata(a)["griglia"]
         tornanti = G.tornanti_degli_stradoni(a, G.tratti_degli_stradoni(a))
         for n, celle in enumerate(tornanti, 1):
             accanto = {(x + dx, y + dy) for x, y in celle for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))}
@@ -1475,6 +1489,7 @@ class LaRifinitura(unittest.TestCase):
             righe = {y for _, y in celle}
             self.assertGreater(len(righe), G.LUNGHEZZA_MIN_TRATTO // 2 - 1, f"gomito tondo al tornante {n}")
         self.assertGreater(sum(r.count("p") for r in g), 40, "paracarri")
+        g = a["griglia"]
         nomi = {G.TILE_FONDALI[G.tile_per_cella(g, x, y, True, "destra")][0]
                 for y, r in enumerate(g) for x, c in enumerate(r) if c == "b"}
         self.assertEqual(nomi, {"BRECCIA", "BRECCIA_2", "BRECCIA_SOLCO"})

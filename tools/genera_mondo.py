@@ -1860,6 +1860,13 @@ def coricata(a):
     return dict(a, griglia=["".join(g[h - 1 - x][y] for x in range(h)) for y in range(w)], larghezza=h, altezza=w)
 
 
+def celle_dalla_coricata(a, celle):
+    """Le celle lette sulla griglia coricata, riportate sulla griglia vera dell'area."""
+    if a["altezza"] <= a["larghezza"]:
+        return set(celle)
+    return {(y, a["altezza"] - 1 - x) for x, y in celle}
+
+
 def tratti_degli_stradoni(a):
     """Letti dalla griglia (coricata): i tratti (colonne di ghiaia lunghe almeno LUNGHEZZA_MIN_TRATTO,
     unite fra colonne vicine) dal primo all'ultimo, ognuno come (x0, x1, y0, y1)."""

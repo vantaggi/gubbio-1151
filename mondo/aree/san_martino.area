@@ -21,6 +21,8 @@ sposta porta_metauro 0 -1
 # San Domenico: sotto la piazza, con la facciata verso il basso sul sagrato (nord in alto, 4 nov 2026).
 sposta san_domenico 0 24
 sposta capitano_popolo 0 4
+# casa_medico: un tile a sinistra, cosi' la via resta larga 3 e la porta da' sul largo sotto.
+sposta casa_medico -1 0
 spawn 0 32 84
 spawn 1 77 85
 spawn 2 4 115
@@ -31,7 +33,7 @@ uscita B piazza_quaranta_martiri 2 largo 5
 uscita E bottaccione 3 largo 3
 uscita G teatro_romano 4
 # La porta di casa_medico porta dentro (pezzo INT2, tools/pittore_interni.py).
-spawn 5 32 53
+spawn 5 32 69
 ingresso H casa_medico
 uscita H casa_medico_interno 5
 griglia

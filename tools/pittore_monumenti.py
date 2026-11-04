@@ -255,14 +255,16 @@ def bargello(w, h, info):
     """Bargello: stretto e alto, frontale; il portale e accanto la porta del morto, stretta e rialzata."""
     t = Tela(w, h)
     tinta = TINTE[2]
-    fh = max(min(6, h - 2), min(h - 2, h * 6 // 10))
+    # col nord in alto l'impronta e' bassa (6 righe): la facciata prende quasi tutto, il tetto e' una gronda
+    fh = max(min(6, h - 1), min(h - 2, h * 6 // 10))
     tetto_e_facciata(t, w, h, fh, tinta)
     y0 = (h - fh) * 8
     largo = w * 8
+    hf = max(6, min(14, fh * 8 - 32))   # le finestre si accorciano perche' il portale resti di 26 pixel
     for k in range(2):
-        t.arco(largo // 2 - 17 + k * 22, y0 + 4, 12, 14, CONTORNO)
+        t.arco(largo // 2 - 17 + k * 22, y0 + 3, 12, hf, CONTORNO)
     base = y0 + fh * 8
-    portale_in_scala(t, largo // 2 - 4, base, y0 + 20)
+    portale_in_scala(t, largo // 2 - 4, base, y0 + 5 + hf)
     t.elementi["portale"] += 1
     t.arco(largo // 2 + 7, base - 24, 8, 16, LEGNO)
     t.rett(largo // 2 + 7, base - 8, 8, 8, PIETRA_SCURA)
@@ -573,7 +575,7 @@ def sant_agostino(w, h, info):
         solo_retro(t, w, h, TINTE[2])
         t.contorno()
         return t
-    fh = altezza_facciata(h, None, 5)
+    fh = altezza_facciata(h, None, 6)   # 6 righe: sotto l'occhio il portale resta di 28 pixel
     tetto_e_facciata(t, w, h, fh, TINTE[2])
     largo, base = w * 8, h * 8
     portale_in_scala(t, largo // 2, base, (h - fh) * 8 + 18)
