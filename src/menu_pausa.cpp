@@ -237,7 +237,7 @@ namespace
     {
     public:
         Compagno(int e, const bn::sprite_palette_ptr& palette) :
-            _x(COMPAGNO_X0 + e * COMPAGNO_PASSO),
+            _x(COMPAGNO_X0 + GUBBIO_VOCE(POSTO_IN_FILA, e) * COMPAGNO_PASSO),
             _ritratto(crea_ritratto(e, _x + 4, 12)),
             _nome(Contesto::HUD, _x, 45, menu::INCHIOSTRO, palette),
             _liv(Contesto::HUD, _x, 55, menu::INCHIOSTRO, palette),
@@ -284,7 +284,7 @@ namespace
         Riquadri riquadri;
         riquadri.cornice(0, 0, 20, 12);
         riquadri.cornice(160, 0, 10, 12);
-        riquadri.cornice(0, 104, 30, 7);
+        riquadri.cornice(0, 96, 30, 8);    // tocca i due riquadri in alto: niente fessura sulla scena
         int larghezza = larghezza_testo(TestoId::ETICHETTA_OBIETTIVO);
         int colonne = colonne_cartiglio(larghezza);
         riquadri.cartiglio(8, 96, colonne);

@@ -64,6 +64,13 @@ enum class Esito : uint8_t
 inline constexpr testo::TestoId NOMI_COMPAGNI[battaglia::EROI] = {
     testo::TestoId::PARLANTE_UBALDO, testo::TestoId::PARLANTE_GIORGIO, testo::TestoId::PARLANTE_ANTONIO };
 
+// Il posto di ogni compagno in una fila da sinistra (regola O1 di Cioti): Antonio a sinistra, Ubaldo al centro,
+// Giorgio a destra. Lo prova tests/test_menu_pausa.py.
+inline constexpr int POSTO_IN_FILA[battaglia::EROI] = { 1, 2, 0 };
+
+static_assert(POSTO_IN_FILA[battaglia::UBALDO] == 1 && POSTO_IN_FILA[battaglia::GIORGIO] == 2 &&
+              POSTO_IN_FILA[battaglia::ANTONIO] == 0, "O1: Antonio a sinistra, Ubaldo al centro, Giorgio a destra");
+
 [[nodiscard]] bn::sprite_ptr crea_ritratto(int e, int x, int y);
 
 struct Forze

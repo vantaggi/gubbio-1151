@@ -121,16 +121,16 @@ namespace
         bool al_massimo = f.livello >= progressione::LIVELLO_MAX;
         int da = GUBBIO_VOCE(progressione::ESPERIENZA_PER_LIVELLO, f.livello - 1);
         int a = al_massimo ? da : GUBBIO_VOCE(progressione::ESPERIENZA_PER_LIVELLO, f.livello);
-        Striscia barra(TESTO_X, 48, ESPERIENZA_LARGA + 2, palette);
+        Striscia barra(TESTO_X, 49, ESPERIENZA_LARGA + 2, palette);
         disegna_barra(barra, 0, 0, ESPERIENZA_LARGA, al_massimo ? 1 : esperienza - da, al_massimo ? 1 : a - da, ORO);
-        Scritta mancano(al_massimo ? TestoId::COMP_AL_MASSIMO : TestoId::COMP_MANCANO, 150, 45, NOTA, palette);
+        Scritta mancano(al_massimo ? TestoId::COMP_AL_MASSIMO : TestoId::COMP_MANCANO, 150, 46, NOTA, palette);
         bn::optional<VistaNumero> quanti;
 
         if(! al_massimo)
         {
-            quanti.emplace(0, 45, NOTA, palette);
+            quanti.emplace(0, 46, NOTA, palette);
             quanti->mostra(a - esperienza);
-            quanti->colloca(150 + larghezza_testo(TestoId::COMP_MANCANO) + 4, 45);
+            quanti->colloca(150 + larghezza_testo(TestoId::COMP_MANCANO) + 4, 46);
         }
 
         bn::optional<RigaStatistica> statistiche[STATISTICHE];
