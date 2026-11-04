@@ -265,8 +265,6 @@ enum class StatoSlot : uint8_t
 // Scrive nella banca meno recente e rilegge per verifica: false se la rilettura non torna.
 [[nodiscard]] bool salva(int slot, const GameState& stato);
 
-// Il tempo di gioco della banca piu' recente, per il titolo; 0 se lo slot non e' valido.
-[[nodiscard]] uint32_t tempo_secondi(int slot);
 
 }
 

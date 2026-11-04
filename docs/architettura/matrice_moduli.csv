@@ -1,7 +1,7 @@
 file,righe,generato_da,include/aiuti.h,include/animazione_battaglia.h,include/audio.h,include/audio_logica.h,include/battaglia.h,include/battaglia_attese.h,include/battaglia_dati.h,include/battaglia_grafica.h,include/cartelli.h,include/colonna_sonora.h,include/compagni.h,include/esplorazione.h,include/folla.h,include/folla_vista.h,include/formatta.h,include/game_state.h,include/menu_pagine.h,include/mondo.h,include/mondo_autotest.h,include/mondo_logica.h,include/negozio.h,include/opzioni.h,include/pannello.h,include/progressione.h,include/regia.h,include/regia_logica.h,include/regia_scena.h,include/save_crc32.h,include/save_data.h,include/scena_battaglia.h,include/schermate.h,include/scontri_mappa.h,include/stile/cornice.h,include/stile/font.h,include/stile/icone_menu.h,include/stile/mappa_menu.h,include/stile/palette.h,include/stile/pose.h,include/storia.h,include/storia_logica.h,include/storia_scena.h,include/tabella.h,include/testi.h,include/testo.h,include/testo_autotest.h,include/titolo.h,include/vista_battaglia.h,include/vista_menu.h,include/vista_testo.h
 include/aiuti.h,519,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,,
 include/animazione_battaglia.h,369,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,
-include/audio.h,48,,,,,,,,,,,1,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+include/audio.h,43,,,,,,,,,,,1,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 include/audio_logica.h,103,,,,,,1,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,1,,,,,,,
 include/battaglia.h,1091,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 include/battaglia_attese.h,1040,tools/battaglia_mirror.py,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -10,7 +10,7 @@ include/battaglia_grafica.h,4146,tools/genera_battaglia.py,,,,,,,,,,,,,,,,,,,,,,
 include/cartelli.h,90,tools/genera_cartelli.py,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,
 include/colonna_sonora.h,293,tools/genera_colonna_sonora.py,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 include/compagni.h,428,tools/sagome_compagni.py,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-include/esplorazione.h,284,,1,,,,,,,,,,,,,,,,,,,1,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,1
+include/esplorazione.h,295,,1,,,,,,,,,,,,,,,,,,,1,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,1
 include/folla.h,1363,tools/genera_folla.py,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 include/folla_vista.h,64,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 include/formatta.h,189,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -27,7 +27,7 @@ include/regia.h,20904,tools/genera_regia.py,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 include/regia_logica.h,215,,,,,,,,,,,,,,,,,1,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,
 include/regia_scena.h,21,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 include/save_crc32.h,102,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-include/save_data.h,273,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,
+include/save_data.h,271,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,
 include/scena_battaglia.h,44,,,,,,1,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 include/schermate.h,28,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 include/scontri_mappa.h,54,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -46,9 +46,9 @@ include/testo.h,127,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,1,1,,,,,,
 include/testo_autotest.h,260,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,
 include/titolo.h,45,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 include/vista_battaglia.h,282,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-include/vista_menu.h,67,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,
-include/vista_testo.h,190,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,1,,,,,
-src/audio.cpp,187,,,,1,1,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,1,,,,,,,
+include/vista_menu.h,66,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,
+include/vista_testo.h,188,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,1,,,,,
+src/audio.cpp,158,,,,1,1,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,1,,,,,,,
 src/autotest_animazione.cpp,260,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 src/autotest_audio.cpp,185,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 src/autotest_battaglia.cpp,185,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -66,7 +66,7 @@ src/autotest_salvataggio.cpp,167,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,
 src/autotest_storia.cpp,475,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,,
 src/autotest_testi.cpp,44,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,
 src/autotest_vista.cpp,230,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,
-src/camminata.cpp,138,,,,,,,,,,,,,1,,,,,,,1,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,
+src/camminata.cpp,142,,,,,,,,,,,,,1,,,,,,,1,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,
 src/esplorazione.cpp,1250,,1,,,,,,,,,,1,1,,,,1,,,,,,1,1,,,,,,,,,,,,,,,,,,,,,,,,,,
 src/folla.cpp,276,,,,,,,,,,,,,1,,1,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 src/game_state.cpp,11,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -84,12 +84,12 @@ src/opzioni.cpp,43,,,,1,,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,,,
 src/pannello.cpp,200,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,1,,,,,1,,,,,,,1
 src/prova_battaglia.cpp,42,,,,,,,1,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,
 src/regia.cpp,258,,,,1,,,,,,,,,,,,,1,,,,,,,,,,1,1,,,,,,,,,,,,,,,1,,,,,,,1
-src/save_system.cpp,122,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,
+src/save_system.cpp,110,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,,,
 src/scena_battaglia.cpp,1229,,,1,1,,,,,1,,,,,,,,1,,,,,1,,,1,,,,,,1,,,1,,,,,,,1,,1,,,,,1,,1
 src/schermata_testi.cpp,140,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,1,,1,,,,,,,,,,,,1,,,,1
 src/scontri_mappa.cpp,112,,,,,,,,,,,,,1,,,,1,,,,,,,,,,,,,,1,,1,,,,,,,,1,1,,,,,,,,
 src/stile_controlli.cpp,38,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,1,,,1,1,,,,,,,,,,,
-src/storia_scena.cpp,1694,,1,,1,,,,,1,,,,1,,,,1,1,,,,1,1,,1,,1,1,,1,1,,1,1,,,,,,,1,1,1,,,,,,,1
+src/storia_scena.cpp,1709,,1,,1,,,,,1,,,,1,,,,1,1,,,,1,1,,1,,1,1,,1,1,,1,1,,,,,,,1,1,1,,,,,,,1
 src/titolo.cpp,531,,1,,1,,,,,,,,,1,,,,1,1,1,,,,,,1,,,,,1,,,,1,,,,1,,,1,,1,,,,1,,,1
-src/vista_menu.cpp,202,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,1,,,,,1,,,,,,1,1
-src/vista_testo.cpp,505,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,1
+src/vista_menu.cpp,194,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,1,,,,,1,,,,,,1,1
+src/vista_testo.cpp,492,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,1

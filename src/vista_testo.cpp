@@ -189,14 +189,6 @@ void VistaTesto::sposta(int x, int y)
     }
 }
 
-void VistaTesto::set_z_order(int z)
-{
-    for(bn::sprite_ptr& s : _sprite)
-    {
-        s.set_z_order(z);
-    }
-}
-
 void VistaTesto::rivela_tutto()
 {
     while(_testo && ! completo())
@@ -488,11 +480,6 @@ void Riquadri::cartiglio(int x, int y, int colonne)
             _cella(x / 8 + cx, y / 8 + cy, tile_cartiglio(cx, cy, colonne));
         }
     }
-}
-
-void Riquadri::set_visible(bool visibile)
-{
-    _bg.set_visible(visibile);
 }
 
 bn::regular_bg_ptr crea_riquadro_dialogo()

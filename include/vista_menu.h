@@ -40,7 +40,6 @@ public:
     void pulisci();
     // Rettangolo pieno, in pixel della striscia (0..larghezza-1, 0..7), estremi compresi.
     void rett(int x0, int y0, int x1, int y1, int colore);
-    void set_visible(bool visibile);
 
 private:
     int _larghezza;

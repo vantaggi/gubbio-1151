@@ -107,16 +107,4 @@ bool salva(int slot, const GameState& stato)
     return true;
 }
 
-uint32_t tempo_secondi(int slot)
-{
-    if(! slot_valido(slot))
-    {
-        return 0;
-    }
-
-    leggi_banche(slot);
-    int banca = banca_da_caricare(s_banca_a, s_banca_b);
-    return banca < 0 ? 0 : (banca == 0 ? s_banca_a : s_banca_b).tempo_secondi;
-}
-
 }

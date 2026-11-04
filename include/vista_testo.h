@@ -33,7 +33,6 @@ public:
     void nascondi();
     // Sposta il testo gia' mostrato (le entrate dei riquadri degli aiuti, A2 e A3); vale anche per i prossimi.
     void sposta(int x, int y);
-    void set_z_order(int z);
     [[nodiscard]] bool completo() const;
     [[nodiscard]] int rivelati() const;
 
@@ -169,7 +168,6 @@ public:
     void svuota();
     // Toglie i tile da un rettangolo (in pixel, sulla griglia): lascia vedere il fondo sotto, come la mappa (MMA).
     void buca(int x, int y, int colonne, int righe);
-    void set_visible(bool visibile);
     [[nodiscard]] const bn::regular_bg_ptr& bg() const { return _bg; }
 
 private:

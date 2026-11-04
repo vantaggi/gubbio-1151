@@ -20,7 +20,6 @@ namespace
 
     // Lo stato del suono: pochi byte statici, nessuna allocazione (il mixer di maxmod ha i suoi
     // buffer statici dentro Butano).
-    bool s_acceso = true;
     int s_musica = opzioni::TACCHE_NORMALI;     // le tacche delle opzioni
     int s_effetti = opzioni::TACCHE_NORMALI;
 
@@ -47,18 +46,6 @@ namespace
     }
 }
 
-void accendi(bool acceso)
-{
-    s_acceso = acceso;
-
-    if(! acceso && bn::music::playing())
-    {
-        bn::music::stop();
-    }
-
-    s_brano = colonna::NESSUNO;
-}
-
 void volumi(int musica, int effetti)
 {
     s_musica = musica;
@@ -70,14 +57,9 @@ void volumi(int musica, int effetti)
     }
 }
 
-bool acceso()
-{
-    return s_acceso;
-}
-
 void brano(colonna::Brano b)
 {
-    if(s_acceso && ! suona_ancora(int(b)))
+    if(! suona_ancora(int(b)))
     {
         parti(int(b));
     }
@@ -106,11 +88,6 @@ void esplorazione(const GameState& partita, int area, int cella_x, int cella_y)
             brano(GUBBIO_VOCE(colonna::LUOGO, luogo).brano);
             return;
         }
-    }
-
-    if(! s_acceso)
-    {
-        return;
     }
 
     // un jingle (la vittoria, il segnale) si lascia finire: poi riparte il brano dell'area
@@ -154,11 +131,8 @@ void battaglia(int incontro)
 
 void fine_battaglia(bool vinta)
 {
-    if(s_acceso)
-    {
-        // la vittoria e la sconfitta partono sempre, anche dopo un'altra battaglia uguale
-        parti(int(vinta ? colonna::BRANO_VITTORIA : colonna::BRANO_SCONFITTA));
-    }
+    // la vittoria e la sconfitta partono sempre, anche dopo un'altra battaglia uguale
+    parti(int(vinta ? colonna::BRANO_VITTORIA : colonna::BRANO_SCONFITTA));
 }
 
 void evento(const battaglia::Evento& e)
@@ -173,10 +147,7 @@ void evento(const battaglia::Evento& e)
 
 void effetto(colonna::Effetto e)
 {
-    if(s_acceso)
-    {
-        GUBBIO_VOCE(colonna::SUONO, int(e)).play(scala(VOLUME_EFFETTI, s_effetti));
-    }
+    GUBBIO_VOCE(colonna::SUONO, int(e)).play(scala(VOLUME_EFFETTI, s_effetti));
 }
 
 void suona(colonna::Suono s)

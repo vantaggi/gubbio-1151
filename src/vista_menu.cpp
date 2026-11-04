@@ -114,14 +114,6 @@ void Striscia::rett(int x0, int y0, int x1, int y1, int colore)
     }
 }
 
-void Striscia::set_visible(bool visibile)
-{
-    for(bn::sprite_ptr& s : _sprite)
-    {
-        s.set_visible(visibile);
-    }
-}
-
 void disegna_barra(Striscia& s, int x, int y, int larghezza, int valore, int massimo, int colore)
 {
     // come pieno() della battaglia: arrotondato in su, chi ha ancora qualcosa ha almeno un pixel

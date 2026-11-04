@@ -15,11 +15,6 @@ struct Evento;
 namespace gubbio::audio
 {
 
-// Il gancio per l'opzione dell'audio (il menu delle opzioni verra' dopo): spento, la musica si ferma e
-// gli effetti tacciono; riacceso, il brano giusto riparte al prossimo frame dell'esplorazione.
-void accendi(bool acceso);
-[[nodiscard]] bool acceso();
-
 // I volumi delle opzioni (MOP), in tacche da 0 a opzioni::TACCHE: si applicano subito, anche al brano che suona.
 void volumi(int musica, int effetti);
 
