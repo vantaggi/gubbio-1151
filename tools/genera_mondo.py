@@ -80,6 +80,7 @@ import stile as S  # noqa: E402
 sys.path.insert(0, os.path.join(RADICE, "tools"))
 import mondo_dati as M  # noqa: E402
 import pittore_monumenti as PM  # noqa: E402
+import pittore_citta as PC  # noqa: E402
 
 AREE_GLOB = os.path.join(RADICE, "mondo", "aree", "*.area")
 USCITA = os.path.join(RADICE, "include", "mondo.h")
@@ -167,7 +168,7 @@ MURO_EDIFICIO, FACCIATA_EDIFICIO, PORTONE_EDIFICIO = "#", "C", "d"
 FATTORE_PREDEFINITO = 0.73   # compressione delle distanze del GDD
 LATO_MAX = 128               # tile per lato di un'area
 LATO_MAPPA_HW = 64           # oltre, il fondale e' una big map
-TILE_MAX_PER_AREA = 512      # tile unici di un'area, suolo e monumenti insieme
+TILE_MAX_PER_AREA = 1024     # tile unici di un area, suolo e monumenti insieme: il massimo di Butano per un BG (pezzo EDI)
 
 # Dislivello. La salita va verso nord-est: sullo schermo in basso (est) o a destra (nord).
 LATI_A_MONTE = ("basso", "destra")
@@ -188,24 +189,23 @@ if len(CELLE) >= PRIMO_VARCO:
 # --- Fondali procedurali ----------------------------------------------------------------------
 # Palette dei fondali: (rampa, tono) della Guida di stile, dal piu' scuro al piu' chiaro dentro
 # ogni rampa. L'indice 0 e' il colore di fondo.
-PALETTE_FONDALI = [
-    ("neutri", 0),            # 0  fondo
-    ("neutri", 0),            # 1  contorno quasi nero
-    ("pietra calcarea", 1),   # 2
-    ("pietra calcarea", 2),   # 3
-    ("pietra calcarea", 4),   # 4
-    ("pietra calcarea", 5),   # 5  pietra chiarissima
-    ("cotto e coppi", 1),     # 6
-    ("cotto e coppi", 2),     # 7
-    ("cotto e coppi", 3),     # 8
-    ("cotto e coppi", 4),     # 9
-    ("verde dei monti", 1),   # 10
-    ("verde dei monti", 3),   # 11
-    ("cielo e acqua", 2),     # 12
-    ("cielo e acqua", 4),     # 13
-    ("legno e cuoio", 1),     # 14
-    ("legno e cuoio", 3),     # 15
-]
+PALETTE_FONDALI = PC.PALETTE_BASE   # il banco 0: (rampa, tono) della Guida, vedi tools/pittore_citta.py
+
+
+def banchi_fondali(palette_stile, cupa=False, notte=False):
+    """I banchi della palette dei fondali in BGR555 (pezzo EDI): di giorno; cupa (la gola: il banco 0 e' la
+    palette cupa, gli altri le rampe di notte); notte (la citta' dopo il rientro da Porta Metauro: tutte le
+    rampe di notte, ma oro e vermiglio del banco della vita restano caldi, perche' sono fiaccole e drappi
+    alla luce delle fiaccole, L5)."""
+    import pittore_citta as _PC
+    out = []
+    for b, banco in enumerate([PALETTE_FONDALI] + _PC.BANCHI_NUOVI):
+        if b == 0 and cupa:
+            out.append([S.colore(palette_stile, r, True) for r in palette_cupa(palette_stile)])
+            continue
+        scura = cupa or notte
+        out.append([S.colore(palette_stile, r, scura and not (b == 3 and r[0] in (_PC.O, _PC.R))) for r in banco])
+    return out
 
 
 def palette_cupa(palette_stile):
@@ -2074,8 +2074,7 @@ def disegna_area(a, mondo):
         for ty, riga in enumerate(tela.tagli()):
             for tx, pix in enumerate(riga):
                 tile_di[(x0 + tx, y0 + ty)] = pix
-    tile_unici = {tuple(map(tuple, _tile(tile_vuoto))): 0}
-    indici = []
+    celle = {}
     for y in range(h):
         for x in range(w):
             pix = tile_di.get((x, y))
@@ -2084,9 +2083,331 @@ def disegna_area(a, mondo):
                 if a.get("interno") and TILE_FONDALI[indice][0] not in ("MURO_FRONTE",) and a["griglia"][y][x] == "#":
                     indice = INDICE_TILE["MURO_INTERNO"]
                 pix = _tile(TILE_FONDALI[indice][1])
-            chiave = tuple(map(tuple, pix))
-            indici.append(tile_unici.setdefault(chiave, len(tile_unici)))
-    return list(tile_unici), indici, elementi
+            celle[(x, y)] = pix
+    # lo standard grafico (pezzo EDI, tools/pittore_citta.py): case, suolo, vita, ombre e contorni, in pixel
+    quadro = ridipingi(a, celle, tile_di, mondo, elementi)
+    tile_unici = {(0, tuple(map(tuple, _tile(tile_vuoto)))): 0}
+    indici, giri = [], []
+    for y in range(h):
+        for x in range(w):
+            if quadro is None:
+                banco, pix = 0, celle[(x, y)]
+            else:
+                banco, pix = indicizza_tile(quadro, x, y, a)
+            t = tuple(map(tuple, pix))
+            # un tile uguale a uno gia' preso, specchiato, si riusa con i bit di specchio della cella (10 e 11):
+            # la cavea del Teatro e' simmetrica, molti bordi pure
+            for giro, chiave in ((0, t), (2, t[::-1]), (1, tuple(r[::-1] for r in t)), (3, tuple(r[::-1] for r in t[::-1]))):
+                if (banco, chiave) in tile_unici:
+                    indici.append(tile_unici[(banco, chiave)])
+                    giri.append(giro)
+                    break
+            else:
+                indici.append(tile_unici.setdefault((banco, t), len(tile_unici)))
+                giri.append(0)
+    a["banchi"] = [b for b, _ in tile_unici]
+    a["specchi"] = giri
+    return [t for _, t in tile_unici], indici, elementi
+
+
+# --- Lo standard grafico sui fondali (pezzo EDI) -----------------------------------------------------
+# La palette dei fondali ha 5 banchi da 16 colori: il banco 0 e' PALETTE_FONDALI (la gola e il monte ci
+# restano interi), gli altri tre li definisce tools/pittore_citta.py. Ogni tile usa un banco solo.
+BANCHI_FONDALI = [PALETTE_FONDALI] + PC.BANCHI_NUOVI
+
+# Le celle e come proiettano l'ombra (L4): (tipo del pixel, altezza in pixel).
+TIPO_CELLA = {
+    "T": ("verde", 20), "u": ("verde", 24), "r": ("verde", 6), "Y": ("basso", 6), "D": ("basso", 3),
+    "v": ("basso", 4), "m": ("basso", 6), "p": ("basso", 5), "Q": ("basso", 12), "O": ("basso", 8),
+    "=": ("basso", 4), "M": ("basso", 8), "F": ("basso", 6), "q": ("basso", 3), "W": ("edificio", 24),
+    "X": ("edificio", 32), "R": ("edificio", 8), "U": ("edificio", 16), "C": ("edificio", 24),
+    "P": ("edificio", 24), "d": ("edificio", 24), "c": ("edificio", 12), "k": ("basso", 6), "h": ("edificio", 12),
+}
+SUOLI_RIDIPINTI = {".": "suolo", ",": "strada", "L": "lastrico", "K": "corso"}
+
+
+def area_di_citta(a):
+    """Le aree che il pittore della citta' ridipinge tutte: non la gola (palette cupa), non gli interni (sono del
+    pezzo degli edifici esplorabili), non il monte (bosco e ghiaia restano quelli di sempre, con le ombre)."""
+    return not a.get("interno") and a["id"] not in AREE_GOLA and a["id"] not in AREE_DEL_MONTE
+
+
+def ridipingi_monte(q, g, w, h):
+    """Il Monte allo standard: la ghiaia degli stradoni coi solchi e l'erba ai bordi, i muretti a secco in 3/4, i
+    paracarri e i massi (M6). Il bosco e gli alberi restano quelli di sempre, con le ombre portate."""
+    for y in range(h):
+        for x in range(w):
+            c = g[y][x]
+            if c == "b":
+                PC.dipingi_breccia(q, x, y, g)
+            elif c == "m":
+                PC.dipingi_muretto(q, x, y, g)
+    for y in range(h):
+        for x in range(w):
+            c = g[y][x]
+            if c == "p":
+                # il paracarro sta nell'erba del ciglio, non sulla ghiaia: la strada resta della sua larghezza
+                PC.dipingi_paracarro(q, x, y, lambda X, Y: (PC.V, 1) if (X * 3 + Y * 5) % 7 == 0 else (PC.V, 2))
+            elif c == "k":
+                PC.dipingi_roccia(q, x, y, (x * 7 + y * 3) % 3)
+
+
+def ridipingi(a, celle, tile_di, mondo, elementi):
+    """Il fondale dell'area in pixel, ridipinto allo standard. Le stanze della gola e gli interni si convertono
+    soltanto (la gola ha la sua palette cupa; gli interni sono del pezzo degli edifici esplorabili)."""
+    g = a["griglia"]
+    w, h = a["larghezza"], a["altezza"]
+    q = PC.Quadro(w, h)
+    for (x, y), pix in celle.items():
+        for yy in range(8):
+            for xx in range(8):
+                v = pix[yy][xx]
+                q.px[y * 8 + yy][x * 8 + xx] = PALETTE_FONDALI[v] if isinstance(v, int) else v
+    citta = area_di_citta(a)
+    if a["id"] in AREE_GOLA or a.get("interno"):
+        return q
+    occupate = {}
+    for mid, (x0, y0, ew, eh) in a.get("edifici", {}).items():
+        for y in range(y0, y0 + eh):
+            for x in range(x0, x0 + ew):
+                occupate[(x, y)] = mid
+    for _, (nome, lato, piloni, arco) in a.get("porte", {}).items():
+        for c in piloni:
+            occupate[c] = "porta:" + nome
+    calpestabile = lambda x, y: 0 <= y < h and 0 <= x < w and not solida(g[y][x])  # noqa: E731
+    case_celle = set()
+    for y in range(h):
+        for x in range(w):
+            c = g[y][x]
+            if not solida(c):
+                tipo, alto = "suolo", 0
+            elif (x, y) in occupate:
+                tipo, alto = "edificio", 32
+            elif c == "#" and citta:
+                tipo, alto = "tetto", 32
+                case_celle.add((x, y))
+            elif c == "#":
+                tipo, alto = "verde", 16       # il bosco del monte
+            elif c in "~":
+                tipo, alto = "acqua", 0
+            elif c == "V":
+                tipo, alto = "vuoto", 0
+            else:
+                tipo, alto = TIPO_CELLA.get(c, ("basso", 4))
+            if (x, y) in tile_di and tipo == "verde":
+                alto = 20
+            for yy in range(y * 8, y * 8 + 8):
+                for xx in range(x * 8, x * 8 + 8):
+                    q.tipo[yy][xx] = tipo
+                    q.alto[yy][xx] = alto
+    if citta:
+        # 1. il suolo
+        for y in range(h):
+            for x in range(w):
+                nome = SUOLI_RIDIPINTI.get(g[y][x])
+                if not nome:
+                    continue
+                ombra = TILE_FONDALI[tile_per_cella(g, x, y, del_monte(a), a.get("monte"))][0].endswith("_OMBRA")
+                for yy in range(y * 8, y * 8 + 8):
+                    for xx in range(x * 8, x * 8 + 8):
+                        if nome == "corso":
+                            # i corsi: lastre lunghe 16x8, il giunto nel tono d'ombra del lastrico (F3)
+                            giunto = yy % 8 == 7 or (xx + (8 if (yy // 8) % 2 else 0)) % 16 == 15
+                            c = (PC.P, 1) if giunto else ((PC.P, 3) if (xx % 16 == 0 or yy % 8 == 0) else (PC.P, 2))
+                        else:
+                            c = PC.colore_suolo(nome, xx, yy)
+                        q.px[yy][xx] = PC.scuro(c, 1) if ombra else c
+                if PC.h32(x, y, 41, w) < 0.02:
+                    dettaglio = PC.DETTAGLI_SUOLO[int(PC.h32(x, y, 42) * len(PC.DETTAGLI_SUOLO))]
+                    dettaglio(q, x * 8 + 2, y * 8 + 3)
+                    q.conta("dettaglio_suolo")
+        # scale, soglie, bracieri, fontana
+        for y in range(h):
+            for x in range(w):
+                c = g[y][x]
+                if c == "S":
+                    PC.dipingi_scala(q, x, y, g)
+                elif c in VARCHI and c != "I":
+                    PC.dipingi_soglia(q, x, y)
+                elif c == "Q":
+                    PC.dipingi_lampione(q, x, y)
+                elif c == "V":
+                    PC.dipingi_citta_bassa(q, x, y, g)
+                elif c == "=":
+                    PC.dipingi_parapetto(q, x, y, g, calpestabile)
+                elif c == "W" and (x, y) not in occupate:
+                    PC.dipingi_mura(q, x, y, g, calpestabile)
+        fontana = [(x, y) for y in range(h) for x in range(w) if g[y][x] == "F"]
+        if fontana:
+            fx0, fy0 = min(x for x, _ in fontana), min(y for _, y in fontana)
+            PC.dipingi_fontana(q, fx0, fy0, max(x for x, _ in fontana) - fx0 + 1, max(y for _, y in fontana) - fy0 + 1)
+        # il verde dei giardini
+        for y in range(h):
+            for x in range(w):
+                c = g[y][x]
+                if c in "NZ":
+                    for yy in range(y * 8, y * 8 + 8):
+                        for xx in range(x * 8, x * 8 + 8):
+                            q.px[yy][xx] = PC.colore_verde("prato" if c == "N" else "ghiaia", xx, yy)
+                elif c == "Y":
+                    PC.dipingi_siepe(q, x, y, g)
+                elif c == "D":
+                    PC.dipingi_aiuola(q, x, y)
+        # 2. le case: prima tutti i tetti, poi le facciate
+        case = PC.dividi_in_case(g, case_celle, calpestabile)
+        coperte = set()
+        for casa in case:
+            fondo_tetto = casa.yb - casa.fh
+            cima = fondo_tetto
+            profondo = 3 + int(PC.h32(casa.n, 55) * 4)
+            while cima - 1 >= 0 and cima - 1 > fondo_tetto - profondo and \
+                    all((x, cima - 1) in case_celle and (x, cima - 1) not in coperte for x in range(casa.x0, casa.x1 + 1)):
+                cima -= 1
+            if fondo_tetto >= cima and all((x, fondo_tetto) in case_celle for x in range(casa.x0, casa.x1 + 1)):
+                PC.dipingi_tetto(q, casa.x0 * 8, casa.x1 * 8 + 7, cima * 8, fondo_tetto * 8 + 7, casa.tetto, casa.n)
+                q.livella(casa.x0 * 8, casa.x1 * 8 + 7, cima * 8, fondo_tetto * 8 + 7, 1)
+                if casa.comignolo and fondo_tetto - cima >= 1:
+                    _comignolo(q, (casa.x0 + int(PC.h32(casa.n, 50) * (casa.x1 - casa.x0 + 1))) * 8 + 2, cima * 8 + 1)
+                for y in range(cima, fondo_tetto + 1):
+                    for x in range(casa.x0, casa.x1 + 1):
+                        coperte.add((x, y))
+            for y in range(casa.yb - casa.fh + 1, casa.yb + 1):
+                for x in range(casa.x0, casa.x1 + 1):
+                    coperte.add((x, y))
+        # i tetti che restano (le case dietro, i retro sulle vie in alto): rettangoli larghi 3-6, alti fino a 5
+        n = len(case)
+        # i cortili e gli orti chiusi fra le case: rompono la massa dei tetti. Restano celle solide.
+        libere = case_celle - coperte
+        for k, (x, y) in enumerate(PC.cortili(libere, w, h)):
+            PC.dipingi_cortile(q, x, y, k)
+            for c in ((x, y), (x + 1, y), (x, y + 1), (x + 1, y + 1)):
+                coperte.add(c)
+                for yy in range(c[1] * 8, c[1] * 8 + 8):
+                    for xx in range(c[0] * 8, c[0] * 8 + 8):
+                        q.tipo[yy][xx] = "verde"
+        resto = sorted(case_celle - coperte, key=lambda c: (c[1], c[0]))
+        for (x, y) in resto:
+            if (x, y) in coperte:
+                continue
+            larga = 4 + int(PC.h32(x, y, 51) * 5)
+            x1 = x
+            while x1 + 1 < x + larga and (x1 + 1, y) in case_celle and (x1 + 1, y) not in coperte:
+                x1 += 1
+            y1 = y
+            profondo = 4 + int(PC.h32(x, y, 56) * 4)
+            while y1 + 1 < y + profondo and all((k, y1 + 1) in case_celle and (k, y1 + 1) not in coperte for k in range(x, x1 + 1)):
+                y1 += 1
+            sotto_via = any(calpestabile(k, y1 + 1) for k in range(x, x1 + 1))
+            tono = (2, 3, 3, 3, 3, 3, 3, 3, 3, 4)[int(PC.h32(x, y, 52) * 10)]
+            PC.dipingi_tetto(q, x * 8, x1 * 8 + 7, y * 8, y1 * 8 + 7, tono, n, gronda=sotto_via or y1 - y >= 1)
+            q.livella(x * 8, x1 * 8 + 7, y * 8, y1 * 8 + 7, int(PC.h32(x, y, 58) < 0.45))
+            if y1 - y >= 1 and PC.h32(x, y, 53) < 0.3:
+                _comignolo(q, (x + int(PC.h32(x, y, 54) * (x1 - x + 1))) * 8 + 2, y * 8 + 1)
+            n += 1
+            for yy in range(y, y1 + 1):
+                for xx in range(x, x1 + 1):
+                    coperte.add((xx, yy))
+        for casa in case:
+            PC.dipingi_casa(q, casa, w)
+            for y in range(casa.yb - casa.fh + 1, casa.yb + 1):
+                for x in range(casa.x0, casa.x1 + 1):
+                    for yy in range(y * 8, y * 8 + 8):
+                        for xx in range(x * 8, x * 8 + 8):
+                            q.tipo[yy][xx] = "casa"
+        PC.ombre_dei_tetti(q)
+        # 3. la vita
+        PC.vita_delle_case(q, case, a["id"], len(a["id"]))
+        PC.panni_stesi(q, g, calpestabile, case_celle, a["id"])
+    if a["id"] in AREE_DEL_MONTE:
+        ridipingi_monte(q, g, w, h)
+    # gli alberi, in citta' e sul monte: sul suolo che c'e' sotto (prato, lastrico, bosco)
+    for k, (x0, y0, aw, ah, c) in enumerate(alberi_dell_area(g)):
+        for y in range(y0, y0 + ah):
+            for x in range(x0, x0 + aw):
+                fondo = "prato" if not citta or any(g[yy][xx] in "NDYZ" for yy in (y - 1, y, y + 1) for xx in (x - 1, x, x + 1)
+                                                    if 0 <= yy < h and 0 <= xx < w) else None
+                for yy in range(y * 8, y * 8 + 8):
+                    for xx in range(x * 8, x * 8 + 8):
+                        if fondo:
+                            # sotto la chioma l'erba e' in ombra e senza fiori: un motivo di 8 pixel (i tile
+                            # dell'albero si ripetono uguali dovunque stia)
+                            q.px[yy][xx] = PC.colore_verde("prato", xx, yy) if citta else \
+                                ((PC.V, 1) if (xx * 3 + yy * 5) % 7 == 0 else (PC.V, 2))
+                        elif citta:
+                            q.px[yy][xx] = (PC.P, 2) if xx % 8 == 7 or yy % 8 == 7 else (PC.P, 3)
+        if citta or fondo:
+            PC.dipingi_albero(q, x0, y0, aw, ah, c, k % 3)
+    # 4. ombre portate e 5. contorno selettivo
+    PC.ombre_portate(q)
+    if citta:
+        PC.contorno_selettivo(q)
+    elementi["citta"] = dict(q.elementi)
+    return q
+
+
+def _comignolo(q, x, y):
+    """Il comignolo: un dado di pietra con la bocca scura in cima, la luce a sinistra e l'ombra portata sul tetto
+    a destra e in basso (L4)."""
+    for yy in range(6):
+        for xx in range(4):
+            c = (PC.P, 3)
+            if xx == 0:
+                c = (PC.P, 4)
+            elif xx == 3:
+                c = (PC.P, 1)
+            if yy == 0:
+                c = (PC.P, 2) if 0 < xx < 3 else (PC.P, 1)
+            if yy == 1 and 0 < xx < 3:
+                c = PC.NERO
+            q.punto(x + xx, y + yy, c)
+    for k in range(1, 3):
+        for yy in range(2 + k, 6 + k):
+            c = q.get(x + 3 + k, y + yy)
+            if c:
+                q.punto(x + 3 + k, y + yy, PC.scuro(c, 1))
+
+
+_RGB = {}
+
+
+def _rgb(rif):
+    if rif not in _RGB:
+        if "palette" not in _RGB:
+            _RGB["palette"] = S.carica("palette")
+        v = S.colore(_RGB["palette"], rif)
+        _RGB[rif] = ((v & 31), (v >> 5) & 31, (v >> 10) & 31)
+    return _RGB[rif]
+
+
+def _distanza(r1, r2):
+    a, b = _rgb(r1), _rgb(r2)
+    return (a[0] - b[0]) ** 2 * 3 + (a[1] - b[1]) ** 2 * 4 + (a[2] - b[2]) ** 2 * 2
+
+
+COMPROMESSI = {}
+
+
+def indicizza_tile(q, x, y, a):
+    """Il tile (x, y) del quadro: il primo banco che ha tutti i suoi colori, o quello che lo tradisce meno (il
+    colore mancante prende il piu' vicino del banco; i compromessi si contano in COMPROMESSI)."""
+    pix = [q.px[y * 8 + yy][x * 8:x * 8 + 8] for yy in range(8)]
+    colori = {c for r in pix for c in r}
+    migliore = None
+    for b, banco in enumerate(BANCHI_FONDALI):
+        mancano = [c for c in colori if c not in banco[1:]]
+        if not mancano:
+            migliore = (0, b, {})
+            break
+        mappa = {c: min(banco[1:], key=lambda k: _distanza(c, k)) for c in mancano}
+        costo = sum(_distanza(c, m) for c, m in mappa.items())
+        if migliore is None or costo < migliore[0]:
+            migliore = (costo, b, mappa)
+    costo, b, mappa = migliore
+    if mappa:
+        COMPROMESSI.setdefault(a["id"], []).append((x, y, costo))
+    banco = BANCHI_FONDALI[b]
+    indice = {c: banco.index(c, 1) for c in banco[1:]}
+    return b, [[indice[mappa.get(c, c)] for c in r] for r in pix]
 
 
 def controlla_grafica(a, tile_unici, elementi):
@@ -2547,7 +2868,8 @@ def scrivi_header(aree, grafo, palette_stile):
         out += [f"inline constexpr uint8_t GRIGLIA_{nome}[{n}] = {{", a_blocchi(celle, 32), "};", "",
                 f"inline constexpr uint8_t MAPPA_{nome}[{n}] = {{", a_blocchi(mappa, 32), "};", ""]
         gw, gh = lati_fondale(a)
-        fondale = celle_fondale(a, a["indici"])
+        fondale = celle_fondale(a, [i | (a["specchi"][k] << 10) | (a["banchi"][i] << 12)
+                                    for k, i in enumerate(a["indici"])])
         out += [f"// {len(a['tile'])} tile unici: suolo, dislivello e monumenti.",
                 f"inline constexpr bn::tile TILE_{nome}[{len(a['tile'])}] = {{"]
         out += ["    { { " + ", ".join(f"0x{v:08X}" for v in parole_tile(t)) + " } }," for t in a["tile"]]
@@ -2596,7 +2918,14 @@ def scrivi_header(aree, grafo, palette_stile):
             "// La palette cupa delle stanze della gola (Area::cupa): le stesse voci con le rampe di notte.",
             "inline constexpr uint16_t PALETTE_FONDALI_CUPA[16] = {",
             a_blocchi([S.colore(palette_stile, r, True) for r in palette_cupa(palette_stile)], 8, lambda v: f"0x{v:04X}"),
-            "};", ""]
+            "};", "",
+            "// I banchi della palette dei fondali (pezzo EDI, tools/pittore_citta.py): il banco 0 e' PALETTE_FONDALI,",
+            "// gli altri sono tetti, pietra, vita, verde e giardino. La cella del fondale porta il banco nei bit 12-15.",
+            f"inline constexpr int BANCHI_FONDALI = {len(BANCHI_FONDALI)};", ""]
+    for nome, kw in (("", {}), ("_CUPA", {"cupa": True}), ("_NOTTE", {"notte": True})):
+        parole = [v for banco in banchi_fondali(palette_stile, **kw) for v in banco]
+        out += [f"inline constexpr uint16_t PALETTE_FONDALI_BANCHI{nome}[BANCHI_FONDALI * 16] = {{",
+                a_blocchi(parole, 8, lambda v: f"0x{v:04X}"), "};", ""]
 
     out += ["// Il cartiglio dietro il nome dell'area: tre pezzi da 32x16 (sinistro, centrale, destro),",
             "// 8 tile ciascuno in mappatura 1D, con la palette dei fondali.",

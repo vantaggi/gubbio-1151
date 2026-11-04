@@ -17,6 +17,10 @@ cotto e coppi, 10 e 11 verde, 12 e 13 cielo e acqua, 14 e 15 legno.
 """
 from collections import Counter
 
+import pittore_citta as PC
+
+PALETTE_RIF = PC.PALETTE_BASE      # indice di sempre -> (rampa, tono)
+
 CONTORNO, PIETRA_SCURA, PIETRA, PIETRA_CHIARA, PIETRA_LUCE = 1, 2, 3, 4, 5
 COTTO_SCURO, COTTO, COTTO_CHIARO, COTTO_LUCE = 6, 7, 8, 9
 VERDE_SCURO, VERDE = 10, 11
@@ -58,18 +62,13 @@ class Tela:
                 self.punto(x, y, c)
 
     def conci(self, x0, y0, w, h, tinta, passo=8):
-        """Muro di conci 8x4 sfalsati, con periodo 8 pixel: si ripete per tile uguali."""
-        concio, giunto, luce = tinta
+        """Muro di conci irregolari (STANDARD_GRAFICO F2, pezzo EDI): il motivo del muro di
+        tools/pittore_citta.py a coordinate della tela, file di 3-4 pixel e conci di 5-10, il giunto nel tono
+        d'ombra; la tinta sceglie il motivo chiaro (pietra luce o chiara) o quello medio."""
+        nome = "muro_chiaro" if tinta[0] in (PIETRA_CHIARA, PIETRA_LUCE) else "muro"
         for y in range(y0, y0 + h):
             for x in range(x0, x0 + w):
-                sfalsa = 4 if (y // 4) % 2 else 0
-                if y % 4 == 3 or (x + sfalsa) % passo == 7:
-                    c = giunto
-                elif (x + sfalsa) % passo == 0:
-                    c = luce
-                else:
-                    c = concio
-                self.punto(x, y, c)
+                self.punto(x, y, PC.colore_suolo(nome, x, y))
 
     def coppi(self, x0, y0, w, h, scuro=COTTO_SCURO):
         """Tetto di coppi visto dall'alto: canali verticali, luce a sinistra del colmo."""
@@ -78,39 +77,28 @@ class Tela:
                 self.punto(x, y, scuro if y % 4 == 3 else [COTTO_LUCE, COTTO_CHIARO, COTTO, scuro][x % 4])
 
     def falde(self, x0, y0, w, h):
-        """Tetto di un monumento: due falde di coppi con il colmo lungo l'asse lungo, la falda in
-        luce piu' chiara; si distingue dai tetti piatti delle case intorno."""
-        orizzontale = w >= h
-        for y in range(y0, y0 + h):
-            for x in range(x0, x0 + w):
-                if orizzontale:
-                    luce = y - y0 < h // 2
-                    colmo = abs((y - y0) - h // 2) < 1
-                    canale = x % 4
-                else:
-                    luce = x - x0 < w // 2
-                    colmo = abs((x - x0) - w // 2) < 1
-                    canale = y % 4
-                if colmo:
-                    c = COTTO_LUCE
-                elif canale == 3:
-                    c = COTTO_SCURO
-                else:
-                    c = (COTTO_LUCE, COTTO_CHIARO, COTTO)[canale] if luce else (COTTO_CHIARO, COTTO, COTTO_SCURO)[canale]
-                self.punto(x, y, c)
+        """Tetto di un monumento: due falde di coppi con il colmo lungo l'asse lungo (F1, il pennello dei tetti di
+        tools/pittore_citta.py), piu' chiaro delle case intorno perche' il monumento e' piu' alto."""
+        if w <= 0 or h <= 0:
+            return
+        PC.dipingi_tetto(self, x0, x0 + w - 1, y0, y0 + h - 1, 3, w * 31 + h, gronda=False, verticale=w < h)
+
+    def get(self, x, y):
+        if 0 <= x < self.w and 0 <= y < self.h:
+            v = self.px[y][x]
+            return PALETTE_RIF[v] if isinstance(v, int) else v
+        return None
 
     def contorno(self):
-        """Il bordo dell'edificio, un pixel scuro: lo stacca dalle case."""
-        for x in range(self.w):
-            self.punto(x, 0, CONTORNO)
-        for y in range(self.h):
-            self.punto(0, y, CONTORNO)
-            self.punto(self.w - 1, y, CONTORNO)
+        """Il bordo del monumento non e' piu' una riga nera (STANDARD_GRAFICO P2): lo fa il contorno selettivo di
+        tools/pittore_citta.py, nel tono scuro del materiale, dove il monumento tocca il suolo o le case."""
+        self.elementi["contorno"] += 1
 
     def gronda(self, x0, y, w):
-        """La gronda: il bordo del tetto sopra la facciata, ombra sotto."""
-        self.rett(x0, y, w, 2, COTTO_CHIARO)
-        self.rett(x0, y + 2, w, 1, CONTORNO)
+        """La gronda: il bordo del tetto, un tono scuro, e sotto l'ombra sul muro (L4), mai nera (C4)."""
+        self.rett(x0, y, w, 1, ("cotto e coppi", 2))
+        self.rett(x0, y + 1, w, 1, ("cotto e coppi", 0))
+        self.rett(x0, y + 2, w, 2, ("pietra calcarea", 1))
 
     def arco(self, x0, y0, w, h, vuoto=CONTORNO, cornice=PIETRA_LUCE):
         """Apertura ad arco a tutto sesto (finestra o portale)."""
@@ -336,10 +324,8 @@ def generico(mid, nome, w, h, faccia, n):
     elif r == "chiesa":
         # tetto a capanna: due falde, colmo al centro dell'asse lungo
         lungo_orizzontale = w >= h
-        for y in range((h - fh) * 8):
-            for x in range(w * 8):
-                falda = (y < (h - fh) * 4) if lungo_orizzontale else (x < w * 4)
-                t.punto(x, y, COTTO_SCURO if y % 4 == 3 else ([COTTO_CHIARO, COTTO] if falda else [COTTO, COTTO_SCURO])[x % 2])
+        PC.dipingi_tetto(t, 0, w * 8 - 1, 0, (h - fh) * 8 - 1, 3, w * 7 + h, gronda=False,
+                         verticale=not lungo_orizzontale)
     else:
         t.falde(0, 0, w * 8, (h - fh) * 8)
     if r != "porta":
@@ -401,7 +387,20 @@ def facciata_di_lato(t, w, h, lato, tinta, larga=3):
     t.falde(0, 0, w * 8, h * 8)
     x0 = 0 if lato == "sinistra" else (w - larga) * 8
     t.conci(x0, 0, larga * 8, h * 8, tinta)
-    t.rett(x0 + (larga * 8 - 2 if lato == "sinistra" else 0), 0, 2, h * 8, COTTO_CHIARO)
+    # il muro di scorcio: verso sinistra prende la luce (L1), verso destra sta in ombra; la gronda lo separa
+    # dal tetto con un tono scuro, non nero (C4, L3)
+    if lato == "sinistra":
+        for y in range(h * 8):
+            t.punto(x0, y, ("pietra calcarea", 5))
+        t.rett(x0 + larga * 8 - 2, 0, 1, h * 8, ("cotto e coppi", 2))
+        t.rett(x0 + larga * 8 - 1, 0, 1, h * 8, ("cotto e coppi", 0))
+    else:
+        for y in range(h * 8):
+            for x in range(x0, x0 + larga * 8):
+                c = t.get(x, y)
+                if c and c[0] == "pietra calcarea":
+                    t.punto(x, y, ("pietra calcarea", max(1, c[1] - 1)))
+        t.rett(x0, 0, 1, h * 8, ("cotto e coppi", 0))
     return x0, larga * 8
 
 
@@ -668,11 +667,21 @@ def ranghiasci(w, h, info):
     t = Tela(w, h)
     faccia = info.get("faccia") if info.get("faccia") in ("sinistra", "destra") else "sinistra"
     x0, larga = facciata_di_lato(t, w, h, faccia, TINTE[2], 2)
-    for y in range(8, h * 8 - 8, 12):
-        t.rett(x0 + 4, y, larga - 8, 7, CONTORNO)
-        t.rett(x0 + 4, y + 7, larga - 8, 1, PIETRA_LUCE)
-        t.elementi["finestra_regolare"] += 1
-    t.rett(x0 + 2, h * 8 // 2 - 8, larga - 4, 16, LEGNO_SCURO)
+    # di scorcio le finestre sono strette (M2, F5): il vano scuro, lo stipite in luce, il davanzale e la sua ombra
+    for y in range(8, h * 8 - 8, 14):
+        if abs(y + 4 - h * 4) < 14:
+            continue
+        for fx in (x0 + 4, x0 + larga - 8):
+            t.rett(fx, y, 3, 8, CONTORNO)
+            t.rett(fx - 1, y, 1, 8, PIETRA_LUCE)
+            t.rett(fx + 2, y + 1, 1, 7, ("legno e cuoio", 0))
+            t.rett(fx - 1, y + 8, 5, 1, PIETRA_LUCE)
+            t.rett(fx, y + 9, 4, 1, ("pietra calcarea", 1))
+            t.elementi["finestra_regolare"] += 1
+    t.rett(x0 + 3, h * 8 // 2 - 8, larga - 6, 16, LEGNO_SCURO)
+    t.rett(x0 + 2, h * 8 // 2 - 9, 1, 17, PIETRA_LUCE)
+    t.rett(x0 + 3, h * 8 // 2 - 9, larga - 6, 1, PIETRA_LUCE)
+    t.punto(x0 + larga // 2, h * 8 // 2, ("oro e bronzo", 2))
     t.elementi["portone"] += 1
     t.contorno()
     return t
@@ -770,54 +779,50 @@ def pozzo(w, h):
 
 
 def teatro_romano(w, h, info):
-    """Teatro Romano, con la stessa forma della griglia (geometria_teatro di genera_mondo.py): scena
-    sul bordo sinistro, orchestra a semicerchio, gradinate concentriche, l'anello esterno di arcate di
-    pietra, il prato intorno. Si dipinge tile per tile con pochi motivi, cosi' i tile unici restano
-    pochi anche con la cavea grande."""
+    """Teatro Romano, con la stessa forma della griglia (geometria_teatro di genera_mondo.py): scena sul bordo
+    sinistro, orchestra a semicerchio, gradinate concentriche, l'anello esterno di arcate di pietra, il prato
+    intorno. Allo standard (pezzo EDI): i gradini sono anelli veri di 5 pixel, ognuno con lo spigolo chiaro, la
+    pedata nel tono medio e l'alzata d'ombra (F2, C5); l'anello delle arcate ha i fornici scuri con l'arco (F5);
+    la scena e' un muro di conci con le nicchie; il prato e' quello dei giardini."""
     t = Tela(w, h, VERDE)
-    cx, cy = 2.0, h / 2 - 0.5
+    cx, cy = 2.0 * 8 + 4, h * 4 - 0.5     # centro fra due righe di pixel: la cavea e' simmetrica (tile specchiati)
     r = min(w - 3, h / 2 - 1)
     r_int = r / 3
-
-    def prato(x0, y0):
-        for y in range(8):
-            for x in range(8):
-                t.punto(x0 + x, y0 + y, VERDE_SCURO if (x * 3 + y * 5) % 13 == 0 else VERDE)
-
-    for ty in range(h):
-        for tx in range(w):
-            x0, y0 = tx * 8, ty * 8
-            d = ((tx - cx) ** 2 + (ty - cy) ** 2) ** 0.5
-            if tx < cx:
-                if abs(ty - cy) <= r:
-                    # la fronte della scena: conci con le nicchie a tile alterni
-                    for y in range(8):
-                        for x in range(8):
-                            t.punto(x0 + x, y0 + y, PIETRA_CHIARA if x < 6 else PIETRA)
-                    if ty % 3 == 0:
-                        t.rett(x0 + 2, y0 + 2, 3, 5, CONTORNO)
+    R, RI, RA = (r - 1.5) * 8 + 4, r_int * 8 + 4, r * 8 + 4
+    import math as _m
+    for y in range(h * 8):
+        for x in range(w * 8):
+            ty, tx = y // 8, x // 8
+            d_t = ((tx - 2.0) ** 2 + (ty - (h / 2 - 0.5)) ** 2) ** 0.5
+            d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            if tx < 2.0:
+                if abs(ty - (h / 2 - 0.5)) <= r:
+                    c = PC.colore_suolo("muro_chiaro", x, y)
+                    if ty % 3 == 0 and 2 <= x % 8 <= 5 and 1 <= y % 8 <= 7:
+                        c = ("pietra calcarea", 1) if x % 8 == 5 or y % 8 == 1 else CONTORNO
+                    if x % 16 == 15:
+                        c = ("pietra calcarea", 1)
                 else:
-                    prato(x0, y0)
-            elif d <= r_int:
-                for y in range(8):
-                    for x in range(8):
-                        t.punto(x0 + x, y0 + y, PIETRA_CHIARA if (x + y) % 9 == 0 else PIETRA_LUCE)
-            elif d <= r - 1.5:
-                # un gradino per anello: alzata chiara e pedata in ombra, alternati
-                chiaro = int(d) % 2 == 0
-                for y in range(8):
-                    for x in range(8):
-                        t.punto(x0 + x, y0 + y, (PIETRA_LUCE if chiaro else PIETRA) if (x + y) % 8 < 5
-                                else PIETRA_SCURA)
-            elif d <= r:
-                # l'anello di arcate: un arco per tile
-                for y in range(8):
-                    for x in range(8):
-                        t.punto(x0 + x, y0 + y, PIETRA)
-                t.rett(x0 + 2, y0 + 3, 4, 5, CONTORNO)
-                t.rett(x0 + 3, y0 + 2, 2, 1, CONTORNO)
+                    c = PC.colore_verde("prato", x, y)
+            elif d <= RI:
+                c = PC.colore_suolo("lastrico", x, y)
+            elif d <= R:
+                k = (d - RI) % 5
+                c = ("pietra calcarea", 4) if k < 1 else (("pietra calcarea", 3) if k < 4 else ("pietra calcarea", 1))
+                if k >= 1 and k < 4 and (int(d) * 7 + int(abs(_m.atan2(y - cy, x - cx)) * 40)) % 23 == 0:
+                    c = ("pietra calcarea", 2)
+            elif d <= RA:
+                ang = abs(_m.atan2(y - cy, x - cx))
+                u = (ang * RA) % 12
+                k = d - (r - 1.5) * 8
+                c = ("pietra calcarea", 2)
+                if 3 <= u <= 9 and k > 3:
+                    c = CONTORNO if 4 <= u <= 8 and k > 5 else ("pietra calcarea", 1)
+                if k <= 2:
+                    c = ("pietra calcarea", 4) if k <= 1 else ("pietra calcarea", 3)
             else:
-                prato(x0, y0)
+                c = PC.colore_verde("prato", x, y)
+            t.punto(x, y, c)
     t.elementi["gradinate"] += 1
     t.elementi["arcate"] += 1
     t.elementi["scena"] += 1
