@@ -199,11 +199,12 @@ if len(CELLE) >= PRIMO_VARCO:
 PALETTE_FONDALI = PC.PALETTE_BASE   # il banco 0: (rampa, tono) della Guida, vedi tools/pittore_citta.py
 
 
-def banchi_fondali(palette_stile, cupa=False, notte=False):
+def banchi_fondali(palette_stile, cupa=False, notte=False, dentro=False):
     """I banchi della palette dei fondali in BGR555 (pezzo EDI): di giorno; cupa (la gola: il banco 0 e' la
     palette cupa, gli altri le rampe di notte); notte (la citta' dopo il rientro da Porta Metauro: tutte le
     rampe di notte, ma oro e vermiglio del banco della vita restano caldi, perche' sono fiaccole e drappi
-    alla luce delle fiaccole, L5)."""
+    alla luce delle fiaccole, L5); dentro (gli interni di notte: anche oro e vermiglio alle rampe di notte, il
+    tappeto della soglia non brilla piu' della stanza)."""
     import pittore_citta as _PC
     out = []
     for b, banco in enumerate(BANCHI_FONDALI):
@@ -211,7 +212,8 @@ def banchi_fondali(palette_stile, cupa=False, notte=False):
             out.append([S.colore(palette_stile, r, True) for r in palette_cupa(palette_stile)])
             continue
         scura = cupa or notte
-        out.append([S.colore(palette_stile, r, scura and not (b == 3 and r[0] in (_PC.O, _PC.R))) for r in banco])
+        caldi = b == 3 and not dentro
+        out.append([S.colore(palette_stile, r, scura and not (caldi and r[0] in (_PC.O, _PC.R))) for r in banco])
     return out
 
 
@@ -2453,6 +2455,8 @@ def ridipingi(a, celle, tile_di, mondo, elementi):
     if citta:
         PC.contorno_selettivo(q)
     PI.apri_portali(q, a)                 # i portoni da cui si entra negli interni: aperti, col vano buio
+    if citta:
+        PC.dipingi_ingressi(q, a, g)      # e il disegno unico degli ingressi: vano luminoso, soglia, lanterna
     elementi["citta"] = dict(q.elementi)
     return q
 
@@ -3063,7 +3067,8 @@ def scrivi_header(aree, grafo, palette_stile):
             "// I banchi della palette dei fondali (pezzo EDI, tools/pittore_citta.py): il banco 0 e' PALETTE_FONDALI,",
             "// gli altri sono tetti, pietra, vita, verde e giardino. La cella del fondale porta il banco nei bit 12-15.",
             f"inline constexpr int BANCHI_FONDALI = {len(BANCHI_FONDALI)};", ""]
-    for nome, kw in (("", {}), ("_CUPA", {"cupa": True}), ("_NOTTE", {"notte": True})):
+    for nome, kw in (("", {}), ("_CUPA", {"cupa": True}), ("_NOTTE", {"notte": True}),
+                     ("_NOTTE_INTERNI", {"notte": True, "dentro": True})):
         parole = [v for banco in banchi_fondali(palette_stile, **kw) for v in banco]
         out += [f"inline constexpr uint16_t PALETTE_FONDALI_BANCHI{nome}[BANCHI_FONDALI * 16] = {{",
                 a_blocchi(parole, 8, lambda v: f"0x{v:04X}"), "};", ""]

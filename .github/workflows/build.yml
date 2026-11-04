@@ -27,6 +27,14 @@ jobs:
           git --version
           python3 --version
 
+      - name: Pillow per i generatori che disegnano (mappa della pausa)
+        run: |
+          if ! python3 -c "import PIL" 2> /dev/null; then
+            apt-get update
+            apt-get install -y --no-install-recommends python3-pil
+          fi
+          python3 -c "import PIL; print('Pillow', PIL.__version__)"
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1, node24
         with:
           submodules: true
