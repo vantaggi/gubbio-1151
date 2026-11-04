@@ -93,7 +93,7 @@ class Medio(M.Battaglia):
             self.comandi[e] = rng.choice(opz)
 
 
-def gioca(incontro, liv, pilota, seme, scudo_meno=0):
+def gioca(incontro, liv, pilota, seme, scudo_meno=0, ceri=False):
     crescita = leggi_tabella("CRESCITA_PERCENTO")
     base = M.STATISTICHE_EROI
     try:
@@ -101,18 +101,18 @@ def gioca(incontro, liv, pilota, seme, scudo_meno=0):
                               for s in base]
         # lo scudo in meno passa dalla stessa manopola del C++ (Battaglia::ricomincia, scudi_in_meno)
         if pilota == "medio":
-            b = Medio(incontro, seme, scudi_in_meno=scudo_meno)
+            b = Medio(incontro, seme, scudi_in_meno=scudo_meno, ceri=ceri)
             b.rng = random.Random(seme * 7919)
         else:
-            b = M.Battaglia(incontro, seme, pilota_debole=(pilota == "debole"), scudi_in_meno=scudo_meno)
+            b = M.Battaglia(incontro, seme, pilota_debole=(pilota == "debole"), scudi_in_meno=scudo_meno, ceri=ceri)
         return b.gioca()
     finally:
         M.STATISTICHE_EROI = base
 
 
-def misura(incontro, liv, pilota, semi=200, scudo_meno=0):
+def misura(incontro, liv, pilota, semi=200, scudo_meno=0, ceri=False):
     """(percentuale di vittorie, round mediano delle vittorie)."""
-    vinte = sorted(f.round for f in (gioca(incontro, liv, pilota, s, scudo_meno) for s in range(1, semi + 1))
+    vinte = sorted(f.round for f in (gioca(incontro, liv, pilota, s, scudo_meno, ceri) for s in range(1, semi + 1))
                    if f.esito == M.VITTORIA)
     return len(vinte) * 100 // semi, (vinte[len(vinte) // 2] if vinte else None)
 

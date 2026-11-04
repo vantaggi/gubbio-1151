@@ -133,10 +133,11 @@ PROVE = {
                                "static_assert(digiuno_di_ubaldo()", "static_assert(scudi(false, false, INCONTRO_DI_CORRADO) == 0",
                                "static_assert(livello_a_corrado(0) == 5 && livello_a_corrado(3) == 6"],
     "src/autotest_oggetti.cpp": ["static_assert(crescia_al_primo_round(UBALDO, GIORGIO, UBALDO_A_DIGIUNO) == -1"],
-    "src/autotest_battaglia.cpp": ["static_assert(verifica_scudo_in_meno() == 100"],
+    "src/autotest_battaglia.cpp": ["static_assert(verifica_scudo_in_meno() == 100", "static_assert(verifica_ceri() == 200"],
     # la scena passa le due regole alla battaglia
-    "src/scena_battaglia.cpp": ["g_scena.ricomincia(incontro, seme, false, eroi, presenti, scudi_in_meno, a_digiuno, partita ? partita->ferite : nullptr);",
-                                "storia::scudi_in_meno(*partita, incontro)", "storia::a_digiuno(*partita)"],
+    "src/scena_battaglia.cpp": ["g_scena.ricomincia(incontro, seme, false, eroi, presenti, scudi_in_meno, a_digiuno, partita ? partita->ferite : nullptr,\n                       ceri);",
+                                "storia::scudi_in_meno(*partita, incontro)", "storia::a_digiuno(*partita)",
+                                "storia::ceri_accesi(*partita)"],
 }
 
 
@@ -155,7 +156,7 @@ class ProveInCpp(unittest.TestCase):
     def test_negativa_regola_non_passata(self):
         """Una scena che non passa le regole alla battaglia viene segnalata."""
         self.testi["src/scena_battaglia.cpp"] = self.testi["src/scena_battaglia.cpp"].replace(
-            "presenti, scudi_in_meno, a_digiuno, partita ? partita->ferite : nullptr);", "presenti);")
+            "presenti, scudi_in_meno, a_digiuno, partita ? partita->ferite : nullptr,\n                       ceri);", "presenti);")
         self.assertEqual(prove_mancanti(self.testi), [("src/scena_battaglia.cpp", PROVE["src/scena_battaglia.cpp"][0])])
 
 

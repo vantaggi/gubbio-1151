@@ -815,8 +815,11 @@ Esito scena_battaglia(int incontro, uint32_t seme, Guida guida, const bn::sprite
     // Corrado con uno scudo in meno (Q-SM01 o Rufino), Ubaldo che nel DIGIUNO non mangia
     int scudi_in_meno = partita ? storia::scudi_in_meno(*partita, incontro) : 0;
     uint8_t a_digiuno = partita ? storia::a_digiuno(*partita) : 0;
+    // i Ceri risvegliati (A1-08): il Fervore dei Santi parte piu' alto
+    bool ceri = partita && storia::ceri_accesi(*partita);
     // e i PV che i miasmi della gola hanno tolto: pesano su questa battaglia, poi si azzerano (storia::guarisci)
-    g_scena.ricomincia(incontro, seme, false, eroi, presenti, scudi_in_meno, a_digiuno, partita ? partita->ferite : nullptr);
+    g_scena.ricomincia(incontro, seme, false, eroi, presenti, scudi_in_meno, a_digiuno, partita ? partita->ferite : nullptr,
+                       ceri);
     Esito esito;
 
     {
