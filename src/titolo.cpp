@@ -9,13 +9,17 @@
 #include "bn_regular_bg_items_logo.h"
 #include "bn_regular_bg_ptr.h"
 #include "bn_sram.h"
+#include "bn_string_view.h"
 #include "bn_vector.h"
 
 #include "aiuti.h"
 #include "audio.h"
 #include "esplorazione.h"
 #include "game_state.h"
+#include "mondo.h"
+#include "progressione.h"
 #include "save_data.h"
+#include "storia_logica.h"
 #include "vista_testo.h"
 
 namespace gubbio
@@ -343,6 +347,59 @@ void pausa(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_tes
 
     bn::bg_palettes::set_fade(bn::color(0, 0, 0), 0);
     attendi(1);
+}
+
+namespace
+{
+    // La partita di prova: nuova, con le scene fino a 'ultima' (codice del copione) chiuse come nel giro della
+    // storia (storia::chiudi_scena), il giocatore allo spawn dell'area, i livelli e il tempo dati.
+    GameState partita_fino_a(const char* ultima, mondo::AreaId area, int spawn, int livello, uint32_t secondi)
+    {
+        GameState p = {};
+        progressione::partita_nuova(p);
+
+        for(int k = 0; k < storia::SCENE; ++k)
+        {
+            storia::chiudi_scena(p, k);
+
+            if(bn::string_view(GUBBIO_VOCE(storia::SCENA, k).codice) == bn::string_view(ultima))
+            {
+                break;
+            }
+        }
+
+        mondo::Esploratore e;
+        mondo::colloca(e, area, spawn);
+        p.area = uint8_t(e.area);
+        p.x = int16_t(e.x);
+        p.y = int16_t(e.y);
+        p.tempo_frames = secondi * 60;
+
+        for(int eroe = 0; eroe < 3; ++eroe)
+        {
+            p.livello[eroe] = uint8_t(livello - (eroe == 2 && livello > 1 ? 1 : 0));
+        }
+
+        storia::dopo_il_caricamento(p);
+        return p;
+    }
+}
+
+void prepara_slot_di_prova()
+{
+    // slot 1: il digiuno, in Piazza Grande dopo A1-05 (come i mockup 08 e 10: livelli 4 4 3, 1:42)
+    bool uno = salvataggio::salva(0, partita_fino_a("A1-05", mondo::AreaId::PIAZZA_GRANDE, 0, 4, 6120));
+    // slot 2: dopo B-03, all'ingresso del Condotto, coi livelli d'inizio e le ferite al massimo (si parte con
+    // 1 PV, battaglia.h): il duello con Corrado si perde e si vede il Riprova
+    GameState condotto = partita_fino_a("B-03", mondo::AreaId::CONDOTTO, 0, 1, 9000);
+
+    for(uint8_t& f : condotto.ferite)
+    {
+        f = 255;
+    }
+
+    bool due = salvataggio::salva(1, condotto);
+    BN_LOG("Slot di prova: ", uno ? "1 OK " : "1 FALLITO ", due ? "2 OK" : "2 FALLITO");
 }
 
 void prova_salvataggio()

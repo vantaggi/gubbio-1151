@@ -692,7 +692,8 @@ namespace
 
     // --- Il fumetto sopra il cartello: a 13 px dalla cella del varco si', a 14 no (come DISTANZA_PAROLA) -------
     // La cella piu' a destra del varco 0 di Piazza Grande e il giocatore a (dx, dy) px dai suoi piedi: con dx > 0
-    // nessun'altra cella del varco e' piu' vicina in orizzontale. -2 se il punto trovato non e' una cella del varco.
+    // nessun'altra cella del varco e' piu' vicina in orizzontale. -2 se il punto trovato non sta in mezzo al varco,
+    // sulla riga di una sua cella.
     consteval Punto cartello_spostato(int dx, int dy)
     {
         const mondo::Area& a = mondo::area(mondo::AreaId::PIAZZA_GRANDE);
@@ -722,9 +723,16 @@ namespace
             return p;
         }
 
-        int tx = (p.x - mondo::TILE_PX / 2) / mondo::TILE_PX;
+        // in mezzo al varco, sulla riga di una sua cella
         int ty = (p.y + 2 - mondo::TILE_PX) / mondo::TILE_PX;
-        return a.griglia[tx + ty * a.larghezza] == mondo::PRIMO_VARCO ? p : Punto{ -2, -2 };
+        bool riga_del_varco = false;
+
+        for(int tx = 0; tx < a.larghezza; ++tx)
+        {
+            riga_del_varco = riga_del_varco || a.griglia[tx + ty * a.larghezza] == mondo::PRIMO_VARCO;
+        }
+
+        return riga_del_varco && p.x == centro_del_varco(a, 0).x && p.y == mondo::piedi_y(ty) ? p : Punto{ -2, -2 };
     }
 
     static_assert(PORTATA_CARTELLO == 14, "il fumetto del cartello ha la portata del tasto A (14 px)");

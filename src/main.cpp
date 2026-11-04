@@ -22,15 +22,18 @@
 // 4 i tre scontri giocabili a mano, 5 le istantanee della battaglia, 6 la prova del salvataggio,
 // 7 le istantanee del titolo e della pausa, 8 la storia intera senza camminare, 9 il prologo giocabile
 // col pilota, 10 le cutscene con le istantanee, 11 le figure degli NPC, 12 la citta' viva (NPC e folla),
-// 14 la partita senza titolo ne' prologo
+// 14 la partita senza titolo ne' prologo, 15 il gioco vero con due slot di prova gia' scritti (le foto degli aiuti)
 // (make USERFLAGS=-DGUBBIO_AVVIO=1). Senza modo di prova: il titolo, poi la partita; Start apre la pausa.
 #ifndef GUBBIO_AVVIO
     #define GUBBIO_AVVIO 0
 #endif
 
-// Gli aiuti al giocatore (cartelli ai varchi, promemoria di Select): il gioco vero (0) e la partita senza
-// titolo ne' prologo (14). «Dove eravamo» resta solo nel gioco vero, dopo Continua.
-constexpr bool AIUTI_ATTIVI = GUBBIO_AVVIO == 0 || GUBBIO_AVVIO == 14;
+// Gli aiuti al giocatore (cartelli ai varchi, promemoria di Select): il gioco vero (0), la partita senza
+// titolo ne' prologo (14) e quella con gli slot di prova (15), per fotografarli. Spenti negli altri modi.
+constexpr bool AIUTI_ATTIVI = GUBBIO_AVVIO == 0 || GUBBIO_AVVIO == 14 || GUBBIO_AVVIO == 15;
+// Il titolo, «Dove eravamo» e gli scontri della storia: il gioco vero e il modo 15, che scrive prima due slot di
+// prova (gubbio::prepara_slot_di_prova) e poi va come il gioco vero, senza il prologo.
+constexpr bool COL_TITOLO = GUBBIO_AVVIO == 0 || GUBBIO_AVVIO == 15;
 
 int main()
 {
@@ -87,9 +90,22 @@ int main()
         }
     }
 
+    if(GUBBIO_AVVIO == 15)
+    {
+        gubbio::prepara_slot_di_prova();
+    }
+
     // il titolo solo nel gioco vero (e per le sue istantanee): i modi di prova partono subito
-    int slot = GUBBIO_AVVIO == 0 && ! bn::keypad::select_held() && ! bn::keypad::r_held() ? gubbio::titolo(palette) :
+    int slot = COL_TITOLO && ! bn::keypad::select_held() && ! bn::keypad::r_held() ? gubbio::titolo(palette) :
                (GUBBIO_AVVIO == 7 ? gubbio::titolo(palette, true) : -1);
+
+    // Butano rende gli elementi dei tile degli sprite al prossimo update: senza, quelli del titolo (81 su 128)
+    // contano ancora mentre l'esplorazione e «Dove eravamo» creano i loro, e dopo Continua il gioco si fermava
+    // con «No more sprite tiles items available»
+    if(COL_TITOLO || GUBBIO_AVVIO == 7)
+    {
+        bn::core::update();
+    }
 
     gubbio::Esplorazione esplorazione(palette);
 
@@ -116,7 +132,7 @@ int main()
                               gubbio::g_game_state.y);
 
         // «Dove eravamo» (MAI): una volta, dopo Continua
-        if(GUBBIO_AVVIO == 0)
+        if(COL_TITOLO)
         {
             gubbio::dove_eravamo(esplorazione, palette);
         }
@@ -183,10 +199,10 @@ int main()
     }
 
     gubbio::Storia storia;
-    gubbio::ScontriSullaMappa scontri(GUBBIO_AVVIO == 0 ? &storia : nullptr);
+    gubbio::ScontriSullaMappa scontri(COL_TITOLO ? &storia : nullptr);
 
-    // gli aiuti (MAI: cartelli ai varchi, promemoria di Select) nel gioco vero e nella partita senza titolo ne'
-    // prologo (14), che serve a fotografarli; spenti negli altri modi di prova
+    // gli aiuti (MAI: cartelli ai varchi, promemoria di Select) nel gioco vero e nelle partite di prova 14 e 15,
+    // che servono a fotografarli; spenti negli altri modi di prova
     esplorazione.attiva_aiuti(AIUTI_ATTIVI);
 
     while(true)
@@ -219,7 +235,7 @@ int main()
         gubbio::audio::esplorazione(gubbio::g_game_state, int(qui.area), gubbio::mondo::cella_x(qui),
                                     gubbio::mondo::cella_y(qui));
         // la storia prima degli scontri: una scena con la sua battaglia vale piu' del nemico sulla mappa
-        if((GUBBIO_AVVIO == 0 || GUBBIO_AVVIO == 14) && storia.aggiorna(esplorazione, palette))
+        if((COL_TITOLO || GUBBIO_AVVIO == 14) && storia.aggiorna(esplorazione, palette))
         {
             scontri.svuota();
         }

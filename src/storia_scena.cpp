@@ -998,6 +998,8 @@ bool Storia::_dopo_il_duello_perso(Esplorazione& esplorazione, const bn::sprite_
 
     while(true)
     {
+        // per i copioni del banco (tools/banco.sh): da qui il menu aspetta i tasti
+        BN_LOG("Duello perso: il menu");
         dialogo_inizio(&esplorazione);
         int voce;
 

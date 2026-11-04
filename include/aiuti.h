@@ -285,9 +285,11 @@ inline constexpr int TONO_FRECCIA_PIENO = 2;
 
 inline constexpr int CELLE_CARTELLO = 3;
 // Il fumetto d'interazione (STANDARD I2) sopra il cartello: alla stessa portata del tasto A con le persone
-// (DISTANZA_PAROLA in src/storia_scena.cpp, 14 px fra i piedi), 2 px sopra la cella del varco.
+// (DISTANZA_PAROLA in src/storia_scena.cpp, 14 px fra i piedi). Il cartello non ha uno sprite: la «cosa» e' la
+// soglia del varco, alta 0: il fumetto sta 2 px sopra i piedi della riga del varco piu' vicina, in mezzo al
+// varco (con un'altezza da persona coprirebbe Ubaldo, che sta proprio li' davanti).
 inline constexpr int PORTATA_CARTELLO = 14;
-inline constexpr int ALTEZZA_CARTELLO = mondo::TILE_PX;
+inline constexpr int ALTEZZA_CARTELLO = 0;
 
 // Il varco piu' vicino al giocatore entro CELLE_CARTELLO celle (distanza di Chebyshev fra le celle), -1 se
 // nessuno. Sul varco stesso no: ci si sta passando.
@@ -323,9 +325,10 @@ inline constexpr int ALTEZZA_CARTELLO = mondo::TILE_PX;
     return scelto;
 }
 
-// Dove sta il cartello del varco k per il giocatore: i piedi (piedi_x, piedi_y) della cella del varco piu'
-// vicina a lui. Si legge (e si accende il fumetto) se quei piedi stanno a meno di PORTATA_CARTELLO px dai suoi,
-// in orizzontale e in verticale, come per le persone; se no (-1, -1).
+// Dove sta il fumetto del cartello del varco k: in mezzo al varco (centro_del_varco, come la freccia) sulla riga
+// delle sue celle piu' vicina al giocatore, cioe' sulla soglia. Si accende se una cella del varco ha i piedi
+// (piedi_x, piedi_y) a meno di PORTATA_CARTELLO px dai suoi, in orizzontale e in verticale, come per le persone;
+// se no (-1, -1). In mezzo al varco, e non sulla cella sotto i piedi, il fumetto non sta sotto Ubaldo.
 [[nodiscard]] constexpr Punto cartello_a_portata(const mondo::Esploratore& e, int k)
 {
     const mondo::Area& a = mondo::area(e.area);
@@ -335,7 +338,7 @@ inline constexpr int ALTEZZA_CARTELLO = mondo::TILE_PX;
         return { -1, -1 };
     }
 
-    Punto scelto = { -1, -1 };
+    int soglia = -1;
     int migliore = 0;
 
     for(int ty = 0; ty < a.altezza; ++ty)
@@ -353,15 +356,15 @@ inline constexpr int ALTEZZA_CARTELLO = mondo::TILE_PX;
             int ay = dy < 0 ? -dy : dy;
             int d = ax > ay ? ax : ay;
 
-            if(ax < PORTATA_CARTELLO && ay < PORTATA_CARTELLO && (scelto.x < 0 || d < migliore))
+            if(ax < PORTATA_CARTELLO && ay < PORTATA_CARTELLO && (soglia < 0 || d < migliore))
             {
-                scelto = { mondo::piedi_x(tx), mondo::piedi_y(ty) };
+                soglia = mondo::piedi_y(ty);
                 migliore = d;
             }
         }
     }
 
-    return scelto;
+    return soglia < 0 ? Punto{ -1, -1 } : Punto{ centro_del_varco(a, k).x, soglia };
 }
 
 // Il cartello del varco dall'area 'da' all'area 'verso' (indice in cartelli::CARTELLO), -1 se non c'e' (un

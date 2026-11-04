@@ -215,13 +215,7 @@ Esplorazione::Esplorazione(const bn::sprite_palette_ptr& palette_testo) :
     _cartiglio(crea_cartiglio()),
     _ombra(testo::Contesto::AREA, 25, 9, INCHIOSTRO_OMBRA, palette_testo),
     _etichetta(testo::Contesto::AREA, 24, 8, INCHIOSTRO_ETICHETTA, palette_testo),
-    _palette_testo(palette_testo),
-    _promemoria_ombra(testo::Contesto::DIALOGO, PROMEMORIA_X + 1, PROMEMORIA_Y + 1, INCHIOSTRO_OMBRA, palette_testo),
-    _promemoria(testo::Contesto::DIALOGO, PROMEMORIA_X, PROMEMORIA_Y, INCHIOSTRO_ETICHETTA, palette_testo),
-    _cartello_ombra(testo::Contesto::AREA, CARTELLO_TESTO_X + 1, CARTELLO_TESTO_Y + 1, INCHIOSTRO_OMBRA, palette_testo),
-    _cartello(testo::Contesto::AREA, CARTELLO_TESTO_X, CARTELLO_TESTO_Y, INCHIOSTRO_ETICHETTA, palette_testo),
-    _oltre_ombra(testo::Contesto::AREA, CARTELLO_TESTO_X + 1, CARTELLO_OLTRE_Y + 1, INCHIOSTRO_OMBRA, palette_testo),
-    _oltre(testo::Contesto::AREA, CARTELLO_TESTO_X, CARTELLO_OLTRE_Y, INCHIOSTRO_ETICHETTA, palette_testo)
+    _palette_testo(palette_testo)
 {
     _giocatore.set_camera(_camera);
     _fumetto.set_camera(_camera);
@@ -565,14 +559,14 @@ int Esplorazione::schermo_y(int y) const
 void Esplorazione::_nascondi_aiuti()
 {
     _attesa_promemoria = 0;
-    _promemoria_ombra.nascondi();
-    _promemoria.nascondi();
+    _promemoria.reset();
+    _promemoria_ombra.reset();
     _freccia.reset();
     _varco_cartello = -1;
-    _cartello_ombra.nascondi();
-    _cartello.nascondi();
-    _oltre_ombra.nascondi();
-    _oltre.nascondi();
+    _cartello.reset();
+    _cartello_ombra.reset();
+    _oltre.reset();
+    _oltre_ombra.reset();
 }
 
 void Esplorazione::promemoria()
@@ -590,10 +584,8 @@ void Esplorazione::promemoria()
 
     int meta = storia::area_dell_obiettivo(g_game_state);
     testi::TestoId testo = meta >= 0 ? storia::OBIETTIVO[g_game_state.obiettivo].testo : testi::TestoId::PROMEMORIA_NESSUNO;
-    _promemoria_ombra.mostra(testo);
-    _promemoria_ombra.rivela_tutto();
-    _promemoria.mostra(testo);
-    _promemoria.rivela_tutto();
+    _mostra_aiuto(_promemoria_ombra, testo::Contesto::DIALOGO, PROMEMORIA_X + 1, PROMEMORIA_Y + 1, INCHIOSTRO_OMBRA, testo);
+    _mostra_aiuto(_promemoria, testo::Contesto::DIALOGO, PROMEMORIA_X, PROMEMORIA_Y, INCHIOSTRO_ETICHETTA, testo);
     _attesa_promemoria = aiuti::FRAME_PROMEMORIA;
     _freccia.reset();
 
@@ -610,6 +602,18 @@ void Esplorazione::promemoria()
     }
 
     BN_LOG("Promemoria: obiettivo ", int(g_game_state.obiettivo), " meta ", meta, " varco ", varco);
+}
+
+void Esplorazione::_mostra_aiuto(bn::optional<VistaTesto>& vista, testo::Contesto contesto, int x, int y, int inchiostro,
+                                 testo::TestoId testo)
+{
+    if(! vista)
+    {
+        vista.emplace(contesto, x, y, inchiostro, _palette_testo);
+    }
+
+    vista->mostra(testo);
+    vista->rivela_tutto();
 }
 
 bool Esplorazione::segnala_cartello()
@@ -639,8 +643,8 @@ void Esplorazione::_aggiorna_aiuti()
 
     if(_attesa_promemoria > 0 && --_attesa_promemoria == 0)
     {
-        _promemoria_ombra.nascondi();
-        _promemoria.nascondi();
+        _promemoria.reset();
+        _promemoria_ombra.reset();
         _freccia.reset();
     }
 
@@ -656,32 +660,30 @@ void Esplorazione::_aggiorna_aiuti()
 
     if(varco < 0)
     {
-        _cartello_ombra.nascondi();
-        _cartello.nascondi();
-        _oltre_ombra.nascondi();
-        _oltre.nascondi();
+        _cartello.reset();
+        _cartello_ombra.reset();
+        _oltre.reset();
+        _oltre_ombra.reset();
         return;
     }
 
     const mondo::Varco& v = mondo::varco_di(mondo::area(_e.area), varco);
     testi::TestoId dove = v.destinazione >= 0 ? mondo::area(mondo::AreaId(v.destinazione)).etichetta : v.etichetta;
-    _cartello_ombra.mostra(dove);
-    _cartello_ombra.rivela_tutto();
-    _cartello.mostra(dove);
-    _cartello.rivela_tutto();
+    _mostra_aiuto(_cartello_ombra, testo::Contesto::AREA, CARTELLO_TESTO_X + 1, CARTELLO_TESTO_Y + 1, INCHIOSTRO_OMBRA, dove);
+    _mostra_aiuto(_cartello, testo::Contesto::AREA, CARTELLO_TESTO_X, CARTELLO_TESTO_Y, INCHIOSTRO_ETICHETTA, dove);
     int k = aiuti::cartello(int(_e.area), v.destinazione);
 
     if(k >= 0)
     {
-        _oltre_ombra.mostra(cartelli::CARTELLO[k].oltre);
-        _oltre_ombra.rivela_tutto();
-        _oltre.mostra(cartelli::CARTELLO[k].oltre);
-        _oltre.rivela_tutto();
+        _mostra_aiuto(_oltre_ombra, testo::Contesto::AREA, CARTELLO_TESTO_X + 1, CARTELLO_OLTRE_Y + 1, INCHIOSTRO_OMBRA,
+                      cartelli::CARTELLO[k].oltre);
+        _mostra_aiuto(_oltre, testo::Contesto::AREA, CARTELLO_TESTO_X, CARTELLO_OLTRE_Y, INCHIOSTRO_ETICHETTA,
+                      cartelli::CARTELLO[k].oltre);
     }
     else
     {
-        _oltre_ombra.nascondi();
-        _oltre.nascondi();
+        _oltre.reset();
+        _oltre_ombra.reset();
     }
 }
 

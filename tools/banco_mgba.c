@@ -10,6 +10,8 @@
 //   foto_al_log TESTO NOME M  come finche, poi una foto
 //   foto_ai_log TESTO FINE M  una foto ogni volta che una riga del log contiene TESTO (nome = la riga),
 //                        fino alla riga che contiene FINE (al massimo M frame)
+//   premi_finche TASTI TESTO M  un tocco di TASTI ogni 20 frame finche' il log contiene TESTO (al massimo M
+//                        frame); trovato, non tocca piu' niente (i dialoghi e la battaglia fino a un menu)
 // Il log del gioco (bn::core::log) va su stderr.
 #include <mgba/flags.h>
 #include <mgba/core/core.h>
@@ -137,6 +139,15 @@ int main(int argc, char** argv)
             cattura = a; cerca = b; trovato = 0;
             for(int i = 0; i < atoi(c) && !trovato; ++i) corri(0, 1);
             cattura = NULL; cerca = NULL;
+        }
+        else if(!strcmp(cmd, "premi_finche"))
+        {
+            int k = tasti(a), m = atoi(c);
+            cerca = b; trovato = 0;
+            for(int i = 0; i < m && !trovato; ++i) corri(i % 20 < 2 ? k : 0, 1);
+            if(!trovato) fprintf(stderr, "!! non trovato: %s\n", b);
+            cerca = NULL;
+            corri(0, 1);
         }
         else if(!strcmp(cmd, "finche") || !strcmp(cmd, "foto_al_log"))
         {
