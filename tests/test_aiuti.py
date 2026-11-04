@@ -126,8 +126,10 @@ class Agganci(unittest.TestCase):
         # «Dove eravamo» col titolo; il prologo resta del solo gioco vero
         prima = main[main.index("gubbio::dove_eravamo(") - 120:main.index("gubbio::dove_eravamo(")]
         self.assertIn("if(COL_TITOLO)", prima)
-        prologo = main[main.index("prologo.prologo(palette);") - 120:main.index("prologo.prologo(palette);")]
+        prologo = main[main.index("prologo.prologo(palette);") - 400:main.index("prologo.prologo(palette);")]
         self.assertIn("if(GUBBIO_AVVIO == 0)", prologo)
+        # e Ubaldo non resta a schermo durante il prologo (compariva sulla vetrata di C1, prima prova di Cioti)
+        self.assertIn("esplorazione.sospendi();", prologo)
         # il modo 15 scrive gli slot prima del titolo
         self.assertLess(main.index("gubbio::prepara_slot_di_prova();"), main.index("gubbio::titolo(palette)"))
 
