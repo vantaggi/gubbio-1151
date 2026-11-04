@@ -487,19 +487,41 @@ def vetrata_disegno(vetri):
     che entra di sbieco, la cornice di pietra, i piombi neri. vetri: "chiari" (il prologo), "uno" (un
     solo vetro ha preso colore, l'epilogo), "storia" (la vetrata come la si vede oggi)."""
     t = Tela(W, H, V_BUIO)
-    # i pilastri ai lati e l'arco della navata, lo spigolo verso la finestra preso dalla luce
-    for px0, spigolo in ((14, 42), (196, 196)):
+    # il muro di fondo in penombra, a conci (F2): lontano dalla finestra solo il filo dei conci sul buio,
+    # vicino i conci prendono la luce che entra (il tono piu' scuro della pietra, il filo chiaro in alto e
+    # a sinistra, L1). I giunti non sono mai neri dove c'e' luce (C4); il nero resta il buio vero.
+    r = random.Random(23)
+    for y0 in range(0, QUADRO, 9):
+        x = -r.randint(0, 20)
+        while x < W:
+            largo = r.randint(16, 26)
+            d = abs(x + largo / 2 - V_CENTRO)
+            filo = V_SPIGOLO if d < 58 and y0 > 4 else V_PILASTRO
+            if d < 46 and y0 > 4:
+                t.rett(x + 1, y0 + 1, largo - 2, 7, V_PILASTRO)        # i conci vicini alla luce
+            t.rett(x, y0, largo - 1, 1, filo)
+            t.rett(x, y0, 1, 8, filo)
+            x += largo
+    # i pilastri ai lati come solidi (L2): la faccia in penombra, lo spigolo verso la finestra preso
+    # dalla luce, i rocchi; il fianco lontano nel buio
+    for px0, luce_a_destra in ((14, True), (196, False)):
+        t.rett(px0 - 1, 0, 32, QUADRO, V_BUIO)
         t.rett(px0, 0, 30, QUADRO, V_PILASTRO)
-        t.rett(spigolo, 0, 2, QUADRO, V_SPIGOLO)
+        t.rett(px0 + (26 if luce_a_destra else 0), 0, 4, QUADRO, V_SPIGOLO)
+        t.rett(px0 + (28 if luce_a_destra else 0), 0, 1, QUADRO, V_PIETRA)
+        for y in range(9, QUADRO, 18):           # i rocchi del pilastro: il giunto e il filo di luce sopra
+            t.rett(px0 + 4, y, 22, 1, V_BUIO)
+            t.rett(px0 + 4, y + 1, 22, 1, V_SPIGOLO)
     for x in range(14, 226):
         y = int(14 - 14 * (1 - ((x - 120) / 106) ** 2) ** 0.5) if abs(x - 120) < 106 else 14
-        t.rett(x, y, 1, 3, V_PILASTRO)
+        t.rett(x, y, 1, 3, V_SPIGOLO)
+        t.punto(x, y + 3, V_BUIO)
     # la luce che entra: fasci a scacchiera che scendono a destra dalla finestra fino al pavimento
     for y in range(V_SOGLIA - 30, QUADRO):
         for x in range(V_CENTRO - 30, 196):
             fascio = (x - V_CENTRO - (y - V_SOGLIA + 30) * 1.1) % 26 < 8
             if fascio and not nella_finestra(x, y, 5) and (x + y) % 2 == 0:
-                t.punto(x, y, V_PILASTRO)
+                t.punto(x, y, V_SPIGOLO if t.px[y][x] != V_BUIO else V_PILASTRO)
     # la cornice di pietra (4 px, il bordo in alto a sinistra in luce) e il timpano fra le lancette
     for y in range(QUADRO):
         for x in range(V_CENTRO - V_LARGA, V_CENTRO + V_LARGA):
@@ -507,6 +529,11 @@ def vetrata_disegno(vetri):
                 t.punto(x, y, V_PIETRA_L if x < V_CENTRO and not nella_finestra(x + 1, y + 1, 4) else V_PIETRA)
             elif nella_finestra(x, y):
                 t.punto(x, y, V_PIETRA)
+    # il timpano fra le lancette a conci (F2): i giunti nel tono d'ombra della pietra
+    for y in range(QUADRO):
+        for x in range(V_CENTRO - V_LARGA // 2, V_CENTRO + V_LARGA // 2):
+            if nella_finestra(x, y) and t.px[y][x] == V_PIETRA and (y % 7 == 0 or (x + (y // 7) * 6) % 13 == 0):
+                t.punto(x, y, V_SPIGOLO)
     t.rett(V_CENTRO - V_LARGA // 2 - 6, V_SOGLIA, V_LARGA + 12, 3, V_PIETRA_L)
     t.rett(V_CENTRO - V_LARGA // 2 - 6, V_SOGLIA + 3, V_LARGA + 12, 1, V_PILASTRO)
     # i vetri
@@ -543,6 +570,16 @@ def vetrata_disegno(vetri):
                         for u, v in ((x + 1, y), (x, y + 1)))
             if bordo or y % 12 == 0 or (vetri != "storia" and (x - 82) % 9 == 0 and y > 46):
                 t.punto(x, y, V_BUIO)
+    # lo strombo (F5): la pietra intorno ai vetri in ombra in alto e a destra, in luce in basso e a
+    # sinistra, cosi' le lancette e l'oculo si leggono incassati nella pietra
+    for y in range(2, QUADRO - 2):
+        for x in range(2, W - 2):
+            if vetro[y][x] or not nella_finestra(x, y, 4):
+                continue
+            if vetro[y + 2][x] or vetro[y][x - 2] or vetro[y + 1][x] or vetro[y][x - 1]:
+                t.punto(x, y, V_SPIGOLO)
+            elif vetro[y - 2][x] or vetro[y][x + 2] or vetro[y - 1][x] or vetro[y][x + 1]:
+                t.punto(x, y, V_PIETRA_L)
     # il piombo di contorno: il primo pixel di pietra intorno a ogni vetro
     for y in range(1, QUADRO - 1):
         for x in range(1, W - 1):
