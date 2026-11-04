@@ -779,54 +779,50 @@ def pozzo(w, h):
 
 
 def teatro_romano(w, h, info):
-    """Teatro Romano, con la stessa forma della griglia (geometria_teatro di genera_mondo.py): scena
-    sul bordo sinistro, orchestra a semicerchio, gradinate concentriche, l'anello esterno di arcate di
-    pietra, il prato intorno. Si dipinge tile per tile con pochi motivi, cosi' i tile unici restano
-    pochi anche con la cavea grande."""
+    """Teatro Romano, con la stessa forma della griglia (geometria_teatro di genera_mondo.py): scena sul bordo
+    sinistro, orchestra a semicerchio, gradinate concentriche, l'anello esterno di arcate di pietra, il prato
+    intorno. Allo standard (pezzo EDI): i gradini sono anelli veri di 5 pixel, ognuno con lo spigolo chiaro, la
+    pedata nel tono medio e l'alzata d'ombra (F2, C5); l'anello delle arcate ha i fornici scuri con l'arco (F5);
+    la scena e' un muro di conci con le nicchie; il prato e' quello dei giardini."""
     t = Tela(w, h, VERDE)
-    cx, cy = 2.0, h / 2 - 0.5
+    cx, cy = 2.0 * 8 + 4, h * 4 - 0.5     # centro fra due righe di pixel: la cavea e' simmetrica (tile specchiati)
     r = min(w - 3, h / 2 - 1)
     r_int = r / 3
-
-    def prato(x0, y0):
-        for y in range(8):
-            for x in range(8):
-                t.punto(x0 + x, y0 + y, VERDE_SCURO if (x * 3 + y * 5) % 13 == 0 else VERDE)
-
-    for ty in range(h):
-        for tx in range(w):
-            x0, y0 = tx * 8, ty * 8
-            d = ((tx - cx) ** 2 + (ty - cy) ** 2) ** 0.5
-            if tx < cx:
-                if abs(ty - cy) <= r:
-                    # la fronte della scena: conci con le nicchie a tile alterni
-                    for y in range(8):
-                        for x in range(8):
-                            t.punto(x0 + x, y0 + y, PIETRA_CHIARA if x < 6 else PIETRA)
-                    if ty % 3 == 0:
-                        t.rett(x0 + 2, y0 + 2, 3, 5, CONTORNO)
+    R, RI, RA = (r - 1.5) * 8 + 4, r_int * 8 + 4, r * 8 + 4
+    import math as _m
+    for y in range(h * 8):
+        for x in range(w * 8):
+            ty, tx = y // 8, x // 8
+            d_t = ((tx - 2.0) ** 2 + (ty - (h / 2 - 0.5)) ** 2) ** 0.5
+            d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            if tx < 2.0:
+                if abs(ty - (h / 2 - 0.5)) <= r:
+                    c = PC.colore_suolo("muro_chiaro", x, y)
+                    if ty % 3 == 0 and 2 <= x % 8 <= 5 and 1 <= y % 8 <= 7:
+                        c = ("pietra calcarea", 1) if x % 8 == 5 or y % 8 == 1 else CONTORNO
+                    if x % 16 == 15:
+                        c = ("pietra calcarea", 1)
                 else:
-                    prato(x0, y0)
-            elif d <= r_int:
-                for y in range(8):
-                    for x in range(8):
-                        t.punto(x0 + x, y0 + y, PIETRA_CHIARA if (x + y) % 9 == 0 else PIETRA_LUCE)
-            elif d <= r - 1.5:
-                # un gradino per anello: alzata chiara e pedata in ombra, alternati
-                chiaro = int(d) % 2 == 0
-                for y in range(8):
-                    for x in range(8):
-                        t.punto(x0 + x, y0 + y, (PIETRA_LUCE if chiaro else PIETRA) if (x + y) % 8 < 5
-                                else PIETRA_SCURA)
-            elif d <= r:
-                # l'anello di arcate: un arco per tile
-                for y in range(8):
-                    for x in range(8):
-                        t.punto(x0 + x, y0 + y, PIETRA)
-                t.rett(x0 + 2, y0 + 3, 4, 5, CONTORNO)
-                t.rett(x0 + 3, y0 + 2, 2, 1, CONTORNO)
+                    c = PC.colore_verde("prato", x, y)
+            elif d <= RI:
+                c = PC.colore_suolo("lastrico", x, y)
+            elif d <= R:
+                k = (d - RI) % 5
+                c = ("pietra calcarea", 4) if k < 1 else (("pietra calcarea", 3) if k < 4 else ("pietra calcarea", 1))
+                if k >= 1 and k < 4 and (int(d) * 7 + int(abs(_m.atan2(y - cy, x - cx)) * 40)) % 23 == 0:
+                    c = ("pietra calcarea", 2)
+            elif d <= RA:
+                ang = abs(_m.atan2(y - cy, x - cx))
+                u = (ang * RA) % 12
+                k = d - (r - 1.5) * 8
+                c = ("pietra calcarea", 2)
+                if 3 <= u <= 9 and k > 3:
+                    c = CONTORNO if 4 <= u <= 8 and k > 5 else ("pietra calcarea", 1)
+                if k <= 2:
+                    c = ("pietra calcarea", 4) if k <= 1 else ("pietra calcarea", 3)
             else:
-                prato(x0, y0)
+                c = PC.colore_verde("prato", x, y)
+            t.punto(x, y, c)
     t.elementi["gradinate"] += 1
     t.elementi["arcate"] += 1
     t.elementi["scena"] += 1

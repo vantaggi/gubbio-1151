@@ -180,6 +180,8 @@ def motivo(nome):
             m = _motivo_lastre(8, (4, 4), (6, 12), [(P, 4), (P, 4), (P, 3)], (P, 2), 16, largo=16)
         elif nome == "muro":        # i conci delle facciate (F2): file di 3-4 pixel, conci 5-10
             m = _motivo_lastre(8, (4, 4), (8, 8), [(P, 3), (P, 3), (P, 2)], (P, 1), 14, largo=8)
+        elif nome == "muro_secco":  # il muretto a secco del monte: pietre piccole e irregolari
+            m = _motivo_lastre(8, (3, 3, 2), (3, 6), [(P, 3), (P, 2), (P, 3)], (P, 1), 17, largo=16)
         elif nome == "muro_scuro":
             m = _motivo_lastre(8, (4, 4), (8, 8), [(P, 2), (P, 2), (P, 3)], (P, 1), 15, largo=8)
         else:
@@ -599,6 +601,7 @@ def panni_stesi(q, griglia, calpestabile, case_celle, aid):
     (L4), sul selciato."""
     hgt, wid = len(griglia), len(griglia[0])
     fatte = 0
+    gia = []          # le file che hanno gia' una corda (una ogni 7 righe al piu')
     for y in range(2, hgt - 2):
         for x in range(1, wid - 2):
             if (x - 1, y) not in case_celle or not calpestabile(x, y):
@@ -608,9 +611,9 @@ def panni_stesi(q, griglia, calpestabile, case_celle, aid):
                 k += 1
             if k >= wid or (k, y) not in case_celle or not 2 <= k - x <= 6:
                 continue
-            if h32(x, y, 31, len(aid)) > 0.1 or any(abs(y - yy) < 7 for yy in _gia_panni.get(aid, [])):
+            if h32(x, y, 31, len(aid)) > 0.1 or any(abs(y - yy) < 7 for yy in gia):
                 continue
-            _gia_panni.setdefault(aid, []).append(y)
+            gia.append(y)
             festone = h32(x, y, 32) < 0.5
             _corda(q, x * 8 - 2, k * 8 + 1, y * 8 + 1, festone, aid, x + y)
             fatte += 1
@@ -657,7 +660,6 @@ def _corda(q, px0, px1, py, festone, aid, seme):
         q.punto(xx, yy, c)
 
 
-_gia_panni = {}
 
 
 # --- ombre portate e contorno selettivo -------------------------------------------------------------------
@@ -891,6 +893,13 @@ def dipingi_albero(q, x0, y0, aw, ah, c, seme):
         for yy in range(int(cy + r * 0.6), Y0 + H):
             q.punto(int(cx), yy, (L, 1))
             q.punto(int(cx) + 1, yy, (L, 0))
+    # solo la chioma (e il tronco) e' alta e getta ombra: il resto delle celle dell'albero e' suolo, cosi'
+    # l'ombra portata ha la forma della chioma e non quella quadrata delle celle (L4)
+    for yy in range(Y0, min(q.h, Y0 + H)):
+        for xx in range(X0, min(q.w, X0 + W)):
+            if (xx, yy) not in dentro and q.tipo[yy][xx] == "verde":
+                q.tipo[yy][xx] = "suolo"
+                q.alto[yy][xx] = 0
     for (xx, yy) in dentro:
         # il grumo piu' vicino decide la luce: la parte alta a sinistra di ogni grumo e' chiara (L2)
         gx, gy, gr = min(grumi, key=lambda g: (xx - g[0]) ** 2 + (yy - g[1]) ** 2 - g[2] ** 2)
@@ -993,3 +1002,271 @@ def dipingi_fontana(q, x0, y0, w, h):
     q.punto(fx - 2, int(cy) - 4, (A, 4))
     q.punto(fx + 2, int(cy) - 4, (A, 4))
     q.conta("fontana")
+
+
+# --- belvedere e mura -------------------------------------------------------------------------------------
+def _tettino(m, x0, y0, w, h, tono, W, H):
+    """Un tetto lontano della citta' bassa: a capanna col colmo lungo il lato lungo; la falda verso la luce (in alto
+    o a sinistra) un tono sopra, quella in ombra un tono sotto, il colmo chiaro (L1, L2)."""
+    orizzontale = w >= h
+    for yy in range(y0, y0 + h):
+        for xx in range(x0, x0 + w):
+            if orizzontale:
+                u, colmo = yy - y0, (h - 1) // 2
+            else:
+                u, colmo = xx - x0, (w - 1) // 2
+            c = (T, tono + 1) if u == colmo else ((T, tono) if u < colmo else (T, tono - 1))
+            m[yy % H][xx % W] = c
+
+
+def _motivo_citta_bassa():
+    """La citta' bassa vista dal belvedere, lontana e in basso (C5, prospettiva aerea): isolati irregolari di case
+    piccole coi tetti a capanna girati di qua e di la' (il colmo sul lato lungo), qualche cortile, i vicoli di
+    pietra velata di foschia con l'ombra delle case a destra e in basso (L4). Contrasto basso, niente nero: e'
+    sfondo. Solo cotto e pietra (un banco solo). Motivo di 48 x 32 pixel."""
+    W, H = 48, 32
+    m = [[(P, 3)] * W for _ in range(H)]
+    for by in range(4):
+        for bx in range(4):
+            x0, y0 = bx * 12 + (by % 2) * 6, by * 8
+            # l'isolato: 11 x 7 pixel, il vicolo di un pixel a destra e sotto
+            n = 1 + int(h32(bx, by, 101) * 3)
+            tagli = sorted({0, 11} | {2 + int(h32(bx, by, k, 102) * 8) for k in range(n - 1)})
+            for k in range(len(tagli) - 1):
+                xa, xb = tagli[k], tagli[k + 1]
+                if xb - xa < 3:
+                    continue
+                if h32(bx, by, k, 103) < 0.07:
+                    # un cortile: la pietra chiara chiusa fra i tetti
+                    continue
+                alto = 7 if h32(bx, by, k, 104) < 0.7 else 6
+                tono = 3 if h32(bx, by, k, 106) < 0.55 else 2
+                _tettino(m, x0 + xa, y0 + 7 - alto, xb - xa - (1 if xb < 11 else 0), alto, tono, W, H)
+                # l'ombra della casa sulla pietra a destra e sotto
+                for yy in range(y0 + 7 - alto, y0 + 8):
+                    m[yy % H][(x0 + xb - (1 if xb < 11 else 0)) % W] = (P, 2)
+                for xx in range(x0 + xa + 1, x0 + xb):
+                    m[(y0 + 7) % H][xx % W] = (P, 2)
+    return m
+
+
+_CB = []
+
+
+def colore_citta_bassa(x, y):
+    if not _CB:
+        _CB.append(_motivo_citta_bassa())
+    m = _CB[0]
+    return m[y % len(m)][x % len(m[0])]
+
+
+def dipingi_citta_bassa(q, x, y, griglia):
+    """Una cella di citta' bassa: il motivo, e accanto al muretto del belvedere la sua faccia esterna che scende
+    (conci in ombra, 4 pixel) con l'ombra che cade sui tetti (2 pixel): si capisce che c'e' il salto (P2, L4)."""
+    X0, Y0 = x * 8, y * 8
+    h, w = len(griglia), len(griglia[0])
+    muro = [(dx, dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+            if 0 <= x + dx < w and 0 <= y + dy < h and griglia[y + dy][x + dx] == "="]
+    for yy in range(8):
+        for xx in range(8):
+            X, Y = X0 + xx, Y0 + yy
+            c = colore_citta_bassa(X, Y)
+            for dx, dy in muro:
+                d = (7 - xx) if dx == 1 else (xx if dx == -1 else ((7 - yy) if dy == 1 else yy))
+                if d < 4:
+                    c = colore_suolo("muro_scuro", X, Y)
+                    if d == 3:
+                        c = (P, 0)
+                elif d < 6:
+                    c = scuro(c, 1)
+            q.punto(X, Y, c)
+
+
+def dipingi_parapetto(q, x, y, griglia, calpestabile):
+    """Il muretto del belvedere visto dall'alto: la cimasa chiara dal lato della piazza, i conci della faccia
+    esterna che scende verso la citta' bassa, il piede in ombra (L1: la luce da sinistra e dall'alto)."""
+    X0, Y0 = x * 8, y * 8
+    lati = [(dx, dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)) if calpestabile(x + dx, y + dy)]
+    dx, dy = lati[0] if lati else (1, 0)
+    for yy in range(8):
+        for xx in range(8):
+            # u: distanza dal lato della piazza (0) al lato del vuoto (7)
+            u = (7 - xx) if dx == 1 else (xx if dx == -1 else ((7 - yy) if dy == 1 else yy))
+            v = yy if dx else xx
+            if u <= 2:
+                c = (P, 4) if u == 0 else (P, 3)
+                if (v + (u * 3)) % 8 == 7:
+                    c = (P, 2)
+            elif u <= 5:
+                c = colore_suolo("muro", X0 + xx, Y0 + yy)
+            elif u == 6:
+                c = (P, 1)
+            else:
+                c = (P, 0)
+            q.punto(X0 + xx, Y0 + yy, c)
+
+
+def dipingi_mura(q, x, y, griglia, calpestabile):
+    """Le mura viste dall'alto: il cammino di ronda di lastre, i merli guelfi (quadrati) sul lato verso fuori con la
+    luce in alto a sinistra e l'ombra a destra e in basso, il muro esterno che cade in ombra."""
+    X0, Y0 = x * 8, y * 8
+    h, w = len(griglia), len(griglia[0])
+    fuori = [(dx, dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+             if not (0 <= x + dx < w and 0 <= y + dy < h) or (griglia[y + dy][x + dx] not in "W" and
+                                                              not calpestabile(x + dx, y + dy))]
+    dx, dy = fuori[0] if fuori else (0, -1)
+    for yy in range(8):
+        for xx in range(8):
+            X, Y = X0 + xx, Y0 + yy
+            u = xx if dx == 1 else ((7 - xx) if dx == -1 else (yy if dy == 1 else 7 - yy))   # 7 = verso fuori
+            v = Y if dx else X
+            c = colore_suolo("suolo", X, Y)
+            if u >= 5:
+                dente = (v % 8) < 4
+                if dente:
+                    c = (P, 4) if (u == 5 or v % 8 == 0) else ((P, 2) if v % 8 == 3 else (P, 3))
+                else:
+                    c = (P, 1) if u == 5 else (P, 2)
+                if u == 7:
+                    c = (P, 1) if dente else (P, 0)
+            elif u == 4:
+                c = (P, 1)
+            q.punto(X, Y, c)
+
+
+# --- il Monte Ingino: stradoni, muretti, paracarri, rocce (F3, C5, L1, M6) --------------------------------
+def _motivo_breccia():
+    """La ghiaia degli stradoni su 32x32: il fondo di pietra nel tono medio (C5: niente bianco su grandi superfici),
+    sassolini chiari con l'ombra in basso a destra, qualche sasso scuro, nessuna riga che si ripete."""
+    m = [[(P, 3)] * 32 for _ in range(32)]
+    for i in range(140):
+        x, y = int(h32(i, 111) * 32), int(h32(i, 112) * 32)
+        if i % 4 == 0:
+            m[y][x] = (P, 2)
+        else:
+            m[y][x] = (P, 4)
+            m[(y + 1) % 32][(x + 1) % 32] = (P, 2)
+    for i in range(90):
+        x, y = int(h32(i, 113) * 32), int(h32(i, 114) * 32)
+        if m[y][x] == (P, 3):
+            m[y][x] = (P, 2)
+    return m
+
+
+_BR = []
+
+
+def colore_breccia(x, y):
+    if not _BR:
+        _BR.append(_motivo_breccia())
+    return _BR[0][y % 32][x % 32]
+
+
+def dipingi_breccia(q, x, y, griglia):
+    """Una cella di stradone: la ghiaia; lungo i tratti dritti i due solchi delle ruote (un tono sotto, a 2 pixel
+    dai bordi della carreggiata); sul bordo verso il bosco l'erba che invade la ghiaia a ciuffi (2 pixel)."""
+    X0, Y0 = x * 8, y * 8
+    h, w = len(griglia), len(griglia[0])
+
+    def b(xx, yy):
+        return 0 <= xx < w and 0 <= yy < h and griglia[yy][xx] in "bAEBJ"
+    verticale = b(x, y - 1) and b(x, y + 1)
+    orizzontale = b(x - 1, y) and b(x + 1, y)
+    bosco = {(dx, dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+             if 0 <= x + dx < w and 0 <= y + dy < h and griglia[y + dy][x + dx] in "#Tr"}
+    for yy in range(8):
+        for xx in range(8):
+            X, Y = X0 + xx, Y0 + yy
+            c = colore_breccia(X, Y)
+            # i solchi di carreggiata, nel verso della strada
+            solco = (verticale and not orizzontale and xx in (2, 5) and h32(xx, (Y % 32) // 4, 115) < 0.85) or \
+                (orizzontale and not verticale and yy in (2, 5) and h32(yy, (X % 32) // 4, 116) < 0.85)
+            if solco:
+                c = (P, 2)       # un tono sotto la ghiaia, non di piu': l'ombra portata ci scende ancora di uno
+            for dx, dy in bosco:
+                d = (7 - xx) if dx == 1 else (xx if dx == -1 else ((7 - yy) if dy == 1 else yy))
+                v = Y if dx else X
+                ciuffo = h32(v % 16, dx, dy, 117)
+                if d == 0 or (d == 1 and ciuffo < 0.6) or (d == 2 and ciuffo < 0.2):
+                    c = (V, 2) if (v + d) % 3 else (V, 1)
+            q.punto(X, Y, c)
+
+
+def dipingi_muretto(q, x, y, griglia):
+    """Il muretto a secco sul lato a valle dei tornanti, visto in 3/4: la cresta di pietre chiare in alto, la faccia
+    di pietre irregolari un tono sotto coi giunti scuri, il piede in ombra (L1, F2)."""
+    X0, Y0 = x * 8, y * 8
+    sotto = y + 1 < len(griglia) and griglia[y + 1][x] == "m"
+    sopra = y > 0 and griglia[y - 1][x] == "m"
+    for yy in range(8):
+        for xx in range(8):
+            X, Y = X0 + xx, Y0 + yy
+            pietra = colore_suolo("muro_secco", X, Y)
+            if not sopra and yy < 3:
+                c = chiaro(pietra, 1, 4)                     # la cresta in luce
+            elif not sotto and yy == 7:
+                c = (P, 1)                                   # il piede in ombra (il banco del verde: P1-P4)
+            else:
+                c = pietra
+            q.punto(X, Y, c)
+            q.tipo[Y][X] = "basso"
+            q.alto[Y][X] = 6
+
+
+def dipingi_paracarro(q, x, y, sotto):
+    """Un paracarro di pietra in 3/4 (M6): il cappello tondo chiaro sopra, il fusto con la luce a sinistra e l'ombra
+    a destra, l'ombra portata sul suolo la fa ombre_portate. 'sotto' dipinge il suolo della cella."""
+    X0, Y0 = x * 8, y * 8
+    for yy in range(8):
+        for xx in range(8):
+            q.punto(X0 + xx, Y0 + yy, sotto(X0 + xx, Y0 + yy))
+            q.tipo[Y0 + yy][X0 + xx] = "suolo"
+            q.alto[Y0 + yy][X0 + xx] = 0
+    # il cappello: ellisse 4x2 (si vede da sopra)
+    for xx, yy, c in ((3, 1, (P, 4)), (4, 1, (P, 4)), (2, 2, (P, 4)), (3, 2, (P, 4)), (4, 2, (P, 4)), (5, 2, (P, 3))):
+        q.punto(X0 + xx, Y0 + yy, c)
+    # il fusto: 4 pixel di larghezza, la luce a sinistra
+    for yy in range(3, 7):
+        for xx, c in ((2, (P, 3)), (3, (P, 3)), (4, (P, 2)), (5, (P, 1))):
+            q.punto(X0 + xx, Y0 + yy, c)
+    for xx in range(2, 6):
+        q.punto(X0 + xx, Y0 + 7, (P, 1))
+    for yy in range(1, 8):
+        for xx in range(2, 6):
+            q.tipo[Y0 + yy][X0 + xx] = "basso"
+            q.alto[Y0 + yy][X0 + xx] = 6
+    q.conta("paracarro")
+
+
+def dipingi_roccia(q, x, y, seme):
+    """Un masso di calcare sulla scarpata (L1, L2): un grumo tondo e irregolare, la faccia in alto a sinistra chiara,
+    la massa nel tono medio, il lato in basso a destra in ombra con il bordo un tono sotto (mai nero), una crepa."""
+    X0, Y0 = x * 8, y * 8
+    for yy in range(8):
+        for xx in range(8):
+            # il sottobosco intorno al masso: un motivo di 8 pixel (i tile dei massi si ripetono)
+            q.punto(X0 + xx, Y0 + yy, (V, 1) if (xx * 3 + yy * 5) % 7 == 0 else (V, 2))
+            q.tipo[Y0 + yy][X0 + xx] = "suolo"
+            q.alto[Y0 + yy][X0 + xx] = 0
+    cx, cy = X0 + 3.5 + (h32(seme, 118) - 0.5), Y0 + 4.2
+    rx, ry = 3.4, 2.9
+    dentro = set()
+    for yy in range(Y0, Y0 + 8):
+        for xx in range(X0, X0 + 8):
+            u, v = (xx - cx) / rx, (yy - cy) / ry
+            bozzo = 0.12 * math.sin(math.atan2(v, u) * 3 + seme)
+            if u * u + v * v <= (1 + bozzo) ** 2:
+                dentro.add((xx, yy))
+    for (xx, yy) in dentro:
+        d = (xx - cx) / rx + (yy - cy) / ry
+        c = (P, 4) if d < -0.7 else ((P, 3) if d < 0.4 else (P, 2))
+        if any(v not in dentro for v in ((xx + 1, yy), (xx, yy + 1))):
+            c = (P, 1)
+        q.punto(xx, yy, c)
+        q.tipo[yy][xx] = "basso"
+        q.alto[yy][xx] = 6
+    crepa = int(cx) + 1
+    for yy in (int(cy) - 1, int(cy)):
+        if (crepa, yy) in dentro:
+            q.punto(crepa, yy, (P, 1))
+    q.conta("roccia")

@@ -168,9 +168,12 @@ def fondale(cartella, nome, scala=1):
     for y in range(h * 8):
         riga = []
         for x in range(w * 8):
-            i = a["indici"][(y // 8) * w + x // 8]
+            k = (y // 8) * w + x // 8
+            i = a["indici"][k]
             tile = a["tile"][i]
-            riga += [banchi[a["banchi"][i]][tile[y % 8][x % 8]]] * scala
+            sp = a.get("specchi", [0] * len(a["indici"]))[k]
+            tx, ty = (7 - x % 8) if sp & 1 else x % 8, (7 - y % 8) if sp & 2 else y % 8
+            riga += [banchi[a["banchi"][i]][tile[ty][tx]]] * scala
         righe += [riga] * scala
     suffisso = f"_x{scala}" if scala > 1 else ""
     png(os.path.join(cartella, f"fondale_{nome}{suffisso}.png"), w * 8 * scala, h * 8 * scala, righe)

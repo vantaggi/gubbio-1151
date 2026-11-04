@@ -2105,16 +2105,26 @@ def disegna_area(a, mondo):
     # lo standard grafico (pezzo EDI, tools/pittore_citta.py): case, suolo, vita, ombre e contorni, in pixel
     quadro = ridipingi(a, celle, tile_di, mondo, elementi)
     tile_unici = {(0, tuple(map(tuple, _tile(tile_vuoto)))): 0}
-    indici = []
+    indici, giri = [], []
     for y in range(h):
         for x in range(w):
             if quadro is None:
                 banco, pix = 0, celle[(x, y)]
             else:
                 banco, pix = indicizza_tile(quadro, x, y, a)
-            chiave = (banco, tuple(map(tuple, pix)))
-            indici.append(tile_unici.setdefault(chiave, len(tile_unici)))
+            t = tuple(map(tuple, pix))
+            # un tile uguale a uno gia' preso, specchiato, si riusa con i bit di specchio della cella (10 e 11):
+            # la cavea del Teatro e' simmetrica, molti bordi pure
+            for giro, chiave in ((0, t), (2, t[::-1]), (1, tuple(r[::-1] for r in t)), (3, tuple(r[::-1] for r in t[::-1]))):
+                if (banco, chiave) in tile_unici:
+                    indici.append(tile_unici[(banco, chiave)])
+                    giri.append(giro)
+                    break
+            else:
+                indici.append(tile_unici.setdefault((banco, t), len(tile_unici)))
+                giri.append(0)
     a["banchi"] = [b for b, _ in tile_unici]
+    a["specchi"] = giri
     return [t for _, t in tile_unici], indici, elementi
 
 
@@ -2138,6 +2148,26 @@ def area_di_citta(a):
     """Le aree che il pittore della citta' ridipinge tutte: non la gola (palette cupa), non gli interni (sono del
     pezzo degli edifici esplorabili), non il monte (bosco e ghiaia restano quelli di sempre, con le ombre)."""
     return not a.get("interno") and a["id"] not in AREE_GOLA and a["id"] not in AREE_DEL_MONTE
+
+
+def ridipingi_monte(q, g, w, h):
+    """Il Monte allo standard: la ghiaia degli stradoni coi solchi e l'erba ai bordi, i muretti a secco in 3/4, i
+    paracarri e i massi (M6). Il bosco e gli alberi restano quelli di sempre, con le ombre portate."""
+    for y in range(h):
+        for x in range(w):
+            c = g[y][x]
+            if c == "b":
+                PC.dipingi_breccia(q, x, y, g)
+            elif c == "m":
+                PC.dipingi_muretto(q, x, y, g)
+    for y in range(h):
+        for x in range(w):
+            c = g[y][x]
+            if c == "p":
+                # il paracarro sta nell'erba del ciglio, non sulla ghiaia: la strada resta della sua larghezza
+                PC.dipingi_paracarro(q, x, y, lambda X, Y: (PC.V, 1) if (X * 3 + Y * 5) % 7 == 0 else (PC.V, 2))
+            elif c == "k":
+                PC.dipingi_roccia(q, x, y, (x * 7 + y * 3) % 3)
 
 
 def ridipingi(a, celle, tile_di, mondo, elementi):
@@ -2219,6 +2249,12 @@ def ridipingi(a, celle, tile_di, mondo, elementi):
                     PC.dipingi_soglia(q, x, y)
                 elif c == "Q":
                     PC.dipingi_lampione(q, x, y)
+                elif c == "V":
+                    PC.dipingi_citta_bassa(q, x, y, g)
+                elif c == "=":
+                    PC.dipingi_parapetto(q, x, y, g, calpestabile)
+                elif c == "W" and (x, y) not in occupate:
+                    PC.dipingi_mura(q, x, y, g, calpestabile)
         fontana = [(x, y) for y in range(h) for x in range(w) if g[y][x] == "F"]
         if fontana:
             fx0, fy0 = min(x for x, _ in fontana), min(y for _, y in fontana)
@@ -2300,6 +2336,8 @@ def ridipingi(a, celle, tile_di, mondo, elementi):
         # 3. la vita
         PC.vita_delle_case(q, case, a["id"], len(a["id"]))
         PC.panni_stesi(q, g, calpestabile, case_celle, a["id"])
+    if a["id"] in AREE_DEL_MONTE:
+        ridipingi_monte(q, g, w, h)
     # gli alberi, in citta' e sul monte: sul suolo che c'e' sotto (prato, lastrico, bosco)
     for k, (x0, y0, aw, ah, c) in enumerate(alberi_dell_area(g)):
         for y in range(y0, y0 + ah):
@@ -2311,7 +2349,8 @@ def ridipingi(a, celle, tile_di, mondo, elementi):
                         if fondo:
                             # sotto la chioma l'erba e' in ombra e senza fiori: un motivo di 8 pixel (i tile
                             # dell'albero si ripetono uguali dovunque stia)
-                            q.px[yy][xx] = (PC.V, 1) if (xx * 3 + yy * 5) % 7 == 0 else (PC.V, 2)
+                            q.px[yy][xx] = PC.colore_verde("prato", xx, yy) if citta else \
+                                ((PC.V, 1) if (xx * 3 + yy * 5) % 7 == 0 else (PC.V, 2))
                         elif citta:
                             q.px[yy][xx] = (PC.P, 2) if xx % 8 == 7 or yy % 8 == 7 else (PC.P, 3)
         if citta or fondo:
@@ -2847,7 +2886,8 @@ def scrivi_header(aree, grafo, palette_stile):
         out += [f"inline constexpr uint8_t GRIGLIA_{nome}[{n}] = {{", a_blocchi(celle, 32), "};", "",
                 f"inline constexpr uint8_t MAPPA_{nome}[{n}] = {{", a_blocchi(mappa, 32), "};", ""]
         gw, gh = lati_fondale(a)
-        fondale = celle_fondale(a, [i | (a["banchi"][i] << 12) for i in a["indici"]])
+        fondale = celle_fondale(a, [i | (a["specchi"][k] << 10) | (a["banchi"][i] << 12)
+                                    for k, i in enumerate(a["indici"])])
         out += [f"// {len(a['tile'])} tile unici: suolo, dislivello e monumenti.",
                 f"inline constexpr bn::tile TILE_{nome}[{len(a['tile'])}] = {{"]
         out += ["    { { " + ", ".join(f"0x{v:08X}" for v in parole_tile(t)) + " } }," for t in a["tile"]]
