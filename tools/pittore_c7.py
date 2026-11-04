@@ -2,14 +2,16 @@
 
 C7S, Gli Stradoni del Monte (A1-07): il fianco del Monte Ingino nel pomeriggio che si fa sera (il cielo
 di C4, gia' in ROM), i nove stradoni di ghiaia a zigzag, le tre cappellette al 3o, 6o e 7o tornante, la
-Basilica col campanile in cima, i tre piccolissimi all'imbocco del primo stradone, davanti le fronde dei
-lecci; poi il primo piano di una cappelletta col lumino acceso e sotto la valle coi tetti di Gubbio.
+Basilica col campanile in cima, i tre piccolissimi all'imbocco del primo stradone (in fila verso
+destra: Ubaldo davanti, poi Giorgio, poi Antonio), davanti le fronde dei lecci; poi il primo piano di
+una cappelletta col lumino acceso e sotto la valle coi tetti di Gubbio.
 
 C7B, La gola del Bottaccione (B-01): una lama di cielo, la parete lontana cupa, la parete vicina a strati
 inclinati di Scaglia rosata e grigia con, una volta sola, la riga scura sottile e l'argilla chiara sopra,
 il condotto di pietra sugli archetti, il Camignano coi massi; poi il primo piano della parete.
 
-Di giorno, senza luci accese. Dal mockup approvato (cutscene/v2, CUTM).
+Di giorno, senza luci accese. Dal mockup approvato (cutscene/v2, CUTM, aggiornato la mattina del 4 nov
+con la regola dell'ordine).
 
 Un pittore riceve il momento e ritorna (tela, palette, notte), come in tools/pittore_panorami.py.
 """
@@ -101,8 +103,9 @@ def c7_monte(m):
     for k in range(4):
         t.rett(bx + 3 + k * 6, by - 5, 3, 4, ST_C)
     # i tre all'imbocco del primo stradone, piccoli: la mitra bianca, l'elmo, il saio
+    # vanno a destra: Ubaldo davanti, poi Giorgio, poi Antonio (la regola di Cioti, 4 nov)
     for i, (c1, c2) in enumerate(((ST_BIANCO, ST_ORO), (ST_P2, ST_ROSSO), (ST_LEGNO, ST_LEGNO))):
-        x = 44 + i * 6
+        x = 56 - i * 6
         t.rett(x, 99, 3, 6, c1)
         t.rett(x, 97, 3, 2, c2)
         t.punto(x + 1, 96, ST_C)
