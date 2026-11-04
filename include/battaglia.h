@@ -956,7 +956,7 @@ private:
         Unita& attore = unita(azione.nemico, azione.slot);
         bool lato_nemico = ! azione.nemico;
 
-        // Il Bastione: San Giorgio prende i colpi diretti a Ubaldo e Antonio.
+        // Il Bastione: Giorgio prende i colpi diretti a Ubaldo e Antonio.
         if(! lato_nemico && slot != GIORGIO && _eroi[GIORGIO].vivo() && _eroi[GIORGIO].guardia > 0)
         {
             emetti(EventKind::GUARD_REDIRECT, azione.nemico, azione.slot, false, slot, GIORGIO, _eroi[GIORGIO].pv);

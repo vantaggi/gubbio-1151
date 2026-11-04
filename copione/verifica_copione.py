@@ -35,6 +35,28 @@ PARLANTI = {
     "GIULIANA", "LAURETTA", "AURELIA", "VALERIANA", "LEONORA", "VALENZA", "NICOLUCCIO",
     "PADELLINO", "MONTANO",
 }
+# Gli amici di dati/amici.json (anche quelli aggiunti dopo, come MILIA e MICHELINO) e i mestieri di contorno
+# di 06_npc_mestieri.md (pezzo VIVA): i loro parlanti si leggono dai dati, cosi' nessuna battuta resta fuori
+# dal controllo quando entra un NPC nuovo (4 nov 2026).
+def _parlanti_dai_dati():
+    import json
+    nomi = set()
+    amici = os.path.join(QUI, "..", "dati", "amici.json")
+    if os.path.exists(amici):
+        with open(amici, encoding="utf-8") as f:
+            nomi |= set(json.load(f)["amici"])
+    mestieri = os.path.join(QUI, "06_npc_mestieri.md")
+    if os.path.exists(mestieri):
+        riga_npc = re.compile(r"^- (?:ULTIMATUM|DIGIUNO|NOTTE)(?: \(se (?:non )?[A-Z_0-9]+\))?: ([A-Z][A-Z']*)(?: \([a-z]+\))?: ")
+        with open(mestieri, encoding="utf-8") as f:
+            for riga in f:
+                m = riga_npc.match(riga)
+                if m:
+                    nomi.add(m.group(1))
+    return nomi
+
+
+PARLANTI |= _parlanti_dai_dati()
 ESPRESSIONI = {"calmo", "preoccupato", "deciso"}
 
 G = {}
