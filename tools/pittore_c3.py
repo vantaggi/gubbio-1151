@@ -294,11 +294,56 @@ def sfondo_luce(chi):
     return t
 
 
+# La posa a colori ripete il gesto della sagoma: Giorgio con la spada levata, Antonio con la fiamma in mano
+# e il maialino ai piedi, Ubaldo col pastorale (giro 4 del loop grafico: prima tutti e tre stavano a riposo e
+# lo stacco non somigliava al controluce).
+POSA_LUCE = {"ubaldo": "riposo", "giorgio": "potere", "antonio": "colpo"}
+
+
+def maialino(t, x0, y0, indici):
+    """Il maialino di Antonio a colori, di profilo verso sinistra come nella sagoma: il corpo rosa con la luce
+    in alto a sinistra, il grugno, l'orecchio, quattro zampette, la coda a ricciolo; il contorno quasi nero."""
+    ombra, base, luce = indici
+    pieni = {}
+
+    def tinta(x, y, c):
+        pieni[(x, y)] = c
+
+    for y in range(-6, 7):                                  # il corpo
+        for x in range(-11, 12):
+            if (x / 11) ** 2 + (y / 6) ** 2 <= 1:
+                tinta(x0 + x, y0 + y, luce if x + y < -6 else (ombra if y > 3 or x > 8 else base))
+    for y in range(-5, 6):                                  # la testa
+        for x in range(-5, 6):
+            if x * x + y * y <= 25:
+                tinta(x0 - 12 + x, y0 - 1 + y, luce if x + y < -3 else base)
+    for y in range(-2, 3):                                  # il grugno
+        for x in range(-4, 0):
+            tinta(x0 - 16 + x, y0 + y, base if x > -4 else ombra)
+    for k in range(5):                                      # l'orecchio a punta
+        for x in range(k // 2 + 1):
+            tinta(x0 - 12 + x, y0 - 6 - k, base)
+    for zx in (-9, -5, 4, 8):                               # le zampette
+        for y in range(5, 11):
+            tinta(x0 + zx, y0 + y, ombra if zx > 0 else base)
+            tinta(x0 + zx + 1, y0 + y, ombra)
+    for x, y in ((12, -1), (13, -2), (14, -3), (15, -3), (16, -2), (16, -1), (15, 0)):
+        tinta(x0 + x, y0 + y, base)                          # la coda a ricciolo
+    for (x, y), c in pieni.items():
+        t.punto(x, y, c)
+    for (x, y) in pieni:                                    # il contorno
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            if (x + dx, y + dy) not in pieni:
+                t.punto(x + dx, y + dy, 1)
+    t.punto(x0 - 14, y0 - 3, 1)                             # l'occhio
+    t.punto(x0 - 19, y0, ombra)                             # la narice
+
+
 def figura_luce(chi):
     """La figura a colori sul suo piano trasparente, coi piedi sul terreno della sagoma e il centro
     sul bagliore; torna (tela, palette)."""
     import sagome_battaglia as SB
-    f = getattr(SB, chi)("riposo", SCALA_LUCE)
+    f = getattr(SB, chi)(POSA_LUCE[chi], SCALA_LUCE)
     px = [list(reversed(r)) for r in f.pixel()]           # a sinistra, come la sagoma
     piedi = max(y for y, r in enumerate(px) if any(r))
     largo = [x for r in px for x, c in enumerate(r) if c]
@@ -309,6 +354,10 @@ def figura_luce(chi):
         for x, c in enumerate(riga):
             if c:
                 t.punto(ox + x, oy + y, c)
+    if chi == "antonio":
+        # il rosa dalla palette di Antonio: l'ombra nel cotto, la base e la luce nella pelle
+        rosa = [f.palette.index(rif) for rif in (("cotto e coppi", 3), ("pelle", 1), ("pelle", 2))]
+        maialino(t, 190, SUOLO - 12, rosa)
     return t, f.palette
 
 
