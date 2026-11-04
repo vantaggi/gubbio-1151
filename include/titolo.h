@@ -18,6 +18,10 @@ class Esplorazione;
 // Con istantanea=true non aspetta tasti: si mostra, scrive "Istantanea pausa" e ritorna.
 void pausa(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo, bool istantanea = false);
 
+// «Dove eravamo» (MAI): dopo «Continua», una volta, area, fase della cronaca, obiettivo, incarichi aperti e
+// tempo di gioco sullo sfondo scurito; A (o B, o Start) per riprendere. Con istantanea=true non aspetta tasti.
+void dove_eravamo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo, bool istantanea = false);
+
 // Lo stato di partita dalla posizione dell'esploratore, prima di salvare.
 void annota_posizione(const Esplorazione& esplorazione);
 
