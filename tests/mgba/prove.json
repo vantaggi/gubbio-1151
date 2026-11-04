@@ -1,0 +1,94 @@
+{
+  "_leggimi": "Prove in mGBA di tools/prove_mgba.py. Campi: nome, cosa, modo (GUBBIO_AVVIO), flag (altri -D, es. -DGUBBIO_PRESTAZIONI: ogni combinazione ha la sua ROM), copione (righe di tools/banco_mgba.c) o copione_file (in tests/mgba/copioni/), attese (regex che devono comparire), vietate (regex che non devono comparire; di default assert e ROM non caricata), limiti (regex col numero fra parentesi: massimo, minimo, righe = quante volte deve comparire, scarta_dopo = regex dopo cui il valore seguente non conta, quante = quanti valori scartare), registrazione (file in tests/dati/ che le righe del log scelte dal filtro devono rifare uguale; --aggiorna lo riscrive). Il log si legge senza il numero di frame iniziale. Usare 'finche' nei copioni: la prova finisce appena il gioco ha finito.",
+  "prove": [
+    {
+      "nome": "camminata",
+      "cosa": "La camminata automatica (include/mondo_autotest.h) con la collisione vera del gioco: l'anello nei due sensi e ogni altro arco del grafo, entrando e uscendo da ogni area. Movimento, collisioni, cambi d'area e budget del frame.",
+      "modo": 1,
+      "copione": [
+        "finche Camminata: 3000000"
+      ],
+      "attese": [
+        "^Camminata: \\d+ archi, \\d+ pixel, errore 0,"
+      ],
+      "limiti": [
+        {
+          "regex": "^Camminata: (\\d+) archi",
+          "minimo": 60
+        },
+        {
+          "regex": "frame oltre il budget (\\d+)",
+          "massimo": 0
+        },
+        {
+          "regex": "CPU massima (\\d+)%",
+          "massimo": 90
+        },
+        {
+          "regex": "picchi: sprite (\\d+),",
+          "massimo": 128
+        },
+        {
+          "regex": "stack IWRAM (\\d+),",
+          "massimo": 12288
+        }
+      ]
+    },
+    {
+      "nome": "storia",
+      "cosa": "La storia intera senza camminare, nei due giri di scelte: ogni scena e cutscene nell'ordine registrato in tests/dati/storia_mgba.txt.",
+      "modo": 8,
+      "copione": [
+        "finche Storia: 200000"
+      ],
+      "attese": [
+        "^Storia: 20 scene visitate su 20, 0 mancanti, titoli di coda raggiunti"
+      ],
+      "registrazione": {
+        "file": "tests/dati/storia_mgba.txt",
+        "filtro": "."
+      }
+    },
+    {
+      "nome": "prologo",
+      "cosa": "Il prologo giocabile col pilota: Giorgio nel gruppo, la Pattuglia, Antonio salvato (tests/dati/prologo_mgba.txt).",
+      "modo": 9,
+      "copione": [
+        "finche Prologo: 50000"
+      ],
+      "attese": [
+        "^Prologo: Giorgio nel gruppo si, Pattuglia sulla mappa si, Antonio salvato si"
+      ],
+      "registrazione": {
+        "file": "tests/dati/prologo_mgba.txt",
+        "filtro": "^(?!Istantane)"
+      }
+    },
+    {
+      "nome": "battaglie",
+      "cosa": "I 700 scontri col seme e il pilota: uguali al mirror Python (tests/dati/battaglia_mgba.txt).",
+      "modo": 3,
+      "copione": [
+        "finche Battaglie: 50000"
+      ],
+      "attese": [
+        "^Battaglie: 700 uguali al mirror, 0 diverse"
+      ],
+      "registrazione": {
+        "file": "tests/dati/battaglia_mgba.txt",
+        "filtro": "^BATTAGLIA "
+      }
+    },
+    {
+      "nome": "salvataggio",
+      "cosa": "La prova del salvataggio: scrittura, ricarica, banche e CRC in SRAM.",
+      "modo": 6,
+      "copione": [
+        "finche Salvataggio: 5000"
+      ],
+      "attese": [
+        "^Salvataggio: \\d+ prove riuscite, 0 fallite"
+      ]
+    }
+  ]
+}

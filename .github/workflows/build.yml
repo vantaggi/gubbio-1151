@@ -37,8 +37,8 @@ jobs:
       - name: Nessun test si salta da solo
         run: python3 tools/check_no_skip.py
 
-      - name: Test
-        run: python3 -m unittest discover -s tests -p "test_*.py" -v
+      - name: Test (tutti, in parallelo per modulo; docs/prove.md)
+        run: python3 tools/prove.py --tutte --senza-mgba
 
       - name: Impronta della toolchain (per confrontare la build con quella del PC)
         run: |

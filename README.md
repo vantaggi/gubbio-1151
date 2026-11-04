@@ -11,7 +11,11 @@ in `CREDITI.md`.
 
 `build.sh` confronta Butano e devkitARM con `toolchain.lock` e si ferma se non coincidono, poi
 compila, passa il gate zero-heap (`tools/check_zero_heap.sh`) e stampa lo SHA-256 della ROM.
-I test: `python tools/check_no_skip.py` e `python -m unittest discover -s tests`.
+I test: `python tools/check_no_skip.py` e `python -m unittest discover -s tests` (tutti, in serie).
+Mentre si lavora c'e' il giro corto, vedi [docs/prove.md](docs/prove.md):
+
+    python3 tools/prove.py            # solo i test toccati dalla modifica, in parallelo (+ mGBA se cambia la ROM)
+    python3 tools/prove.py --tutte    # tutto, in parallelo: prima di fondere
 
 ## Quale ROM fa fede
 

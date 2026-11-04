@@ -185,6 +185,44 @@ def frasi_npc(p, accese):
     return [b for b in della_fase if not b["guardia"][0].startswith("VARIANTE")]
 
 
+def _memo_recita():
+    """recita() e frasi_npc() leggono solo le bandiere delle loro guardie (e quelle della fase): con le stesse
+    bandiere lette danno le stesse battute e accendono le stesse bandiere. Nell'esplorazione gli stessi casi
+    tornano centinaia di migliaia di volte con il resto dello stato diverso, quindi si ricorda l'esito sulle
+    sole bandiere lette e lo si rimette sopra le bandiere vere. Una memoria per esplorazione."""
+    memo_scene, memo_npc, lette = {}, {}, {}
+    di_fase = frozenset({"RIENTRO_PORTA_METAURO", "CITTA_IN_DIGIUNO"})
+
+    def lette_da(battute):
+        out = set()
+        for b in battute:
+            out.update(bandiere_della_guardia(b["guardia"]))
+        return frozenset(out)
+
+    def ricorda(memo, chiave, sotto, calcola, accese):
+        esiti = memo.get(chiave)
+        if esiti is None:
+            esiti = memo[chiave] = [(fin - sotto, dette, voci) for fin, dette, voci in calcola(sotto)]
+        accese = frozenset(accese)
+        return [(accese | piu, dette, voci) for piu, dette, voci in esiti]
+
+    def scena(s, accese):
+        k = id(s)
+        if k not in lette:
+            lette[k] = lette_da(s["battute"])
+        sotto = lette[k] & accese
+        return ricorda(memo_scene, (k, sotto), sotto, lambda x: recita(s["battute"], x), accese)
+
+    def npc(n, p, accese):
+        k = ("npc", n)
+        if k not in lette:
+            lette[k] = lette_da(p["frasi"]) | di_fase
+        sotto = lette[k] & accese
+        return ricorda(memo_npc, (n, sotto), sotto, lambda x: recita(frasi_npc(p, x), x), accese)
+
+    return scena, npc
+
+
 SCHERMO_INTERO = "SCHERMO_INTERO"
 
 
@@ -193,6 +231,7 @@ def esplora(m):
     un'area (parte la prima scena pronta, come storia::prossima_scena), salire agli Stradoni, parlare
     con un NPC. Dopo i titoli di coda il giro continua (il gioco torna alla mappa), ma si segna a parte."""
     scene, npc = m["scene"], m["npc"]
+    recita_scena, recita_npc = _memo_recita()
     aree = []
     for s in scene:
         if s["area"] not in aree:
@@ -217,7 +256,7 @@ def esplora(m):
             t = next((t for t in scene if t["area"] == SCHERMO_INTERO and pronta(t, set(accese_ora), fatte_ora)), None)
             if t is None:
                 return fila
-            fin, dette, voci = next(iter(recita(t["battute"], set(accese_ora))))
+            fin, dette, voci = next(iter(recita_scena(t, set(accese_ora))))
             fin = fin | set(t["imposta"])
             fila.append((f"scena {t['codice']} (subito)", (frozenset(fin), fatte_ora | {t["codice"]}), t["codice"], dette, voci))
 
@@ -235,15 +274,15 @@ def esplora(m):
                 if a != accese:
                     uscite.append(("sale agli Stradoni (il borgo resta fuori)", (frozenset(a), fatte), None, [], []))
                 continue
-            for fin, dette, voci in recita(s["battute"], a):
+            for fin, dette, voci in recita_scena(s, a):
                 fin = fin | set(s["imposta"])
                 etichetta = f"scena {s['codice']}" + "".join(f" «{v}»" for _, v in voci)
                 uscite.append((etichetta, (frozenset(fin), fatte | {s["codice"]}), s["codice"], dette, voci))
                 if area != SCHERMO_INTERO:
                     uscite[-1:] = catena(uscite[-1], pronta)
-        for p in npc:
+        for n_p, p in enumerate(npc):
             f = fase(accese)
-            for fin, dette, voci in recita(frasi_npc(p, accese), accese):
+            for fin, dette, voci in recita_npc(n_p, p, accese):
                 if p["imposta"] is not None and p["imposta_fasi"] & (1 << GS.FASI.index(f)):
                     fin = fin | {nome(p["imposta"])}
                 if dette and (fin != accese or voci or not finita):
@@ -293,8 +332,19 @@ def esplora_mappa(m, grafo):
     un'area a una vicina (mondo/varchi.json), e ogni area attraversata puo' far partire la sua scena
     (Storia::aggiorna). Si parla solo con gli NPC dell'area. Il prologo finisce in Piazza Grande."""
     scene, npc = m["scene"], m["npc"]
+    recita_scena, recita_npc = _memo_recita()
     dette_prima, dette_dopo, dette_trama = set(), set(), set()
     passi, voci_viste = [], {}
+    # le scene di ogni area e gli NPC che stanno sempre in un'area, nell'ordine del copione (solo per
+    # cercare meno: l'ordine e i risultati sono quelli del giro su tutte le scene e tutti gli NPC)
+    scene_di = {}
+    for s in scene:
+        scene_di.setdefault(s["area"], []).append(s)
+    mobili = [n for n, p in enumerate(npc) if p.get("amico") and GS.AMICI[p["amico"]].get("borgo")]
+    fissi_di = {}
+    for n, p in enumerate(npc):
+        if n not in mobili:
+            fissi_di.setdefault(p["area"], []).append(n)
 
     def pronta(s, accese, fatte):
         return (s["codice"] not in fatte and set(s["richieste"]) <= accese and not set(s["vietate"]) & accese
@@ -303,13 +353,13 @@ def esplora_mappa(m, grafo):
     def scene_in(accese, fatte, area, etichetta, dette, voci):
         """Ogni modo di finire dopo essere in 'area' con questo stato: le scene pronte partono una dopo
         l'altra (anche quelle a schermo intero), finche' non ne resta nessuna."""
-        s = next((s for s in scene if s["area"] == area and pronta(s, accese, fatte)), None)
+        s = next((s for s in scene_di.get(area, ()) if pronta(s, accese, fatte)), None)
         if s is None:
-            s = next((s for s in scene if s["area"] == SCHERMO_INTERO and pronta(s, accese, fatte)), None)
+            s = next((s for s in scene_di.get(SCHERMO_INTERO, ()) if pronta(s, accese, fatte)), None)
         if s is None:
             return [(etichetta, (frozenset(accese), frozenset(fatte), area), dette, voci, [])]
         esiti = []
-        for fin, d, v in recita(s["battute"], set(accese)):
+        for fin, d, v in recita_scena(s, set(accese)):
             fin = set(fin) | set(s["imposta"])
             et = etichetta + f" → scena {s['codice']}" + "".join(f" «{x}»" for _, x in v)
             for e in scene_in(fin, fatte | {s["codice"]}, area, et, dette + d, voci + v):
@@ -339,11 +389,12 @@ def esplora_mappa(m, grafo):
             if la == "MONTE_INGINO" and "CITTA_IN_DIGIUNO" in a and not {"BORGO_DENTRO", "BORGO_FUORI"} & a:
                 a.add("BORGO_FUORI")
             uscite += scene_in(a, fatte, la, f"va a {la}", [], [])
-        for p in npc:
+        for n_p in sorted(fissi_di.get(qui, []) + mobili):
+            p = npc[n_p]
             if area_dell_npc(p, accese) != qui:
                 continue
             f = fase(accese)
-            for fin, dette, voci in recita(frasi_npc(p, accese), accese):
+            for fin, dette, voci in recita_npc(n_p, p, accese):
                 if p["imposta"] is not None and p["imposta_fasi"] & (1 << GS.FASI.index(f)):
                     fin = fin | {nome(p["imposta"])}
                 if dette:
