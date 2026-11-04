@@ -42,6 +42,8 @@ Se `INDIZIO_ROCCIA`, al posto della battuta di Ubaldo:
 
 - UBALDO (calmo): Due che dicono la stessa cosa, di solito dicono il vero. Camminate piano.
 
+- OBIETTIVO: Segui la gola fino al Condotto. (area: CONDOTTO)
+
 > Nota. La striscia è il livello scuro della parete del Bottaccione, quello della Sez. 22 (BG3). Le battute di Berto in città (Sez. 31B) la annunciano: se Berto non è stato ascoltato, la scena regge lo stesso.
 
 ---
