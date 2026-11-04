@@ -684,8 +684,8 @@ namespace
     static_assert(! contorno_chiuso(Verso::DESTRA, true) && ! contorno_chiuso(Verso::SU, true),
                   "la prova del contorno chiuso non vede i lati obliqui");
     static_assert(! senza_orfani(Verso::DESTRA, 6, 7), "la prova dei pixel orfani non vede un orfano");
-    static_assert(TONO_FRECCIA_CONTORNO == 1 && stile::CORNICE_PALETTE[TONO_FRECCIA_CONTORNO] == 0x1085 &&
-                  TONO_FRECCIA_PIENO == 2 && stile::CORNICE_PALETTE[TONO_FRECCIA_PIENO] == 0x7BBD,
+    static_assert(TONO_FRECCIA_CONTORNO == 1 && GUBBIO_VOCE(stile::CORNICE_PALETTE, TONO_FRECCIA_CONTORNO) == 0x1085 &&
+                  TONO_FRECCIA_PIENO == 2 && GUBBIO_VOCE(stile::CORNICE_PALETTE, TONO_FRECCIA_PIENO) == 0x7BBD,
                   "il contorno della freccia non e' il piombo quasi nero (neutri 0) o il pieno non e' il fondo chiaro");
 
     static_assert(CELLE_CARTELLO == 3, "il cartello compare a 3 celle dal varco (menu/PROPOSTA.md sez. 3.8)");
