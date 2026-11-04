@@ -21,6 +21,7 @@
 #include "aiuti.h"
 #include "game_state.h"
 #include "opzioni.h"
+#include "pannello.h"
 
 namespace gubbio
 {
@@ -172,39 +173,10 @@ namespace
     static_assert(verso_il_bersaglio(0) == 0 && verso_il_bersaglio(5) == 1 && verso_il_bersaglio(-5) == -1);
     static_assert(verso_il_bersaglio(60) == 10 && verso_il_bersaglio(-60) == -10);
 
-    // MAI: dove stanno gli aiuti. Il promemoria in alto (due righe del dialogo), il cartello in basso a sinistra.
-    constexpr int PROMEMORIA_X = 8;
-    constexpr int PROMEMORIA_Y = 6;
-    constexpr int CARTELLO_TESTO_X = 16;
-    constexpr int CARTELLO_TESTO_Y = 128;
-    constexpr int CARTELLO_OLTRE_Y = 140;
-
-    // La freccia del promemoria, 16x16 nella palette del testo: il disegno e i toni in include/aiuti.h
-    // (tono_della_freccia, contorno quasi nero sugli 8 vicini). Quattro tile in mappatura 1D: alto-sinistra,
-    // alto-destra, basso-sinistra, basso-destra.
-    bn::sprite_ptr crea_freccia(const bn::sprite_palette_ptr& palette, aiuti::Verso verso)
+    // MAI: le entrate dei riquadri degli aiuti (A2, A3): di quanto sono fuori al passo k (k = 0: al posto loro).
+    constexpr int fuori_di(int k, int passi, int altezza)
     {
-        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(4, bn::bpp_mode::BPP_4);
-        bn::span<bn::tile> vram = *tiles.vram();
-
-        for(bn::tile& t : vram)
-        {
-            for(uint32_t& r : t.data)
-            {
-                r = 0;
-            }
-        }
-
-        for(int y = 0; y < 16; ++y)
-        {
-            for(int x = 0; x < 16; ++x)
-            {
-                int tile = (y / 8) * 2 + (x / 8);
-                vram[tile].data[y % 8] |= uint32_t(aiuti::tono_della_freccia(verso, x, y)) << (4 * (x % 8));
-            }
-        }
-
-        return bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 16), bn::move(tiles), palette);
+        return k * (altezza + 1) / passi;
     }
 }
 
@@ -217,7 +189,8 @@ Esplorazione::Esplorazione(const bn::sprite_palette_ptr& palette_testo) :
     _cartiglio(crea_cartiglio()),
     _ombra(testo::Contesto::AREA, 25, 9, INCHIOSTRO_OMBRA, palette_testo),
     _etichetta(testo::Contesto::AREA, 24, 8, INCHIOSTRO_ETICHETTA, palette_testo),
-    _palette_testo(palette_testo)
+    _palette_testo(palette_testo),
+    _palette_aiuti(pannello::crea_palette())
 {
     _giocatore.set_camera(_camera);
     _fumetto.set_camera(_camera);
@@ -575,15 +548,23 @@ int Esplorazione::schermo_y(int y) const
 
 void Esplorazione::_nascondi_aiuti()
 {
-    _attesa_promemoria = 0;
+    _promemoria_t = -1;
     _promemoria.reset();
-    _promemoria_ombra.reset();
-    _freccia.reset();
+    _promemoria_fondo.reset();
+    _targa_nome.reset();
+    _targa.reset();
     _varco_cartello = -1;
+    _cartello_k = -1;
     _cartello.reset();
-    _cartello_ombra.reset();
     _oltre.reset();
-    _oltre_ombra.reset();
+    _cartello_fondo.reset();
+}
+
+aiuti::Rettangolo Esplorazione::_rettangolo_del_giocatore() const
+{
+    int x = schermo_x(_e.x);
+    int y = schermo_y(_e.y);
+    return { x - 8, y - 31, x + 7, y };
 }
 
 void Esplorazione::promemoria()
@@ -601,24 +582,107 @@ void Esplorazione::promemoria()
 
     int meta = storia::area_dell_obiettivo(g_game_state);
     testi::TestoId testo = meta >= 0 ? storia::OBIETTIVO[g_game_state.obiettivo].testo : testi::TestoId::PROMEMORIA_NESSUNO;
-    _mostra_aiuto(_promemoria_ombra, testo::Contesto::DIALOGO, PROMEMORIA_X + 1, PROMEMORIA_Y + 1, INCHIOSTRO_OMBRA, testo);
-    _mostra_aiuto(_promemoria, testo::Contesto::DIALOGO, PROMEMORIA_X, PROMEMORIA_Y, INCHIOSTRO_ETICHETTA, testo);
-    _attesa_promemoria = aiuti::FRAME_PROMEMORIA;
-    _freccia.reset();
 
+    // il riquadro scuro con la stella e l'obiettivo (mockup 09), alto quanto le sue righe
+    _promemoria.reset();
+    _promemoria_fondo.reset();
+    _targa_nome.reset();
+    _targa.reset();
+    int righe = testo::dati(testo).righe;
+    _promemoria_alto = aiuti::altezza_promemoria(righe);
+    int w = aiuti::PROMEMORIA_X1 - aiuti::PROMEMORIA_X0 + 1;
+    _promemoria_fondo.emplace(aiuti::PROMEMORIA_X0, aiuti::PROMEMORIA_Y0, w, _promemoria_alto, _palette_aiuti);
+    _promemoria_fondo->rett(0, 0, w - 1, _promemoria_alto - 1, pannello::SCURO);
+    _promemoria_fondo->bordo(0, 0, w - 1, _promemoria_alto - 1, pannello::PIOMBO);
+    _promemoria_fondo->disegno(aiuti::STELLA, aiuti::STELLA_X - aiuti::PROMEMORIA_X0, 5);
+    _promemoria.emplace(testo::Contesto::DIALOGO, aiuti::PROMEMORIA_TESTO_X, aiuti::PROMEMORIA_Y0 + aiuti::PROMEMORIA_TESTO_DY,
+                        pannello::CHIARO, _palette_aiuti);
+    _promemoria->mostra(testo);
+    _promemoria->rivela_tutto();
+
+    // la targa: il nome della prossima area e la freccia verso il suo varco
     int varco = meta >= 0 ? aiuti::varco_verso_la_meta(_e, meta) : -1;
 
     if(varco >= 0)
     {
-        aiuti::Punto c = aiuti::centro_del_varco(mondo::area(_e.area), varco);
-        aiuti::Punto p = aiuti::posto_della_freccia(schermo_x(c.x), schermo_y(c.y));
-        _freccia = crea_freccia(_palette_testo, aiuti::verso_di(c.x - _e.x, c.y - _e.y));
-        _freccia->set_position(p.x + aiuti::LATO_FRECCIA / 2 - LARGHEZZA_SCHERMO / 2,
-                               p.y + aiuti::LATO_FRECCIA / 2 - ALTEZZA_SCHERMO / 2);
-        _freccia->set_bg_priority(0);
+        const mondo::Area& a = mondo::area(_e.area);
+        const mondo::Varco& v = mondo::varco_di(a, varco);
+        testi::TestoId dove = v.destinazione >= 0 ? mondo::area(mondo::AreaId(v.destinazione)).etichetta : v.etichetta;
+        aiuti::Punto c = aiuti::centro_del_varco(a, varco);
+        _targa_verso = aiuti::verso_di(c.x - _e.x, c.y - _e.y);
+        int largo = larghezza_testo(dove);
+        aiuti::Rettangolo cartello = _cartello_fondo ? aiuti::Rettangolo{ _cartello_fondo->x(), _cartello_fondo->y(),
+                _cartello_fondo->x() + _cartello_fondo->larghezza() - 1, _cartello_fondo->y() + _cartello_fondo->altezza() - 1 } :
+                aiuti::Rettangolo{ -100, -100, -90, -90 };
+        aiuti::Rettangolo r = aiuti::posto_della_targa(largo, righe, _rettangolo_del_giocatore(), cartello);
+        _targa_x = r.x0;
+        _targa_y = r.y0;
+        _targa.emplace(r.x0, r.y0, r.x1 - r.x0 + 1, aiuti::TARGA_ALTEZZA, _palette_aiuti);
+        _targa->rett(0, 0, r.x1 - r.x0, aiuti::TARGA_ALTEZZA - 1, pannello::SCURO);
+        _targa->bordo(0, 0, r.x1 - r.x0, aiuti::TARGA_ALTEZZA - 1, pannello::PIOMBO);
+        _disegna_freccia_della_targa(false);
+        _targa_nome.emplace(testo::Contesto::AREA, r.x0 + 4, r.y0 + 3, pannello::CHIARO, _palette_aiuti);
+        _targa_nome->mostra(dove);
+        _targa_nome->rivela_tutto();
     }
 
+    _promemoria_t = 0;
+    _anima_promemoria();
     BN_LOG("Promemoria: obiettivo ", int(g_game_state.obiettivo), " meta ", meta, " varco ", varco);
+}
+
+void Esplorazione::_disegna_freccia_della_targa(bool spenta)
+{
+    if(_targa)
+    {
+        aiuti::Verso v = _targa_verso;
+        _targa->disegno_da([v](int x, int y) { return aiuti::pixel_freccia(v, x, y); }, _targa->larghezza() - 11, 4,
+                           spenta);
+    }
+}
+
+// A3: scende dall'alto in 5 vblank (la targa sale dal basso), sta 3 secondi con la freccia che lampeggia ogni mezzo
+// secondo, poi esce come e' entrata.
+void Esplorazione::_anima_promemoria()
+{
+    constexpr int E = aiuti::FRAME_ENTRATA_PROMEMORIA;
+    constexpr int FERMO = E + 1 + aiuti::FRAME_PROMEMORIA;
+    int t = _promemoria_t;
+    int k = t <= E ? E - t : (t < FERMO ? 0 : t - FERMO + 1);
+
+    if(k > E)
+    {
+        _promemoria_t = -1;
+        _promemoria.reset();
+        _promemoria_fondo.reset();
+        _targa_nome.reset();
+        _targa.reset();
+        return;
+    }
+
+    int su = fuori_di(k, E, _promemoria_alto + aiuti::PROMEMORIA_Y0);
+    _promemoria_fondo->sposta(aiuti::PROMEMORIA_X0, aiuti::PROMEMORIA_Y0 - su);
+    _promemoria->sposta(aiuti::PROMEMORIA_TESTO_X, aiuti::PROMEMORIA_Y0 + aiuti::PROMEMORIA_TESTO_DY - su);
+
+    if(_targa)
+    {
+        // in basso esce dal basso; sotto il promemoria (posto_della_targa) esce con lui, dall'alto
+        bool in_basso = _targa_y == aiuti::TARGA_Y0;
+        int via = fuori_di(k, E, in_basso ? aiuti::SCHERMO_A - _targa_y : _targa_y + aiuti::TARGA_ALTEZZA);
+        int y = _targa_y + (in_basso ? via : -via);
+        _targa->sposta(_targa_x, y);
+        _targa_nome->sposta(_targa_x + 4, y + 3);
+
+        if(k == 0 && t > E)
+        {
+            int fermo = t - E - 1;
+
+            if(fermo % aiuti::FRAME_LAMPO == 0)
+            {
+                _disegna_freccia_della_targa((fermo / aiuti::FRAME_LAMPO) % 2 == 1);
+            }
+        }
+    }
 }
 
 void Esplorazione::_mostra_aiuto(bn::optional<VistaTesto>& vista, testo::Contesto contesto, int x, int y, int inchiostro,
@@ -626,7 +690,7 @@ void Esplorazione::_mostra_aiuto(bn::optional<VistaTesto>& vista, testo::Contest
 {
     if(! vista)
     {
-        vista.emplace(contesto, x, y, inchiostro, _palette_testo);
+        vista.emplace(contesto, x, y, inchiostro, _palette_aiuti);
     }
 
     vista->mostra(testo);
@@ -651,6 +715,85 @@ bool Esplorazione::segnala_cartello()
     return true;
 }
 
+// Il cartello del varco (mockup 12): legno scuro col bordo di piombo e la cornicetta di luce, la freccia verso il
+// varco, la via in chiaro e dove porta in pietra.
+void Esplorazione::_crea_cartello(int varco)
+{
+    const mondo::Area& a = mondo::area(_e.area);
+    const mondo::Varco& v = mondo::varco_di(a, varco);
+    testi::TestoId dove = v.destinazione >= 0 ? mondo::area(mondo::AreaId(v.destinazione)).etichetta : v.etichetta;
+    int k = aiuti::cartello(int(_e.area), v.destinazione);
+    bool due = k >= 0;
+    int largo = larghezza_testo(dove);
+
+    if(due)
+    {
+        int l2 = larghezza_testo(cartelli::CARTELLO[k].oltre);
+        largo = l2 > largo ? l2 : largo;
+    }
+
+    aiuti::Rettangolo r = aiuti::posto_del_cartello(largo, due, _rettangolo_del_giocatore());
+    int w = r.x1 - r.x0 + 1;
+    int h = r.y1 - r.y0 + 1;
+    _cartello.reset();
+    _oltre.reset();
+    _cartello_fondo.reset();
+    _cartello_fondo.emplace(r.x0, r.y0, w, h, _palette_aiuti);
+    _cartello_fondo->rett(0, 0, w - 1, h - 1, pannello::LEGNO);
+    _cartello_fondo->bordo(0, 0, w - 1, h - 1, pannello::PIOMBO);
+    _cartello_fondo->bordo(2, 2, w - 3, h - 3, pannello::LEGNO_LUCE);
+    aiuti::Punto c = aiuti::centro_del_varco(a, varco);
+    aiuti::Verso verso = aiuti::verso_di(c.x - _e.x, c.y - _e.y);
+    _cartello_fondo->disegno_da([verso](int x, int y) { return aiuti::pixel_freccia(verso, x, y); }, 5, (h - 8) / 2);
+    _mostra_aiuto(_cartello, testo::Contesto::AREA, r.x0 + 16, r.y0 + 4, pannello::CHIARO, dove);
+
+    if(due)
+    {
+        _mostra_aiuto(_oltre, testo::Contesto::AREA, r.x0 + 16, r.y0 + 14, pannello::PIETRA, cartelli::CARTELLO[k].oltre);
+    }
+
+    _cartello_x = r.x0;
+    _cartello_y = r.y0;
+    _cartello_k = aiuti::FRAME_ENTRATA_CARTELLO;
+    _cartello_esce = false;
+}
+
+// A2: il cartello sale dal bordo di 8 px a vblank (scende dall'alto se sta in alto); allontanandosi esce allo stesso
+// modo.
+void Esplorazione::_anima_cartello()
+{
+    if(_cartello_k < 0 || ! _cartello_fondo)
+    {
+        return;
+    }
+
+    bool in_alto = _cartello_y < aiuti::SCHERMO_A / 2;
+    int via = _cartello_k * 8;
+    int y = _cartello_y + (in_alto ? -via : via);
+    _cartello_fondo->sposta(_cartello_x, y);
+    _cartello->sposta(_cartello_x + 16, y + 4);
+
+    if(_oltre)
+    {
+        _oltre->sposta(_cartello_x + 16, y + 14);
+    }
+
+    if(_cartello_esce)
+    {
+        if(++_cartello_k > aiuti::FRAME_ENTRATA_CARTELLO)
+        {
+            _cartello_k = -1;
+            _cartello.reset();
+            _oltre.reset();
+            _cartello_fondo.reset();
+        }
+    }
+    else if(_cartello_k > 0)
+    {
+        --_cartello_k;
+    }
+}
+
 void Esplorazione::_aggiorna_aiuti()
 {
     if(! _aiuti)
@@ -658,51 +801,32 @@ void Esplorazione::_aggiorna_aiuti()
         return;
     }
 
-    if(_attesa_promemoria > 0 && --_attesa_promemoria == 0)
+    if(_promemoria_t >= 0)
     {
-        _promemoria.reset();
-        _promemoria_ombra.reset();
-        _freccia.reset();
+        ++_promemoria_t;
+        _anima_promemoria();
     }
 
     // il cartello del varco vicino: compare a CELLE_CARTELLO celle, sparisce allontanandosi (se le opzioni lo
     // vogliono, MOP)
     int varco = _dissolvenza || ! opzioni::g_opzioni.cartelli ? -1 : aiuti::varco_vicino(_e);
 
-    if(varco == _varco_cartello)
+    if(varco != _varco_cartello)
     {
-        return;
+        _varco_cartello = varco;
+
+        if(varco >= 0)
+        {
+            _crea_cartello(varco);
+        }
+        else if(_cartello_fondo)
+        {
+            _cartello_esce = true;
+            _cartello_k = _cartello_k < 0 ? 0 : _cartello_k;
+        }
     }
 
-    _varco_cartello = varco;
-
-    if(varco < 0)
-    {
-        _cartello.reset();
-        _cartello_ombra.reset();
-        _oltre.reset();
-        _oltre_ombra.reset();
-        return;
-    }
-
-    const mondo::Varco& v = mondo::varco_di(mondo::area(_e.area), varco);
-    testi::TestoId dove = v.destinazione >= 0 ? mondo::area(mondo::AreaId(v.destinazione)).etichetta : v.etichetta;
-    _mostra_aiuto(_cartello_ombra, testo::Contesto::AREA, CARTELLO_TESTO_X + 1, CARTELLO_TESTO_Y + 1, INCHIOSTRO_OMBRA, dove);
-    _mostra_aiuto(_cartello, testo::Contesto::AREA, CARTELLO_TESTO_X, CARTELLO_TESTO_Y, INCHIOSTRO_ETICHETTA, dove);
-    int k = aiuti::cartello(int(_e.area), v.destinazione);
-
-    if(k >= 0)
-    {
-        _mostra_aiuto(_oltre_ombra, testo::Contesto::AREA, CARTELLO_TESTO_X + 1, CARTELLO_OLTRE_Y + 1, INCHIOSTRO_OMBRA,
-                      cartelli::CARTELLO[k].oltre);
-        _mostra_aiuto(_oltre, testo::Contesto::AREA, CARTELLO_TESTO_X, CARTELLO_OLTRE_Y, INCHIOSTRO_ETICHETTA,
-                      cartelli::CARTELLO[k].oltre);
-    }
-    else
-    {
-        _oltre.reset();
-        _oltre_ombra.reset();
-    }
+    _anima_cartello();
 }
 
 }

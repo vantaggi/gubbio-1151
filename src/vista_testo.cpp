@@ -173,6 +173,30 @@ void VistaTesto::avanza()
     });
 }
 
+void VistaTesto::sposta(int x, int y)
+{
+    int dx = x - _x;
+    int dy = y - _y;
+    _x = x;
+    _y = y;
+
+    for(bn::sprite_ptr& s : _sprite)
+    {
+        s.set_position(s.x() + dx, s.y() + dy);
+        // tutto fuori, in alto: lo si spegne, se no le coordinate dell'OAM lo farebbero rientrare dal basso
+        int alto = s.y().right_shift_integer() - 8 + ALTEZZA_SCHERMO / 2;
+        s.set_visible(completo() && alto + 16 > 0 && alto < ALTEZZA_SCHERMO);
+    }
+}
+
+void VistaTesto::set_z_order(int z)
+{
+    for(bn::sprite_ptr& s : _sprite)
+    {
+        s.set_z_order(z);
+    }
+}
+
 void VistaTesto::rivela_tutto()
 {
     while(_testo && ! completo())

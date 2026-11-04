@@ -4,6 +4,11 @@ TITOLO_NUOVA              | DIALOGO | Nuova partita
 TITOLO_SLOT_1             | DIALOGO | Continua dallo slot 1
 TITOLO_SLOT_2             | DIALOGO | Continua dallo slot 2
 TITOLO_AIUTO              | DIALOGO | Su e giù per scegliere, A per confermare.
+TITOLO_SOTTOTITOLO        | AREA    | L'assedio delle Undici Città
+TITOLO_AIUTO_SCEGLI       | HUD     | Su e giù: scegli
+TITOLO_AIUTO_SLOT         | HUD     | Destra: slot
+TITOLO_AIUTO_CONFERMA     | HUD     | A: conferma
+TITOLO_AIUTO_COMINCIA     | HUD     | A: comincia
 SLOT_VUOTO                | DIALOGO | Lo slot è vuoto.
 SLOT_CORROTTO             | DIALOGO | Il salvataggio di questo slot non si legge più.
 SLOT_ALTRA_VERSIONE       | DIALOGO | Questo salvataggio è di un'altra versione del gioco.
@@ -32,6 +37,8 @@ DOVE_ERAVAMO              | HUD     | Dove eravamo
 DOVE_ERAVAMO_INCARICHI    | HUD     | Incarichi aperti:
 DOVE_ERAVAMO_TEMPO        | HUD     | Tempo
 DOVE_ERAVAMO_AIUTO        | HUD     | A per riprendere
+PUNTO                     | HUD     | .
+VIRGOLA                   | HUD     | ,
 SCONFITTA_INGRESSO        | DIALOGO | Sconfitti, tornate all'ingresso dell'area. Il nemico è ancora lì.
 SCONFITTA_ARCO            | DIALOGO | Sconfitti, ripiegate verso i miasmi. Per andare avanti si ripassa sotto l'arco.
 SCONFITTA_SUBITO          | DIALOGO | Sconfitti. Riprendete fiato: lo scontro ricomincia.

@@ -18,6 +18,7 @@
 #include "formatta.h"
 #include "progressione.h"
 #include "storia_logica.h"
+#include "testo.h"
 
 namespace gubbio
 {
@@ -587,74 +588,93 @@ namespace
                   varco_piu_vicino(area_finta(), 7, 6, 4) == -1,
                   "fra due varchi verso la stessa area il promemoria non sceglie il piu' vicino");
 
-    // La freccia: verso l'asse piu' lungo; sempre dentro lo schermo e sotto la fascia del promemoria.
+    // La freccia: otto versi, in diagonale quando il lato corto e' almeno due quinti del lungo.
     static_assert(verso_di(10, 3) == Verso::DESTRA && verso_di(-10, 3) == Verso::SINISTRA && verso_di(2, 9) == Verso::GIU &&
-                  verso_di(2, -9) == Verso::SU && verso_di(0, 0) == Verso::DESTRA, "la freccia punta dalla parte sbagliata");
-    static_assert(posto_della_freccia(-500, -500).x == MARGINE_FRECCIA && posto_della_freccia(-500, -500).y == FASCIA_PROMEMORIA &&
-                  posto_della_freccia(900, 900).x == SCHERMO_L - MARGINE_FRECCIA - LATO_FRECCIA &&
-                  posto_della_freccia(900, 900).y == SCHERMO_A - MARGINE_FRECCIA - LATO_FRECCIA &&
-                  posto_della_freccia(120, 80).x == 112 && posto_della_freccia(120, 80).y == 72,
-                  "la freccia esce dallo schermo o non sta sul varco quando il varco si vede");
+                  verso_di(2, -9) == Verso::SU && verso_di(0, 0) == Verso::DESTRA && verso_di(10, 6) == Verso::GIU_DX &&
+                  verso_di(-6, 10) == Verso::GIU_SX && verso_di(-10, -10) == Verso::SU_SX && verso_di(5, -9) == Verso::SU_DX,
+                  "la freccia punta dalla parte sbagliata");
 
-    static_assert(dentro_la_freccia(Verso::DESTRA, 14, 7) && ! dentro_la_freccia(Verso::DESTRA, 14, 1) &&
-                  dentro_la_freccia(Verso::SU, 7, 1) && ! dentro_la_freccia(Verso::SU, 7, 14) &&
-                  dentro_la_freccia(Verso::SINISTRA, 1, 8) && dentro_la_freccia(Verso::GIU, 8, 14),
-                  "la freccia non punta dove dice");
-
-    // --- Il contorno della freccia (STANDARD P1, P3): quasi nero e chiuso sugli 8 vicini, niente pixel orfani ---
-    // Chiuso: nessun pixel del pieno chiaro tocca il fuori (il lastrico chiaro), nemmeno in diagonale.
-    consteval bool contorno_chiuso(Verso verso, bool vicini_in_croce)
+    // --- Le frecce e la stella dei mockup (STANDARD P1, P3): l'oro chiuso dal piombo, niente colori estranei ---
+    // I riquadri degli aiuti sono scuri (neutri 1, legno 1): il contorno dei disegni dei mockup e' in croce (4
+    // vicini), il fondo scuro fa il resto. 'disegno' da 0 a 7 sono le frecce per verso, 8 la stella.
+    consteval char pixel_di(int disegno, int x, int y)
     {
-        for(int y = 0; y < 16; ++y)
+        if(disegno == 8)
         {
-            for(int x = 0; x < 16; ++x)
+            return x < 0 || y < 0 || x > 7 || y > 7 ? '.' : STELLA[y][x];
+        }
+
+        return pixel_freccia(Verso(disegno), x, y);
+    }
+
+    consteval bool oro_chiuso(int disegno)
+    {
+        int oro = 0;
+
+        for(int y = 0; y < 8; ++y)
+        {
+            for(int x = 0; x < 8; ++x)
             {
-                if(tono_della_freccia(verso, x, y, vicini_in_croce) != TONO_FRECCIA_PIENO)
+                char c = pixel_di(disegno, x, y);
+
+                if(c != 'O' && c != 'o')
                 {
+                    if(c != 'k' && c != '.')
+                    {
+                        return false;       // un colore che la palette degli aiuti non ha
+                    }
+
                     continue;
                 }
 
-                for(int dy = -1; dy <= 1; ++dy)
+                ++oro;
+
+                if(pixel_di(disegno, x - 1, y) == '.' || pixel_di(disegno, x + 1, y) == '.' ||
+                   pixel_di(disegno, x, y - 1) == '.' || pixel_di(disegno, x, y + 1) == '.')
                 {
-                    for(int dx = -1; dx <= 1; ++dx)
-                    {
-                        if(! dentro_la_freccia(verso, x + dx, y + dy))
-                        {
-                            return false;
-                        }
-                    }
+                    return false;
                 }
+            }
+        }
+
+        return oro >= 4;
+    }
+
+    consteval bool disegni_chiusi()
+    {
+        for(int d = 0; d <= 8; ++d)
+        {
+            if(! oro_chiuso(d))
+            {
+                return false;
             }
         }
 
         return true;
     }
 
-    // Orfano (P3): un pixel pieno o di contorno con un tono diverso da tutti gli 8 vicini. 'buco' (x, y) toglie
-    // il contorno a un pixel e lo fa pieno: la prova negativa.
-    consteval bool senza_orfani(Verso verso, int buco_x = -1, int buco_y = -1)
+    static_assert(disegni_chiusi(), "una freccia o la stella hanno l'oro che tocca il fuori, o un colore estraneo");
+
+    // Le frecce sono quelle dei mockup (menu/mockup_menu.py, FRECCE): giu' e la diagonale in basso a destra sono
+    // copiate, su e in basso a sinistra (anche quelle nel mockup) escono dalle rotazioni; destra e' la trasposta di
+    // giu', le diagonali in alto sono quelle in basso capovolte.
+    inline constexpr const char* MOCKUP_SU[8] = {
+        "...k....", "..kOk...", ".kOOOk..", "kkkOkkk.", "..kOk...", "..kOk...", "..kkk...", "........" };
+    inline constexpr const char* MOCKUP_GIU_SX[8] = {
+        "......kk", ".....kOk", ".k..kOk.", "kOkkOk..", "kOOOk...", "kOOOk...", "kkkkkk..", "........" };
+
+    consteval bool frecce_dei_mockup()
     {
-        auto tono = [&](int x, int y) {
-            int t = x >= 0 && y >= 0 && x < 16 && y < 16 ? tono_della_freccia(verso, x, y) : 0;
-            return x == buco_x && y == buco_y && t != 0 ? TONO_FRECCIA_PIENO + 1 : t;
-        };
-
-        for(int y = 0; y < 16; ++y)
+        for(int y = 0; y < 8; ++y)
         {
-            for(int x = 0; x < 16; ++x)
+            for(int x = 0; x < 8; ++x)
             {
-                int t = tono(x, y);
-                bool uguale = false;
-
-                for(int dy = -1; dy <= 1 && t != 0; ++dy)
-                {
-                    for(int dx = -1; dx <= 1; ++dx)
-                    {
-                        uguale = uguale || ((dx != 0 || dy != 0) && tono(x + dx, y + dy) == t);
-                    }
-                }
-
-                if(t != 0 && ! uguale)
+                if(pixel_freccia(Verso::SU, x, y) != MOCKUP_SU[y][x] ||
+                   pixel_freccia(Verso::GIU_SX, x, y) != MOCKUP_GIU_SX[y][x] ||
+                   pixel_freccia(Verso::DESTRA, x, y) != pixel_freccia(Verso::GIU, y, x) ||
+                   pixel_freccia(Verso::SINISTRA, x, y) != pixel_freccia(Verso::SU, y, x) ||
+                   (y < 7 && pixel_freccia(Verso::SU_DX, x, y) != pixel_freccia(Verso::GIU_DX, x, 6 - y)) ||
+                   (y < 7 && pixel_freccia(Verso::SU_SX, x, y) != pixel_freccia(Verso::GIU_SX, x, 6 - y)))
                 {
                     return false;
                 }
@@ -664,38 +684,66 @@ namespace
         return true;
     }
 
-    consteval bool freccia_a_standard()
+    static_assert(frecce_dei_mockup(), "le frecce non sono quelle dei mockup, o le rotazioni puntano altrove");
+    // prova negativa: la diagonale in alto a destra non e' quella in basso
+    static_assert(pixel_freccia(Verso::SU_DX, 0, 0) != pixel_freccia(Verso::GIU_DX, 0, 0) ||
+                  pixel_freccia(Verso::SU_DX, 7, 6) != pixel_freccia(Verso::GIU_DX, 7, 6),
+                  "la freccia in alto a destra e' uguale a quella in basso");
+
+    // --- Dove stanno i riquadri: mai sopra il giocatore -------------------------------------------------
+    constexpr Rettangolo FUORI = { -100, -100, -90, -90 };
+    constexpr Rettangolo UBALDO_IN_MEZZO = { 112, 64, 127, 95 };
+    constexpr Rettangolo UBALDO_IN_BASSO_A_DESTRA = { 200, 128, 215, 159 };
+    constexpr Rettangolo UBALDO_IN_BASSO_AL_CENTRO = { 112, 128, 127, 159 };
+
+    static_assert(posto_della_targa(80, 1, UBALDO_IN_MEZZO, FUORI).x1 == PROMEMORIA_X1 &&
+                  posto_della_targa(80, 1, UBALDO_IN_MEZZO, FUORI).y0 == TARGA_Y0,
+                  "la targa del promemoria non sta in basso a destra (mockup 09)");
+    static_assert(posto_della_targa(80, 1, UBALDO_IN_BASSO_A_DESTRA, FUORI).x0 == PROMEMORIA_X0,
+                  "con Ubaldo in basso a destra la targa non passa a sinistra");
+    static_assert(posto_della_targa(200, 2, UBALDO_IN_BASSO_AL_CENTRO, FUORI).y0 == PROMEMORIA_Y0 + altezza_promemoria(2) + 2,
+                  "se in basso tocca dappertutto, la targa non va sotto il promemoria");
+    static_assert(! si_toccano(posto_della_targa(80, 1, UBALDO_IN_MEZZO, posto_del_cartello(150, true, UBALDO_IN_MEZZO)),
+                               posto_del_cartello(150, true, UBALDO_IN_MEZZO)),
+                  "la targa del promemoria copre il cartello");
+
+    static_assert(posto_del_cartello(100, true, UBALDO_IN_MEZZO).x0 == CARTELLO_MARGINE ||
+                  posto_del_cartello(100, true, UBALDO_IN_MEZZO).x1 == SCHERMO_L - CARTELLO_MARGINE - 1,
+                  "il cartello non sta in un angolo in basso");
+    static_assert(posto_del_cartello(100, true, { 20, 64, 35, 95 }).x1 == SCHERMO_L - CARTELLO_MARGINE - 1 &&
+                  posto_del_cartello(100, true, { 200, 64, 215, 95 }).x0 == CARTELLO_MARGINE &&
+                  posto_del_cartello(100, true, { 200, 64, 215, 95 }).y0 == CARTELLO_Y0,
+                  "il cartello non va dalla parte opposta al giocatore (A2)");
+    static_assert(! si_toccano(posto_del_cartello(190, true, UBALDO_IN_BASSO_AL_CENTRO), UBALDO_IN_BASSO_AL_CENTRO) &&
+                  posto_del_cartello(190, true, UBALDO_IN_BASSO_AL_CENTRO).y0 == CARTELLO_MARGINE,
+                  "un cartello largo copre Ubaldo in basso al centro");
+    static_assert(posto_del_cartello(100, false, UBALDO_IN_MEZZO).y1 == posto_del_cartello(100, true, UBALDO_IN_MEZZO).y1,
+                  "il cartello di una riga sola non poggia sullo stesso fondo");
+
+    // Il testo dei riquadri sta dentro: ogni obiettivo (e la riga senza obiettivo) nel promemoria, una riga
+    // dopo l'altra; il nome di ogni area nella targa e nel cartello, le seconde righe dei cartelli nel cartello.
+    consteval bool obiettivi_dentro()
     {
-        for(int k = 0; k < 4; ++k)
+        for(int k = 0; k <= OBIETTIVI; ++k)
         {
-            Verso v = Verso(k);
-            int pieni = 0;
+            testi::TestoId id = k < OBIETTIVI ? OBIETTIVO[k].testo : testi::TestoId::PROMEMORIA_NESSUNO;
+            const testo::Testo& t = testo::dati(id);
 
-            for(int i = 0; i < 256; ++i)
+            for(int r = 0; r < t.righe; ++r)
             {
-                pieni += tono_della_freccia(v, i % 16, i / 16) == TONO_FRECCIA_PIENO;
-            }
-
-            if(! contorno_chiuso(v, false) || ! senza_orfani(v) || pieni < 20)
-            {
-                return false;
+                if(testo::riga(testo::indice_riga(t, r)).larghezza > PROMEMORIA_TESTO_MAX)
+                {
+                    return false;
+                }
             }
         }
 
         return true;
     }
 
-    static_assert(freccia_a_standard(), "la freccia ha il contorno aperto, un pixel orfano o niente pieno");
-    // prove negative: il contorno sui soli 4 vicini in croce lascia il pieno a contatto col fuori in diagonale;
-    // un pixel di un tono diverso in mezzo al pieno e' un orfano
-    static_assert(! contorno_chiuso(Verso::DESTRA, true) && ! contorno_chiuso(Verso::SU, true),
-                  "la prova del contorno chiuso non vede i lati obliqui");
-    static_assert(! senza_orfani(Verso::DESTRA, 6, 7), "la prova dei pixel orfani non vede un orfano");
-    static_assert(TONO_FRECCIA_CONTORNO == 1 && GUBBIO_VOCE(stile::CORNICE_PALETTE, TONO_FRECCIA_CONTORNO) == 0x1085 &&
-                  TONO_FRECCIA_PIENO == 2 && GUBBIO_VOCE(stile::CORNICE_PALETTE, TONO_FRECCIA_PIENO) == 0x7BBD,
-                  "il contorno della freccia non e' il piombo quasi nero (neutri 0) o il pieno non e' il fondo chiaro");
-
+    static_assert(obiettivi_dentro(), "un obiettivo esce dal riquadro del promemoria");
     static_assert(CELLE_CARTELLO == 3, "il cartello compare a 3 celle dal varco (menu/PROPOSTA.md sez. 3.8)");
+
 
     // --- Il fumetto sopra il cartello: a 13 px dalla cella del varco si', a 14 no (come DISTANZA_PAROLA) -------
     // La cella piu' a destra del varco 0 di Piazza Grande e il giocatore a (dx, dy) px dai suoi piedi: con dx > 0

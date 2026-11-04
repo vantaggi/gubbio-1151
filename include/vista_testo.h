@@ -31,6 +31,9 @@ public:
     void avanza();          // un passo della macchina da scrivere
     void rivela_tutto();
     void nascondi();
+    // Sposta il testo gia' mostrato (le entrate dei riquadri degli aiuti, A2 e A3); vale anche per i prossimi.
+    void sposta(int x, int y);
+    void set_z_order(int z);
     [[nodiscard]] bool completo() const;
     [[nodiscard]] int rivelati() const;
 
