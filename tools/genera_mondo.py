@@ -2850,6 +2850,7 @@ def scrivi_header(aree, grafo, palette_stile):
         "    uint8_t varchi;",
         "    Varco varco[VARCHI_MAX];",
         "    Punto spawn[SPAWN_PER_AREA];",
+        "    bool interno;                     // un interno ('interno' nel .area): fuori dalla nebbia della mappa",
         "    bool cupa;                        // le stanze della gola: la palette cupa (PALETTE_FONDALI_CUPA)",
         "};",
         "",
@@ -2904,6 +2905,7 @@ def scrivi_header(aree, grafo, palette_stile):
             f"        testi::TestoId::{a['etichetta']}, {len(a['uscite'])},",
             "        { " + ", ".join(varchi) + " },",
             "        { " + ", ".join(f"{{ {x}, {y} }}" for x, y in spawn) + " },",
+            f"        {'true' if a.get('interno') else 'false'},",
             f"        {'true' if a['id'] in AREE_GOLA else 'false'},",
             "    },",
         ]
