@@ -227,7 +227,18 @@ def strati(x, y, pendenza=0.18, scala=1.0):
     if 59.6 <= s < 60.4:
         return G_P4                                                  # l'argilla chiara sopra la riga
     k = int(v // 3.4)
-    return (G_ROSA_S, G_P2, G_ROSA, G_P1, G_ROSA_S, G_ROSA_C, G_P2)[k % 7]
+    base = (G_ROSA_S, G_P2, G_ROSA, G_P1, G_ROSA_S, G_ROSA_C, G_P2)[k % 7]
+    # ogni strato e' un solido (L2): il ciglio in alto prende la luce, il sottosquadro in basso l'ombra
+    f = v / 3.4 - k
+    if f < 0.22:
+        return LUCE_STRATO.get(base, base)
+    if f > 0.8:
+        return OMBRA_STRATO.get(base, base)
+    return base
+
+
+LUCE_STRATO = {G_ROSA_S: G_ROSA, G_ROSA: G_ROSA_C, G_P1: G_P2, G_P2: G_P3}
+OMBRA_STRATO = {G_ROSA_C: G_ROSA, G_ROSA: G_ROSA_S, G_P2: G_P1, G_P3: G_P2}
 
 
 def c7_gola_fondo(m):
@@ -255,17 +266,25 @@ def c7_gola_parete(m):
         for y in range(top, bot):
             t.punto(x, y, strati(x, y))
         t.punto(x, top, G_P4)
-    for x in range(0, utile, 14):                                                     # il condotto
+    for x in range(0, utile, 14):                    # il condotto sugli archetti, come un solido (L1-L4)
+        for k in range(1, 6):                                 # l'ombra portata sulla roccia, sotto a destra
+            t.rett(x + 4, 74 + k, 10, 1, G_P1) if k < 3 else None
         t.rett(x, 70, 14, 4, G_P3)
         t.rett(x, 70, 14, 1, G_P4)
-        t.rett(x, 74, 14, 1, G_C)
-        t.rett(x + 1, 75, 3, 10, G_P2)
+        t.rett(x + 13, 70, 1, 4, G_P2)
+        t.rett(x, 74, 14, 1, G_P1)                            # la cornice d'ombra, non il nero (C4)
+        t.rett(x + 1, 75, 3, 10, G_P2)                        # il pilastrino: luce a sinistra
+        t.rett(x + 1, 75, 1, 10, G_P3)
         t.rett(x + 3, 75, 1, 10, G_P1)
+        for dx in range(4, 14):                               # l'intradosso dell'archetto
+            dy = int(3 * (1 - ((dx - 9) / 5.0) ** 2) ** 0.5)
+            t.rett(x + dx, 75, 1, 3 - dy + 1, G_P2)
+            t.punto(x + dx, 75 + 3 - dy + 1, G_P1)
     r = random.Random(8)
     for _ in range(30):                                                           # ciuffi aggrappati
         cx, cy = r.randrange(utile), r.randrange(24, 88)
         if t.px[cy][cx]:
-            t.ellisse(cx, cy, 3, 2, G_V1 if r.random() < 0.5 else G_V0)
+            chioma(t, cx, cy, 3, 2, G_V1, G_V1 if r.random() < 0.5 else G_V0, G_V0)
     return t, PALETTE_GOLA, False
 
 
@@ -279,8 +298,7 @@ def c7_gola_torrente(m):
     for _ in range(18):
         cx = r.randrange(W)
         cy = 100 + r.randint(0, 8)
-        t.ellisse(cx, cy, r.randint(4, 8), r.randint(2, 3), G_P2)
-        t.rett(cx - 3, cy - 2, 4, 1, G_P3)
+        chioma(t, cx, cy, r.randint(4, 8), r.randint(2, 3), G_P3, G_P2, G_P1)     # i massi (L2, L4)
     for (x0, y0, n) in ((0, 0, 50), (150, 116, 30), (300, 0, 40)):
         for _ in range(n):
             t.ellisse(x0 + r.gauss(0, 14), y0 + r.gauss(0, 10), r.randint(3, 5), r.randint(2, 3), G_V0)
@@ -296,18 +314,21 @@ def c7_striscia(m):
         for x in range(SW):
             t.punto(x, y, strati(x * 0.5, y * 0.5 + 20, 0.22))
     r = random.Random(3)
-    for _ in range(500):                                                          # la grana della pietra
+    for _ in range(260):                     # la grana della pietra: scaglie di 2-3 px lungo lo strato (P3)
         x, y = r.randrange(SW), r.randrange(QUADRO)
-        if t.px[y][x] not in (G_NERA, G_P4):
-            t.punto(x, y, G_P1 if r.random() < 0.6 else G_ROSA_C)
+        c = t.px[y][x]
+        if c not in (G_NERA, G_P4):
+            g = OMBRA_STRATO.get(c, c) if r.random() < 0.6 else LUCE_STRATO.get(c, c)
+            for k in range(r.choice((2, 3))):
+                t.punto(x + k, y - k // 2 if r.random() < 0.3 else y, g)
     for _ in range(6):                                                            # le crepe
         x, y = r.randrange(SW), r.randrange(QUADRO)
         for k in range(14):
             t.punto(x, y, G_C)
             x += r.choice((0, 1))
             y += 1
-    for _ in range(7):
-        t.ellisse(r.randrange(SW), r.randrange(QUADRO), 4, 2, G_V1)
+    for _ in range(7):                                                            # i licheni
+        chioma(t, r.randrange(SW), r.randrange(QUADRO), 4, 2, G_V1, G_V1, G_V0)
     return t, PALETTE_GOLA, False
 
 
