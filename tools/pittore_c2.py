@@ -367,7 +367,7 @@ def pergamena_a_terra(momento):
     cx, cy = 120, 64
     for k in range(60):                                   # l'ombra portata sulle lastre, in basso a destra (L4)
         t.rett(cx - 38 + k, cy - 9 + k // 3, 1, 22, D_GIUNTO)
-    t.ellisse(cx + 28, cy + 16, 7, 13, D_GIUNTO)
+    t.rett(cx + 24, cy + 8, 3, 24, D_GIUNTO)              # e quella del rotolo
     t.rett(178, 2, 4, 80, D_GIUNTO)                        # e quella dell'asta
     for k in range(60):
         y = cy - 12 + k // 3
@@ -377,13 +377,24 @@ def pergamena_a_terra(momento):
         t.rett(cx - 40 + k, cy + 8 + k // 3, 1, 2, D_CARTA_S)
     for k in range(4):
         t.linea(cx - 32, cy - 4 + k * 4, cx + 10, cy + 10 + k * 4, D_INCHIOSTRO)
-    t.ellisse(cx + 26, cy + 14, 7, 13, D_CARTA_S)
-    t.ellisse(cx + 26, cy + 14, 4, 9, D_CARTA)
-    t.ellisse(cx + 26, cy + 14, 2, 5, D_CARTA_S)
-    t.ellisse(cx - 4, cy + 18, 5, 4, D_SIGILLO)
-    t.punto(cx - 5, cy + 17, D_SANGUE)
-    for sx, sy, rr in ((cx - 24, cy + 2, 3), (cx - 18, cy + 6, 2), (cx + 4, cy - 2, 2), (cx - 30, cy + 24, 3)):
-        t.ellisse(sx, sy, rr, rr - 1, D_SANGUE)
+    # Il rotolo visto di fianco, non di testa: un cilindro di carta lungo il bordo destro col lembo che si
+    # avvolge, la luce sul dorso. Cioti (5 nov 2026) vedeva "una specie di bersaglio per terra": la testa del
+    # rotolo ad anelli concentrici col sigillo tondo rosso accanto si leggeva come un bersaglio.
+    t.rett(cx + 17, cy + 5, 6, 26, D_CARTA)
+    t.rett(cx + 17, cy + 5, 1, 26, D_LASTRA_L)             # la luce sul dorso del rotolo
+    t.rett(cx + 21, cy + 5, 2, 26, D_CARTA_S)              # e l'ombra dall'altra parte
+    t.rett(cx + 17, cy + 5, 6, 1, D_CARTA_S)
+    t.rett(cx + 17, cy + 30, 6, 1, D_CARTA_S)
+    # il sigillo pendente: la ceralacca a goccia appesa a due nastri, non un disco
+    t.rett(cx - 8, cy + 14, 2, 7, D_SIGILLO)
+    t.rett(cx - 4, cy + 15, 2, 6, D_SANGUE)
+    t.trapezio(cx - 5, cy + 21, cy + 27, 6, 3, D_SIGILLO)
+    t.punto(cx - 6, cy + 22, D_CARTA)
+    # il sangue: due strisciate irregolari, non macchie tonde
+    for k in range(7):
+        t.rett(cx - 26 + k * 2, cy + 3 + k // 2, 3, 1, D_SANGUE)
+    for k in range(5):
+        t.rett(cx + 2 + k, cy - 3 + k // 3, 2, 1, D_SANGUE)
     veste(t, 186)
     t.rett(176, 0, 4, 80, D_ASTA)
     t.rett(175, 78, 6, 6, D_ORO)
