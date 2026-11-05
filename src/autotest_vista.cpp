@@ -7,6 +7,7 @@
 // colpo venga mostrato (il modello risolve il round tutto insieme), quindi sbaglierebbe.
 // Se una prova non regge, la ROM non compila, sul nome della funzione che fallisce.
 
+#include "scheda_mosse.h"
 #include "vista_battaglia.h"
 
 namespace gubbio
@@ -225,6 +226,64 @@ namespace
 
     static_assert(pieno(0, 100, 30) == 0 && pieno(1, 100, 30) == 1 && pieno(100, 100, 30) == 30 &&
                   pieno(50, 100, 30) == 15, "barre: pixel pieni");
+    // La schermata delle mosse (include/scheda_mosse.h): le voci di ogni Santo al primo round, spente quelle
+    // che non si possono pagare, e la scheda (danno, barriera, punto debole, resiste, immune).
+    constexpr int SENZA_OGGETTI[OGGETTI_IN_BATTAGLIA] = { 0, 0 };
+    constexpr int DUE_CRESCE[OGGETTI_IN_BATTAGLIA] = { 2, 0 };
+
+    consteval bool prova_voci()
+    {
+        Battaglia b(0, 1);
+        Voci u = voci_del_menu(b, UBALDO, SENZA_OGGETTI);
+        Voci a = voci_del_menu(b, ANTONIO, SENZA_OGGETTI);
+        Voci c = voci_del_menu(b, UBALDO, DUE_CRESCE);
+        // Ubaldo ha 144 di Fervore: la Carica (20 + 100) si puo'; Antonio ne ha 42: la Carica (15 + 100) e' spenta
+        return u.quante == 4 && u.voce[0].comando.abilita == AbilitaId::ATTACCO &&
+               u.voce[1].comando.abilita == AbilitaId::GIUDIZIO_DELLA_VERGA &&
+               u.voce[2].comando.abilita == AbilitaId::MURO_DELLA_FEDE && u.voce[3].comando.tipo == TipoComando::CARICA &&
+               u.voce[3].possibile && costo_del_comando(u.voce[3].comando) == 120 &&
+               a.quante == 3 && a.voce[1].comando.abilita == AbilitaId::FUOCO_DI_SANTANTONIO && a.voce[1].possibile &&
+               ! a.voce[2].possibile &&
+               c.quante == 5 && c.voce[4].comando.tipo == TipoComando::OGGETTO && c.voce[4].comando.oggetto == OggettoId::CRESCIA;
+    }
+
+    consteval bool prova_schede()
+    {
+        Battaglia b(0, 1);          // due Fanti (deboli alla Fiamma) e un Balestriere (debole alla Fede, resiste al ferro)
+        Battaglia d(2, 1);          // Corrado: il ferro non lo scalfisce finche' non brucia
+        Comando giudizio(TipoComando::USA_ABILITA, AbilitaId::GIUDIZIO_DELLA_VERGA, -1, 0);
+        Comando attacco(TipoComando::USA_ABILITA, AbilitaId::ATTACCO, -1, 0);
+        Comando muro(TipoComando::USA_ABILITA, AbilitaId::MURO_DELLA_FEDE, -1, 0);
+        Comando fuoco(TipoComando::USA_ABILITA, AbilitaId::FUOCO_DI_SANTANTONIO, -1, 0);
+        Scheda nel_menu = scheda_del_comando(b, UBALDO, giudizio, -1);
+        Scheda sul_fante = scheda_del_comando(b, UBALDO, giudizio, 0);
+        Scheda sul_balestriere = scheda_del_comando(b, UBALDO, giudizio, 2);
+        Scheda ferro = scheda_del_comando(b, GIORGIO, attacco, 2);
+        Scheda fiamma = scheda_del_comando(b, ANTONIO, fuoco, 0);
+        Scheda corrado = scheda_del_comando(d, GIORGIO, attacco, 0);
+        Scheda barriera = scheda_del_comando(b, UBALDO, muro, 1);
+        return nel_menu.cifra == Cifra::DANNO && nel_menu.nota == Nota::NESSUNA && nel_menu.costo == 20 &&
+               nel_menu.valore == sul_fante.valore && sul_fante.nota == Nota::NESSUNA &&
+               sul_balestriere.nota == Nota::DEBOLE && sul_balestriere.valore > sul_fante.valore &&
+               ferro.nota == Nota::RESISTE && fiamma.nota == Nota::DEBOLE &&
+               corrado.nota == Nota::IMMUNE && corrado.valore == 0 &&
+               barriera.cifra == Cifra::BARRIERA && barriera.valore == calcola_muro(b.eroe(UBALDO), 0) && barriera.costo == 25;
+    }
+
+    // La negativa: senza togliere la varianza dal conto, il danno del menu sarebbe quello di un colpo vero, che
+    // cambia col seme; quello della scheda invece e' lo stesso con ogni seme.
+    consteval bool scheda_uguale_con_ogni_seme()
+    {
+        Comando giudizio(TipoComando::USA_ABILITA, AbilitaId::GIUDIZIO_DELLA_VERGA, -1, 0);
+        return scheda_del_comando(Battaglia(0, 1), UBALDO, giudizio, 2).valore ==
+               scheda_del_comando(Battaglia(0, 99), UBALDO, giudizio, 2).valore;
+    }
+
+    static_assert(prova_voci(), "schermata delle mosse: le voci di un Santo");
+    static_assert(prova_schede(), "schermata delle mosse: la scheda di una voce");
+    static_assert(scheda_uguale_con_ogni_seme(), "schermata delle mosse: il danno mostrato dipende dal caso");
+    static_assert(prima_visibile(0, 4, 6) == 1 && prima_visibile(1, 0, 6) == 0 && prima_visibile(0, 5, 6) == 2 &&
+                  prima_visibile(2, 3, 6) == 2 && prima_visibile(0, 2, 3) == 0, "schermata delle mosse: lo scorrere");
 }
 
 }

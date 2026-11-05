@@ -46,6 +46,8 @@ CONTESTI = {
     "NARRATORE": (224, 2),
     # una voce di un menu di scelta nella vista di gioco (copione: 100 px)
     "SCELTA": (100, 1),
+    # la scheda della mossa scelta in battaglia (la colonna destra del pannello, x 111-227): 2 righe
+    "SCHEDA": (116, 2),
 }
 
 assert all(l <= LARGHEZZA_SPRITE * SPRITE_PER_RIGA for l, _ in CONTESTI.values())

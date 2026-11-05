@@ -35,6 +35,11 @@ public:
     void sposta(int x, int y);
     [[nodiscard]] bool completo() const;
     [[nodiscard]] int rivelati() const;
+    // L'inchiostro del prossimo mostra() (le voci spente del menu delle mosse).
+    void cambia_inchiostro(int inchiostro)
+    {
+        _inchiostro = inchiostro;
+    }
 
 private:
     testo::Contesto _contesto;
@@ -80,6 +85,15 @@ public:
         return _larghezza;
     }
     void nascondi();
+    // L'inchiostro delle prossime scritte (il costo in vermiglio quando il Fervore non basta).
+    void cambia_inchiostro(int inchiostro)
+    {
+        if(inchiostro != _inchiostro)
+        {
+            _inchiostro = inchiostro;
+            _n_scritto = -1;
+        }
+    }
     // Sopra ogni fondo e ogni altro sprite (il pannello di debug).
     void porta_sopra(int z);
 

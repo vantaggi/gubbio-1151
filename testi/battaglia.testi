@@ -25,9 +25,36 @@ BATT_GUERRIERI            | DIALOGO | Guerrieri della Roccia
 BATT_FORNACE              | DIALOGO | Guardia della fornace
 BATT_INFILTRATO           | DIALOGO | L'infiltrato delle Logge
 BATT_SCEGLI               | DIALOGO | Su e giù per scegliere, A per confermare.
-BATT_BERSAGLIO            | DIALOGO | Su e giù per il bersaglio, A conferma, B torna.
 BATT_SALE_UBALDO          | DIALOGO | Ubaldo sale di livello!
 BATT_SALE_GIORGIO         | DIALOGO | Giorgio sale di livello!
 BATT_SALE_ANTONIO         | DIALOGO | Antonio sale di livello!
 BATT_CRESCIA              | DIALOGO | Crescia di Pasqua
 BATT_BISCOTTI             | DIALOGO | Biscotti all'anice
+
+# La schermata delle mosse (5 nov 2026): la scheda della voce scelta, a destra dell'elenco. Cosa fa la mossa
+# in parole; il numero e il costo li scrive la scena accanto alle etichette. Ogni frase sta in 2 righe da 116 px.
+BATT_D_ATTACCO            | SCHEDA  | Colpo d'arma semplice su un nemico.
+BATT_D_GIUDIZIO           | SCHEDA  | Luce della Fede su un nemico.
+BATT_D_MURO               | SCHEDA  | Para i colpi a un alleato. Rende 20 di Fervore.
+BATT_D_FENDENTE           | SCHEDA  | Colpo forte che passa mezza armatura.
+BATT_D_BASTIONE           | SCHEDA  | Per un turno Giorgio para i colpi diretti agli altri.
+BATT_D_FUOCO              | SCHEDA  | Fiamma su un nemico: poi brucia per 3 turni.
+BATT_D_CARICA             | SCHEDA  | Si prepara: al turno dopo scatena la Suprema.
+BATT_D_SUPREMA            | SCHEDA  | Il colpo più forte, su tutti i nemici.
+BATT_D_CRESCIA            | SCHEDA  | Un alleato la mangia e recupera PV.
+BATT_D_BISCOTTI           | SCHEDA  | Un alleato li mangia e smette di bruciare.
+# l'anteprima sul bersaglio scelto e le voci spente
+BATT_N_DEBOLE             | SCHEDA  | Il suo punto debole: danno più alto!
+BATT_N_RESISTE            | SCHEDA  | Resiste a questo colpo: danno dimezzato.
+BATT_N_IMMUNE             | SCHEDA  | Questo colpo non lo scalfisce.
+BATT_N_FERVORE            | SCHEDA  | Il Fervore non basta per questa mossa.
+BATT_N_NONUSA             | SCHEDA  | Ora non si può usare.
+# le etichette dei numeri della scheda
+BATT_L_DANNO              | HUD     | Danno
+BATT_L_BARRIERA           | HUD     | Barriera
+BATT_L_CURA               | HUD     | Cura
+BATT_L_COSTO              | HUD     | Costo
+BATT_L_GRATIS             | HUD     | Gratis
+BATT_L_RIMASTI            | HUD     | Ne hai
+BATT_L_FERVORE            | HUD     | Fervore
+BATT_L_BERSAGLIO          | HUD     | A conferma, B torna

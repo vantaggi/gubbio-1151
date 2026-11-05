@@ -31,7 +31,9 @@
 #include "negozio.h"
 #include "storia_logica.h"
 #include "tabella.h"
+#include "scheda_mosse.h"
 #include "vista_battaglia.h"
+#include "vista_menu.h"
 #include "stile/cornice.h"
 #include "vista_testo.h"
 
@@ -323,6 +325,298 @@ namespace
                                                                       bn::bpp_mode::BPP_4));
     }
 
+    // La schermata delle mosse (include/scheda_mosse.h): nel riquadro del pannello, a sinistra l'elenco delle
+    // voci (quattro righe, il cursore della Guida, le frecce se ce ne sono altre), un filo, a destra la scheda
+    // della voce scelta: il Santo e il suo Fervore, cosa fa la mossa, il numero (danno, barriera, cura) e il
+    // costo. Vive solo mentre si scelgono i comandi: gli sprite tornano liberi per i colpi.
+    // Le righe dentro la cornice (interno x 8-231, y 112-151): l'interlinea del font e' 10 px.
+    constexpr int MOSSE_RIGA_Y[RIGHE_ELENCO] = { PANNELLO_Y + 8, PANNELLO_Y + 18, PANNELLO_Y + 28, PANNELLO_Y + 38 };
+    constexpr int MOSSE_CURSORE_X = 10;
+    constexpr int MOSSE_NOMI_X = 18;            // la voce piu' larga e' 84 px: fino a 101
+    constexpr int MOSSE_FRECCE_X = 99;          // le frecce dell'elenco, 7 px alla base: 99-105
+    constexpr int MOSSE_FILO_X = 107;
+    constexpr int MOSSE_SCHEDA_X = 111;
+    constexpr int MOSSE_DESTRA_X = 227;
+    constexpr int MOSSE_STACCO = 4;             // fra un'etichetta e il suo numero
+
+    static_assert(MOSSE_SCHEDA_X + 116 <= MOSSE_DESTRA_X + 1, "la scheda (contesto SCHEDA, 116 px) sta nella colonna destra");
+
+    [[nodiscard]] TestoId nome_della_voce(const Comando& c)
+    {
+        switch(c.tipo)
+        {
+
+        case TipoComando::CARICA:
+            return TestoId::BATT_CARICA;
+
+        case TipoComando::SUPREMA:
+            return TestoId::BATT_SUPREMA;
+
+        case TipoComando::OGGETTO:
+            return c.oggetto == OggettoId::CRESCIA ? TestoId::BATT_CRESCIA : TestoId::BATT_BISCOTTI;
+
+        default:
+            break;
+        }
+
+        switch(c.abilita)
+        {
+
+        case AbilitaId::GIUDIZIO_DELLA_VERGA:
+            return TestoId::BATT_GIUDIZIO;
+
+        case AbilitaId::MURO_DELLA_FEDE:
+            return TestoId::BATT_MURO;
+
+        case AbilitaId::FENDENTE_DEL_DRAGO:
+            return TestoId::BATT_FENDENTE;
+
+        case AbilitaId::BASTIONE_AZZURRO:
+            return TestoId::BATT_BASTIONE;
+
+        case AbilitaId::FUOCO_DI_SANTANTONIO:
+            return TestoId::BATT_FUOCO;
+
+        default:
+            return TestoId::BATT_ATTACCO;
+        }
+    }
+
+    [[nodiscard]] TestoId frase_della_voce(const Comando& c)
+    {
+        switch(c.tipo)
+        {
+
+        case TipoComando::CARICA:
+            return TestoId::BATT_D_CARICA;
+
+        case TipoComando::SUPREMA:
+            return TestoId::BATT_D_SUPREMA;
+
+        case TipoComando::OGGETTO:
+            return c.oggetto == OggettoId::CRESCIA ? TestoId::BATT_D_CRESCIA : TestoId::BATT_D_BISCOTTI;
+
+        default:
+            break;
+        }
+
+        switch(c.abilita)
+        {
+
+        case AbilitaId::GIUDIZIO_DELLA_VERGA:
+            return TestoId::BATT_D_GIUDIZIO;
+
+        case AbilitaId::MURO_DELLA_FEDE:
+            return TestoId::BATT_D_MURO;
+
+        case AbilitaId::FENDENTE_DEL_DRAGO:
+            return TestoId::BATT_D_FENDENTE;
+
+        case AbilitaId::BASTIONE_AZZURRO:
+            return TestoId::BATT_D_BASTIONE;
+
+        case AbilitaId::FUOCO_DI_SANTANTONIO:
+            return TestoId::BATT_D_FUOCO;
+
+        default:
+            return TestoId::BATT_D_ATTACCO;
+        }
+    }
+
+    // Un 8x8 disegnato a righe: 'righe' sono 8 parole da 4 bit per pixel.
+    bn::sprite_ptr crea_8x8(const uint32_t (&righe)[8], int x, int y, const bn::sprite_palette_ptr& palette)
+    {
+        bn::sprite_tiles_ptr tiles = bn::sprite_tiles_ptr::allocate(1, bn::bpp_mode::BPP_4);
+        bn::span<bn::tile> vram = *tiles.vram();
+
+        for(int r = 0; r < 8; ++r)
+        {
+            vram[0].data[r] = righe[r];
+        }
+
+        bn::sprite_ptr s = bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(8, 8), bn::move(tiles), palette);
+        s.set_bg_priority(PRIORITA_RIQUADRI);
+        menu::colloca(s, x, y, 8, 8);
+        return s;
+    }
+
+    // Una riga di pixel dell'8x8, piena per 'mezza' pixel intorno al 3 (al piu' 0-6).
+    constexpr uint32_t riga_freccia(int mezza, int colore)
+    {
+        uint32_t r = 0;
+
+        for(int p = 3 - mezza; p <= 3 + mezza; ++p)
+        {
+            r |= uint32_t(colore) << (4 * p);
+        }
+
+        return r;
+    }
+
+    constexpr uint32_t C = uint32_t(menu::GRIGIO);
+    // le frecce dell'elenco (ce ne sono altre sopra, sotto): 7 px alla base, nell'inchiostro delle voci
+    constexpr uint32_t I = uint32_t(menu::INCHIOSTRO);
+    constexpr uint32_t FRECCIA_SU[8] = { riga_freccia(0, I), riga_freccia(1, I), riga_freccia(2, I), riga_freccia(3, I),
+                                         0, 0, 0, 0 };
+    constexpr uint32_t FRECCIA_GIU[8] = { 0, 0, 0, 0, riga_freccia(3, I), riga_freccia(2, I), riga_freccia(1, I),
+                                          riga_freccia(0, I) };
+    constexpr uint32_t FILO[8] = { C, C, C, C, C, C, C, C };     // il pixel 0 di ogni riga
+
+    class PannelloMosse
+    {
+    public:
+        PannelloMosse() :
+            _palette(menu::crea_palette()),
+            _righe{ VistaTesto(Contesto::DIALOGO, MOSSE_NOMI_X, MOSSE_RIGA_Y[0], menu::INCHIOSTRO, _palette),
+                    VistaTesto(Contesto::DIALOGO, MOSSE_NOMI_X, MOSSE_RIGA_Y[1], menu::INCHIOSTRO, _palette),
+                    VistaTesto(Contesto::DIALOGO, MOSSE_NOMI_X, MOSSE_RIGA_Y[2], menu::INCHIOSTRO, _palette),
+                    VistaTesto(Contesto::DIALOGO, MOSSE_NOMI_X, MOSSE_RIGA_Y[3], menu::INCHIOSTRO, _palette) },
+            _cursore(menu::crea_cursore(_palette)),
+            _su(crea_8x8(FRECCIA_SU, MOSSE_FRECCE_X, MOSSE_RIGA_Y[0], _palette)),
+            _giu(crea_8x8(FRECCIA_GIU, MOSSE_FRECCE_X, MOSSE_RIGA_Y[3] + 1, _palette)),
+            _filo{ crea_8x8(FILO, MOSSE_FILO_X, PANNELLO_Y + 8, _palette), crea_8x8(FILO, MOSSE_FILO_X, PANNELLO_Y + 16, _palette),
+                   crea_8x8(FILO, MOSSE_FILO_X, PANNELLO_Y + 24, _palette), crea_8x8(FILO, MOSSE_FILO_X, PANNELLO_Y + 32, _palette),
+                   crea_8x8(FILO, MOSSE_FILO_X, PANNELLO_Y + 40, _palette) },
+            _nome(Contesto::DIALOGO, MOSSE_SCHEDA_X, MOSSE_RIGA_Y[0], menu::TITOLO, _palette),
+            _testata(Contesto::HUD, MOSSE_SCHEDA_X, MOSSE_RIGA_Y[0], menu::NOTA, _palette),
+            _frase(Contesto::SCHEDA, MOSSE_SCHEDA_X, MOSSE_RIGA_Y[1], menu::INCHIOSTRO, _palette),
+            _etichetta(Contesto::HUD, MOSSE_SCHEDA_X, MOSSE_RIGA_Y[3], menu::NOTA, _palette),
+            _etichetta_destra(Contesto::HUD, MOSSE_SCHEDA_X, MOSSE_RIGA_Y[3], menu::NOTA, _palette),
+            _fervore(0, MOSSE_RIGA_Y[0], menu::INCHIOSTRO, _palette),
+            _valore(0, MOSSE_RIGA_Y[3], menu::INCHIOSTRO, _palette),
+            _valore_destra(0, MOSSE_RIGA_Y[3], menu::INCHIOSTRO, _palette)
+        {
+            _fervore.nascondi();
+            _valore.nascondi();
+            _valore_destra.nascondi();
+        }
+
+        // Un altro Santo (o lo stesso, tornato con B): l'elenco si riscrive tutto.
+        void nuovo_elenco()
+        {
+            _prima = -1;
+        }
+
+        // L'elenco da 'prima' in giu', la voce 'scelta' col cursore; le voci spente in grigio. Le scritte si
+        // rifanno solo quando l'elenco scorre o e' nuovo.
+        void elenco(const Voci& v, int prima, int scelta)
+        {
+            if(prima != _prima)
+            {
+                _prima = prima;
+
+                for(int r = 0; r < RIGHE_ELENCO; ++r)
+                {
+                    int i = prima + r;
+
+                    if(i < v.quante)
+                    {
+                        _righe[r].cambia_inchiostro(v.voce[i].possibile ? menu::INCHIOSTRO : menu::SPENTO);
+                        _righe[r].mostra(nome_della_voce(v.voce[i].comando));
+                        _righe[r].rivela_tutto();
+                    }
+                    else
+                    {
+                        _righe[r].nascondi();
+                    }
+                }
+
+                _su.set_visible(prima > 0);
+                _giu.set_visible(prima + RIGHE_ELENCO < v.quante);
+            }
+
+            menu::colloca(_cursore, MOSSE_CURSORE_X, MOSSE_RIGA_Y[scelta - prima] + 1, 8, 8);
+            _cursore.set_visible(true);
+        }
+
+        // La riga in alto della scheda nel menu: il Santo e il suo Fervore.
+        void testata_santo(TestoId nome, int fervore)
+        {
+            _nome.mostra(nome);
+            _nome.rivela_tutto();
+            _testata.mostra(TestoId::BATT_L_FERVORE);
+            _testata.rivela_tutto();
+            _fervore.mostra(fervore);
+            _fervore.colloca_a_destra(MOSSE_DESTRA_X, MOSSE_RIGA_Y[0]);
+            _testata.sposta(MOSSE_DESTRA_X + 1 - _fervore.larghezza() - MOSSE_STACCO - larghezza_testo(TestoId::BATT_L_FERVORE),
+                            MOSSE_RIGA_Y[0]);
+        }
+
+        // ... e mentre si sceglie il bersaglio: i tasti.
+        void testata_bersaglio()
+        {
+            _nome.nascondi();
+            _fervore.nascondi();
+            _testata.mostra(TestoId::BATT_L_BERSAGLIO);
+            _testata.rivela_tutto();
+            _testata.sposta(MOSSE_SCHEDA_X, MOSSE_RIGA_Y[0]);
+        }
+
+        // La scheda: la frase, il numero a sinistra, il costo (o quanti oggetti restano) a destra.
+        // 'ne_hai' >= 0 per un oggetto; 'pagabile' false: il costo in vermiglio.
+        void scheda(TestoId frase, const Scheda& s, int ne_hai, bool pagabile)
+        {
+            if(frase != _frase_mostrata)
+            {
+                _frase_mostrata = frase;
+                _frase.mostra(frase);
+                _frase.rivela_tutto();
+            }
+
+            if(s.cifra == Cifra::NESSUNA)
+            {
+                _etichetta.nascondi();
+                _valore.nascondi();
+            }
+            else
+            {
+                TestoId e = s.cifra == Cifra::DANNO ? TestoId::BATT_L_DANNO :
+                            (s.cifra == Cifra::BARRIERA ? TestoId::BATT_L_BARRIERA : TestoId::BATT_L_CURA);
+                _etichetta.mostra(e);
+                _etichetta.rivela_tutto();
+                _valore.mostra(s.valore);
+                _valore.colloca(MOSSE_SCHEDA_X + larghezza_testo(e) + MOSSE_STACCO, MOSSE_RIGA_Y[3]);
+            }
+
+            TestoId destra = ne_hai >= 0 ? TestoId::BATT_L_RIMASTI :
+                             (s.costo > 0 ? TestoId::BATT_L_COSTO : TestoId::BATT_L_GRATIS);
+            int numero = ne_hai >= 0 ? ne_hai : s.costo;
+            _etichetta_destra.mostra(destra);
+            _etichetta_destra.rivela_tutto();
+
+            if(destra == TestoId::BATT_L_GRATIS)
+            {
+                _valore_destra.nascondi();
+                _etichetta_destra.sposta(MOSSE_DESTRA_X + 1 - larghezza_testo(destra), MOSSE_RIGA_Y[3]);
+                return;
+            }
+
+            _valore_destra.cambia_inchiostro(pagabile ? menu::INCHIOSTRO : menu::TITOLO);
+            _valore_destra.mostra(numero);
+            _valore_destra.colloca_a_destra(MOSSE_DESTRA_X, MOSSE_RIGA_Y[3]);
+            _etichetta_destra.sposta(MOSSE_DESTRA_X + 1 - _valore_destra.larghezza() - MOSSE_STACCO - larghezza_testo(destra),
+                                     MOSSE_RIGA_Y[3]);
+        }
+
+    private:
+        bn::sprite_palette_ptr _palette;
+        VistaTesto _righe[RIGHE_ELENCO];
+        bn::sprite_ptr _cursore;
+        bn::sprite_ptr _su;
+        bn::sprite_ptr _giu;
+        bn::sprite_ptr _filo[5];
+        VistaTesto _nome;
+        VistaTesto _testata;
+        VistaTesto _frase;
+        VistaTesto _etichetta;
+        VistaTesto _etichetta_destra;
+        VistaNumero _fervore;
+        VistaNumero _valore;
+        VistaNumero _valore_destra;
+        TestoId _frase_mostrata = TestoId::BATT_SCEGLI;     // nessuna frase della scheda
+        int _prima = -1;
+    };
+
     // La scena vera e propria: gli oggetti di Butano vivono finche' vive lei.
     class Scena
     {
@@ -357,7 +651,6 @@ namespace
             _aiuto(Contesto::DIALOGO, PANNELLO_X, PANNELLO_AIUTO_Y, INCHIOSTRO_SCURO, palette_testo),
             _immune(Contesto::HUD, 120 + X_CORRADO - 20, 80 - 30 - 40, INCHIOSTRO_CHIARO, palette_testo),
             _numero(0, 0, INCHIOSTRO_CHIARO, palette_testo, INCHIOSTRO_CONTORNO),
-            _quanti(200, PANNELLO_VOCE_Y, INCHIOSTRO_SCURO, palette_testo),
             _freccia_tiles(bn::sprite_tiles_item(bn::span<const bn::tile>(G::SPRITE_FRECCIA, 2 * G::TILE_PER_POSA_FRECCIA),
                                                  bn::bpp_mode::BPP_4, 2)),
             _freccia(bn::sprite_ptr::create(0, 0, bn::sprite_shape_size(16, 16), _freccia_tiles.create_tiles(0),
@@ -369,7 +662,6 @@ namespace
             _effetto_attore.set_z_order(-2);
             _effetto_bersaglio.set_z_order(-2);
             _numero.nascondi();
-            _quanti.nascondi();
             _riquadri.cornice(0, PANNELLO_Y, stile::DIALOGO_COLONNE, stile::DIALOGO_RIGHE);
             int nemici = GUBBIO_VOCE(INCONTRO, incontro).nemici;
             _vista.inizia(g_scena, nemici);
@@ -478,18 +770,7 @@ namespace
                 }
                 else if(_istantanee && g_scena.firma().round == 1)
                 {
-                    mostra_menu(UBALDO, TestoId::BATT_GIUDIZIO);
-                    // la freccia del bersaglio sul nemico predefinito, come la vedrebbe il giocatore
-                    int s = slot_vista(true, bersaglio_predefinito(g_scena, Puntamento::NEMICO));
-                    _aiuto.mostra(TestoId::BATT_BERSAGLIO);
-                    _aiuto.rivela_tutto();
-                    _freccia.set_position(_x[s], bn::max(_y[s] - _sprite[s]->shape_size().height() / 2 - 6, FRECCIA_Y_MIN));
-                    _freccia.set_visible(true);
-                    aspetta(20);
-                    scatta(nome_istantanea("menu"), true);
-                    aspetta(40);
-                    _freccia.set_visible(false);
-                    nascondi_menu();
+                    istantanea_mosse();
                 }
 
                 g_scena.avanza();       // CODA
@@ -599,7 +880,6 @@ namespace
         VistaTesto _aiuto;
         VistaTesto _immune;
         VistaNumero _numero;            // i numeri sulla scena (danni, cure)
-        VistaNumero _quanti;            // quanti oggetti restano, nel pannello
         Riquadri _riquadri;             // il pannello: la cornice della Guida sopra il fondale
         bn::sprite_tiles_item _freccia_tiles;
         bn::sprite_ptr _freccia;
@@ -738,16 +1018,6 @@ namespace
             }
         }
 
-        void mostra_menu(int eroe, TestoId voce)
-        {
-            _titolo.mostra(GUBBIO_VOCE(NOMI_SANTI, eroe));
-            _titolo.rivela_tutto();
-            _voce.mostra(voce);
-            _voce.rivela_tutto();
-            _aiuto.mostra(TestoId::BATT_SCEGLI);
-            _aiuto.rivela_tutto();
-        }
-
         void nascondi_menu()
         {
             _titolo.nascondi();
@@ -755,6 +1025,7 @@ namespace
             _aiuto.nascondi();
         }
 
+        // I comandi dei Santi vivi, uno per volta, nella schermata delle mosse. B torna al Santo prima.
         void scegli_comandi()
         {
             for(int& r : _riservati)
@@ -762,136 +1033,162 @@ namespace
                 r = 0;
             }
 
-            for(int e = 0; e < EROI; ++e)
-            {
-                const Unita& eroe = g_scena.eroe(e);
+            nascondi_menu();
+            PannelloMosse pannello;
+            Comando scelti[EROI];
+            int e = 0;
 
-                if(! eroe.vivo())
+            while(e < EROI)
+            {
+                if(! g_scena.eroe(e).vivo())
                 {
+                    ++e;
                     continue;
                 }
 
-                bn::vector<Opzione, 6> opzioni;
-                AbilitaId firma = GUBBIO_VOCE(ABILITA_FIRMA, e);
+                int prima = e - 1;
 
-                if(eroe.carica)
+                while(prima >= 0 && ! g_scena.eroe(prima).vivo())
                 {
-                    opzioni.push_back({ TestoId::BATT_SUPREMA, { TipoComando::SUPREMA, firma, -1, BOOST_SUPREMA } });
+                    --prima;
+                }
+
+                Comando comando;
+
+                if(scegli_per(e, prima >= 0, pannello, comando))
+                {
+                    if(comando.tipo == TipoComando::OGGETTO)
+                    {
+                        _riservati[int(comando.oggetto)] += 1;
+                    }
+
+                    g_scena.imposta_comando(e, comando);
+                    scelti[e] = comando;
+                    ++e;
                 }
                 else
                 {
-                    opzioni.push_back({ TestoId::BATT_ATTACCO, { TipoComando::USA_ABILITA, AbilitaId::ATTACCO, -1, 0 } });
-                    constexpr AbilitaId proprie[EROI][2] = {
-                        { AbilitaId::GIUDIZIO_DELLA_VERGA, AbilitaId::MURO_DELLA_FEDE },
-                        { AbilitaId::FENDENTE_DEL_DRAGO, AbilitaId::BASTIONE_AZZURRO },
-                        { AbilitaId::FUOCO_DI_SANTANTONIO, AbilitaId::FUOCO_DI_SANTANTONIO },
-                    };
-                    constexpr TestoId nomi[EROI][2] = {
-                        { TestoId::BATT_GIUDIZIO, TestoId::BATT_MURO },
-                        { TestoId::BATT_FENDENTE, TestoId::BATT_BASTIONE },
-                        { TestoId::BATT_FUOCO, TestoId::BATT_FUOCO },
-                    };
-
-                    for(int k = 0; k < (e == ANTONIO ? 1 : 2); ++k)
+                    // indietro: il Santo prima rifa' la sua scelta, e l'oggetto che aveva promesso torna libero
+                    if(scelti[prima].tipo == TipoComando::OGGETTO)
                     {
-                        AbilitaId a = GUBBIO_VOCE(GUBBIO_VOCE(proprie, e), k);
-
-                        if(eroe.fervore >= GUBBIO_VOCE(ABILITA, int(a)).costo)
-                        {
-                            opzioni.push_back({ GUBBIO_VOCE(GUBBIO_VOCE(nomi, e), k), { TipoComando::USA_ABILITA, a, -1, 0 } });
-                        }
+                        _riservati[int(scelti[prima].oggetto)] -= 1;
                     }
 
-                    if(eroe.fervore >= GUBBIO_VOCE(ABILITA, int(firma)).costo + GUBBIO_VOCE(BOOST_COSTO, BOOST_SUPREMA))
-                    {
-                        opzioni.push_back({ TestoId::BATT_CARICA, { TipoComando::CARICA, firma, -1, 0 } });
-                    }
-
-                    // i consumabili dell'inventario (quelli usabili, se ne restano); chi e' a digiuno non
-                    // li usa, e servono un alleato che mangi (Ubaldo nel DIGIUNO non mangia)
-                    constexpr OggettoId usabili[2] = { OggettoId::CRESCIA, OggettoId::BISCOTTI };
-                    constexpr TestoId nomi_oggetti[2] = { TestoId::BATT_CRESCIA, TestoId::BATT_BISCOTTI };
-                    bool puo_dare = ! eroe.a_digiuno && bersaglio_predefinito(g_scena, Puntamento::CHI_MANGIA) >= 0;
-
-                    for(int k = 0; k < 2 && puo_dare; ++k)
-                    {
-                        if(disponibili(usabili[k]) > 0)
-                        {
-                            Comando c;
-                            c.tipo = TipoComando::OGGETTO;
-                            c.oggetto = usabili[k];
-                            opzioni.push_back({ nomi_oggetti[k], c });
-                        }
-                    }
+                    e = prima;
                 }
 
-                int scelta = 0;
-                Comando comando;
-
-                while(true)
-                {
-                    mostra_menu(e, opzioni[scelta].testo);
-
-                    for(int f = 0; ; ++f)
-                    {
-                        if(bn::keypad::down_pressed() || bn::keypad::up_pressed())
-                        {
-                            int passo = bn::keypad::down_pressed() ? 1 : opzioni.size() - 1;
-                            scelta = (scelta + passo) % opzioni.size();
-                            audio::suona(colonna::Suono::CURSORE);
-                            _voce.mostra(opzioni[scelta].testo);
-                            _voce.rivela_tutto();
-                        }
-
-                        // per un oggetto, quanti ne restano
-                        if(opzioni[scelta].comando.tipo == TipoComando::OGGETTO)
-                        {
-                            _quanti.mostra(disponibili(opzioni[scelta].comando.oggetto));
-                            _quanti.colloca(200, PANNELLO_VOCE_Y);
-                        }
-                        else
-                        {
-                            _quanti.nascondi();
-                        }
-
-                        if(bn::keypad::a_pressed())
-                        {
-                            audio::suona(colonna::Suono::CONFERMA);
-                            break;
-                        }
-
-                        // chi sceglie dondola, per dire di chi e' il turno
-                        _sprite[e]->set_y(_y[e] - ((f / 16) % 2));
-                        aspetta(1);
-                    }
-
-                    aspetta(1);
-                    comando = opzioni[scelta].comando;
-
-                    if(scegli_bersaglio(e, comando))
-                    {
-                        break;
-                    }
-                }
-
-                _sprite[e]->set_y(_y[e]);
-                _quanti.nascondi();
-
-                if(comando.tipo == TipoComando::OGGETTO)
-                {
-                    _riservati[int(comando.oggetto)] += 1;
-                }
-
-                g_scena.imposta_comando(e, comando);
                 aspetta(1);
             }
+        }
 
-            nascondi_menu();
+        [[nodiscard]] Voci voci_di(int e) const
+        {
+            int scorte[OGGETTI_IN_BATTAGLIA] = {};
+
+            for(int k = 0; k < OGGETTI_IN_BATTAGLIA; ++k)
+            {
+                scorte[k] = disponibili(GUBBIO_VOCE(OGGETTI_USABILI, k));
+            }
+
+            return voci_del_menu(g_scena, e, scorte);
+        }
+
+        // La scheda di una voce del menu, senza bersaglio scelto.
+        void mostra_voce(PannelloMosse& pannello, int e, const Voce& v)
+        {
+            const Comando& c = v.comando;
+            Scheda s = scheda_del_comando(g_scena, e, c, -1);
+            bool oggetto = c.tipo == TipoComando::OGGETTO;
+            TestoId frase = v.possibile ? frase_della_voce(c) : (oggetto ? TestoId::BATT_N_NONUSA : TestoId::BATT_N_FERVORE);
+            pannello.scheda(frase, s, oggetto ? disponibili(c.oggetto) : -1, oggetto || g_scena.eroe(e).fervore >= s.costo);
+        }
+
+        // Il comando del Santo 'e': true se l'ha scelto, false se ha premuto B per tornare al Santo prima
+        // ('indietro': ce n'e' uno).
+        bool scegli_per(int e, bool indietro, PannelloMosse& pannello, Comando& comando)
+        {
+            Voci voci = voci_di(e);
+            int scelta = 0;
+            int prima = 0;
+            bool scelto = false;
+            pannello.nuovo_elenco();
+
+            while(true)
+            {
+                pannello.elenco(voci, prima, scelta);
+                pannello.testata_santo(GUBBIO_VOCE(NOMI_SANTI, e), g_scena.eroe(e).fervore);
+                mostra_voce(pannello, e, voci.voce[scelta]);
+                bool premuto_a = false;
+
+                for(int f = 0; ; ++f)
+                {
+                    if(bn::keypad::down_pressed() || bn::keypad::up_pressed())
+                    {
+                        int passo = bn::keypad::down_pressed() ? 1 : voci.quante - 1;
+                        scelta = (scelta + passo) % voci.quante;
+                        prima = prima_visibile(prima, scelta, voci.quante);
+                        audio::suona(colonna::Suono::CURSORE);
+                        pannello.elenco(voci, prima, scelta);
+                        mostra_voce(pannello, e, voci.voce[scelta]);
+                    }
+
+                    if(bn::keypad::a_pressed())
+                    {
+                        // una voce spenta non si sceglie: la scheda dice gia' perche'
+                        premuto_a = voci.voce[scelta].possibile;
+                        audio::suona(premuto_a ? colonna::Suono::CONFERMA : colonna::Suono::ANNULLA);
+
+                        if(premuto_a)
+                        {
+                            break;
+                        }
+                    }
+
+                    if(bn::keypad::b_pressed() && indietro)
+                    {
+                        audio::suona(colonna::Suono::ANNULLA);
+                        break;
+                    }
+
+                    // chi sceglie dondola, per dire di chi e' il turno
+                    _sprite[e]->set_y(_y[e] - ((f / 16) % 2));
+                    aspetta(1);
+                }
+
+                aspetta(1);
+
+                if(! premuto_a)
+                {
+                    break;
+                }
+
+                comando = voci.voce[scelta].comando;
+
+                if(scegli_bersaglio(e, comando, pannello))
+                {
+                    scelto = true;
+                    break;
+                }
+            }
+
+            _sprite[e]->set_y(_y[e]);
+            return scelto;
+        }
+
+        // La scheda sul bersaglio puntato: il danno su di lui (o la barriera, la cura) e la sua nota.
+        void mostra_bersaglio(PannelloMosse& pannello, int e, const Comando& comando, int scelto)
+        {
+            Scheda s = scheda_del_comando(g_scena, e, comando, scelto);
+            TestoId frase = s.nota == Nota::DEBOLE ? TestoId::BATT_N_DEBOLE :
+                            (s.nota == Nota::RESISTE ? TestoId::BATT_N_RESISTE :
+                             (s.nota == Nota::IMMUNE ? TestoId::BATT_N_IMMUNE : frase_della_voce(comando)));
+            bool oggetto = comando.tipo == TipoComando::OGGETTO;
+            pannello.scheda(frase, s, oggetto ? disponibili(comando.oggetto) : -1, true);
         }
 
         // Il bersaglio del comando, se il comando ne sceglie uno: la freccia sopra, su e giu' la
         // spostano fra i vivi (include/vista_battaglia.h), A conferma, B torna alla scelta del comando.
-        bool scegli_bersaglio(int eroe, Comando& comando)
+        bool scegli_bersaglio(int eroe, Comando& comando, PannelloMosse& pannello)
         {
             Puntamento mira = mira_del_comando(comando);
 
@@ -901,8 +1198,8 @@ namespace
             }
 
             int scelto = bersaglio_predefinito(g_scena, mira);
-            _aiuto.mostra(TestoId::BATT_BERSAGLIO);
-            _aiuto.rivela_tutto();
+            pannello.testata_bersaglio();
+            mostra_bersaglio(pannello, eroe, comando, scelto);
             bool confermato = false;
 
             for(int f = 0; ; ++f)
@@ -911,6 +1208,7 @@ namespace
                 {
                     scelto = prossimo_bersaglio(g_scena, mira, scelto, bn::keypad::down_pressed() ? 1 : -1);
                     audio::suona(colonna::Suono::CURSORE);
+                    mostra_bersaglio(pannello, eroe, comando, scelto);
                 }
 
                 if(bn::keypad::a_pressed() || bn::keypad::b_pressed())
@@ -920,11 +1218,7 @@ namespace
                     break;
                 }
 
-                int s = slot_vista(mira == Puntamento::NEMICO, scelto);
-                int alto = (_sprite[s]->shape_size().height()) / 2;
-                _freccia.set_position(_x[s], bn::max(_y[s] - alto - 6, FRECCIA_Y_MIN));
-                _freccia.set_tiles(_freccia_tiles, (f / 12) % 2);
-                _freccia.set_visible(true);
+                punta(scelto, mira, f);
                 _sprite[eroe]->set_y(_y[eroe] - ((f / 16) % 2));
                 aspetta(1);
             }
@@ -938,6 +1232,38 @@ namespace
             }
 
             return confermato;
+        }
+
+        // La freccia sopra il bersaglio puntato, che pulsa.
+        void punta(int scelto, Puntamento mira, int f)
+        {
+            int s = slot_vista(mira == Puntamento::NEMICO, scelto);
+            int alto = (_sprite[s]->shape_size().height()) / 2;
+            _freccia.set_position(_x[s], bn::max(_y[s] - alto - 6, FRECCIA_Y_MIN));
+            _freccia.set_tiles(_freccia_tiles, (f / 12) % 2);
+            _freccia.set_visible(true);
+        }
+
+        // Le istantanee (GUBBIO_AVVIO=5): la schermata delle mosse di Ubaldo, come la vede il giocatore, prima
+        // nel menu sul Giudizio della Verga e poi sul bersaglio.
+        void istantanea_mosse()
+        {
+            PannelloMosse pannello;
+            Voci voci = voci_di(UBALDO);
+            pannello.nuovo_elenco();
+            pannello.elenco(voci, 0, 1);
+            pannello.testata_santo(GUBBIO_VOCE(NOMI_SANTI, UBALDO), g_scena.eroe(UBALDO).fervore);
+            mostra_voce(pannello, UBALDO, voci.voce[1]);
+            aspetta(20);
+            scatta(nome_istantanea("menu"), true);
+            int scelto = bersaglio_predefinito(g_scena, Puntamento::NEMICO);
+            pannello.testata_bersaglio();
+            mostra_bersaglio(pannello, UBALDO, voci.voce[1].comando, scelto);
+            punta(scelto, Puntamento::NEMICO, 0);
+            aspetta(20);
+            scatta(nome_istantanea("bersaglio"), true);
+            aspetta(20);
+            _freccia.set_visible(false);
         }
 
         // Lo stile di un gesto: l'effetto del colpo di chi agisce, forte se ha appena speso Fervore (un'abilita',
