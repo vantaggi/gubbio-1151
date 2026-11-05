@@ -1650,6 +1650,12 @@ void prova_folla(Esplorazione& esplorazione)
     };
     constexpr const char* FASI[] = { "ultimatum", "digiuno", "notte" };
 
+#ifdef GUBBIO_PRESTAZIONI
+    // le prestazioni con la fila intera dietro Ubaldo, come nel gioco dopo il prologo: tre sprite in piu' e tre
+    // righe di piedi in piu' (ognuna uno strato di ordinamento degli sprite)
+    esplorazione.imposta_compagni(2);
+#endif
+
     for(int fase = 0; fase < 3; ++fase)
     {
         if(fase == 1)
@@ -1697,6 +1703,46 @@ void prova_folla(Esplorazione& esplorazione)
 #endif
         }
     }
+
+#ifdef GUBBIO_PRESTAZIONI
+    // Il passaggio vero da via XX Settembre a Sant'Andrea, con la fila e la gente, come nella prova di Cioti
+    // del 5 nov ("No more sprite sort layers available"): Ubaldo arriva dove si entra da Sant'Andrea e cammina
+    // verso quel varco; durante la dissolvenza ci sono la gente vecchia, quella nuova e la fila.
+    {
+        const mondo::Area& xx = mondo::area(mondo::AreaId::VIA_XX_SETTEMBRE);
+        const mondo::Area& sa = mondo::area(mondo::AreaId::SANT_ANDREA);
+        int ritorno = aiuti::varco_piu_vicino(sa, int(mondo::AreaId::VIA_XX_SETTEMBRE), 0, 0);
+        BN_ASSERT(ritorno >= 0, "Sant'Andrea senza varco per via XX Settembre");
+        Storia gente;
+        esplorazione.entra(mondo::AreaId::VIA_XX_SETTEMBRE, sa.varco[ritorno].spawn);
+        esplorazione.imposta_notte(false);
+        const mondo::Esploratore& e = esplorazione.esploratore();
+        int verso = aiuti::varco_piu_vicino(xx, int(mondo::AreaId::SANT_ANDREA), e.x, e.y);
+        BN_ASSERT(verso >= 0, "Via XX Settembre senza varco per Sant'Andrea");
+        aiuti::Punto c = aiuti::centro_del_varco(xx, verso);
+        int peggio = 0;
+        int f = 0;
+
+        for(; f < 600 && (e.area != mondo::AreaId::SANT_ANDREA || esplorazione.in_dissolvenza() || f < 300); ++f)
+        {
+            ++g_game_state.frames;
+            int uso = (bn::core::last_cpu_usage() * 100).right_shift_integer();
+            peggio = f > 2 && uso > peggio ? uso : peggio;
+
+            if(e.area == mondo::AreaId::VIA_XX_SETTEMBRE && f > 60)
+            {
+                esplorazione.muovi(c.x > e.x ? 1 : (c.x < e.x ? -1 : 0), c.y > e.y ? 1 : (c.y < e.y ? -1 : 0), 1);
+            }
+
+            esplorazione.aggiorna();
+            gente.anima_la_gente(esplorazione);
+            bn::core::update();
+        }
+
+        BN_LOG("PREST passaggio via XX Settembre -> Sant'Andrea arrivato ",
+               e.area == mondo::AreaId::SANT_ANDREA ? "si" : "no", " frame ", f, " cpu ", peggio);
+    }
+#endif
 
     BN_LOG("Istantanee finite");
 

@@ -77,6 +77,16 @@ def rom(modo, flag=()):
     if os.path.exists(gba) and os.path.exists(chiave_file) and open(chiave_file).read().strip() == chiave:
         return gba, 0.0, True
     t0 = time.perf_counter()
+    # make non ricompila se cambiano solo i flag del Makefile (es. un BN_CFG_* in USERCXXFLAGS): allora
+    # gli oggetti vecchi (anche quelli di Butano) vanno buttati, se no la ROM resta col flag di prima
+    oggetti = os.path.join(RADICE, f"banco_obj{n}")
+    with open(os.path.join(RADICE, "Makefile"), "rb") as f:
+        impronta_make = hashlib.sha256(f.read()).hexdigest()
+    segno = os.path.join(CARTELLA, f"makefile{n}.impronta")
+    if os.path.isdir(oggetti) and (not os.path.exists(segno) or open(segno).read().strip() != impronta_make):
+        shutil.rmtree(oggetti, ignore_errors=True)
+        if os.path.isdir(oggetti):
+            subprocess.run(["sudo", "rm", "-rf", oggetti], check=False)
     comando = ("git config --global --add safe.directory /w; git config --global --add safe.directory /w/butano; "
                f"make -j{os.cpu_count() or 4} TARGET=banco_rom{n} BUILD=banco_obj{n} "
                f"USERFLAGS='-DGUBBIO_AVVIO={modo} {' '.join(flag)}'")
@@ -94,6 +104,8 @@ def rom(modo, flag=()):
         os.remove(elf)
     with open(chiave_file, "w") as f:
         f.write(chiave + "\n")
+    with open(segno, "w") as f:
+        f.write(impronta_make + "\n")
     return gba, time.perf_counter() - t0, False
 
 

@@ -117,7 +117,7 @@
     },
     {
       "nome": "folla",
-      "cosa": "La gente e gli animali in 10 aree per 3 fasi, con Ubaldo che ci passa in mezzo: il frame piu' pesante per area (oggi al massimo 27%).",
+      "cosa": "La gente e gli animali in 10 aree per 3 fasi, con Ubaldo e la fila (Giorgio, Antonio) che ci passano in mezzo: il frame piu' pesante per area (oggi al massimo 32%). Poi il passaggio vero da via XX Settembre a Sant'Andrea con la dissolvenza. Con i 16 strati di ordinamento predefiniti di Butano si fermava in San Martino ('No more sprite sort layers available', prova di Cioti del 5 nov): le 30 righe non arrivano.",
       "modo": 12,
       "flag": [
         "-DGUBBIO_PRESTAZIONI"
@@ -130,6 +130,11 @@
           "regex": "^PREST folla area \\d+ fase \\d cpu (\\d+)",
           "massimo": 60,
           "righe": 30
+        },
+        {
+          "regex": "^PREST passaggio via XX Settembre -> Sant'Andrea arrivato si frame \\d+ cpu (\\d+)",
+          "massimo": 95,
+          "righe": 1
         }
       ]
     },
