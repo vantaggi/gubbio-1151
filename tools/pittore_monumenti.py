@@ -46,11 +46,15 @@ TINTE = [(PIETRA_CHIARA, PIETRA, PIETRA_LUCE), (PIETRA, PIETRA_SCURA, PIETRA_CHI
          (PIETRA_LUCE, PIETRA_CHIARA, PIETRA_LUCE)]
 
 
+VUOTI_BUI = (CONTORNO, LEGNO_SCURO, ("neutri", 0))
+
+
 class Tela:
     def __init__(self, w, h, fondo=COTTO):
         self.w, self.h = w * 8, h * 8
         self.px = [[fondo] * self.w for _ in range(self.h)]
         self.elementi = Counter()
+        self.vani = []          # (x0, y0, x1, y1) di ogni arco buio: finestre e portali (tests/test_aperture.py)
 
     def punto(self, x, y, c):
         if 0 <= x < self.w and 0 <= y < self.h:
@@ -102,6 +106,8 @@ class Tela:
 
     def arco(self, x0, y0, w, h, vuoto=CONTORNO, cornice=PIETRA_LUCE):
         """Apertura ad arco a tutto sesto (finestra o portale)."""
+        if vuoto in VUOTI_BUI:
+            self.vani.append((x0, y0, x0 + w - 1, y0 + h - 1))
         r = w // 2
         for y in range(h):
             for x in range(w):
@@ -113,6 +119,8 @@ class Tela:
 
     def arco_acuto(self, x0, y0, w, h, vuoto=LEGNO_SCURO, cornice=PIETRA_LUCE):
         """Arco gotico: due archi che si incontrano in punta."""
+        if vuoto in VUOTI_BUI:
+            self.vani.append((x0, y0, x0 + w - 1, y0 + h - 1))
         for y in range(h):
             for x in range(w):
                 rientro = max(0, (w // 2) - (y * w) // max(1, w)) if y < w // 2 else 0

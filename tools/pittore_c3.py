@@ -246,19 +246,44 @@ def corrado(s):
                 (hx - px * 6 - dx * 4, hy - py * 6 - dy * 4)])
 
 
+# La sagoma dei protagonisti e' il controluce della loro figura a colori (figura_luce), pixel per pixel:
+# Cioti (5 nov 2026) vedeva una "doppia sagoma", perche' il controluce disegnato a parte aveva un'altra posa
+# e un altro profilo della figura che compare subito dopo. Ora lo stacco accende la stessa forma. La fiamma di
+# Antonio resta accesa anche nel controluce (il fuoco e' luce, non sagoma).
+FIAMMA_ACCESA = {("vermiglio comunale", 2): 6, ("oro e bronzo", 2): R_ORO_S, ("oro e bronzo", 3): R_BORDO}
+FIAMMA_X_MAX = 128          # la fiamma sta nella mano tesa, a sinistra del bastone
+
+
+def sagoma_dalla_luce(chi):
+    """I pixel della figura a colori (figura e, per Antonio, il maialino) e quelli della fiamma accesa."""
+    tf, palette = figura_luce(chi)
+    figura, accesi = set(), {}
+    for y, riga in enumerate(tf.px):
+        for x, c in enumerate(riga):
+            if c:
+                figura.add((x, y))
+                if chi == "antonio" and x < FIAMMA_X_MAX and palette[c] in FIAMMA_ACCESA:
+                    accesi[(x, y)] = FIAMMA_ACCESA[palette[c]]
+    return figura, accesi
+
+
 def ritratto(chi, disegno):
     t = Tela(W, H)
     bagliore(t)
-    s = Sagoma()
-    disegno(s)
-    figura = s.pixel()
+    accesi = {}
+    if chi in POSA_LUCE:
+        figura, accesi = sagoma_dalla_luce(chi)
+    else:
+        s = Sagoma()
+        disegno(s)
+        figura = s.pixel()
     for (x, y) in figura:
         t.punto(x, y, R_SAGOMA)
     bordo_di_luce(t, figura)
+    for (x, y), c in accesi.items():
+        t.punto(x, y, c)
     if chi == "corrado":
         t.rett(150, 18, 10, 2, 5)                            # la feritoia dell'elmo, accesa dal bagliore
-    if chi == "antonio":
-        fiamma(t, 126, 52)
     cartiglio(t, NOMI[chi])
     return t
 

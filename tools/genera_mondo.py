@@ -2155,6 +2155,9 @@ def disegna_area(a, mondo):
     return risultato
 
 
+TIENI_QUADRI = None   # un dict per tenere il Quadro di ogni area disegnata (solo per le prove)
+
+
 def _disegna_area(a, mondo):
     """Il fondale dell'area come tile 8x8: il suolo dai tile procedurali, gli edifici dalle loro
     tele, la Fontana dei Matti dalla sua. Ritorna (tile unici, indice per cella, elementi per
@@ -2164,12 +2167,14 @@ def _disegna_area(a, mondo):
     w, h = a["larghezza"], a["altezza"]
     tile_di = {}
     elementi = {}
+    vani_dei_monumenti = []
     for n, (mid, (x0, y0, ew, eh)) in enumerate(sorted(a.get("edifici", {}).items())):
         m = monumenti[mid]
         faccia = faccia_di(a, mid, monumenti)
         altezza = censimento.get(mid, {}).get("altezza_m", "").strip()
         tela = PM.dipingi(mid, m["nome"], ew, eh, faccia, {"altezza_m": float(altezza) if altezza else None}, n)
         elementi[mid] = tela.elementi
+        vani_dei_monumenti += [(mid, x0 * 8 + v[0], y0 * 8 + v[1], x0 * 8 + v[2], y0 * 8 + v[3]) for v in tela.vani]
         for ty, riga in enumerate(tela.tagli()):
             for tx, pix in enumerate(riga):
                 tile_di[(x0 + tx, y0 + ty)] = pix
@@ -2241,6 +2246,10 @@ def _disegna_area(a, mondo):
             celle[(x, y)] = pix
     # lo standard grafico (pezzo EDI, tools/pittore_citta.py): case, suolo, vita, ombre e contorni, in pixel
     quadro = ridipingi(a, celle, tile_di, mondo, elementi)
+    if TIENI_QUADRI is not None:
+        if quadro is not None:
+            quadro.ingombri += [("vano:" + mid, x0, y0, x1, y1, mid) for mid, x0, y0, x1, y1 in vani_dei_monumenti]
+        TIENI_QUADRI[a["id"]] = quadro      # per tests/test_aperture.py: gli ingombri di porte e finestre
     tile_unici = {(0, tuple(map(tuple, _tile(tile_vuoto)))): 0}
     indici, giri = [], []
     for y in range(h):

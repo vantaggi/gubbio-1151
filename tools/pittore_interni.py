@@ -589,8 +589,9 @@ def ruota(t, x, y, r=7, m=LEGNO):
 def ruota_a_muro(st, cx, dy=18):
     x, y = st.px(cx, 0)
     t = st.t
-    t.ellisse(x + 10, y + dy + 2, 7, 7, C("pietra calcarea", 3))   # L3/L4: ombra sul muro a destra-basso
-    ruota_in_piedi(t, x + 8, y + dy, 8, 8)
+    # raggio 7: le ruote appese una per cella restano staccate, ombra compresa (giro delle aperture, 5 nov)
+    t.ellisse(x + 9, y + dy + 1, 6, 6, C("pietra calcarea", 3))   # L3/L4: ombra sul muro a destra-basso
+    ruota_in_piedi(t, x + 7, y + dy, 7, 7)
 
 
 def ruota_in_piedi(t, cx, cy, rx, ry):
