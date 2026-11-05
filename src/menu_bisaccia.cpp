@@ -42,13 +42,19 @@ namespace
 
     // Una cosa dell'incarico: per quest presa e non ancora consegnata. Q-SP01 mostra gli indizi finche' la Rosa
     // non e' ripresa, poi la Rosa.
+    // dal campo piu' grande al piu' piccolo (docs/regole_sviluppo_gba.md, punto 7): 12 byte invece di 16
     struct Cosa
     {
+        int fatti;
+        int totale;
         TestoId nome;
         IconaMenu icona;
         IconaMenu bandiera;
-        int fatti;
-        int totale;
+
+        constexpr Cosa(TestoId n, IconaMenu i, IconaMenu b, int f, int t) :
+            fatti(f), totale(t), nome(n), icona(i), bandiera(b)
+        {
+        }
     };
 
     constexpr int COSE_MAX = storia::QUEST;

@@ -215,10 +215,10 @@ int VistaTesto::rivelati() const
 }
 
 VistaNumero::VistaNumero(int x, int y, int inchiostro, const bn::sprite_palette_ptr& palette, int contorno) :
-    _inchiostro(inchiostro),
-    _contorno(contorno),
     _tiles(bn::sprite_tiles_ptr::allocate(8, bn::bpp_mode::BPP_4)),
-    _sprite(crea_sprite(x, y, _tiles, palette))
+    _sprite(crea_sprite(x, y, _tiles, palette)),
+    _inchiostro(inchiostro),
+    _contorno(contorno)
 {
 }
 
@@ -272,6 +272,20 @@ void VistaNumero::mostra_su(int n)
     _scrivi(caratteri, m + 1);
 }
 
+void VistaNumero::mostra_con_lettera(char lettera, int n)
+{
+    char caratteri[FORMATTA_CARATTERI_MAX + 2] = { lettera };
+    char numero[FORMATTA_CARATTERI_MAX + 1] = {};
+    int m = formatta_intero(n, numero);
+
+    for(int k = 0; k < m; ++k)
+    {
+        caratteri[k + 1] = numero[k];
+    }
+
+    _scrivi(caratteri, m + 1);
+}
+
 void VistaNumero::mostra_frazione(int a, int b)
 {
     char caratteri[2 * FORMATTA_CARATTERI_MAX + 2] = {};
@@ -295,6 +309,31 @@ void VistaNumero::mostra_frazione(int a, int b)
 
 void VistaNumero::_scrivi(const char* caratteri, int n)
 {
+    BN_ASSERT(n >= 0 && n <= SCRITTO_MAX, "VistaNumero: scritta troppo lunga ", n);
+
+    // la stessa scritta di prima: i tile sono gia' giusti
+    if(n == _n_scritto)
+    {
+        bool uguale = true;
+
+        for(int i = 0; i < n && uguale; ++i)
+        {
+            uguale = _scritto[i] == caratteri[i];
+        }
+
+        if(uguale)
+        {
+            return;
+        }
+    }
+
+    _n_scritto = n;
+
+    for(int i = 0; i < n; ++i)
+    {
+        _scritto[i] = caratteri[i];
+    }
+
     constexpr int L = testi::LARGHEZZA_SPRITE;
     constexpr int A = 16;
     int x = _contorno >= 0 ? 1 : 0;     // col contorno, un pixel di margine a sinistra
@@ -364,6 +403,12 @@ void VistaNumero::colloca(int x, int y)
 void VistaNumero::nascondi()
 {
     _sprite.set_visible(false);
+}
+
+void VistaNumero::porta_sopra(int z)
+{
+    _sprite.set_bg_priority(0);
+    _sprite.set_z_order(z);
 }
 
 bn::sprite_palette_ptr crea_palette_testo()

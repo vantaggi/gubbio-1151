@@ -57,23 +57,24 @@ enum class Lampo : uint8_t
     LUCE,       // curato, protetto, il Fervore che sale
 };
 
+// I campi vanno dal piu' grande al piu' piccolo (docs/regole_sviluppo_gba.md, punto 7): 36 byte invece di 52.
 struct Quadro
 {
-    Posa posa_attore = Posa::LIBERA;
     int avanti_attore = 0;          // pixel verso il nemico
-    Lampo lampo_attore = Lampo::NESSUNO;
-    Effetto effetto_attore = Effetto::NESSUNO;
     int fotogramma_attore = 0;
-    Posa posa_bersaglio = Posa::LIBERA;
     int indietro_bersaglio = 0;     // pixel di rinculo, lontano da chi colpisce
-    Lampo lampo_bersaglio = Lampo::NESSUNO;
-    Effetto effetto_bersaglio = Effetto::NESSUNO;
     int fotogramma_bersaglio = 0;
-    bool bersaglio_visibile = true;
     int scossa = 0;                 // pixel di tremito verticale dello schermo
     int volo = -1;                  // il proiettile in volo: 0..VOLO-1 (la scena lo porta da chi tira al bersaglio)
-    bool numero = false;
     int su_numero = 0;              // pixel sopra la posizione di riposo del numero
+    Posa posa_attore = Posa::LIBERA;
+    Lampo lampo_attore = Lampo::NESSUNO;
+    Effetto effetto_attore = Effetto::NESSUNO;
+    Posa posa_bersaglio = Posa::LIBERA;
+    Lampo lampo_bersaglio = Lampo::NESSUNO;
+    Effetto effetto_bersaglio = Effetto::NESSUNO;
+    bool bersaglio_visibile = true;
+    bool numero = false;
 };
 
 // Come si colpisce: l'effetto proprio di chi colpisce, e se il colpo e' forte (un'abilita' col

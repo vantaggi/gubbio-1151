@@ -48,6 +48,14 @@ jobs:
       - name: Test (tutti, in parallelo per modulo; docs/prove.md)
         run: python3 tools/prove.py --tutte --senza-mgba
 
+      - name: Ordine dei campi delle struct (docs/regole_sviluppo_gba.md, clang -m32)
+        run: |
+          if ! command -v clang++ > /dev/null || ! ls -d /usr/include/c++/* > /dev/null 2>&1; then
+            apt-get update
+            apt-get install -y --no-install-recommends clang g++ libc6-dev
+          fi
+          python3 tools/controlla_struct.py
+
       - name: Impronta della toolchain (per confrontare la build con quella del PC)
         run: |
           arm-none-eabi-gcc -v 2>&1 | tail -1 || "$DEVKITARM/bin/arm-none-eabi-gcc" -v 2>&1 | tail -1

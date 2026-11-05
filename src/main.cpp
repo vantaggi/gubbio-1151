@@ -10,6 +10,7 @@
 #include "esplorazione.h"
 #include "game_state.h"
 #include "opzioni.h"
+#include "pannello_debug.h"
 #include "scena_battaglia.h"
 #include "scontri_mappa.h"
 #include "regia_scena.h"
@@ -154,6 +155,7 @@ int main()
             // l'esplorazione e' gia' creata, col suo Ubaldo a schermo: il prologo e' a schermo intero e non lo
             // deve vedere (compariva a caso durante la cutscene C1). Torna con entra().
             esplorazione.sospendi();
+            bn::core::update();     // regole GBA 4.B.6
             gubbio::Storia prologo;
             prologo.prologo(palette);
         }
@@ -236,6 +238,7 @@ int main()
     // gli aiuti (MAI: cartelli ai varchi, promemoria di Select) nel gioco vero e nelle partite di prova 14 e 15,
     // che servono a fotografarli; spenti negli altri modi di prova
     esplorazione.attiva_aiuti(AIUTI_ATTIVI);
+    gubbio::PannelloDebug debug(palette);
 
 #ifdef GUBBIO_PRESTAZIONI
     // Le prestazioni (make USERFLAGS=-DGUBBIO_PRESTAZIONI): ogni 30 frame il frame piu' pesante, con il tempo
@@ -292,10 +295,14 @@ int main()
             storia.svuota();
             scontri.svuota();
             esplorazione.togli_compagni();
+            debug.spegni();
             gubbio::pausa(esplorazione, palette);
         }
 
-        if(bn::keypad::select_pressed() && AIUTI_ATTIVI)
+        // L+Select: il pannello di debug (CPU, EWRAM, IWRAM); allora Select non apre il promemoria
+        bool tasti_debug = debug.aggiorna();
+
+        if(bn::keypad::select_pressed() && AIUTI_ATTIVI && ! tasti_debug)
         {
             esplorazione.promemoria();
         }

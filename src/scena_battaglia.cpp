@@ -781,12 +781,12 @@ namespace
                 else
                 {
                     opzioni.push_back({ TestoId::BATT_ATTACCO, { TipoComando::USA_ABILITA, AbilitaId::ATTACCO, -1, 0 } });
-                    const AbilitaId proprie[EROI][2] = {
+                    constexpr AbilitaId proprie[EROI][2] = {
                         { AbilitaId::GIUDIZIO_DELLA_VERGA, AbilitaId::MURO_DELLA_FEDE },
                         { AbilitaId::FENDENTE_DEL_DRAGO, AbilitaId::BASTIONE_AZZURRO },
                         { AbilitaId::FUOCO_DI_SANTANTONIO, AbilitaId::FUOCO_DI_SANTANTONIO },
                     };
-                    const TestoId nomi[EROI][2] = {
+                    constexpr TestoId nomi[EROI][2] = {
                         { TestoId::BATT_GIUDIZIO, TestoId::BATT_MURO },
                         { TestoId::BATT_FENDENTE, TestoId::BATT_BASTIONE },
                         { TestoId::BATT_FUOCO, TestoId::BATT_FUOCO },
@@ -809,8 +809,8 @@ namespace
 
                     // i consumabili dell'inventario (quelli usabili, se ne restano); chi e' a digiuno non
                     // li usa, e servono un alleato che mangi (Ubaldo nel DIGIUNO non mangia)
-                    const OggettoId usabili[2] = { OggettoId::CRESCIA, OggettoId::BISCOTTI };
-                    const TestoId nomi_oggetti[2] = { TestoId::BATT_CRESCIA, TestoId::BATT_BISCOTTI };
+                    constexpr OggettoId usabili[2] = { OggettoId::CRESCIA, OggettoId::BISCOTTI };
+                    constexpr TestoId nomi_oggetti[2] = { TestoId::BATT_CRESCIA, TestoId::BATT_BISCOTTI };
                     bool puo_dare = ! eroe.a_digiuno && bersaglio_predefinito(g_scena, Puntamento::CHI_MANGIA) >= 0;
 
                     for(int k = 0; k < 2 && puo_dare; ++k)

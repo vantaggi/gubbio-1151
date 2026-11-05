@@ -1,4 +1,5 @@
 #include "folla_vista.h"
+#include "aritmetica.h"
 
 #include "bn_sprite_shape_size.h"
 #include "bn_sprite_tiles_ptr.h"
@@ -143,8 +144,27 @@ void Folla::prepara(int area, int fase, const Esplorazione& esplorazione, const 
     aggiorna(esplorazione, -1000, -1000, 0);       // tutti al loro posto prima del primo frame
 }
 
-void Folla::aggiorna(const Esplorazione& esplorazione, int px, int py, int frame)
+void Folla::aggiorna(const Esplorazione& esplorazione, int px, int py, int frame_vero)
 {
+    // Una sola divisione per frame, fuori dal giro dei viandanti (docs/regole_sviluppo_gba.md, punto 3): i ritmi
+    // della folla (lentezze 1-4, il becco ogni 20 frame, le pause su 110) dipendono solo da frame % GIRO, e
+    // dentro il giro si divide col reciproco (aritmetica.h).
+    constexpr int GIRO = 1320;              // multiplo comune di 3, 4, 40 e 110
+    constexpr int FINO = 1 << 15;           // il massimo dei dividendi qui sotto (indice < 256)
+    static_assert(GIRO % 3 == 0 && GIRO % 4 == 0 && GIRO % (2 * FRAME_BECCO) == 0 && GIRO % 110 == 0);
+    static_assert(255 * 53 + GIRO < FINO && 255 * 7 + GIRO < FINO);
+    int frame = frame_vero >= 0 ? frame_vero % GIRO : 0;
+    static_assert([] {
+        for(const Corrente& c : CORRENTE)
+        {
+            if(c.lentezza < 1 || c.lentezza > 4)
+            {
+                return false;
+            }
+        }
+        return true;
+    }(), "le lentezze della folla vanno da 1 a 4 (il giro qui sopra)");
+
     for(Viandante& v : _v)
     {
         const Corrente& c = GUBBIO_VOCE(CORRENTE, v.corrente);
@@ -221,19 +241,21 @@ void Folla::aggiorna(const Esplorazione& esplorazione, int px, int py, int frame
         }
         else
         {
-            muove = frame % c.lentezza == 0;
+            muove = c.lentezza == 1 || (c.lentezza == 2 ? (frame & 1) == 0 :
+                    (c.lentezza == 4 ? (frame & 3) == 0 : resto<3, GIRO>(frame) == 0));
         }
 
         if(muove)
         {
             v.s += v.verso;
-            ++v.passi;
+            // i passi girano su 36, multiplo comune dei due ritmi qui sotto (6 x 2 e 3 x 6)
+            v.passi = uint8_t(avanti(v.passi, 36));
 
             if(v.s <= 0 || v.s >= v.lunghezza)
             {
                 v.s = v.s <= 0 ? 0 : v.lunghezza;
                 v.verso = -v.verso;
-                v.pausa = (c.animale ? 40 : 70) + (v.indice * 53 + frame) % 110;
+                v.pausa = (c.animale ? 40 : 70) + resto<110, FINO>(v.indice * 53 + frame);
 
                 if(c.sparisce)
                 {
@@ -256,7 +278,7 @@ void Folla::aggiorna(const Esplorazione& esplorazione, int px, int py, int frame
             }
 
             // in cammino un passo ogni 6 pixel; fermi becchettano
-            int f = muove ? (v.passi / 6) % 2 : (v.pausa > 0 ? ((frame + v.indice * 7) / FRAME_BECCO) % 2 : 0);
+            int f = muove ? dividi<6, 36>(v.passi) & 1 : (v.pausa > 0 ? dividi<FRAME_BECCO, FINO>(frame + v.indice * 7) & 1 : 0);
             _carica(v, f);
             esplorazione.colloca_sulla_mappa(v.sprite, v.x, v.y, ALTEZZA_ANIMALE);
         }
@@ -264,7 +286,7 @@ void Folla::aggiorna(const Esplorazione& esplorazione, int px, int py, int frame
         {
             int direzione = dx ? DIREZIONE_DESTRA : (dy < 0 ? DIREZIONE_SU : DIREZIONE_GIU);
             v.sprite.set_horizontal_flip(dx < 0);
-            int f = muove || (v.pausa == 0 && vicino >= DAVANTI) ? (v.passi / PIXEL_PER_PASSO) % FOTOGRAMMI_PASSO : 0;
+            int f = muove || (v.pausa == 0 && vicino >= DAVANTI) ? resto<FOTOGRAMMI_PASSO, 12>(dividi<PIXEL_PER_PASSO, 36>(v.passi)) : 0;
             _carica(v, direzione * FOTOGRAMMI_PASSO + f);
             esplorazione.colloca_sulla_mappa(v.sprite, v.x, v.y, ALTEZZA_PASSANTE);
         }

@@ -24,6 +24,16 @@ matrice degli asset, aree e varchi. Sono generati dal codice con `python3 tools/
 `tests/test_architettura.py` fallisce se restano indietro. Lo stato della revisione a loop e' in
 [LOOP_PROGRESS.md](LOOP_PROGRESS.md). La ROM si compila con zero avvisi (`-Werror` nel Makefile).
 
+## Regole di sviluppo GBA
+
+Chi scrive codice C++ per il gioco (persone e thread di Claude) segue
+[docs/regole_sviluppo_gba.md](docs/regole_sviluppo_gba.md): niente float, contenitori `bn::`, tabelle
+`constexpr`, testo ridisegnato solo quando cambia, scene distrutte prima della successiva, campi delle struct
+dal piu' grande al piu' piccolo, niente divisioni software nel ciclo di ogni frame, pannello di debug con
+L+Select. Le regole sono controllate in automatico: `tools/controlla_regole_gba.py` (sul sorgente, nei test),
+`tools/controlla_divisioni.py` (sulla ROM, in `build.sh`), `tools/controlla_struct.py` (l'ordine dei campi,
+nella CI).
+
 ## Quale ROM fa fede
 
 **La ROM ufficiale e' l'artifact `gubbio1151-rom` della CI** (`.github/workflows/build.yml`),

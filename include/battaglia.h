@@ -91,13 +91,22 @@ enum class TipoComando : uint8_t
     OGGETTO,          // un consumabile (Comando::oggetto) su un alleato
 };
 
+// I campi vanno dal piu' grande al piu' piccolo (docs/regole_sviluppo_gba.md, punto 7): 12 byte invece di 16.
+// Il costruttore tiene l'ordine naturale delle chiamate, { tipo, abilita, bersaglio, boost }.
 struct Comando
 {
-    TipoComando tipo = TipoComando::USA_ABILITA;
-    AbilitaId abilita = AbilitaId::ATTACCO;
     int bersaglio = -1;         // -1: il bersaglio predefinito
     int boost = 0;
+    TipoComando tipo = TipoComando::USA_ABILITA;
+    AbilitaId abilita = AbilitaId::ATTACCO;
     OggettoId oggetto = OggettoId::CRESCIA;     // solo per OGGETTO
+
+    constexpr Comando() = default;
+
+    constexpr Comando(TipoComando t, AbilitaId a, int b, int bo) :
+        bersaglio(b), boost(bo), tipo(t), abilita(a)
+    {
+    }
 };
 
 struct Unita
@@ -115,22 +124,23 @@ struct Unita
     int scudo = 0;
     int scudo_max = 0;
     int rotto = 0;              // round di Shield Break rimasti
-    Elemento debolezza = Elemento::NESSUNO;
-    Elemento resiste = Elemento::NESSUNO;
     int ustione_cariche = 0;
     int ustione_danno = 0;
     int ustione_turni = 0;
     int guardia = 0;
-    bool carica = false;
-    bool nemico = false;
     int azioni = 1;
-    bool immune_al_taglio = false;
     int difesa_bonus = 0;       // percento in piu' (Scudo di Forgia)
-    bool a_digiuno = false;     // non mangia: nessun consumabile da lui ne' su di lui (Ubaldo nel DIGIUNO)
     int script = 0;
     int ia_round = 0;           // i round in cui l'unita' ha agito, per le condizioni dell'IA
     uint32_t ia_battaglia = 0;  // un bit per regola: gia' usata in questa battaglia
     uint32_t ia_round_bit = 0;  // un bit per regola: gia' usata in questo round
+    // i campi da un byte in fondo (docs/regole_sviluppo_gba.md, punto 7): 100 byte invece di 108
+    Elemento debolezza = Elemento::NESSUNO;
+    Elemento resiste = Elemento::NESSUNO;
+    bool carica = false;
+    bool nemico = false;
+    bool immune_al_taglio = false;
+    bool a_digiuno = false;     // non mangia: nessun consumabile da lui ne' su di lui (Ubaldo nel DIGIUNO)
 
     [[nodiscard]] constexpr bool vivo() const
     {
@@ -236,8 +246,8 @@ struct Firma
     uint32_t hash = 2166136261u;    // FNV-1a su tutti gli eventi, nell'ordine
     int eventi = 0;
     int round = 0;
-    Esito esito = Esito::IN_CORSO;
     uint32_t tipi = 0;              // un bit per EventKind emesso
+    Esito esito = Esito::IN_CORSO;
     bool traboccato = false;        // un round ha superato EVENTI_ROUND_MAX
 };
 
@@ -441,8 +451,8 @@ private:
     int _n_azioni = 0;
     Evento _eventi[EVENTI_ROUND_MAX] = {};
     int _n_eventi_round = 0;
-    Fase _fase = Fase::SCELTA_COMANDI;
     Firma _firma;
+    Fase _fase = Fase::SCELTA_COMANDI;
     bool _pilota_debole = false;
 
     static constexpr Unita da_statistiche(const Statistiche& s, bool nemico)

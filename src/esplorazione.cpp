@@ -1,4 +1,5 @@
 #include "esplorazione.h"
+#include "aritmetica.h"
 
 #include "bn_bg_palette_item.h"
 #include "bn_blending.h"
@@ -35,6 +36,8 @@ namespace
     constexpr int LARGHEZZA_SCHERMO = 240;
     constexpr int ALTEZZA_SCHERMO = 160;
     constexpr int PASSI_DISSOLVENZA = 8;
+    // il reciproco precalcolato: per moltiplicare invece di dividere (docs/regole_sviluppo_gba.md, punto 3)
+    constexpr bn::fixed UN_PASSO_DI_DISSOLVENZA = bn::fixed(1) / PASSI_DISSOLVENZA;
     constexpr int FRAME_ETICHETTA = 150;
     // Etichetta chiara con ombra scura: si legge sui suoli chiari, sui tetti e sul fondo nero.
     constexpr int INCHIOSTRO_ETICHETTA = 2;
@@ -233,7 +236,9 @@ namespace
     // Il passo della camera verso il bersaglio: un sesto della distanza, almeno un pixel, mai oltre.
     constexpr int verso_il_bersaglio(int distanza)
     {
-        int passo = distanza / PASSI_CAMERA;
+        // col reciproco (aritmetica.h), troncando verso lo zero come la divisione: le distanze stanno nell'area
+        int modulo = dividi<PASSI_CAMERA, 1 << 14>(distanza < 0 ? -distanza : distanza);
+        int passo = distanza < 0 ? -modulo : modulo;
         return passo != 0 ? passo : (distanza > 0 ? 1 : (distanza < 0 ? -1 : 0));
     }
 
@@ -241,9 +246,11 @@ namespace
     static_assert(verso_il_bersaglio(60) == 10 && verso_il_bersaglio(-60) == -10);
 
     // MAI: le entrate dei riquadri degli aiuti (A2, A3): di quanto sono fuori al passo k (k = 0: al posto loro).
-    constexpr int fuori_di(int k, int passi, int altezza)
+    // k * (altezza + 1) / PASSI, col reciproco (aritmetica.h): k <= PASSI e l'altezza sta nello schermo
+    template<int PASSI>
+    constexpr int fuori_di(int k, int altezza)
     {
-        return k * (altezza + 1) / passi;
+        return dividi<PASSI, (PASSI + 1) * 256>(k * (altezza + 1));
     }
 }
 
@@ -649,8 +656,9 @@ void Esplorazione::_anima_giocatore()
     else
     {
         _camminata = mondo::Camminata();
-        ++_fermo;
-        fotogramma = (_fermo / mondo::GIOCATORE_VBLANK_RESPIRO) % 2 ? mondo::GIOCATORE_RESPIRO : mondo::GIOCATORE_RIPOSO;
+        // il respiro: RESPIRO vblank fermo, RESPIRO col petto alzato; il contatore gira su due respiri, senza modulo
+        _fermo = avanti(_fermo, 2 * mondo::GIOCATORE_VBLANK_RESPIRO);
+        fotogramma = _fermo >= mondo::GIOCATORE_VBLANK_RESPIRO ? mondo::GIOCATORE_RESPIRO : mondo::GIOCATORE_RIPOSO;
     }
 
     int direzione = _direzione == SINISTRA ? DESTRA : _direzione;
@@ -805,7 +813,7 @@ void Esplorazione::_segna_orme()
             y += y < _e.y ? 1 : -1;
         }
 
-        _orma = (_orma + 1) % ORME;
+        _orma = avanti(_orma, ORME);
         _orme[_orma] = { int16_t(x), int16_t(y) };
         _orme_n = _orme_n < ORME ? _orme_n + 1 : ORME;
     }
@@ -831,7 +839,7 @@ void Esplorazione::_anima_compagni()
         sprite.set_camera(_camera);
         sprite.set_blending_enabled(_scura);
         // il nuovo compagno esce da dietro Ubaldo: l'orma piu' vecchia che c'e'
-        Orma o = _orme[_orme_n > 0 ? (_orma - (_orme_n - 1) + ORME) % ORME : _orma];
+        Orma o = _orme[_orme_n > 0 ? giro(_orma - (_orme_n - 1), ORME) : _orma];
         _fila.push_back(Compagno{ bn::move(sprite), o.x, o.y, _direzione == SINISTRA ? int(DESTRA) : _direzione, {}, 0, -1 });
     }
 
@@ -844,12 +852,12 @@ void Esplorazione::_anima_compagni()
         // orme sono poche, la piu' vecchia
         for(int costo = 0; costo < COMPAGNO_DISTANZA && indietro < _orme_n - 1; ++indietro)
         {
-            Orma a = _orme[(_orma - indietro + ORME) % ORME];
-            Orma b = _orme[(_orma - indietro - 1 + ORME) % ORME];
+            Orma a = _orme[giro(_orma - indietro, ORME)];
+            Orma b = _orme[giro(_orma - indietro - 1, ORME)];
             costo += a.x != b.x ? COSTO_LATO : COSTO_SU;
         }
 
-        Orma o = _orme[(_orma - indietro + ORME) % ORME];
+        Orma o = _orme[giro(_orma - indietro, ORME)];
         int dx = o.x - c.x;
         int dy = o.y - c.y;
         bool mosso = dx || dy;
@@ -875,9 +883,12 @@ void Esplorazione::_anima_compagni()
         else
         {
             c.camminata = mondo::Camminata();
-            ++c.fermo;
-            int sfasato = c.fermo + (i + 1) * 17;
-            fotogramma = (sfasato / mondo::GIOCATORE_VBLANK_RESPIRO) % 2 ? mondo::GIOCATORE_RESPIRO : mondo::GIOCATORE_RIPOSO;
+            // come Ubaldo, il contatore gira su due respiri; lo sfasamento si somma e si riporta nel giro
+            constexpr int DUE_RESPIRI = 2 * mondo::GIOCATORE_VBLANK_RESPIRO;
+            static_assert(COMPAGNI_MAX * 17 < DUE_RESPIRI, "lo sfasamento sta in un giro");
+            c.fermo = avanti(c.fermo, DUE_RESPIRI);
+            int sfasato = giro(c.fermo + (i + 1) * 17, DUE_RESPIRI);
+            fotogramma = sfasato >= mondo::GIOCATORE_VBLANK_RESPIRO ? mondo::GIOCATORE_RESPIRO : mondo::GIOCATORE_RIPOSO;
         }
 
         int direzione = c.direzione == SINISTRA ? DESTRA : c.direzione;
@@ -912,10 +923,12 @@ void Esplorazione::sincronizza(mondo::Evento evento)
 void Esplorazione::aggiorna()
 {
     // i riflessi del torrente nelle stanze della gola: i due colori dell'acqua si scambiano
-    if(mondo::area(_area_caricata).cupa && ++_riflessi % FRAME_RIFLESSI == 0)
+    // (il contatore gira su due scambi, senza modulo: 0 e FRAME_RIFLESSI sono i due momenti dello scambio)
+    if(mondo::area(_area_caricata).cupa &&
+       ((_riflessi = avanti(_riflessi, 2 * FRAME_RIFLESSI)) == 0 || _riflessi == FRAME_RIFLESSI))
     {
         const Colori& c = COLORI_FONDALI_CUPI;
-        bool scambio = (_riflessi / FRAME_RIFLESSI) % 2;
+        bool scambio = _riflessi == FRAME_RIFLESSI;
         _palette.set_color(COLORE_ACQUA, c.colori[scambio ? COLORE_ACQUA_CHIARA : COLORE_ACQUA]);
         _palette.set_color(COLORE_ACQUA_CHIARA, c.colori[scambio ? COLORE_ACQUA : COLORE_ACQUA_CHIARA]);
     }
@@ -924,7 +937,7 @@ void Esplorazione::aggiorna()
     if(_dissolvenza > 0)
     {
         --_dissolvenza;
-        bn::fixed intensita = bn::fixed(PASSI_DISSOLVENZA - _dissolvenza) / PASSI_DISSOLVENZA;
+        bn::fixed intensita = UN_PASSO_DI_DISSOLVENZA * (PASSI_DISSOLVENZA - _dissolvenza);
         bn::bg_palettes::set_fade(bn::color(0, 0, 0), intensita);
         bn::sprite_palettes::set_fade(bn::color(0, 0, 0), intensita);
 
@@ -940,7 +953,7 @@ void Esplorazione::aggiorna()
     if(_dissolvenza < 0)
     {
         ++_dissolvenza;
-        bn::fixed intensita = bn::fixed(-_dissolvenza) / PASSI_DISSOLVENZA;
+        bn::fixed intensita = UN_PASSO_DI_DISSOLVENZA * -_dissolvenza;
         bn::bg_palettes::set_fade(bn::color(0, 0, 0), intensita);
         bn::sprite_palettes::set_fade(bn::color(0, 0, 0), intensita);
     }
@@ -986,8 +999,8 @@ void Esplorazione::aggiorna()
     // il fumetto oscilla di un pixel ogni FUMETTO_OSCILLA vblank (STANDARD I2)
     if(_fumetto_acceso)
     {
-        int su = (_oscilla / mondo::FUMETTO_OSCILLA) % 2;
-        _oscilla = (_oscilla + 1) % (2 * mondo::FUMETTO_OSCILLA);
+        int su = _oscilla >= mondo::FUMETTO_OSCILLA ? 1 : 0;
+        _oscilla = avanti(_oscilla, 2 * mondo::FUMETTO_OSCILLA);
         _fumetto.set_position(_fumetto_x - _mezza_larghezza_mappa, _fumetto_y - su - _mezza_altezza_mappa);
         _fumetto.set_visible(true);
     }
@@ -1178,7 +1191,7 @@ void Esplorazione::_anima_promemoria()
         return;
     }
 
-    int su = fuori_di(k, E, _promemoria_alto + aiuti::PROMEMORIA_Y0);
+    int su = fuori_di<E>(k, _promemoria_alto + aiuti::PROMEMORIA_Y0);
     _promemoria_fondo->sposta(aiuti::PROMEMORIA_X0, aiuti::PROMEMORIA_Y0 - su);
     _promemoria->sposta(aiuti::PROMEMORIA_TESTO_X, aiuti::PROMEMORIA_Y0 + aiuti::PROMEMORIA_TESTO_DY - su);
 
@@ -1186,7 +1199,7 @@ void Esplorazione::_anima_promemoria()
     {
         // in basso esce dal basso; sotto il promemoria (posto_della_targa) esce con lui, dall'alto
         bool in_basso = _targa_y == aiuti::TARGA_Y0;
-        int via = fuori_di(k, E, in_basso ? aiuti::SCHERMO_A - _targa_y : _targa_y + aiuti::TARGA_ALTEZZA);
+        int via = fuori_di<E>(k, in_basso ? aiuti::SCHERMO_A - _targa_y : _targa_y + aiuti::TARGA_ALTEZZA);
         int y = _targa_y + (in_basso ? via : -via);
         _targa->sposta(_targa_x, y);
         _targa_nome->sposta(_targa_x + 4, y + 3);
@@ -1195,9 +1208,9 @@ void Esplorazione::_anima_promemoria()
         {
             int fermo = t - E - 1;
 
-            if(fermo % aiuti::FRAME_LAMPO == 0)
+            if(resto<aiuti::FRAME_LAMPO, FERMO>(fermo) == 0)
             {
-                _disegna_freccia_della_targa((fermo / aiuti::FRAME_LAMPO) % 2 == 1);
+                _disegna_freccia_della_targa((dividi<aiuti::FRAME_LAMPO, FERMO>(fermo) & 1) == 1);
             }
         }
     }

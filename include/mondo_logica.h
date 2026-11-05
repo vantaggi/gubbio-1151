@@ -402,7 +402,7 @@ private:
             int i = _coda[testa++];
             int x = i % w;
             int y = i / w;
-            const int passi[4][2] = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+            constexpr int passi[4][2] = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
 
             for(const auto& p : passi)
             {

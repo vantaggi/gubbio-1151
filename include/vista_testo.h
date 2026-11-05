@@ -68,6 +68,7 @@ public:
     void mostra_frazione(int a, int b);         // "2/3": i contatori degli incarichi (MDI)
     void mostra_volte(int n);                   // "x2": i viveri della bisaccia (MBI)
     void mostra_su(int n);                      // "331/": la prima meta' di una frazione troppo larga per uno sprite
+    void mostra_con_lettera(char lettera, int n);   // "C85": le misure del pannello di debug (L+Select)
     void colloca(int x, int y);     // angolo in alto a sinistra, in pixel dello schermo
     // Con il bordo destro in x_destra (i numeri allineati a destra dei menu, MPA).
     void colloca_a_destra(int x_destra, int y)
@@ -79,15 +80,25 @@ public:
         return _larghezza;
     }
     void nascondi();
+    // Sopra ogni fondo e ogni altro sprite (il pannello di debug).
+    void porta_sopra(int z);
 
 private:
+    // Le scritte piu' lunghe: una frazione di due interi da 6 caratteri ("-32768/-32768").
+    static constexpr int SCRITTO_MAX = 14;
+
     void _scrivi(const char* caratteri, int n);
 
+    bn::sprite_tiles_ptr _tiles;
+    bn::sprite_ptr _sprite;
     int _inchiostro;
     int _contorno;
     int _larghezza = 0;
-    bn::sprite_tiles_ptr _tiles;
-    bn::sprite_ptr _sprite;
+    // Testo pigro (docs/regole_sviluppo_gba.md, 4.A.1): l'ultima scritta disegnata. Se la prossima e' uguale
+    // i tile non si ridisegnano, cosi' chi chiama mostra() a ogni frame non paga niente finche' il valore
+    // non cambia. -1: niente ancora di disegnato.
+    int _n_scritto = -1;
+    char _scritto[SCRITTO_MAX] = {};
 };
 
 // Palette degli sprite di testo: quella della cornice (scelta 9), indice 0 trasparente.

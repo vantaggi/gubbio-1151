@@ -1,4 +1,5 @@
 #include "storia_scena.h"
+#include "aritmetica.h"
 
 #include "bn_bg_palettes.h"
 #include "bn_color.h"
@@ -1133,6 +1134,10 @@ void Storia::_anima_npc()
     }
 
     _parla = -1;
+    // una divisione per frame, fuori dal giro degli NPC (docs/regole_sviluppo_gba.md, punto 3): il respiro
+    // dipende solo da frames % 60; dentro il giro si divide col reciproco (aritmetica.h)
+    constexpr int DUE_RESPIRI = 2 * FRAME_RESPIRO;
+    int giro_respiro = int(g_game_state.frames % uint32_t(DUE_RESPIRI));
 
     for(int j = 0; j < _npc.size(); ++j)
     {
@@ -1142,7 +1147,7 @@ void Storia::_anima_npc()
         }
 
         Posto qui = posto_di(_indici[j]);
-        int fase = ((int(g_game_state.frames) + (qui.tx + qui.ty) * 17) / FRAME_RESPIRO) % 2;
+        int fase = dividi<FRAME_RESPIRO>(giro_respiro + (qui.tx + qui.ty) * 17) & 1;
         int posa = fase ? POSA_RESPIRO : POSA_RIPOSO;
 
         if(posa != _posa[j])

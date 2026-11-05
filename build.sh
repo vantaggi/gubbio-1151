@@ -92,6 +92,8 @@ fi
 make -j"$(nproc 2> /dev/null || echo 4)" "$@"
 
 bash tools/check_zero_heap.sh gubbio1151.elf
+# niente divisioni software nelle funzioni di ogni frame dell'esplorazione (docs/regole_sviluppo_gba.md)
+python3 tools/controlla_divisioni.py gubbio1151.elf
 
 echo "[rom] SHA-256 $(sha256sum gubbio1151.gba | awk '{print $1}')  gubbio1151.gba"
 
