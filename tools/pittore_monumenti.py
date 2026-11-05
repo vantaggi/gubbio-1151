@@ -537,7 +537,24 @@ def duomo(w, h, info):
                 t.punto(x, y, LEGNO_SCURO if x in (cx - 7, cx, cx + 7) or x % 3 == 0 else LEGNO)
         t.rett(cx - 17, base - 2, 34, 1, PIETRA_LUCE)                            # scalino
         t.rett(cx - 18, base - 1, 36, 1, PIETRA_CHIARA)
-        rosone(t, largo // 2, (h - fh) * 8 + 14, 8)
+        # giro 5 della fedelta' (it.wikipedia): sopra il portale la grande finestra attorniata da cinque
+        # bassorilievi (i simboli dei quattro evangelisti e l'Agnus Dei): quattro formelle agli angoli e una in cima
+        ry = (h - fh) * 8 + 16
+        rosone(t, cx, ry, 10)
+        for dx, dy in ((-18, -9), (14, -9), (-18, 5), (14, 5), (-2, -17)):
+            t.rett(cx + dx, ry + dy, 5, 5, PIETRA_LUCE)
+            t.rett(cx + dx + 1, ry + dy + 1, 3, 3, PIETRA)
+            t.punto(cx + dx + 2, ry + dy + 2, PIETRA_CHIARA)
+        t.elementi["bassorilievi"] += 5
+        # la robusta torre campanaria medievale accanto alla chiesa, che sale sopra il tetto (silhouette)
+        tx, tw = largo - 40, 24
+        t.conci(tx, 4, tw, (h - fh) * 8 - 4, TINTE[0])
+        t.rett(tx + tw - 2, 4, 2, (h - fh) * 8 - 4, PIETRA)
+        t.merli(tx, 0, tw, TINTE[0])
+        t.arco(tx + 3, 12, 8, 12, CONTORNO)
+        t.arco(tx + 13, 12, 8, 12, CONTORNO)
+        t.rett(tx + 2, 25, tw - 4, 1, PIETRA_LUCE)
+        t.elementi["campanile"] += 1
     t.elementi["portale_acuto"] += 1
     t.elementi["rosone"] += 1
     t.contorno()
@@ -572,17 +589,55 @@ def ducale(w, h, info):
         t.elementi["finestre_retro"] += 1
     cw, ch = (w * 8) * 2 // 5, (h * 8) * 2 // 5
     cx0, cy0 = (w * 8 - cw) // 2 + spostamento, (h * 8 - ch) // 2
-    t.rett(cx0 - 3, cy0 - 3, cw + 6, ch + 6, CONTORNO)
-    t.conci(cx0, cy0, cw, ch, (PIETRA_LUCE, PIETRA_CHIARA, PIETRA_LUCE))
-    for x in range(cx0, cx0 + cw - 6, 8):
-        t.arco(x + 1, cy0, 6, 6, PIETRA_SCURA)
-        t.arco(x + 1, cy0 + ch - 6, 6, 6, PIETRA_SCURA)
-    for y in range(cy0 + 8, cy0 + ch - 8, 8):
-        t.arco(cx0, y, 6, 6, PIETRA_SCURA)
-        t.arco(cx0 + cw - 6, y, 6, 6, PIETRA_SCURA)
+    cortile_ducale(t, cx0, cy0, cw, ch)
     t.elementi["cortile"] += 1
     t.contorno()
     return t
+
+
+def cortile_ducale(t, x0, y0, cw, ch):
+    """Il cortile d'onore del Ducale (giro 5 della fedelta'): visto dall'alto in 3/4 si vede in piedi la parete di
+    fondo, col portico ad archi su colonne di pietra serena (grigia) e sopra il piano nobile di mattoni con le
+    finestre fra le lesene; ai lati i portici di scorcio (le colonne in fila); in mezzo il lastrico chiaro."""
+    serena, serena_luce, serena_ombra = PIETRA, PIETRA_CHIARA, PIETRA_SCURA
+    # il bordo del tetto intorno, nel tono scuro del cotto (niente nero: P2)
+    t.rett(x0 - 3, y0 - 3, cw + 6, ch + 6, COTTO_SCURO)
+    t.rett(x0 - 1, y0 - 1, cw + 2, ch + 2, ("cotto e coppi", 1))
+    for y in range(y0, y0 + ch):
+        for x in range(x0, x0 + cw):
+            t.punto(x, y, PC.colore_suolo("lastrico", x, y))
+    # la parete di fondo: piano nobile di mattoni (meta' alta) e portico (meta' bassa)
+    alta = min(40, ch // 2)
+    nobile = alta * 2 // 5
+    for y in range(y0, y0 + nobile):
+        for x in range(x0, x0 + cw):
+            t.punto(x, y, COTTO_CHIARO if (y % 3 and (x + (y // 3) * 3) % 6) else COTTO)
+    passo = 12
+    campate = (cw - 2) // passo
+    inizio = x0 + (cw - campate * passo) // 2
+    for x in range(inizio, inizio + campate * passo, passo):
+        t.rett(x + 3, y0 + 2, 6, nobile - 5, serena_luce)          # la cornice della finestra
+        t.rett(x + 4, y0 + 3, 4, nobile - 7, CONTORNO)
+        t.rett(x, y0, 1, nobile, serena)                           # le lesene
+    t.rett(x0, y0 + nobile - 2, cw, 2, serena_luce)                 # la cornice fra i piani
+    t.rett(x0, y0 + nobile, cw, alta - nobile, PIETRA_SCURA)       # il buio del portico
+    for x in range(inizio, inizio + campate * passo, passo):
+        t.arco(x + 1, y0 + nobile + 1, passo - 2, alta - nobile - 1, PIETRA_SCURA, serena_luce)
+        t.rett(x, y0 + nobile, 2, alta - nobile, serena_luce)     # la colonna, in luce a sinistra
+        t.rett(x + 1, y0 + nobile, 1, alta - nobile, serena_ombra)
+    x = inizio + campate * passo
+    t.rett(x, y0 + nobile, 2, alta - nobile, serena_luce)
+    t.rett(x + 1, y0 + nobile, 1, alta - nobile, serena_ombra)
+    t.rett(x0, y0 + alta, cw, 1, PIETRA)                            # il gradino del portico
+    # i portici ai lati, di scorcio: le colonne in fila sul bordo
+    t.rett(x0, y0 + alta, 6, ch - alta, PIETRA_SCURA)
+    t.rett(x0 + cw - 6, y0 + alta, 6, ch - alta, PIETRA_SCURA)
+    for y in range(y0 + alta + 4, y0 + ch - 3, 10):
+        for x in (x0 + 4, x0 + cw - 7):
+            t.rett(x, y, 3, 4, PIETRA_LUCE)
+            t.rett(x + 2, y, 1, 4, PIETRA)
+    t.elementi["portico"] += 1
+    t.elementi["pietra_serena"] += 1
 
 
 def san_francesco(w, h, info):

@@ -87,5 +87,20 @@ class Giro4Teatro(unittest.TestCase):
             self.assertGreaterEqual(t.elementi[segno], 1)
 
 
+class Giro5DuomoDucale(unittest.TestCase):
+    def test_duomo_coi_bassorilievi_e_il_campanile(self):
+        t = PM.dipingi("duomo", "Cattedrale", 42, 22, "basso", {}, 0)
+        self.assertEqual(t.elementi["bassorilievi"], 5)
+        self.assertEqual(t.elementi["campanile"], 1)
+        # il campanile sale sopra il tetto: in cima alla tela ci sono i suoi merli di pietra, non coppi
+        alto = [t.get(x, 1) for x in range(t.w - 40, t.w - 16)]
+        self.assertTrue(any(c and c[0] == "pietra calcarea" for c in alto))
+
+    def test_cortile_del_ducale_col_portico(self):
+        t = PM.dipingi("ducale", "Palazzo Ducale", 38, 31, "basso", {}, 0)
+        self.assertEqual(t.elementi["portico"], 1)
+        self.assertEqual(t.elementi["pietra_serena"], 1)
+
+
 if __name__ == "__main__":
     unittest.main()
