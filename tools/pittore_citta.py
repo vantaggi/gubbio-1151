@@ -974,6 +974,12 @@ def dipingi_lampione(q, x, y):
     q.conta("braciere")
 
 
+def _ottagono(u, v):
+    """La 'distanza' di un ottagono regolare (1 sul bordo), al quadrato come quella dell'ellisse."""
+    au, av = abs(u), abs(v)
+    return max(au, av, (au + av) * 0.76) ** 2
+
+
 def dipingi_fontana(q, x0, y0, w, h):
     """La Fontana dei Matti in 3/4 (M6): la vasca tonda vista dall'alto e' un'ellisse schiacciata a due terzi, con
     l'orlo chiaro in alto a sinistra, la parete davanti in piedi (3 pixel, piu' scura) e l'acqua con i riflessi;
@@ -986,8 +992,9 @@ def dipingi_fontana(q, x0, y0, w, h):
     rx, ry = W / 2 - 1, (H / 2 - 2) * 0.85
     for yy in range(Y0, Y0 + H):
         for xx in range(X0, X0 + W):
-            d = ((xx - cx) / rx) ** 2 + ((yy - cy) / ry) ** 2
-            sotto = ((xx - cx) / rx) ** 2 + ((yy - cy - 3) / ry) ** 2
+            # giro 2 della fedelta' (5 nov 2026): la vasca vera e' ottagonale, non tonda
+            d = _ottagono((xx - cx) / rx, (yy - cy) / ry)
+            sotto = _ottagono((xx - cx) / rx, (yy - cy - 3) / ry)
             if d <= 1:
                 if d > 0.72:
                     c = (P, 4) if (xx < cx or yy < cy) else (P, 3)
@@ -998,16 +1005,18 @@ def dipingi_fontana(q, x0, y0, w, h):
                 q.punto(xx, yy, c)
             elif sotto <= 1 and yy > cy:
                 q.punto(xx, yy, (P, 2) if xx < cx else (P, 1))
-    # il fusto, la tazza e lo zampillo
-    fx = int(cx)
-    q.rett(fx - 1, int(cy) - 1, 3, 4, (P, 3))
-    q.rett(fx + 1, int(cy) - 1, 1, 4, (P, 2))
-    q.rett(fx - 3, int(cy) - 3, 7, 2, (P, 4))
-    q.rett(fx - 3, int(cy) - 2, 7, 1, (P, 2))
-    q.punto(fx, int(cy) - 5, (A, 4))
-    q.punto(fx, int(cy) - 4, (A, 3))
-    q.punto(fx - 2, int(cy) - 4, (A, 4))
-    q.punto(fx + 2, int(cy) - 4, (A, 4))
+    # il fusto, la tazza e lo zampillo: il fusto sale sopra l'orlo, cosi' la sagoma si legge anche piccola
+    fx, ct = int(cx), max(Y0 + 2, int(cy) - 9)
+    q.rett(fx - 1, ct + 2, 3, int(cy) + 3 - ct - 2, (P, 3))
+    q.rett(fx - 1, ct + 2, 1, int(cy) + 3 - ct - 2, (P, 4))
+    q.rett(fx + 1, ct + 2, 1, int(cy) + 3 - ct - 2, (P, 2))
+    q.rett(fx - 3, ct, 7, 2, (P, 4))
+    q.rett(fx - 3, ct + 1, 7, 1, (P, 2))
+    q.punto(fx, ct - 2, (A, 4))
+    q.punto(fx, ct - 1, (A, 3))
+    for k in (-4, 4):
+        for yy in range(ct + 2, int(cy) + 1, 2):
+            q.punto(fx + k, yy, (A, 4))
     q.conta("fontana")
 
 

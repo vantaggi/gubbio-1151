@@ -294,6 +294,15 @@ def bargello(w, h, info):
     hf = max(6, min(14, fh * 8 - 32))   # le finestre si accorciano perche' il portale resti di 26 pixel
     for k in range(2):
         t.arco(largo // 2 - 17 + k * 22, y0 + 3, 12, hf, CONTORNO)
+        # giro 2: la finestra centinata, col davanzale su una mensola di pietra
+        t.rett(largo // 2 - 18 + k * 22, y0 + 3 + hf, 14, 1, PIETRA_LUCE)
+        t.rett(largo // 2 - 14 + k * 22, y0 + 4 + hf, 6, 1, PIETRA_SCURA)
+    t.elementi["finestra_centinata"] += 1
+    # le cornici marcapiano che dividono i piani, a tutta larghezza
+    for y in (y0 + 1, y0 + 6 + hf):
+        t.rett(0, y, largo, 1, PIETRA_LUCE)
+        t.rett(0, y + 1, largo, 1, PIETRA)
+    t.elementi["marcapiano"] += 2
     base = y0 + fh * 8
     portale_in_scala(t, largo // 2 - 4, base, y0 + 5 + hf)
     t.elementi["portale"] += 1
