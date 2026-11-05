@@ -1532,48 +1532,79 @@ def _solida_cella(c):
 
 # --- il torrente scoperto (giro 3 della fedelta', 5 nov 2026) ------------------------------------------------------
 def dipingi_torrente(q, g, w, h):
-    """Il Camignano a San Martino: scorre in un canale di pietra fra le case (le sponde, a sinistra in luce e a
-    destra in ombra, L1), l'acqua nei toni medi con le scie della corrente; dove taglia la via c'e' il Ponte di San
-    Martino di pietra, col parapetto e, sotto, la volta da cui esce l'acqua."""
+    """Il Camignano a San Martino: una via d'acqua aperta fra le case. Le celle di bordo del canale sono le sponde
+    di pietra (conci P2/P3 coi giunti P1: quella di sinistra ha la faccia verso l'acqua in ombra e getta l'ombra
+    sull'acqua, quella di destra ha la faccia in luce), in mezzo l'acqua in tre blu (A1 nell'ombra della sponda,
+    A2, le increspature A3) con qualche riflesso chiaro. In cima esce da una volta nel muro, in fondo va sotto le
+    case; dove taglia la via c'e' il Ponte di San Martino di pietra, col parapetto. Niente nero: il vano aperto
+    e' delle porte vere (regola del custode visivo)."""
     acqua = {(x, y) for y in range(h) for x in range(w) if g[y][x] == "~"}
     ponte = {(x, y) for y in range(h) for x in range(w) if g[y][x] == "+"}
     if not acqua:
         return
+    canale = acqua | ponte
+    sponde = set()
     for (x, y) in acqua:
-        sx = (x - 1, y) not in acqua and (x - 1, y) not in ponte     # sponda a sinistra
-        dx = (x + 1, y) not in acqua and (x + 1, y) not in ponte
+        # una sponda e' il bordo di una fila larga almeno 3 (le file di 1-2 celle sono tutta acqua)
+        x0 = x
+        while (x0 - 1, y) in canale:
+            x0 -= 1
+        x1 = x
+        while (x1 + 1, y) in canale:
+            x1 += 1
+        if x1 - x0 >= 2 and x in (x0, x1):
+            sponde.add((x, y))
+    corrente = acqua - sponde
+    for (x, y) in sponde:
+        sinistra = (x + 1, y) in canale
         for yy in range(y * 8, y * 8 + 8):
             for xx in range(x * 8, x * 8 + 8):
                 u = xx - x * 8
-                if sx and u < 3:
-                    c = (P, 3) if u == 0 else (P, 2)
-                elif dx and u > 4:
-                    c = (P, 1) if u == 7 else (P, 2)
+                fila = yy // 4
+                giunto = (xx + (3 if fila % 2 else 0)) % 6 == 0
+                if yy % 4 == 3 or giunto:
+                    c = (P, 1)
+                elif yy % 4 == 0 or (xx + (3 if fila % 2 else 0)) % 6 == 1:
+                    c = (P, 3)
                 else:
-                    scia = (yy * 3 + xx * 5 + (xx // 3) * 7) % 13 < 2
-                    c = (A, 3) if scia else ((A, 1) if (xx + yy // 2) % 9 == 0 else (A, 2))
-                    if sx is False and (x - 1, y) not in acqua and u < 2:
-                        c = (A, 1)
+                    c = (P, 2)
+                if sinistra and u == 7:
+                    c = (P, 1)                     # la faccia verso l'acqua, in ombra
+                elif sinistra and u == 6:
+                    c = (P, 4) if yy % 4 != 3 else (P, 1)   # lo spigolo del coronamento
+                elif not sinistra and u == 0:
+                    c = (P, 4) if yy % 4 != 3 else (P, 2)   # la faccia verso l'acqua, in luce
+                elif not sinistra and u == 7 or sinistra and u == 0:
+                    c = (P, 1)                     # il piede delle case
+                q.px[yy][xx] = c
+                q.tipo[yy][xx] = "basso"
+    for (x, y) in corrente:
+        for yy in range(y * 8, y * 8 + 8):
+            for xx in range(x * 8, x * 8 + 8):
+                vicino_sx = (xx // 8 - 1, y) in sponde and xx % 8 < 3
+                vicino_dx = (xx // 8 + 1, y) in sponde and xx % 8 > 6
+                onda = (yy * 2 + (xx // 4) * 5) % 12
+                if vicino_sx:
+                    c = (A, 1)                     # l'ombra della sponda di sinistra
+                elif onda in (0, 1) and (xx // 2 + yy // 6) % 4 != 3:
+                    c = (A, 3)                     # le increspature della corrente
+                elif vicino_dx:
+                    c = (A, 3) if yy % 3 else (A, 2)  # la luce che batte sulla sponda di destra
+                else:
+                    c = (A, 2)
+                if onda == 0 and (xx * 7 + yy * 3) % 23 == 0:
+                    c = (P, 4)                     # un riflesso chiaro
                 q.px[yy][xx] = c
                 q.tipo[yy][xx] = "acqua"
-        # l'acqua entra sotto il ponte: l'ombra della volta
-        if (x, y + 1) in ponte:
-            for yy in range(y * 8 + 5, y * 8 + 8):
-                for xx in range(x * 8 + (3 if sx else 0), x * 8 + (5 if dx else 8)):
-                    q.px[yy][xx] = (A, 1)
-        # l'acqua va sotto le case (coperta): l'ombra della gronda e della volta
-        if (x, y + 1) not in acqua and (x, y + 1) not in ponte:
+        # l'acqua entra sotto il ponte o va sotto le case: l'ombra della volta
+        if (x, y + 1) not in canale or (x, y + 1) in ponte:
             for yy in range(y * 8 + 4, y * 8 + 8):
-                for xx in range(x * 8 + (3 if sx else 0), x * 8 + (5 if dx else 8)):
-                    q.px[yy][xx] = (P, 0) if yy >= y * 8 + 6 else (A, 1)
-        # e ne esce (dal ponte o da sotto le mura): la faccia di pietra con la volta buia sopra l'acqua
-        if (x, y - 1) not in acqua:
-            for yy in range(y * 8, y * 8 + 6):
                 for xx in range(x * 8, x * 8 + 8):
-                    q.px[yy][xx] = (P, 2) if (xx + yy * 3) % 7 else (P, 1)
+                    q.px[yy][xx] = (A, 1) if yy >= y * 8 + 6 or (xx + yy) % 2 else q.px[yy][xx]
+    # dove esce (in cima, da sotto le case, o dal ponte): il muro di pietra con la volta, in ombra di blu
     righe = {}
-    for (x, y) in acqua:
-        if (x, y - 1) not in acqua:
+    for (x, y) in corrente:
+        if (x, y - 1) not in canale or (x, y - 1) in ponte:
             righe.setdefault(y, []).append(x)
     for y, xs in righe.items():
         x0, x1 = min(xs) * 8, max(xs) * 8 + 7
@@ -1581,10 +1612,13 @@ def dipingi_torrente(q, g, w, h):
         for yy in range(y * 8, y * 8 + 6):
             for xx in range(x0, x1 + 1):
                 dy = y * 8 + 6 - yy
-                if (xx - cx) ** 2 + (dy * 1.6) ** 2 <= r * r:
-                    q.px[yy][xx] = (P, 0) if dy > 1 else (A, 1)
-                elif (xx - cx) ** 2 + (dy * 1.6) ** 2 <= (r + 1.5) ** 2:
-                    q.px[yy][xx] = (P, 3)
+                d = (xx - cx) ** 2 + (dy * 1.6) ** 2
+                if d <= r * r:
+                    q.px[yy][xx] = (A, 1)
+                elif d <= (r + 1.5) ** 2:
+                    q.px[yy][xx] = (P, 3) if (xx + yy) % 3 else (P, 1)   # la ghiera a conci
+                else:
+                    q.px[yy][xx] = (P, 2) if (xx + yy * 3) % 7 else (P, 1)
     q.conta("torrente")
     # il ponte: lastrico, il parapetto in alto e il suo fronte in basso, di pietra
     for (x, y) in ponte:
@@ -1592,14 +1626,19 @@ def dipingi_torrente(q, g, w, h):
             for xx in range(x * 8, x * 8 + 8):
                 q.px[yy][xx] = colore_suolo("suolo", xx, yy)
         if (x, y - 1) not in ponte:
+            # il parapetto di monte: il contorno, la copertina in luce, i conci, l'ombra sul lastrico
             for xx in range(x * 8, x * 8 + 8):
-                q.px[y * 8][xx] = (P, 4)
-                q.px[y * 8 + 1][xx] = (P, 3)
-                q.px[y * 8 + 2][xx] = (P, 3) if xx % 6 else (P, 2)
-                q.px[y * 8 + 3][xx] = (P, 1)
+                q.px[y * 8][xx] = (P, 1)
+                q.px[y * 8 + 1][xx] = (P, 4)
+                q.px[y * 8 + 2][xx] = (P, 3) if xx % 6 else (P, 1)
+                q.px[y * 8 + 3][xx] = (P, 2) if xx % 6 else (P, 1)
+                q.px[y * 8 + 4][xx] = (P, 1)
         if (x, y + 1) not in ponte:
+            # il parapetto di valle, visto dall'alto: la copertina e la faccia
             for xx in range(x * 8, x * 8 + 8):
-                q.px[y * 8 + 5][xx] = (P, 4)
-                q.px[y * 8 + 6][xx] = (P, 3) if xx % 6 else (P, 2)
-                q.px[y * 8 + 7][xx] = (P, 2)
+                q.px[y * 8 + 3][xx] = (P, 1)
+                q.px[y * 8 + 4][xx] = (P, 4)
+                q.px[y * 8 + 5][xx] = (P, 3) if (xx + 3) % 6 else (P, 1)
+                q.px[y * 8 + 6][xx] = (P, 2) if (xx + 3) % 6 else (P, 1)
+                q.px[y * 8 + 7][xx] = (P, 1)
     q.conta("ponte")

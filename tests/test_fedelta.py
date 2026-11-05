@@ -70,6 +70,32 @@ class Giro3Camignano(unittest.TestCase):
         self.assertFalse(celle & set(acqua))
         self.assertFalse(set(a["spawn"].values()) & set(acqua))
 
+    def test_via_d_acqua_con_le_sponde_e_il_ponte(self):
+        # custode visivo (5 nov): il canale e' aperto fra le case, con le sponde di pietra ai due lati e l'acqua
+        # in piu' blu; si vede solo nel tratto del ponte, non tirato per tutta l'area
+        a = area("san_martino")
+        g = a["griglia"]
+        righe = {y for y, r in enumerate(g) if "~" in r}
+        self.assertLess(len(righe), a["altezza"] // 2)
+        q = PC.Quadro(a["larghezza"], a["altezza"])
+        PC.dipingi_torrente(q, g, a["larghezza"], a["altezza"])
+        y = min(righe) + 5
+        xs = [x for x, c in enumerate(g[y]) if c == "~"]
+        self.assertGreaterEqual(len(xs), 4)
+        for sponda in (xs[0], xs[-1]):
+            self.assertTrue(all(q.px[y * 8 + j][sponda * 8 + 3][0] == PC.P for j in range(8)))
+        blu = {q.px[y * 8 + j][xs[1] * 8 + i] for j in range(8) for i in range(16)}
+        self.assertGreaterEqual(len({c for c in blu if c[0] == PC.A}), 3)
+        self.assertNotIn(PC.NERO, blu)
+
+    def test_lavandaia_e_flaviano_al_ponte(self):
+        import genera_storia as GS
+        a = area("san_martino")
+        ponte = [(x, y) for y, r in enumerate(a["griglia"]) for x, c in enumerate(r) if c == "+"]
+        self.assertIn(GS.punto_dell_ancora(a, GS.AMICI["FLAVIANO"]["ancora"], G), ponte)
+        lx, ly = GS.punto_dell_ancora(a, GS.ANCORE_AMBIENTE[("SAN_MARTINO", "Lavandaia")], G)
+        self.assertLessEqual(min(abs(lx - x) + abs(ly - y) for x, y in ponte), 4)
+
     def test_negativa_senza_riga_niente_torrente(self):
         a = {"griglia": ["#.#"], "torrente": None}
         G.scava_torrente(a)
@@ -121,6 +147,20 @@ class Giro7Porte(unittest.TestCase):
         # e in alto c'e' il buio della volta
         self.assertIn(PM.CONTORNO, [t.px[y][36] for y in range(t.h)])
 
+    def test_le_porte_frontali_si_attraversano_davvero(self):
+        # il nero aperto e' solo dove si passa (custode visivo): la volta buia va bene perche' ogni porta di
+        # fronte e' un varco con la sua uscita
+        trovate = 0
+        for nome, testo in G.sorgenti_del_repo():
+            a = G.leggi_area(nome, testo)
+            G.prepara_area(a, G.mondo_del_repo())
+            uscite = {u[0] for u in a["uscite"]}
+            for lettera, (porta, lato, _, _) in a.get("porte", {}).items():
+                if lato == "alto":
+                    trovate += 1
+                    self.assertIn(lettera, uscite, porta)
+        self.assertEqual(trovate, 4)
+
     def test_le_porte_in_alto_si_vedono_di_fronte(self):
         a = area("san_martino")
         lati = {nome: lato for nome, lato, _, _ in a["porte"].values()}
@@ -151,6 +191,14 @@ class Giro9SalaDeiConsoli(unittest.TestCase):
         riga = [st.t.get(x, st.y0 + 2) for x in range(st.x0, st.x0 + st.cw * 16)]
         travi = {PI.C("legno e cuoio", 0), PI.C("legno e cuoio", 1), PI.C("legno e cuoio", 2)}
         self.assertFalse(travi & set(riga))
+
+    def test_la_volta_e_uguale_dai_due_lati(self):
+        import pittore_interni as PI
+        st = PI.sala_consoli()
+        w = st.cw * PI.CELLA
+        for y in range(st.y0, st.y0 + 2 * PI.CELLA - 6):     # la volta sopra la ghiera
+            for i in range(8):
+                self.assertEqual(st.t.get(st.x0 + i, y), st.t.get(st.x0 + w - 1 - i, y), (i, y))
 
 
 class Giro10Mappa(unittest.TestCase):

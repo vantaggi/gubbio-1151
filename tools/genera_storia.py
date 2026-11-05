@@ -211,6 +211,10 @@ AREE_DELLE_RACCOLTE = {"Q-SM01": {"TEATRO_ROMANO"},
                        "Q-SA01": {"BOTTACCIONE", "GOLA_STRISCIA", "GOLA_MIASMI", "GOLA_ARCO"}}
 # L'infiltrato di Q-SP01: sotto le Logge dei Tiratori, con il mantello e il bastone del pellegrino; la battaglia
 # e' la sua (F10, battaglia::INCONTRO 6): l'infiltrato e due spie umbre, come dice il copione.
+# Gli NPC d'ambiente legati a un punto preciso (sono cercati vicino a quel punto invece che allo spawn 0):
+# la Lavandaia lava nel Camignano scoperto, accanto al Ponte di San Martino (giro 3 della fedelta', 5 nov 2026).
+ANCORE_AMBIENTE = {("SAN_MARTINO", "Lavandaia"): "posto 74 84"}
+
 INFILTRATO = {"area": "PIAZZA_QUARANTA_MARTIRI", "ancora": "loggia_tiratori", "figura": ("mercante", "lanterna_bastone"),
               "incontro": 6}
 # F10: le guardie delle fornaci di Q-SM01, una per blocco di ferro («ognuna guardata da un Guerriero della Roccia
@@ -787,7 +791,7 @@ def posti_degli_npc(npc, altri=(), occupati=None):
     richieste = []
     for p in npc:
         ancora = AMICI[p["amico"]]["ancora"] if p.get("amico") else (
-            MESTIERI[p["mestiere"]]["ancora"] if p.get("mestiere") else None)
+            MESTIERI[p["mestiere"]]["ancora"] if p.get("mestiere") else ANCORE_AMBIENTE.get((p["area"], p["nome"])))
         richieste.append((p, p["area"], ancora))
     for p in npc:
         if p.get("amico") and AMICI[p["amico"]].get("borgo"):

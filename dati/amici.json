@@ -3,7 +3,7 @@
  "amici": {
   "CIACCIO":    {"nome": "Ciaccio", "base": "soldato", "accessorio": "arco_lungo", "ancora": "varco E"},
   "GIULIANA":   {"nome": "Giuliana", "base": "popolana", "accessorio": "salterio", "ancora": "san_domenico"},
-  "FLAVIANO":   {"nome": "Flaviano", "base": "mercante", "accessorio": "viella", "ancora": "ponte_san_martino"},
+  "FLAVIANO":   {"nome": "Flaviano", "base": "mercante", "accessorio": "viella", "ancora": "posto 80 85"},
   "VANNI":      {"nome": "Vanni", "base": "anziano_glabro", "accessorio": "borsa_medico", "ancora": "posto 16 13"},
   "MASIO":      {"nome": "Masio il Romano", "base": "mercante", "accessorio": "fascia_gialla_rossa", "ancora": "porta_metauro"},
   "MONTANO":    {"nome": "Montano", "base": "mercante", "accessorio": "pinze_tavoletta", "ancora": "edificio banco_montano"},

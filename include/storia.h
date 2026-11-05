@@ -709,7 +709,7 @@ inline constexpr Npc NPC_AMBIENTE[NPC] = {
     { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 35, 10, { 20, 0xFFFF, 0xFFFF }, { 1, 0, 0 }, 3, 255, 0, 0, 0, false },  // Merciaio
     { int8_t(mondo::AreaId::LARGO_BARGELLO), 10, 10, { 21, 22, 23 }, { 1, 1, 1 }, 4, 255, 0, 0, 0, false },  // Mastro Tano
     { int8_t(mondo::AreaId::SAN_MARTINO), 31, 81, { 0xFFFF, 24, 26 }, { 0, 2, 2 }, 5, 255, 0, 0, 0, false },  // Cecco il Balestriere
-    { int8_t(mondo::AreaId::SAN_MARTINO), 34, 81, { 28, 29, 30 }, { 1, 1, 1 }, 6, 255, 0, 0, 0, false },  // Lavandaia
+    { int8_t(mondo::AreaId::SAN_MARTINO), 74, 84, { 28, 29, 30 }, { 1, 1, 1 }, 6, 255, 0, 0, 0, false },  // Lavandaia
     { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 54, 60, { 31, 32, 34 }, { 1, 2, 1 }, 7, 255, 0, 0, 0, false },  // Venditore delle Logge dei Tiratori
     { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 51, 64, { 0xFFFF, 35, 0xFFFF }, { 0, 2, 0 }, 8, 70, 2, 0, 0, false },  // Fra' Matteo il Pescatore
     { int8_t(mondo::AreaId::SAN_PIETRO), 19, 25, { 37, 38, 39 }, { 1, 1, 1 }, 9, 255, 0, 0, 0, false },  // Lucia la Tessitrice
@@ -719,7 +719,7 @@ inline constexpr Npc NPC_AMBIENTE[NPC] = {
     { int8_t(mondo::AreaId::DUOMO_DUCALE), 29, 36, { 54, 0xFFFF, 55 }, { 1, 0, 1 }, 13, 255, 0, 0, 0, false },  // Canonico
     { int8_t(mondo::AreaId::SAN_MARTINO), 32, 4, { 56, 57, 58 }, { 1, 1, 1 }, 14, 255, 0, 0, 0, false },  // Ciaccio
     { int8_t(mondo::AreaId::SAN_MARTINO), 32, 123, { 59, 60, 61 }, { 1, 1, 1 }, 15, 255, 0, 0, 0, false },  // Giuliana
-    { int8_t(mondo::AreaId::SAN_MARTINO), 29, 84, { 62, 63, 64 }, { 1, 1, 1 }, 16, 255, 0, 0, 0, false },  // Flaviano
+    { int8_t(mondo::AreaId::SAN_MARTINO), 80, 85, { 62, 63, 64 }, { 1, 1, 1 }, 16, 255, 0, 0, 0, false },  // Flaviano
     { int8_t(mondo::AreaId::SAN_MARTINO), 61, 21, { 65, 66, 67 }, { 1, 1, 1 }, 17, 255, 0, 0, 0, false },  // Masio il Romano
     { int8_t(mondo::AreaId::VIA_DEI_CONSOLI), 50, 10, { 68, 69, 70 }, { 1, 1, 1 }, 18, 255, 0, 0, 0, false },  // Montano
     { int8_t(mondo::AreaId::PIAZZA_QUARANTA_MARTIRI), 79, 48, { 71, 72, 73 }, { 1, 1, 1 }, 19, 65, 2, 0, 0, false },  // Giordano
@@ -962,7 +962,7 @@ struct QuestGioco
 };
 
 inline constexpr QuestGioco QUEST_GIOCO[QUEST] = {
-    { Q_SM01_PRESA, 80, 3, int8_t(mondo::AreaId::SAN_MARTINO), 35, 84, 65, { 0, 6 }, { 6, 1 }, { 7, 8 }, { 15, 4 }, { { 19, 1 }, { 20, 1 }, { 21, 1 } } },  // Q-SM01, Mastro Raniero
+    { Q_SM01_PRESA, 80, 3, int8_t(mondo::AreaId::SAN_MARTINO), 34, 81, 65, { 0, 6 }, { 6, 1 }, { 7, 8 }, { 15, 4 }, { { 19, 1 }, { 20, 1 }, { 21, 1 } } },  // Q-SM01, Mastro Raniero
     { Q_SA01_PRESA, 83, 4, int8_t(mondo::AreaId::SANT_ANDREA), 25, 21, 66, { 22, 8 }, { 30, 1 }, { 31, 6 }, { 37, 3 }, { { 40, 0 }, { 40, 1 }, { 41, 2 } } },  // Q-SA01, Monna Agnese
     { Q_SP01_PRESA, 87, 1, int8_t(mondo::AreaId::SAN_PIETRO), 16, 23, 67, { 43, 6 }, { 49, 1 }, { 50, 6 }, { 56, 0 }, { { 56, 0 }, { 56, 1 }, { 57, 1 } } },  // Q-SP01, Fra' Bernardo
 };

@@ -227,14 +227,14 @@ def consoli(w, h, info):
         t.rett(cxp - mezza, y, 2, alzata, PIETRA_CHIARA)
     t.elementi["scalinata_ventaglio"] += 1
     soglia = base - gradini * alzata
-    # portale gotico rialzato, con la lunetta affrescata sopra il vano
+    # portale gotico rialzato, strombato come quello del Duomo (custode visivo, 5 nov): tre ghiere di pietra
+    # digradanti, la lunetta di pietra chiara sopra il vano e l'architrave
     alto_p = min(soglia - terra - 2, 40)
-    t.arco_acuto(cxp - 14, soglia - alto_p, 28, alto_p)
-    for y in range(soglia - alto_p + 2, soglia - alto_p + 13):
-        for x in range(cxp - 12, cxp + 12):
-            if t.px[y][x] == LEGNO_SCURO:
-                t.punto(x, y, ("oro e bronzo", 2) if (x + y) % 3 else ("cotto e coppi", 2))
-    t.rett(cxp - 12, soglia - alto_p + 13, 24, 1, PIETRA_LUCE)
+    for k, c in enumerate((PIETRA_LUCE, PIETRA_CHIARA, PIETRA)):
+        t.arco_acuto(cxp - 14 + 2 * k, soglia - alto_p + 2 * k, 28 - 4 * k, alto_p - 2 * k, c, c)
+    t.arco_acuto(cxp - 8, soglia - alto_p + 6, 16, alto_p - 6)
+    t.arco_acuto(cxp - 6, soglia - alto_p + 8, 12, 9, PIETRA_CHIARA, PIETRA_CHIARA)   # lunetta
+    t.rett(cxp - 7, soglia - alto_p + 17, 14, 1, PIETRA_LUCE)                            # architrave
     t.elementi["portale_gotico"] += 1
     t.elementi["lunetta"] += 1
     hb = max(12, min(alto_p - 8, 30))

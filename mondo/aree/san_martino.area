@@ -15,9 +15,10 @@ riferimento 32 84
 fattore 0.54
 # Piazza Giordano Bruno: 32 x 23 m, in scala.
 piazza Piazza Giordano Bruno
-# Il Camignano (giro 3 della fedelta', 5 nov 2026): scende dalla gola, entra sotto le mura accanto a Porta Metauro,
-# scorre scoperto fra le case e passa sotto il Ponte di San Martino, sulla via che porta al Bargello; poi va coperto.
-torrente 80 2 1 100
+# Il Camignano (giro 3 della fedelta', 5 nov 2026): scende dalla gola ed entra in citta' accanto a Porta Metauro
+# coperto dalle case; si vede scoperto solo nel tratto del Ponte di San Martino, sulla via che porta al Bargello:
+# una via d'acqua larga 4 tile, le due di bordo sono le sponde di pietra (custode visivo, 5 nov).
+torrente 78 4 66 99
 # Strade dei varchi: via Cavour verso Quaranta Martiri 5 tile (7,8 m), via Gabrielli verso Porta Metauro 3 (5,2 m).
 # porta_metauro: spostato di 5 tile verso Porta Metauro (e di 4 in giu' per il riferimento salito di 4).
 sposta porta_metauro 0 -1
