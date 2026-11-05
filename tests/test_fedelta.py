@@ -142,5 +142,16 @@ class Giro8PortaDelMorto(unittest.TestCase):
         self.assertEqual(q.elementi.get("porta_del_morto"), 1)
 
 
+class Giro9SalaDeiConsoli(unittest.TestCase):
+    def test_la_sala_ha_la_volta_a_botte(self):
+        import pittore_interni as PI
+        st = PI.sala_consoli()
+        self.assertTrue(getattr(st, "elementi_volta", False))
+        # niente travi di legno in cima al muro di fondo
+        riga = [st.t.get(x, st.y0 + 2) for x in range(st.x0, st.x0 + st.cw * 16)]
+        travi = {PI.C("legno e cuoio", 0), PI.C("legno e cuoio", 1), PI.C("legno e cuoio", 2)}
+        self.assertFalse(travi & set(riga))
+
+
 if __name__ == "__main__":
     unittest.main()

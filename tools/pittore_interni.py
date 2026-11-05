@@ -1047,10 +1047,37 @@ def casa_medico(variante="giorno"):
     return st
 
 
+def volta_a_botte(st):
+    """Il Salone dell'Arengo (giro 9 della fedelta', 5 nov 2026): la sala e' coperta da una sola grande volta a botte
+    di pietra, senza travi. Sul muro di fondo se ne vede la testa: la ghiera a conci chiari e scuri che corre da un
+    angolo all'altro, e fuori dalla ghiera la volta che viene verso chi guarda, in ombra (luce da sinistra, L1)."""
+    t = st.t
+    X, Y, w = st.x0, st.y0, st.cw * CELLA
+    cx, rx, ry, base = X + w / 2 - 0.5, w / 2, 3 * CELLA - 6, Y + 3 * CELLA - 6
+    for yy in range(Y, base):
+        for xx in range(X, X + w):
+            u = (xx - cx) / rx
+            dentro = 1 - u * u
+            cima = base - ry * (dentro ** 0.5 if dentro > 0 else 0)
+            if yy < cima - 4:
+                tono = 2 if xx < cx else 1          # la volta: a sinistra prende luce, a destra e' in ombra
+                if (yy - Y) % 7 == 6 or (int(abs(xx - cx)) + (yy // 7) * 5) % 13 == 0:
+                    tono = max(0, tono - 1)
+                t.p(xx, yy, C("pietra calcarea", tono))
+            elif yy < cima:
+                concio = int(((xx - cx) / rx + 1) * 18) % 2
+                t.p(xx, yy, C("pietra calcarea", 4 if concio else 3))
+            elif yy < Y + 6:
+                # niente travi: sotto la ghiera continua il muro di pietra
+                t.p(xx, yy, C("pietra calcarea", 3 if (xx // 12 + yy) % 5 else 2))
+    st.elementi_volta = True
+
+
 def sala_consoli(variante="giorno"):
     """La sala grande del Palazzo dei Consoli (Piazza Grande): lastre, muro di pietra con lo stemma e
     le torce, la tavola lunga dei consoli con gli scranni, il leggio del notaio. Riusata nell'Atto II (A2-10)."""
     st = Stanza("sala_consoli", 15, 10, "lastre", seme=17, muro="pietra")
+    volta_a_botte(st)
     st.finestra(1); st.finestra(3)
     stemma(st, 7)
     esamina(st, 7, 3)
