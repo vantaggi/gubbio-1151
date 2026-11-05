@@ -102,11 +102,11 @@ Nel gioco le battaglie sono in `include/battaglia_dati.h` (`INCONTRO`), con il g
 | Battaglia | Dove | Nel gioco |
 | :-- | :-- | :-- |
 | Pattuglia perugina (tutorial) | Teatro Romano, A1-04 | Sì, la Pattuglia Perugina (incontro 0) |
-| Falchi corrotti, spie umbre | Stradoni, nemici visibili | Le spie sì (l'Imboscata); i falchi no |
+| Falchi corrotti, spie umbre | Stradoni | Non nella v1 (decisione NEM, 5 nov 2026): resta solo l'Imboscata |
 | Imboscata | Stradoni, A1-07 | Sì, tre spie umbre (incontro 1) |
 | Spettri del Dubbio (boss tutorial) | Basilica, A1-08 | Sì, due Spettri, deboli alla Fede (incontro 3) |
 | Guerrieri della Roccia di Spoleto | Bottaccione, B-03 (battaglia breve a metà scena) | Sì, due Guerrieri della Roccia, deboli alla Fiamma (incontro 4) |
-| Guerrieri della Roccia alle fornaci | Teatro Romano, Q-SM01, nemici visibili | Sì, uno per fornace (incontro 5) |
+| Guerrieri della Roccia alle fornaci | Teatro Romano, Q-SM01, in B-03 e alle fornaci (996f706) | Sì, uno per fornace (incontro 5) |
 | L'infiltrato | Logge dei Tiratori, Q-SP01 | Sì, l'infiltrato e due spie umbre (incontro 6) |
 | Corrado di Spoleto | Il Condotto, B-04 | Sì, il Duello con Corrado (incontro 2) |
 
