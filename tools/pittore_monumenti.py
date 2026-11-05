@@ -959,13 +959,6 @@ def teatro_romano(w, h, info):
                 c = ("pietra calcarea", 4) if k < 1 else (("pietra calcarea", 3) if k < 4 else ("pietra calcarea", 1))
                 if k >= 1 and k < 4 and (int(d) * 7 + int(abs(_m.atan2(y - cy, x - cx)) * 40)) % 23 == 0:
                     c = ("pietra calcarea", 2)
-                # giro 4 della fedelta': e' una rovina in un prato, l'erba ha preso i gradini a chiazze
-                ang = _m.atan2(y - cy, x - cx)
-                # le file in alto sono erba (restaurate solo quelle basse), col bordo frastagliato
-                quota = (d - RI) / max(1.0, R - RI)
-                if quota > 0.86 + 0.07 * _m.sin(ang * 5.0) + 0.03 * _m.sin(ang * 17.0 + 1):
-                    c = PC.colore_verde("prato", x, y)
-                    t.elementi["erba_sui_gradini"] += 1
             elif d <= RA:
                 ang = abs(_m.atan2(y - cy, x - cx))
                 u = (ang * RA) % 12
@@ -978,7 +971,7 @@ def teatro_romano(w, h, info):
                 # giro 4: delle arcate superiori resta solo una parte; dove sono crollate, il rudere basso e l'erba
                 tratto = int(ang * RA) // 12
                 if tratto % 7 in (2, 5) and k > 2:
-                    c = PC.colore_verde("prato", x, y) if (x + y) % 3 else ("pietra calcarea", 2)
+                    c = ("pietra calcarea", 2) if (x * 3 + y) % 5 else ("pietra calcarea", 1)
                     t.elementi["arcate_crollate"] += 1
             else:
                 c = PC.colore_verde("prato", x, y)

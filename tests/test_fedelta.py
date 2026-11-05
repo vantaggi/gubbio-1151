@@ -82,7 +82,6 @@ class Giro3Camignano(unittest.TestCase):
 class Giro4Teatro(unittest.TestCase):
     def test_il_teatro_e_una_rovina_nel_prato(self):
         t = PM.dipingi("teatro_romano", "Teatro romano", 47, 26, "basso", {}, 0)
-        self.assertGreater(t.elementi["erba_sui_gradini"], 200)
         self.assertGreater(t.elementi["arcate_crollate"], 20)
         for segno in ("gradinate", "arcate", "scena"):
             self.assertGreaterEqual(t.elementi[segno], 1)
