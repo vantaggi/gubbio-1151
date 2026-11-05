@@ -497,6 +497,7 @@ def dipingi_casa(q, casa, w_celle):
         elif casa.morto and X1 - (px + pw) >= 9:
             _porta_del_morto(q, px + pw + 2, Y1, hp)
             casa.occupati.append((px + pw + 1, Y1 - hp, px + pw + 6, Y1 - 5))
+    terra = list(casa.occupati)      # la porta (o la bottega) e la porta del morto
     # le finestre: al piano di sopra se la facciata e' alta 5 tile, accanto alla porta se c'e' posto
     casa.finestre = []
 
@@ -516,9 +517,47 @@ def dipingi_casa(q, casa, w_celle):
             fx = (int(X0 + passo * (i + 1)) // 8) * 8 + 1
             if not metti_finestra(fx, Y0 + 2, casa.n * 5 + i, h32(casa.n, i, 14) < 0.5):
                 metti_finestra(fx, Y0 + 2, casa.n * 5 + i, False)      # senza imposte ci sta
+    # circa una casa su due ha uno stendardo o una fiaccola (custode visivo, 5 nov): il posto si tiene prima della
+    # fila di finestrelle e delle finestre accanto alla porta, poi vita_delle_case li dipinge
+    casa.posto_stendardo = casa.posto_fiaccola = None
+    scelta = h32(casa.n, 23)
+    if alta >= 24 and scelta < SPESSO_DECORO:
+        px, pw = porta_x, porta_w
+
+        def stendardo():
+            for y in (Y0 + 2, Y0 + 9):
+                for x in sorted(range(X0 + 2, X1 - 6, 2), key=lambda x: h32(casa.n, x, 27)):
+                    r = (x - 1, y, x + 5, y + 11)
+                    if r[3] < Y1 - 2 and casa_libera(casa, r):
+                        casa.posto_stendardo = (x, y)
+                        casa.occupati.append(r)
+                        return True
+            return False
+
+        def fiaccola():
+            for fx in (px + pw + 2, px - 4, px + pw + 1, px - 5):
+                r = (fx, Y1 - 20, fx + 2, Y1 - 16)
+                if X0 + 1 <= fx and fx + 3 < X1 and casa_libera(casa, r):
+                    casa.posto_fiaccola = (fx, Y1 - 20)
+                    casa.occupati.append(r)
+                    return True
+            return False
+        if scelta < SPESSO_DECORO / 2:
+            stendardo() or fiaccola()
+        else:
+            fiaccola() or stendardo()
+    if alta >= 32:
+        # la fila di finestrelle sotto la gronda, la fitta della citta' medievale (custode visivo, 5 nov): ogni 8
+        # pixel dove il muro e' libero, piccole (5 x 6) e staccate di 1 px da tutto
+        for fx in range(X0 + 3, X1 - 6, 8):
+            ingombro = (fx - 1, Y0 + 2, fx + 5, Y0 + 9)
+            if casa_libera(casa, ingombro) and h32(casa.n, fx, 15) < 0.8:
+                _finestra(q, fx, Y0 + 2, 5, 6, casa.n * 7 + fx, False)
+                casa.occupati.append(ingombro)
+                casa.finestre.append((fx, Y0 + 2))
     # accanto alla porta, nei tratti di muro liberi: una finestra per tratto, al centro (due se il tratto e' largo)
-    sx, dx = min(o[0] for o in casa.occupati), max(o[2] for o in casa.occupati)
-    fy = Y0 + 4 if alta < 40 else Y1 - 22
+    sx, dx = min(o[0] for o in terra), max(o[2] for o in terra)
+    fy = Y1 - 22 if alta >= 40 else (Y0 + 11 if alta >= 32 else Y0 + 4)
     for a0, a1 in ((X0 + 1, sx - 2), (dx + 2, X1 - 1)):
         largo_tratto = a1 - a0 + 1
         quante = 2 if largo_tratto >= 22 else (1 if largo_tratto >= 9 else 0)
@@ -526,6 +565,9 @@ def dipingi_casa(q, casa, w_celle):
             c = a0 + largo_tratto * (2 * i + 1) // (2 * quante)
             metti_finestra(c - 3, fy, casa.n * 3 + c, False)
     casa.porta = (porta_x, porta_w)
+
+
+SPESSO_DECORO = 0.9    # quante case provano a tenere uno stendardo o una fiaccola
 
 
 def casa_libera(casa, r, margine=1):
@@ -644,23 +686,13 @@ def vita_delle_case(q, case, aid, seme_area):
         finestre = getattr(casa, "finestre", [])
         porta = getattr(casa, "porta", None)
         Y0 = (casa.yb - casa.fh + 1) * 8
-        if casa.fh >= 3 and h32(casa.n, 21, seme_area) < 0.6:
-            # lo stendardo appeso sotto la gronda, in un tratto di muro libero (non sopra la porta, M6/I3)
-            liberi = [x for x in range(X0 + 2, X1 - 6, 8)
-                      if casa_libera(casa, (x - 1, Y0 + 2, x + 5, Y0 + 13)) and
-                      (not porta or x + 6 < porta[0] - 1 or x > porta[0] + porta[1] + 1)]
-            if liberi:
-                comune = colore_q is None or h32(casa.n, 22) < 0.5
-                fx = liberi[int(h32(casa.n, 27) * len(liberi))]
-                _stendardo(q, fx, Y0 + 2, (R, 2) if comune else colore_q, comune)
-                casa.occupati = getattr(casa, "occupati", []) + [(fx - 1, Y0 + 2, fx + 5, Y0 + 13)]
-        if casa.fh >= 3 and porta and h32(casa.n, 23, seme_area) < 0.35:
-            px, pw = porta
-            for fx in (px + pw + 2, px - 4):
-                if X0 + 1 <= fx and fx + 3 < X1 and casa_libera(casa, (fx, Y1 - 20, fx + 2, Y1 - 16)):
-                    _fiaccola(q, fx, Y1 - 20)
-                    casa.occupati = getattr(casa, "occupati", []) + [(fx, Y1 - 20, fx + 2, Y1 - 16)]
-                    break
+        # lo stendardo e la fiaccola, nei posti che dipingi_casa ha tenuto liberi
+        if getattr(casa, "posto_stendardo", None):
+            fx, fy = casa.posto_stendardo
+            comune = colore_q is None or h32(casa.n, 22) < 0.5
+            _stendardo(q, fx, fy, (R, 2) if comune else colore_q, comune)
+        if getattr(casa, "posto_fiaccola", None):
+            _fiaccola(q, *casa.posto_fiaccola)
         # alla base: un oggetto per casa, in un angolo libero
         if casa.fh >= 2 and porta:
             px, pw = porta
