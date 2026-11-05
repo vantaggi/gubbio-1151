@@ -167,32 +167,45 @@ def tetto_e_facciata(t, w, h, fh, tinta):
 # --- primo lotto -------------------------------------------------------------------------------
 
 def consoli(w, h, info):
-    """Palazzo dei Consoli: merlatura, campanile a vela, 6 finestre a tutto sesto a coppie divise da
-    lesene, cornice marcapiano, portale gotico fra due bifore."""
+    """Palazzo dei Consoli (giro 1 della fedelta', 5 nov 2026). I tratti che lo fanno riconoscere, presi da
+    it.wikipedia e dal metodo dei landmark (silhouette e proporzioni esagerate, pochi segni unici):
+    - e' il piu' alto della piazza: la facciata prende quasi tutta l'impronta, il tetto e' una striscia;
+    - la merlatura guelfa sostenuta da archetti ogivali, in alto su tutto il fronte;
+    - il campanile del Campanone che sporge sopra il tetto, sull'angolo, con la cella della campana;
+    - sei finestre a tutto sesto a coppie fra lesene; marcapiano;
+    - il portale gotico con la lunetta affrescata fra due bifore, rialzato su una scalinata a ventaglio."""
     t = Tela(w, h)
     tinta = TINTE[0]
-    fh = altezza_facciata(h, info.get("altezza_m"))
+    largo, base = w * 8, h * 8
+    fh = max(altezza_facciata(h, info.get("altezza_m")), h - 4)
     tetto_e_facciata(t, w, h, fh, tinta)
     y0 = (h - fh) * 8
-    largo = w * 8
+    # coronamento: archetti ogivali sotto i merli (la merlatura sporge di poco dal muro: ombra sotto)
     t.merli(0, y0, largo, tinta)
+    for x in range(0, largo - 5, 6):
+        t.arco_acuto(x + 1, y0 + 8, 5, 4, PIETRA_SCURA, PIETRA_LUCE)
+    t.rett(0, y0 + 12, largo, 1, PIETRA)
     t.elementi["merlatura"] += 1
-    # campanile a vela sul tetto, verso sinistra: muro con due fornici e i suoi merli
-    cx = 24
-    t.conci(cx, y0 - 48, 32, 40, tinta)
-    t.merli(cx, y0 - 56, 32, tinta)
-    t.arco(cx + 4, y0 - 44, 10, 18)
-    t.arco(cx + 18, y0 - 44, 10, 18)
+    t.elementi["archetti"] += 1
+    # il campanile del Campanone sull'angolo sinistro: torre che sale sopra il tetto, cella ad arco, merli
+    cx, cw = 8, 24
+    t.conci(cx, 6, cw, y0 - 6, tinta)
+    t.rett(cx + cw - 2, 6, 2, y0 - 6, PIETRA)          # L1: il lato destro in ombra
+    t.merli(cx, 0, cw, tinta)
+    t.arco(cx + 7, 12, 10, 14, CONTORNO)
+    t.rett(cx + 10, 18, 4, 5, ("oro e bronzo", 2))        # la campana nella cella
+    t.rett(cx + 11, 17, 2, 1, ("oro e bronzo", 3))
     t.elementi["campanile_vela"] += 1
-    # lesene: dividono la facciata in tre campate, una coppia di finestre per campata
+    # lesene: tre campate
+    alto_f = base - y0
     for k in range(6):
         x = min((largo * k) // 5 if k < 5 else largo - 4, largo - 4)
-        t.rett(x, y0 + 8, 4, fh * 8 - 8, PIETRA_LUCE)
-        t.rett(x + 3, y0 + 8, 1, fh * 8 - 8, PIETRA)
+        t.rett(x, y0 + 13, 4, alto_f - 13, PIETRA_LUCE)
+        t.rett(x + 3, y0 + 13, 1, alto_f - 13, PIETRA)
     t.elementi["lesena"] += 5
     # piano alto: 6 finestre a tutto sesto, a coppie
-    piano = y0 + 14
-    alte = max(20, (fh * 8) // 3)
+    piano = y0 + 18
+    alte = max(20, min(32, (alto_f - 66) // 2))
     campata = largo / 3
     for c in range(3):
         mezzo = int(campata * c + campata / 2)
@@ -200,17 +213,35 @@ def consoli(w, h, info):
             t.arco(mezzo + (k * 9) - (6 if k < 0 else -3) - 3, piano, 12, alte, CONTORNO)
             t.elementi["finestra_arco"] += 1
     # cornice marcapiano
-    terra = piano + alte + 4
+    terra = piano + alte + 5
     t.rett(0, terra - 3, largo, 3, PIETRA_LUCE)
     t.rett(0, terra, largo, 1, PIETRA_SCURA)
-    # piano terra: portale gotico al centro, una bifora per lato
-    alto = y0 + fh * 8 - terra - 1
-    t.arco_acuto(largo // 2 - 14, terra + 1, 28, alto)
+    # scalinata a ventaglio: gradini a semicerchio che si allargano verso la piazza
+    gradini, alzata = 5, 3
+    cxp = (t.w // 16) * 8
+    for g in range(gradini):
+        y = base - (gradini - g) * alzata
+        mezza = 16 + g * 5
+        t.rett(cxp - mezza, y, 2 * mezza, alzata - 1, PIETRA_LUCE)
+        t.rett(cxp - mezza, y + alzata - 1, 2 * mezza, 1, PIETRA)
+        t.rett(cxp - mezza, y, 2, alzata, PIETRA_CHIARA)
+    t.elementi["scalinata_ventaglio"] += 1
+    soglia = base - gradini * alzata
+    # portale gotico rialzato, con la lunetta affrescata sopra il vano
+    alto_p = min(soglia - terra - 2, 40)
+    t.arco_acuto(cxp - 14, soglia - alto_p, 28, alto_p)
+    for y in range(soglia - alto_p + 2, soglia - alto_p + 13):
+        for x in range(cxp - 12, cxp + 12):
+            if t.px[y][x] == LEGNO_SCURO:
+                t.punto(x, y, ("oro e bronzo", 2) if (x + y) % 3 else ("cotto e coppi", 2))
+    t.rett(cxp - 12, soglia - alto_p + 13, 24, 1, PIETRA_LUCE)
     t.elementi["portale_gotico"] += 1
+    t.elementi["lunetta"] += 1
+    hb = max(12, min(alto_p - 8, 30))
     for mezzo in (largo // 4, 3 * largo // 4):
-        t.arco(mezzo - 11, terra + 6, 10, alto // 2 + 6, CONTORNO)
-        t.arco(mezzo + 1, terra + 6, 10, alto // 2 + 6, CONTORNO)
-        t.rett(mezzo - 1, terra + 6, 2, alto // 2 + 6, PIETRA_LUCE)
+        t.arco(mezzo - 11, soglia - hb - 4, 10, hb, CONTORNO)
+        t.arco(mezzo + 1, soglia - hb - 4, 10, hb, CONTORNO)
+        t.rett(mezzo - 1, soglia - hb - 4, 2, hb, PIETRA_LUCE)
         t.elementi["bifora"] += 1
     t.contorno()
     return t
