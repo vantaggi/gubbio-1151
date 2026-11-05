@@ -1516,3 +1516,78 @@ def dipingi_ingressi(q, a, griglia):
 def _solida_cella(c):
     import genera_mondo as G
     return G.solida(c)
+
+
+# --- il torrente scoperto (giro 3 della fedelta', 5 nov 2026) ------------------------------------------------------
+def dipingi_torrente(q, g, w, h):
+    """Il Camignano a San Martino: scorre in un canale di pietra fra le case (le sponde, a sinistra in luce e a
+    destra in ombra, L1), l'acqua nei toni medi con le scie della corrente; dove taglia la via c'e' il Ponte di San
+    Martino di pietra, col parapetto e, sotto, la volta da cui esce l'acqua."""
+    acqua = {(x, y) for y in range(h) for x in range(w) if g[y][x] == "~"}
+    ponte = {(x, y) for y in range(h) for x in range(w) if g[y][x] == "+"}
+    if not acqua:
+        return
+    for (x, y) in acqua:
+        sx = (x - 1, y) not in acqua and (x - 1, y) not in ponte     # sponda a sinistra
+        dx = (x + 1, y) not in acqua and (x + 1, y) not in ponte
+        for yy in range(y * 8, y * 8 + 8):
+            for xx in range(x * 8, x * 8 + 8):
+                u = xx - x * 8
+                if sx and u < 3:
+                    c = (P, 3) if u == 0 else (P, 2)
+                elif dx and u > 4:
+                    c = (P, 1) if u == 7 else (P, 2)
+                else:
+                    scia = (yy * 3 + xx * 5 + (xx // 3) * 7) % 13 < 2
+                    c = (A, 3) if scia else ((A, 1) if (xx + yy // 2) % 9 == 0 else (A, 2))
+                    if sx is False and (x - 1, y) not in acqua and u < 2:
+                        c = (A, 1)
+                q.px[yy][xx] = c
+                q.tipo[yy][xx] = "acqua"
+        # l'acqua entra sotto il ponte: l'ombra della volta
+        if (x, y + 1) in ponte:
+            for yy in range(y * 8 + 5, y * 8 + 8):
+                for xx in range(x * 8 + (3 if sx else 0), x * 8 + (5 if dx else 8)):
+                    q.px[yy][xx] = (A, 1)
+        # l'acqua va sotto le case (coperta): l'ombra della gronda e della volta
+        if (x, y + 1) not in acqua and (x, y + 1) not in ponte:
+            for yy in range(y * 8 + 4, y * 8 + 8):
+                for xx in range(x * 8 + (3 if sx else 0), x * 8 + (5 if dx else 8)):
+                    q.px[yy][xx] = (P, 0) if yy >= y * 8 + 6 else (A, 1)
+        # e ne esce (dal ponte o da sotto le mura): la faccia di pietra con la volta buia sopra l'acqua
+        if (x, y - 1) not in acqua:
+            for yy in range(y * 8, y * 8 + 6):
+                for xx in range(x * 8, x * 8 + 8):
+                    q.px[yy][xx] = (P, 2) if (xx + yy * 3) % 7 else (P, 1)
+    righe = {}
+    for (x, y) in acqua:
+        if (x, y - 1) not in acqua:
+            righe.setdefault(y, []).append(x)
+    for y, xs in righe.items():
+        x0, x1 = min(xs) * 8, max(xs) * 8 + 7
+        cx, r = (x0 + x1) / 2, (x1 - x0) / 2 - 1
+        for yy in range(y * 8, y * 8 + 6):
+            for xx in range(x0, x1 + 1):
+                dy = y * 8 + 6 - yy
+                if (xx - cx) ** 2 + (dy * 1.6) ** 2 <= r * r:
+                    q.px[yy][xx] = (P, 0) if dy > 1 else (A, 1)
+                elif (xx - cx) ** 2 + (dy * 1.6) ** 2 <= (r + 1.5) ** 2:
+                    q.px[yy][xx] = (P, 3)
+    q.conta("torrente")
+    # il ponte: lastrico, il parapetto in alto e il suo fronte in basso, di pietra
+    for (x, y) in ponte:
+        for yy in range(y * 8, y * 8 + 8):
+            for xx in range(x * 8, x * 8 + 8):
+                q.px[yy][xx] = colore_suolo("suolo", xx, yy)
+        if (x, y - 1) not in ponte:
+            for xx in range(x * 8, x * 8 + 8):
+                q.px[y * 8][xx] = (P, 4)
+                q.px[y * 8 + 1][xx] = (P, 3)
+                q.px[y * 8 + 2][xx] = (P, 3) if xx % 6 else (P, 2)
+                q.px[y * 8 + 3][xx] = (P, 1)
+        if (x, y + 1) not in ponte:
+            for xx in range(x * 8, x * 8 + 8):
+                q.px[y * 8 + 5][xx] = (P, 4)
+                q.px[y * 8 + 6][xx] = (P, 3) if xx % 6 else (P, 2)
+                q.px[y * 8 + 7][xx] = (P, 2)
+    q.conta("ponte")

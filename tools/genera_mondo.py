@@ -1311,6 +1311,10 @@ def leggi_area(nome_file, testo):
                 a["belvedere"].append((t[1], n))
             elif t[0] == "giardini":
                 a["giardini"] = True
+            elif t[0] == "torrente":
+                # "torrente X LARGO Y0 Y1": un torrente scoperto verticale (il Camignano a San Martino, giro 3
+                # della fedelta'): acqua sulle case, ponte dove taglia una strada
+                a["torrente"] = tuple(int(v) for v in t[1:5])
             elif t[0] == "prato":
                 a["prato"] = True
             elif t[0] == "alberi":
@@ -2463,6 +2467,7 @@ def ridipingi(a, celle, tile_di, mondo, elementi):
                     for yy in range(y * 8, y * 8 + 8):
                         for xx in range(x * 8, x * 8 + 8):
                             q.tipo[yy][xx] = "casa"
+        PC.dipingi_torrente(q, g, w, h)
         PC.ombre_dei_tetti(q)
         # 3. la vita
         PC.vita_delle_case(q, case, a["id"], len(a["id"]))
@@ -3187,12 +3192,29 @@ def apri_ingressi(a):
     a["griglia"] = ["".join(r) for r in g]
 
 
+def scava_torrente(a):
+    """Il torrente della riga 'torrente': scorre fra le case ('#' diventa '~', l'acqua che non si attraversa) e
+    passa sotto le strade, dove la cella diventa ponte ('+', si cammina). Le altre celle restano com'erano."""
+    if not a.get("torrente"):
+        return
+    x0, largo, y0, y1 = a["torrente"]
+    g = [list(riga) for riga in a["griglia"]]
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x0 + largo):
+            if g[y][x] == "#":
+                g[y][x] = "~"
+            elif g[y][x] in ".LK":
+                g[y][x] = "+"
+    a["griglia"] = ["".join(riga) for riga in g]
+
+
 def prepara_area(a, mondo):
     """L'area come la vede il gioco: edifici posati e controllati, decoro della piazza, dislivello,
     porte della citta'."""
     controlla_edifici(a, posa_edifici(a, mondo["monumenti"]), mondo["monumenti"])
     apri_ingressi(a)
     decora_piazza(a)
+    scava_torrente(a)
     applica_dislivello(a, mondo["grafo"])
     costruisci_porte(a, mondo["grafo"])
 
