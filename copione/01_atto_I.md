@@ -238,7 +238,7 @@ Regia: un canonico del Duomo sta sul varco. Il dialogo parte quando il giocatore
 | Luogo | Stradoni del Monte, i tornanti |
 | Condizione | `PORTA_DEL_MONTE` |
 | Imposta | `IMBOSCATA_STRADONI` dopo la battaglia, `SPIA_CATTURATA` alla fine |
-| Battaglie | nemici visibili lungo il sentiero (falchi corrotti, spie umbre); una battaglia obbligata di imboscata |
+| Battaglie | una battaglia obbligata di imboscata |
 
 ### Ingresso (primo tornante)
 
