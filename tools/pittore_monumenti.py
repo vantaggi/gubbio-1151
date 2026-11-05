@@ -915,6 +915,67 @@ FACCIATA_DI_DEFAULT.update({"san_marziale": "basso", "santa_maria_nuova": "basso
 
 # --- la citta': porte, pozzi, Teatro con la sua forma, ritocchi ai monumenti delle piazze ---------
 
+def _arco_ribassato(t, x0, y0, w, h):
+    """Un arco a sesto ribassato (un segmento di cerchio largo e basso): il buio dentro, la ghiera chiara."""
+    freccia = min(12, h // 2)
+    r = (w * w / 4 + freccia * freccia) / (2 * freccia)
+    cx, cy = x0 + (w - 1) / 2, y0 + r
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            if y >= y0 + freccia or d <= r:
+                bordo = x in (x0, x0 + w - 1) or (y < y0 + freccia and d > r - 1.5)
+                t.punto(x, y, PIETRA_LUCE if bordo else CONTORNO)
+
+
+def porta_frontale(w, h, passaggio):
+    """La porta della citta' vista da dentro, di fronte (giro 7 della fedelta', 5 nov 2026; Cioti: <<le porte sono
+    una torre alta con l'arco>>): la faccia della torre in piedi su tutta l'impronta, i merli in cima che ne fanno la
+    sagoma, le feritoie, e il grande arco a tutto sesto sul passaggio: in alto il buio della volta, in basso la strada
+    in ombra che passa sotto. passaggio = (prima, ultima) colonna di tile del passaggio, dentro la tela."""
+    t = Tela(w, h, PIETRA)
+    W, H = w * 8, h * 8
+    tinta = TINTE[1]
+    t.conci(0, 0, W, H, tinta)
+    t.rett(0, 0, 2, H, PIETRA_CHIARA)                     # L1: lo spigolo a sinistra in luce
+    t.rett(W - 2, 0, 2, H, PIETRA_SCURA)                  # e a destra in ombra
+    for x in range(W):                                    # i merli: denti di 4 su 8, fra i denti l'ombra
+        if (x // 4) % 2 == 1:
+            t.rett(x, 0, 1, 4, PIETRA_SCURA)
+    t.rett(0, 4, W, 1, PIETRA_LUCE)
+    t.rett(0, 5, W, 1, PIETRA)
+    t.elementi["merlatura"] += 1
+    a0, a1 = passaggio[0] * 8, passaggio[1] * 8 + 8
+    largo = a1 - a0
+    cima = max(7, H - largo - 18)
+    if largo > 40:
+        # un passaggio largo (Porta Romana): l'arco si ribassa, la torre resta alta
+        cima = max(7, H - 34)
+    t.arco(a0, cima, largo, H - cima, CONTORNO, PIETRA_LUCE) if largo <= 40 else _arco_ribassato(t, a0, cima, largo, H - cima)
+    # la chiave dell'arco e la ghiera
+    t.rett(a0 + largo // 2 - 2, cima - 2, 4, 3, PIETRA_LUCE)
+    t.rett(a0 + largo // 2 - 1, cima - 1, 2, 1, PIETRA)
+    # sotto la volta la strada che passa, in ombra: si vede che si va di la'
+    for x in range(a0 + 1, a1 - 1):
+        buio = [y for y in range(cima, H) if t.px[y][x] == CONTORNO]
+        if not buio:
+            continue
+        for y in range(max(buio[0] + 7, H - 22), H):
+            if t.px[y][x] == CONTORNO:
+                c = PC.scuro(PC.colore_suolo("strada", x, y), 2 if y < H - 8 else 1)
+                t.punto(x, y, c)
+    t.elementi["arco"] += 1
+    # le feritoie sui piloni
+    for fx in (a0 // 2 - 1, (a1 + W) // 2 - 1):
+        if 2 <= fx < W - 4:
+            t.rett(fx, 10, 2, 8, CONTORNO)
+            t.rett(fx - 1, 9, 4, 1, PIETRA_LUCE)
+    t.elementi["feritoie"] += 1
+    t.rett(0, H - 2, a0, 2, PIETRA)                       # lo zoccolo
+    t.rett(a1, H - 2, W - a1, 2, PIETRA)
+    return t
+
+
 def porta_della_citta(w, h, lato):
     """Una porta della citta' vista dall'alto: la torre di conci a cavallo del varco, con i merli sul
     lato di fuori e l'arco sopra il passaggio. w x h tile nell'orientamento dello schermo; il lato e'

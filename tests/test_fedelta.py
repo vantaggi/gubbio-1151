@@ -111,5 +111,21 @@ class Giro6QuarantaMartiri(unittest.TestCase):
         self.assertGreater(t.elementi["arcata"], 20)
 
 
+class Giro7Porte(unittest.TestCase):
+    def test_la_porta_e_una_torre_con_l_arco(self):
+        t = PM.porta_frontale(9, 5, (3, 5))
+        for segno in ("merlatura", "arco", "feritoie"):
+            self.assertEqual(t.elementi[segno], 1, segno)
+        # sotto l'arco si vede la strada (non e' un muro nero): l'ultima riga del passaggio non e' nera
+        self.assertTrue(all(t.px[t.h - 1][x] != PM.CONTORNO for x in range(26, 46)))
+        # e in alto c'e' il buio della volta
+        self.assertIn(PM.CONTORNO, [t.px[y][36] for y in range(t.h)])
+
+    def test_le_porte_in_alto_si_vedono_di_fronte(self):
+        a = area("san_martino")
+        lati = {nome: lato for nome, lato, _, _ in a["porte"].values()}
+        self.assertEqual(lati["Porta Metauro"], "alto")
+
+
 if __name__ == "__main__":
     unittest.main()

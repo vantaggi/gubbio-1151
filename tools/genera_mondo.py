@@ -2186,7 +2186,14 @@ def _disegna_area(a, mondo):
         celle = piloni + arco
         x0, y0 = min(x for x, _ in celle), min(y for _, y in celle)
         pw, ph = max(x for x, _ in celle) - x0 + 1, max(y for _, y in celle) - y0 + 1
-        tela = PM.porta_della_citta(pw, ph, lato)
+        if lato == "alto":
+            # giro 7 della fedelta': la torre di fronte, col grande arco; copre anche il varco sotto l'arco
+            xs = [x for x, _ in arco]
+            tela = PM.porta_frontale(pw, ph, (min(xs) - x0, max(xs) - x0))
+            celle = celle + [(x, y) for y in range(y0, y0 + ph) for x in range(x0, x0 + pw)
+                             if a["griglia"][y][x] == lettera]
+        else:
+            tela = PM.porta_della_citta(pw, ph, lato)
         elementi["porta:" + nome] = tela.elementi
         for ty, riga in enumerate(tela.tagli()):
             for tx, pix in enumerate(riga):
@@ -2374,13 +2381,16 @@ def ridipingi(a, celle, tile_di, mondo, elementi):
                     dettaglio = PC.DETTAGLI_SUOLO[int(PC.h32(x, y, 42) * len(PC.DETTAGLI_SUOLO))]
                     dettaglio(q, x * 8 + 2, y * 8 + 3)
                     q.conta("dettaglio_suolo")
-        # scale, soglie, bracieri, fontana
+        # scale, soglie, bracieri, fontana (il varco sotto l'arco di una torre di fronte lo dipinge la torre)
+        sotto_le_torri = {(x, y) for _, (_, lato, piloni, arco) in a.get("porte", {}).items() if lato == "alto"
+                          for x in range(min(c[0] for c in piloni + arco), max(c[0] for c in piloni + arco) + 1)
+                          for y in range(min(c[1] for c in piloni + arco), max(c[1] for c in piloni + arco) + 1)}
         for y in range(h):
             for x in range(w):
                 c = g[y][x]
                 if c == "S":
                     PC.dipingi_scala(q, x, y, g)
-                elif c in VARCHI and c != "I":
+                elif c in VARCHI and c != "I" and (x, y) not in sotto_le_torri:
                     PC.dipingi_soglia(q, x, y)
                 elif c == "Q":
                     PC.dipingi_lampione(q, x, y)
