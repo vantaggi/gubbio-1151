@@ -221,13 +221,18 @@ DETTAGLI_SUOLO = (_ciuffo, _pietra_consumata, _ciuffo, _pozzanghera)
 ALTEZZA_FACCIATA_MAX = 5   # tile: 40 pixel, la porta alta 28 (il giocatore e' alto 22-24, M2) e il piano di sopra
 
 
+# Giro 8 della fedelta' (5 nov 2026): la porta del morto e' il segno delle case medievali di Gubbio, e in via dei
+# Consoli e in via XX Settembre quasi ogni casa ce l'ha: li' la si mette spesso, altrove ogni tanto.
+VIE_DEL_MORTO = {"via_dei_consoli": 0.8, "via_xx_settembre": 0.6, "largo_bargello": 0.6, "san_martino": 0.4}
+
+
 class Casa:
-    def __init__(self, x0, x1, yb, fh, n):
+    def __init__(self, x0, x1, yb, fh, n, morto=0.3):
         self.x0, self.x1, self.yb, self.fh, self.n = x0, x1, yb, fh, n
         self.tetto = (2, 3, 3, 3, 3, 3, 3, 3, 4, 4)[int(h32(n, 7) * 10)]   # il tono base dei coppi
         self.comignolo = h32(n, 8) < 0.45
         self.bottega = (x1 - x0 + 1) >= 3 and h32(n, 9) < 0.35
-        self.morto = not self.bottega and (x1 - x0 + 1) >= 3 and h32(n, 10) < 0.3
+        self.morto = not self.bottega and (x1 - x0 + 1) >= 3 and h32(n, 10) < morto
         self.pietra = 3 if h32(n, 11) < 0.65 else 2                 # il tono dei conci: 3 o 2
 
 
@@ -244,7 +249,7 @@ def _segmenti(xs):
     return out
 
 
-def dividi_in_case(griglia, case_celle, calpestabile):
+def dividi_in_case(griglia, case_celle, calpestabile, morto=0.3):
     """Le case con facciata: per ogni riga, le celle di casa con una cella calpestabile sotto, divise in case
     larghe 2-5 tile. La facciata e' alta quanto lo permette la colonna di case sopra (lasciando almeno una
     riga di tetto), al massimo ALTEZZA_FACCIATA_MAX, uguale per tutta la casa."""
@@ -272,7 +277,7 @@ def dividi_in_case(griglia, case_celle, calpestabile):
                         k += 1
                     colonna.append(k)
                 fh = max(1, min(ALTEZZA_FACCIATA_MAX, min(colonna) - 1))
-                case.append(Casa(xs[0], xs[-1], y, fh, n))
+                case.append(Casa(xs[0], xs[-1], y, fh, n, morto))
                 n += 1
                 i += larga
     return case
@@ -367,7 +372,14 @@ def _porta(q, x0, ybase, w, h, seme):
 def _porta_del_morto(q, x0, ybase, h):
     """La porta del morto: stretta, rialzata, murata. A Gubbio la si riconosce accanto al portone."""
     alta = h - 6
-    _vano_arco(q, x0, ybase - 6 - alta, 5, alta, lambda x, y: (P, 2) if (y // 3) % 2 else (P, 1))
+    y0 = ybase - 6 - alta
+    _vano_arco(q, x0, y0, 5, alta, lambda x, y: (P, 2) if (y // 3) % 2 else (P, 1))
+    # giro 8: la si legge come porta murata, non come crepa: lo stipite chiaro a sinistra e la soglia rialzata
+    # con la sua ombra, a un palmo da terra (si apriva solo per far uscire i morti, dice la tradizione)
+    for y in range(y0 + 3, ybase - 5):
+        q.punto(x0 - 1, y, (P, 4))
+    q.rett(x0 - 1, ybase - 6, 7, 1, (P, 4))
+    q.rett(x0 - 1, ybase - 5, 7, 1, (P, 1))
     q.conta("porta_del_morto")
 
 

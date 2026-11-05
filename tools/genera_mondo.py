@@ -2417,7 +2417,7 @@ def ridipingi(a, celle, tile_di, mondo, elementi):
                 elif c == "D":
                     PC.dipingi_aiuola(q, x, y)
         # 2. le case: prima tutti i tetti, poi le facciate
-        case = PC.dividi_in_case(g, case_celle, calpestabile)
+        case = PC.dividi_in_case(g, case_celle, calpestabile, PC.VIE_DEL_MORTO.get(a["id"], 0.3))
         coperte = set()
         for casa in case:
             fondo_tetto = casa.yb - casa.fh

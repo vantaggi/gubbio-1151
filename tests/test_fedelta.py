@@ -127,5 +127,20 @@ class Giro7Porte(unittest.TestCase):
         self.assertEqual(lati["Porta Metauro"], "alto")
 
 
+class Giro8PortaDelMorto(unittest.TestCase):
+    def test_in_via_dei_consoli_la_porta_del_morto_e_frequente(self):
+        self.assertGreater(PC.VIE_DEL_MORTO["via_dei_consoli"], 0.5)
+        casa = PC.Casa(0, 3, 10, 5, 7, morto=1.0)
+        self.assertTrue(casa.morto or casa.bottega)
+        casa = PC.Casa(0, 3, 10, 5, 7, morto=0.0)
+        self.assertFalse(casa.morto)
+
+    def test_la_porta_del_morto_si_dipinge(self):
+        q = PC.Quadro(8, 8)
+        casa = next(c for c in (PC.Casa(0, 3, 6, 5, n, morto=1.0) for n in range(50)) if c.morto)
+        PC.dipingi_casa(q, casa, 8)
+        self.assertEqual(q.elementi.get("porta_del_morto"), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
