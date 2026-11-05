@@ -102,5 +102,14 @@ class Giro5DuomoDucale(unittest.TestCase):
         self.assertEqual(t.elementi["pietra_serena"], 1)
 
 
+class Giro6QuarantaMartiri(unittest.TestCase):
+    def test_san_francesco_tripartito_e_tiratoio_aperto(self):
+        t = PM.dipingi("san_francesco", "Chiesa di San Francesco", 38, 18, "basso", {}, 0)
+        self.assertEqual(t.elementi["tripartita"], 1)
+        t = PM.dipingi("loggia_tiratori", "Loggia dei Tiratori della Lana", 43, 12, "basso", {}, 0)
+        self.assertEqual(t.elementi["tiratoio"], 1)
+        self.assertGreater(t.elementi["arcata"], 20)
+
+
 if __name__ == "__main__":
     unittest.main()

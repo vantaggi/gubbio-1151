@@ -1056,9 +1056,17 @@ def san_francesco_di_fronte(w, h, info):
     y0 = alto - fh * 8
     t.gronda(0, y0 - 3, largo)
     t.conci(0, y0, largo, fh * 8, TINTE[0])
-    rosone(t, cx, y0 + 12, 7)
+    # giro 6 della fedelta' (it.wikipedia): la facciata tripartita, due lesene la dividono in tre campi, il rosone
+    # grande nel campo di mezzo e il portale gotico con le ghiere
+    for lx in (largo // 3 - 2, 2 * largo // 3 - 2):
+        t.rett(lx, y0 + 2, 4, fh * 8 - 2, PIETRA_LUCE)
+        t.rett(lx + 3, y0 + 2, 1, fh * 8 - 2, PIETRA)
+    t.elementi["tripartita"] += 1
+    rosone(t, cx, y0 + 12, 9)
     t.elementi["facciata"] += 1
-    portale_in_scala(t, (w // 2) * 8, alto, y0 + 22)
+    px = (w // 2) * 8
+    t.arco_acuto(px - 13, alto - 34, 26, 34, PIETRA_CHIARA, PIETRA_LUCE)
+    portale_in_scala(t, px, alto, y0 + 24)
     t.elementi["portale"] += 1
     # il campanile, a destra della facciata, alto sopra il tetto
     t.conci(largo - 24, y0 - 40, 20, 40 + fh * 8 - 8, TINTE[1])
@@ -1114,14 +1122,23 @@ def loggia_tiratori(w, h, info):
     t.conci(0, y0, w * 8, 48, TINTE[0])
     # la loggia: pilastrini di legno e il loggiato in ombra, non nero (il nero aperto e' delle porte vere,
     # custode visivo 4 nov); qua e la' un panno di lana steso ad asciugare
-    for i, x in enumerate(range(2, w * 8 - 8, 8)):
-        t.rett(x, y0 + 2, 6, 14, PIETRA_SCURA)
-        t.rett(x, y0 + 2, 6, 2, PIETRA)
-        if i % 3 == 1:
-            t.rett(x + 1, y0 + 4, 4, 7, (COTTO_CHIARO, PIETRA_LUCE, COTTO)[i % 3])
-        t.rett(x + 6, y0 + 2, 2, 14, LEGNO)
+    # giro 6 della fedelta': il tiratoio e' una galleria lunga e aperta sotto il tetto, con i ritti di legno fitti,
+    # la trave in alto e il parapetto; dentro, in ombra, le pezze di lana tese sui telai ad asciugare
+    t.rett(0, y0, w * 8, 18, PIETRA_SCURA)
+    t.rett(0, y0, w * 8, 2, LEGNO_SCURO)                    # la trave sotto la gronda
+    for i, x in enumerate(range(0, w * 8 - 4, 10)):
+        if i % 2 == 1:
+            lana = (PIETRA_LUCE, COTTO_CHIARO, PIETRA_CHIARA)[(i // 2) % 3]
+            t.rett(x + 2, y0 + 3, 7, 9, lana)                 # la pezza tesa
+            t.rett(x + 2, y0 + 3, 7, 1, LEGNO_SCURO)          # il telaio
+            t.rett(x + 8, y0 + 4, 1, 8, PIETRA)               # e la sua ombra a destra (L1)
+        t.rett(x, y0 + 2, 2, 14, LEGNO)                       # il ritto
+        t.punto(x + 1, y0 + 2, LEGNO_SCURO)
         t.elementi["arcata"] += 1
+    t.elementi["tiratoio"] += 1
+    t.rett(0, y0 + 14, w * 8, 1, LEGNO)                       # il parapetto
     t.rett(0, y0 + 16, w * 8, 3, LEGNO)
+    t.rett(0, y0 + 18, w * 8, 1, LEGNO_SCURO)
     # l'ospedale sotto: portico ad archi di pietra
     for x in range(4, w * 8 - 16, 16):
         t.arco(x, y0 + 22, 12, 24, PIETRA_SCURA)
