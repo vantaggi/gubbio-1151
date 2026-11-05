@@ -89,16 +89,18 @@ private:
 
     void _scrivi(const char* caratteri, int n);
 
+    // _tiles prima di _sprite (lo sprite si crea coi tile); i 14 caratteri subito dopo i 2 byte di _tiles
+    // riempiono il posto fino ai campi da 4 (docs/regole_sviluppo_gba.md, punto 7): 36 byte invece di 40.
     bn::sprite_tiles_ptr _tiles;
+    // Testo pigro (docs/regole_sviluppo_gba.md, 4.A.1): l'ultima scritta disegnata. Se la prossima e' uguale
+    // i tile non si ridisegnano, cosi' chi chiama mostra() a ogni frame non paga niente finche' il valore
+    // non cambia. _n_scritto -1: niente ancora di disegnato.
+    char _scritto[SCRITTO_MAX] = {};
     bn::sprite_ptr _sprite;
     int _inchiostro;
     int _contorno;
     int _larghezza = 0;
-    // Testo pigro (docs/regole_sviluppo_gba.md, 4.A.1): l'ultima scritta disegnata. Se la prossima e' uguale
-    // i tile non si ridisegnano, cosi' chi chiama mostra() a ogni frame non paga niente finche' il valore
-    // non cambia. -1: niente ancora di disegnato.
     int _n_scritto = -1;
-    char _scritto[SCRITTO_MAX] = {};
 };
 
 // Palette degli sprite di testo: quella della cornice (scelta 9), indice 0 trasparente.
