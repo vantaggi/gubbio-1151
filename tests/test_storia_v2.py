@@ -210,7 +210,7 @@ class Bandiere(unittest.TestCase):
 class C1(unittest.TestCase):
 
     def test_la_frase_nuova_del_narratore(self):
-        frase = "Nel 1151, vecchi torti e nuove ambizioni spezzarono la pace dei colli."
+        frase = "Anno 1151. Gubbio ha molti nemici, e alcuni hanno anche delle buone ragioni."
         self.assertRegex(TESTI, rf"(?m)^R_P_02_00\s+\| NARRATORE \| {re.escape(frase)}$")
         regia = open(os.path.join(RADICE, "regia", "c1_prologo.regia"), encoding="utf-8").read()
         self.assertIn("narratore R_P_02_00", regia)

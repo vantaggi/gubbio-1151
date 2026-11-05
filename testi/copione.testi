@@ -1,52 +1,88 @@
 # GENERATO da tools/genera_storia.py dal copione v1 (copione/*.md): non modificare a mano.
 # Le battute delle scene, i nomi di chi parla e le battute degli NPC d'ambiente.
 
+PARLANTE_ACQUAIOLO        | HUD     | Acquaiolo
 PARLANTE_AGNESE           | HUD     | Monna Agnese
 PARLANTE_ANDREUCCIO       | HUD     | Andreuccio
 PARLANTE_ANTONIO          | HUD     | Antonio
 PARLANTE_ARALDO           | HUD     | Araldo di Perugia
 PARLANTE_AURELIA          | HUD     | Aurelia
+PARLANTE_AVVENTORE        | HUD     | Avventore
+PARLANTE_BANDITORE        | HUD     | Banditore
+PARLANTE_BERTO            | HUD     | Berto il Tagliapietre
+PARLANTE_CALZOLAIO        | HUD     | Calzolaio
+PARLANTE_CAMPANARO        | HUD     | Campanaro
 PARLANTE_CANONICO         | HUD     | Canonico
+PARLANTE_CARBONAIO        | HUD     | Carbonaio
+PARLANTE_CARPENTIERE      | HUD     | Carpentiere
 PARLANTE_CECCO            | HUD     | Cecco il Balestriere
 PARLANTE_CIACCIO          | HUD     | Ciaccio
 PARLANTE_CIOTTO           | HUD     | Ciotto
+PARLANTE_CONCIATORE       | HUD     | Conciatore
 PARLANTE_CORRADO          | HUD     | Corrado di Spoleto
+PARLANTE_FABBRO           | HUD     | Fabbro
 PARLANTE_FANTE            | HUD     | Fante di Perugia
 PARLANTE_FAZIO            | HUD     | Fazio
 PARLANTE_FEBO             | HUD     | Febo
 PARLANTE_FERITO           | HUD     | Ferito
 PARLANTE_FLAVIANO         | HUD     | Flaviano
 PARLANTE_FOLLA            | HUD     | Folla
+PARLANTE_FORNAIA          | HUD     | Fornaia
 PARLANTE_FRA__BERNARDO    | HUD     | Fra' Bernardo
+PARLANTE_FRA__MATTEO      | HUD     | Fra' Matteo
+PARLANTE_FRATE            | HUD     | Frate agostiniano
+PARLANTE_FRECCIAIO        | HUD     | Frecciaio
+PARLANTE_FUNAIO           | HUD     | Funaio
 PARLANTE_GABRIONE         | HUD     | Gabrione
+PARLANTE_GARZONE          | HUD     | Garzone del carradore
 PARLANTE_GIAMBONO         | HUD     | Giambono
 PARLANTE_GIORDANO         | HUD     | Giordano
 PARLANTE_GIORGIO          | HUD     | Giorgio
 PARLANTE_GIULIANA         | HUD     | Giuliana
+PARLANTE_GUARDIA          | HUD     | Guardia della sala
 PARLANTE_GUERRIERO        | HUD     | Guerriero di Spoleto
 PARLANTE_GUIDO            | HUD     | Console Guido
 PARLANTE_INFILTRATO       | HUD     | Infiltrato
+PARLANTE_LANAIOLO         | HUD     | Lanaiolo
 PARLANTE_LAURETTA         | HUD     | Lauretta
+PARLANTE_LAVANDAIA        | HUD     | Lavandaia
 PARLANTE_LEONORA          | HUD     | Leonora
+PARLANTE_LUCIA            | HUD     | Lucia la Tessitrice
+PARLANTE_MACELLAIO        | HUD     | Macellaio
 PARLANTE_MASIO            | HUD     | Masio il Romano
+PARLANTE_MERCIAIO         | HUD     | Merciaio
 PARLANTE_MICHELINO        | HUD     | Michelino
 PARLANTE_MILIA            | HUD     | Milia
+PARLANTE_MISURATORE       | HUD     | Misuratore del grano
 PARLANTE_MONTANO          | HUD     | Montano
+PARLANTE_MUGNAIO          | HUD     | Mugnaio
 PARLANTE_NELLO            | HUD     | Nello
 PARLANTE_NICOLUCCIO       | HUD     | Nicoluccio
+PARLANTE_NOTAIO           | HUD     | Notaio del Comune
+PARLANTE_ORTOLANA         | HUD     | Ortolana
 PARLANTE_PADELLINO        | HUD     | Padellino
+PARLANTE_PASTORE          | HUD     | Pastore
+PARLANTE_POPOLANA         | HUD     | Popolana
 PARLANTE_RAGAZZO          | HUD     | Ragazzo eugubino
 PARLANTE_RAGNETTO         | HUD     | Ragnetto
 PARLANTE_RANIERO          | HUD     | Mastro Raniero
 PARLANTE_RENZO            | HUD     | Renzo
 PARLANTE_RICCIARDO        | HUD     | Ricciardo
+PARLANTE_RICOVERATO       | HUD     | Ricoverato
 PARLANTE_RUFINO           | HUD     | Mastro Rufino
+PARLANTE_SENTINELLA       | HUD     | Sentinella
 PARLANTE_SPETTRO          | HUD     | Spettro del Dubbio
 PARLANTE_SPIA             | HUD     | Spia umbra
+PARLANTE_TANO             | HUD     | Mastro Tano
+PARLANTE_TINTORE          | HUD     | Tintore
 PARLANTE_UBALDO           | HUD     | Ubaldo
 PARLANTE_VALENZA          | HUD     | Valenza
 PARLANTE_VALERIANA        | HUD     | Valeriana
 PARLANTE_VANNI            | HUD     | Vanni
+PARLANTE_VASAIA           | HUD     | Vasaia
+PARLANTE_VECCHIO          | HUD     | Vecchio
+PARLANTE_VENDITORE        | HUD     | Venditore
+PARLANTE_VIANDANTE        | HUD     | Viandante
 SCENA_P_00                | DIALOGO | Avvio
 SCENA_P_01                | DIALOGO | La vetrata chiara
 SCENA_P_02                | DIALOGO | La mappa che annerisce
@@ -71,22 +107,22 @@ C_P_01_00                 | DIALOGO | Sul Monte Ingino c'è una vetrata che racc
 R_P_01_00                 | NARRATORE | Sul Monte Ingino c'è una vetrata che racconta una guerra.
 C_P_01_01                 | DIALOGO | Chi la guarda oggi vede soldati in rotta, stendardi spezzati e un vescovo con le braccia aperte.
 R_P_01_01                 | NARRATORE | Chi la guarda oggi vede soldati in rotta, stendardi spezzati e un vescovo con le braccia aperte.
-C_P_01_02                 | DIALOGO | Ma prima che il vetro avesse un colore, la storia andava ancora combattuta.
-R_P_01_02                 | NARRATORE | Ma prima che il vetro avesse un colore, la storia andava ancora combattuta.
-C_P_02_00                 | DIALOGO | Nel 1151, vecchi torti e nuove ambizioni spezzarono la pace dei colli.
-R_P_02_00                 | NARRATORE | Nel 1151, vecchi torti e nuove ambizioni spezzarono la pace dei colli.
-C_P_02_01                 | DIALOGO | Spoleto e Foligno. Assisi, Spello e Bettona. Todi e Cagli.
-R_P_02_01                 | NARRATORE | Spoleto e Foligno. Assisi, Spello e Bettona. Todi e Cagli.
-C_P_02_02                 | DIALOGO | Nocera, Gualdo Tadino e Fossato. E sopra tutte, Perugia.
-R_P_02_02                 | NARRATORE | Nocera, Gualdo Tadino e Fossato. E sopra tutte, Perugia.
-C_P_02_03                 | DIALOGO | Undici città confederate cinsero d'assedio la roccaforte di Gubbio.
-R_P_02_03                 | NARRATORE | Undici città confederate cinsero d'assedio la roccaforte di Gubbio.
-C_P_02_04                 | DIALOGO | Senza vie di fuga e con le scorte al lumicino, la città sembrò destinata a cadere nell'oblio.
-R_P_02_04                 | NARRATORE | Senza vie di fuga e con le scorte al lumicino, la città sembrò destinata a cadere nell'oblio.
-C_P_02_05                 | DIALOGO | Ma dalle pietre del Monte Ingino non sorse la resa.
-R_P_02_05                 | NARRATORE | Ma dalle pietre del Monte Ingino non sorse la resa.
-C_P_02_06                 | DIALOGO | Sorse il fuoco della Fede.
-R_P_02_06                 | NARRATORE | Sorse il fuoco della Fede.
+C_P_01_02                 | DIALOGO | Ora torniamo a quei giorni, quando nessuno sapeva ancora come sarebbe finita.
+R_P_01_02                 | NARRATORE | Ora torniamo a quei giorni, quando nessuno sapeva ancora come sarebbe finita.
+C_P_02_00                 | DIALOGO | Anno 1151. Gubbio ha molti nemici, e alcuni hanno anche delle buone ragioni.
+R_P_02_00                 | NARRATORE | Anno 1151. Gubbio ha molti nemici, e alcuni hanno anche delle buone ragioni.
+C_P_02_01                 | DIALOGO | Contro di lei si alleano Spoleto e Foligno, Assisi, Spello e Bettona, Todi e Cagli.
+R_P_02_01                 | NARRATORE | Contro di lei si alleano Spoleto e Foligno, Assisi, Spello e Bettona, Todi e Cagli.
+C_P_02_02                 | DIALOGO | E poi Nocera, Gualdo Tadino e Fossato. A guidarle tutte c'è Perugia.
+R_P_02_02                 | NARRATORE | E poi Nocera, Gualdo Tadino e Fossato. A guidarle tutte c'è Perugia.
+C_P_02_03                 | DIALOGO | Undici città in tutto. I loro eserciti si accampano nella valle, sotto le mura di Gubbio.
+R_P_02_03                 | NARRATORE | Undici città in tutto. I loro eserciti si accampano nella valle, sotto le mura di Gubbio.
+C_P_02_04                 | DIALOGO | La città è circondata: nessuno può uscire, e il grano basta per pochi giorni.
+R_P_02_04                 | NARRATORE | La città è circondata: nessuno può uscire, e il grano basta per pochi giorni.
+C_P_02_05                 | DIALOGO | Gubbio è sola. Ma non vuole arrendersi.
+R_P_02_05                 | NARRATORE | Gubbio è sola. Ma non vuole arrendersi.
+C_P_02_06                 | DIALOGO | Il vescovo Ubaldo sceglie di combatterli con un'arma diversa: la fede.
+R_P_02_06                 | NARRATORE | Il vescovo Ubaldo sceglie di combatterli con un'arma diversa: la fede.
 C_A1_01_00                | DIALOGO | Gubbio, Piazza Grande. Il primo giorno.
 C_A1_01_01                | DIALOGO | Monsignore... undici stendardi circondano la conca.
 C_A1_01_02                | DIALOGO | Datemi venti cavalieri, console. Prima di sera li ricaccio oltre i colli.
@@ -320,63 +356,63 @@ R_E_02_01                 | NARRATORE | Un vetro ha preso il suo colore. Gli alt
 C_E_02_02                 | DIALOGO | Fine del primo atto. La cronaca continua.
 R_E_02_02                 | NARRATORE | Fine del primo atto. La cronaca continua.
 NPC_00_00                 | DIALOGO | Non ho dormito, monsignore. Ho contato i fuochi nella piana. Sono di più.
-NPC_00_01                 | DIALOGO | Settanta bocche in più. Ho rifatto i conti tre volte.
+NPC_00_01                 | DIALOGO | Con quelli del borgo sono settanta bocche in più. Ho rifatto i conti del grano tre volte.
 NPC_00_02                 | DIALOGO | L'alba sta per sorgere, monsignore. Andiamo incontro all'araldo?
 NPC_00_03_A               | SCELTA  | Sì, è ora
 NPC_00_03_B               | SCELTA  | Non ancora
 NPC_00_04                 | DIALOGO | Allora andiamo. Il popolo vi aspetta già in piazza.
-NPC_00_05                 | DIALOGO | La città tace, come avete chiesto. Non l'ho mai sentita così.
-NPC_01_00                 | DIALOGO | Siete scesi dal Bottaccione? E la roccia nera... l'avete vista? Ve l'avevo detto.
-NPC_01_01                 | DIALOGO | Mio nonno ha scalpellato la pietra del Condotto nel Bottaccione.
-NPC_01_02                 | DIALOGO | Diceva sempre: c'è una fessura dove la roccia diventa nera come la pece. Lì la terra non dorme.
-NPC_01_03                 | DIALOGO | Fate attenzione, se scendete laggiù. La crepa la conosceva solo chi l'ha costruita.
-NPC_01_04                 | DIALOGO | Undici stendardi. Io ne ho contati dodici, ma uno forse era un lenzuolo steso.
+NPC_00_05                 | DIALOGO | La città tace, come avete chiesto. Non l'avevo mai sentita così silenziosa.
+NPC_01_00                 | DIALOGO | Siete tornati dal Bottaccione! L'avete vista, la roccia nera di cui vi parlavo?
+NPC_01_01                 | DIALOGO | Mio nonno faceva lo scalpellino. Ha tagliato le pietre del condotto, giù nella gola del Bottaccione.
+NPC_01_02                 | DIALOGO | Raccontava di un punto dove la roccia diventa nera come la pece, diversa da tutta l'altra.
+NPC_01_03                 | DIALOGO | Se scendete laggiù, state attenti. Quel punto lo conoscevano solo i costruttori del condotto.
+NPC_01_04                 | DIALOGO | Quest'estate ho rattoppato io le mura. Adesso vedremo se ho lavorato bene.
 NPC_02_00                 | DIALOGO | Dicono che sul monte si sono accese tre luci. Le ho viste anch'io, giuro.
-NPC_02_01                 | DIALOGO | Tre luci sul monte, dicono. Il bambino non le ha viste: dormiva per la fame.
-NPC_02_02                 | DIALOGO | Dorme, finalmente. Dio vi renda il doppio, monsignore.
-NPC_02_03                 | DIALOGO | Tre giorni senza pane. Li faccio, monsignore. Ma il bambino piange.
+NPC_02_01                 | DIALOGO | Dicono che sul monte si sono accese tre luci. Mio figlio non le ha viste: dormiva, sfinito dalla fame.
+NPC_02_02                 | DIALOGO | Il bambino dorme, finalmente. Che Dio vi renda il doppio, monsignore.
+NPC_02_03                 | DIALOGO | Il digiuno lo faccio, monsignore. Ma il mio bambino piange dalla fame.
 NPC_02_04_A               | SCELTA  | Dalle una fetta
 NPC_02_04_B               | SCELTA  | Non ora
 NPC_02_05                 | DIALOGO | Per il bambino. Io ho mangiato stamattina, mi basta.
 NPC_02_06                 | DIALOGO | Hai dato una fetta di Crescia di Pasqua.
 NPC_02_07                 | DIALOGO | La fame di un giorno non uccide. Lassù ci servirà tutto quello che abbiamo.
-NPC_02_08                 | DIALOGO | Quel cavaliere col Grifo... ha guardato le nostre case come si guarda il bestiame.
-NPC_03_00                 | DIALOGO | Se arrivano i perugini, la prima cosa che rubano sono le stoffe. Le nascondo in cantina.
-NPC_04_00                 | DIALOGO | Ancora in giro? Solo i matti girano a quest'ora. Siete dei nostri, allora.
-NPC_04_01                 | DIALOGO | Oggi la fontana digiuna pure lei. Torna quando la città sarà libera, e ti farò matto davvero.
-NPC_04_02                 | DIALOGO | L'acqua di questa fonte ha visto più assedi di me. E io ne ho visti tanti.
-NPC_05_00                 | DIALOGO | Il ragazzo l'avete lasciato andare? Speriamo che sappia la strada di casa.
-NPC_05_01                 | DIALOGO | Da Porta Metauro? Allora la gola non è più loro. Dormirò un'ora, forse.
-NPC_05_02                 | DIALOGO | Quello di San Pietro dice che tira meglio di me? Bugia.
-NPC_05_03                 | DIALOGO | Postierla chiusa, monsignore. Nemmeno il vento passa senza il mio permesso.
-NPC_06_00                 | DIALOGO | L'acqua del Camignano stasera è più chiara. Non so perché, ma la ringrazio.
-NPC_06_01                 | DIALOGO | L'acqua del fosso ha un colore che non mi piace. Verde, come il ramarro.
-NPC_06_02                 | DIALOGO | Se chiudono le porte, chi ci porta la legna? Il bosco sta fuori.
-NPC_07_00                 | DIALOGO | Non dovrei vendere, col digiuno. Ma voi non digiunate, vero? Avvicinatevi.
-NPC_07_01                 | DIALOGO | Il borgo mangia anche lui. Una fetta di Crescia in meno per voi, mi spiace.
-NPC_07_02                 | DIALOGO | Crescia, Biscotti all'anice, e poco altro. Per chi combatte, il vescovo ha detto.
-NPC_07_03                 | DIALOGO | Comprate oggi, che domani non so se ci sarà ancora una loggia.
-NPC_08_00                 | DIALOGO | Il Camignano è torbido, ma il convento ha riserve. Prendi questo baccalà.
-NPC_08_01                 | DIALOGO | Uno a testa, e già è troppo. Il resto è per i feriti.
-NPC_09_00                 | DIALOGO | Ho cucito bende tutta la notte. Ogni punto trattiene una preghiera.
-NPC_09_01                 | DIALOGO | Quando tornerete, cucirò uno stendardo nuovo: rosso, col monte bianco. Ma tornate.
-NPC_09_02                 | DIALOGO | Se chiudono le porte, la lana finisce in una settimana. Le bende prima.
-NPC_10_00                 | DIALOGO | Ho sentito l'acqua tornare nelle fontane. A una certa età si sente tutto.
-NPC_10_01                 | DIALOGO | Undici anni fa le torri dei Valmarcola. Ora tornano, lo sento nelle ossa.
-NPC_10_02                 | DIALOGO | Questa salita la faccio da settant'anni. I perugini la troveranno più ripida di me.
+NPC_02_08                 | DIALOGO | Quel cavaliere di Perugia guardava le nostre case come si guarda il bestiame al mercato.
+NPC_03_00                 | DIALOGO | Se entrano i perugini, la prima cosa che rubano sono le stoffe. Le nascondo in cantina.
+NPC_04_00                 | DIALOGO | Ancora in giro a quest'ora? Qui si dice che di notte girano solo i matti.
+NPC_04_01                 | DIALOGO | Questa è la Fontana dei Matti. A città libera, tre giri intorno e vi faccio matti anche voi.
+NPC_04_02                 | DIALOGO | Questa fontana ha visto più assedi di me. E io, alla mia età, ne ho visti parecchi.
+NPC_05_00                 | DIALOGO | Avete lasciato andare quel ragazzo? Speriamo che trovi la strada di casa.
+NPC_05_01                 | DIALOGO | Siete rientrati da Porta Metauro? Allora la gola è di nuovo nostra. Stanotte dormo un'ora.
+NPC_05_02                 | DIALOGO | Quello di San Pietro dice che con la balestra tira meglio di me? È una bugia.
+NPC_05_03                 | DIALOGO | La postierla è chiusa, monsignore. Da qui non passa nemmeno il vento senza il mio permesso.
+NPC_06_00                 | DIALOGO | Stasera l'acqua del Camignano è tornata limpida. Non so cosa sia successo, ma ringrazio il cielo.
+NPC_06_01                 | DIALOGO | L'acqua del fosso ha un colore strano, verdastro. Non ci lavo più nemmeno gli stracci.
+NPC_06_02                 | DIALOGO | Se chiudono le porte, chi ci porta la legna? Il bosco sta fuori dalle mura.
+NPC_07_00                 | DIALOGO | Col digiuno non dovrei vendere. Ma chi combatte può mangiare, l'ha detto il vescovo.
+NPC_07_01                 | DIALOGO | Con la gente del borgo dentro, il cibo non basta. Ho meno Crescia per voi, mi spiace.
+NPC_07_02                 | DIALOGO | Ho Crescia, Biscotti all'anice e poco altro. Il vescovo ha detto: il cibo a chi combatte.
+NPC_07_03                 | DIALOGO | Comprate oggi! Stasera chiudono le porte, e chissà cosa resterà da vendere.
+NPC_08_00                 | DIALOGO | Il Camignano è torbido, ma il convento ha delle riserve. Prendete questo baccalà.
+NPC_08_01                 | DIALOGO | Uno solo, mi dispiace. Il resto lo teniamo per i feriti.
+NPC_09_00                 | DIALOGO | Ho cucito bende tutta la notte. Domani ne serviranno tante.
+NPC_09_01                 | DIALOGO | Quando tornerete dal monte vi cucirò uno stendardo nuovo, rosso col monte bianco. Ma tornate.
+NPC_09_02                 | DIALOGO | Se chiudono le porte, la lana finirà in una settimana. E le bende anche prima.
+NPC_10_00                 | DIALOGO | Ho sentito l'acqua tornare nelle fontane. Alla mia età il sonno è leggero, si sente tutto.
+NPC_10_01                 | DIALOGO | Anni fa abbiamo cacciato i Valmarcola dalle loro torri. Dicono che ora sono là fuori, con Perugia.
+NPC_10_02                 | DIALOGO | Questa salita la faccio da settant'anni. Ai perugini sembrerà ancora più ripida.
 NPC_10_03                 | DIALOGO | Ubaldo! Ti ricordi quando eri chierico e ti addormentavi ai vespri?
 NPC_10_04                 | DIALOGO | Me lo ricordo. Mi svegliavi tu, con un calcio.
-NPC_11_00                 | DIALOGO | Hanno bruciato tre case del borgo. Il convento no. Non so se ringraziare.
-NPC_11_01                 | DIALOGO | Preghiamo a turno, tutta la notte. Il mio turno è finito, ma resto sveglio.
-NPC_11_02                 | DIALOGO | La chiesa è aperta a chi vuole pregare in silenzio. Il silenzio è l'unica cosa che non manca.
-NPC_11_03                 | DIALOGO | Vent'anni fa il borgo bruciò, e il morbo si fermò. Chi accese il fuoco, nessuno lo dice.
-NPC_11_04                 | DIALOGO | Le mura di qui sono le più basse. Lo sanno anche loro, temo.
-NPC_12_00                 | DIALOGO | I fuochi dei perugini non si muovono. Aspettano l'alba come noi.
+NPC_11_00                 | DIALOGO | Hanno bruciato tre case del borgo, fuori dalle mura. Il convento si è salvato.
+NPC_11_01                 | DIALOGO | Preghiamo a turno, tutta la notte. Il mio turno è finito, ma non riesco a dormire.
+NPC_11_02                 | DIALOGO | La chiesa è aperta a chi vuole pregare in silenzio. Di cibo non ne abbiamo, di silenzio sì.
+NPC_11_03                 | DIALOGO | Vent'anni fa nel borgo c'era un morbo. Qualcuno diede fuoco alle case dei malati e il morbo si fermò.
+NPC_11_04                 | DIALOGO | Le mura da questa parte sono le più basse della città. Temo che lo sappiano anche loro.
+NPC_12_00                 | DIALOGO | I fuochi dei perugini sono fermi. Anche loro aspettano l'alba, come noi.
 NPC_12_01                 | DIALOGO | Da qui si vedono gli stendardi di Spoleto e Foligno. Sono tanti, monsignore.
-NPC_12_02                 | DIALOGO | Da qui si vedono gli stendardi di Gualdo e Fossato. Non si sono mossi da ieri.
-NPC_12_03                 | DIALOGO | Porta Romana tiene. Per ora tiene.
-NPC_13_00                 | DIALOGO | Il capitolo ha pregato per voi tre notti. Vedo che è servito.
-NPC_13_01                 | DIALOGO | Il vescovo sale al monte? Allora preparo le candele. Tre, mi pare giusto.
+NPC_12_02                 | DIALOGO | Da qui si vedono gli stendardi di Gualdo e Fossato. Da ieri non si sono mossi.
+NPC_12_03                 | DIALOGO | Porta Romana regge. Per ora regge.
+NPC_13_00                 | DIALOGO | Noi canonici abbiamo pregato per voi tutte le notti. Vedo che è servito.
+NPC_13_01                 | DIALOGO | Il vescovo sale al monte? Allora vi preparo tre candele, una per ciascuno.
 NPC_14_00                 | DIALOGO | Ho tirato tutta la notte. Domani si esce, vero, cavaliere?
 NPC_14_01                 | DIALOGO | Mio nonno quelle terre le ha prese con la spada. Ora le perdo pregando.
 NPC_14_02                 | DIALOGO | Vedi quel fumo? È la mia vigna. Dammi dieci archi e ci vado.
@@ -467,80 +503,80 @@ NPC_38_02                 | DIALOGO | Undici eserciti e nemmeno un carro decente
 NPC_39_00                 | DIALOGO | Undici eserciti mangiano la piana in due settimane. Monaldo ha fretta.
 NPC_39_01                 | DIALOGO | Nel 1140 cacciammo i Valmarcola. Chi è cacciato prima o poi torna.
 NPC_39_02                 | DIALOGO | Cento assedi ho studiato. Novanta finiscono con la fame, gli altri peggio.
-NPC_40_00                 | DIALOGO | Stanotte non ho niente da gridare. È la prima volta in vent'anni.
-NPC_40_01                 | DIALOGO | Udite... ma piano. Il vescovo ha chiesto silenzio, e io grido sottovoce.
+NPC_40_00                 | DIALOGO | Stanotte non ho niente da annunciare. È la prima volta in vent'anni.
+NPC_40_01                 | DIALOGO | Il vescovo ha chiesto silenzio, così gli annunci li faccio sottovoce. Un banditore che bisbiglia!
 NPC_40_02                 | DIALOGO | Udite! Per ordine dei consoli, chi ha un'arma la porti in piazza entro il vespro!
-NPC_41_00                 | DIALOGO | Ho dormito sopra i sacchi del Comune. Qualcuno doveva pur farlo.
-NPC_41_01                 | DIALOGO | Col digiuno il grano avanza. Non mi era mai capitato di contare in più.
-NPC_41_02                 | DIALOGO | Uno staio a famiglia, non di più. Il grano del Comune deve durare.
-NPC_42_00                 | DIALOGO | Ho battuto l'ultima punta a mezzanotte. Ora le mani mi suonano da sole.
-NPC_42_01                 | DIALOGO | Il fuoco della forgia lo tengo basso. Digiuna anche lui.
+NPC_41_00                 | DIALOGO | Ho dormito sopra i sacchi del grano del Comune. Qualcuno doveva fargli la guardia.
+NPC_41_01                 | DIALOGO | Col digiuno il grano dura di più. Per una volta i miei conti tornano.
+NPC_41_02                 | DIALOGO | Uno staio di grano a famiglia, non di più. Deve durare per tutto l'assedio.
+NPC_42_00                 | DIALOGO | Ho battuto l'ultima punta di freccia a mezzanotte. Non mi sento più le braccia.
+NPC_42_01                 | DIALOGO | Tengo basso il fuoco della forgia. Il carbone va risparmiato.
 NPC_42_02                 | DIALOGO | Punte di freccia, cento al giorno. Il martello non si ferma nemmeno a pranzo.
-NPC_43_00                 | DIALOGO | Ogni vaso che cuocio stanotte, spero, resterà vuoto.
-NPC_43_01                 | DIALOGO | Ho rotto tre vasi stamattina. Senza mangiare le mani tremano.
-NPC_43_02                 | DIALOGO | Pignatte per la pece, monsignore. Dalle mura la si versa bollente.
-NPC_44_00                 | DIALOGO | Senti come getta? Stanotte la fontana canta.
-NPC_44_01                 | DIALOGO | La fontana getta meno del solito. Lo sento dal tempo che ci mette il secchio.
-NPC_44_02                 | DIALOGO | Riempio ogni botte della città. In un assedio l'acqua vale più del vino.
-NPC_45_00                 | DIALOGO | Le corde sono tutte sulle mura. Mi è rimasto lo spago per legare il pane.
-NPC_45_01                 | DIALOGO | La canapa è finita. Ora intreccio i capelli che le donne mi hanno portato.
-NPC_45_02                 | DIALOGO | Corde per le scale e per i secchi delle mura. Me ne chiedono a braccia.
-NPC_46_00                 | DIALOGO | Stanotte il fosso corre chiaro. Domani lo tingo di festa.
-NPC_46_01                 | DIALOGO | Il fosso si porta via il colore. Sembra che stia male anche lui.
+NPC_43_00                 | DIALOGO | Ho cotto brocche tutta la notte. Domani serviranno a portare acqua sulle mura.
+NPC_43_01                 | DIALOGO | Ho rotto tre vasi stamattina. A stomaco vuoto mi tremano le mani.
+NPC_43_02                 | DIALOGO | Faccio pignatte per la pece, monsignore. Dalle mura la si versa bollente su chi sale.
+NPC_44_00                 | DIALOGO | Sentite come scorre forte la fontana? Stanotte l'acqua è tornata.
+NPC_44_01                 | DIALOGO | La fontana dà meno acqua del solito. Ci metto il doppio a riempire il secchio.
+NPC_44_02                 | DIALOGO | Riempio tutte le botti della città. In un assedio l'acqua vale più del vino.
+NPC_45_00                 | DIALOGO | Tutte le mie corde sono sulle mura. Mi è rimasto solo un po' di spago.
+NPC_45_01                 | DIALOGO | La canapa è finita. Le donne mi hanno portato i loro capelli, e intreccio quelli.
+NPC_45_02                 | DIALOGO | Faccio corde per le scale e per i secchi delle mura. Me ne chiedono a non finire.
+NPC_46_00                 | DIALOGO | Stanotte il fosso è tornato chiaro. Domani ricomincio a tingere.
+NPC_46_01                 | DIALOGO | L'acqua del fosso è torbida e i colori non prendono. Ho smesso di tingere.
 NPC_46_02                 | DIALOGO | Cento pezze rosse per gli stendardi. Ho le braccia rosse fino al gomito.
-NPC_47_00                 | DIALOGO | L'ultimo scudo è finito. All'alba lo porto io, sulle mura.
-NPC_47_01                 | DIALOGO | A stomaco vuoto non sento più la puzza. Qualcosa di buono il digiuno ce l'ha.
+NPC_47_00                 | DIALOGO | Ho finito l'ultimo scudo. All'alba lo porto io stesso sulle mura.
+NPC_47_01                 | DIALOGO | Col digiuno non sento più nemmeno la puzza delle pelli. Qualcosa di buono ce l'ha.
 NPC_47_02                 | DIALOGO | Pelli per gli scudi, monsignore. Puzzano, ma fermano le frecce.
-NPC_48_00                 | DIALOGO | Ho sentito l'acqua nella gora. Domani le macine ripartono.
-NPC_48_01                 | DIALOGO | Le macine sono ferme. Il vescovo ha detto digiuno, e obbediscono anche loro.
-NPC_48_02                 | DIALOGO | Macino tutto il grano prima che chiudano le strade. Giorno e notte.
-NPC_49_00                 | DIALOGO | L'ultima coperta l'ho data a un ragazzo di guardia. Ora ho freddo io, ed è giusto.
-NPC_49_01                 | DIALOGO | Stendo la lana e nessuno la tocca. Il digiuno fa santi anche i ladri.
-NPC_49_02                 | DIALOGO | Lana per le coperte delle sentinelle. Sulle mura, di notte, il freddo morde.
-NPC_50_00                 | DIALOGO | Le ho contate tre volte. Ci sono tutte. Stanotte posso pregare anch'io.
-NPC_50_01                 | DIALOGO | Le pecore brucano i giardini. Il digiuno vale per i cristiani, non per loro.
-NPC_50_02                 | DIALOGO | Ho portato il gregge dentro le mura. Le pecore non hanno mai visto una piazza.
-NPC_51_00                 | DIALOGO | Bottega chiusa per digiuno. È la prima volta che il coltello riposa.
-NPC_51_01                 | DIALOGO | Sale, sale e ancora sale. La carne salata dura quanto un assedio.
+NPC_48_00                 | DIALOGO | Ho sentito l'acqua tornare nel canale del mulino. Domani le macine ripartono.
+NPC_48_01                 | DIALOGO | Le macine sono ferme. Il vescovo ha chiesto silenzio, e il mulino fa troppo rumore.
+NPC_48_02                 | DIALOGO | Macino tutto il grano prima che chiudano le porte. Giorno e notte.
+NPC_49_00                 | DIALOGO | Ho dato l'ultima coperta a un ragazzo di guardia. Stanotte il freddo lo sento io.
+NPC_49_01                 | DIALOGO | Ho steso la lana ad asciugare e nessuno la tocca. Col digiuno anche i ladri stanno a casa.
+NPC_49_02                 | DIALOGO | Faccio coperte di lana per le sentinelle. Sulle mura, di notte, fa un freddo che morde.
+NPC_50_00                 | DIALOGO | Ho contato le pecore tre volte. Ci sono tutte. Ora posso pregare anch'io.
+NPC_50_01                 | DIALOGO | Le pecore mangiano l'erba dei giardini. Il digiuno vale per i cristiani, non per loro.
+NPC_50_02                 | DIALOGO | Ho portato il gregge dentro le mura. Le mie pecore non avevano mai visto una piazza.
+NPC_51_00                 | DIALOGO | Bottega chiusa per il digiuno. È la prima volta che il mio coltello riposa.
+NPC_51_01                 | DIALOGO | Sale, sale e ancora sale. La carne salata si conserva per tutto l'assedio.
 NPC_52_00                 | DIALOGO | Ho riacceso il forno prima dell'alba. Chi torna troverà il pane caldo.
-NPC_52_01                 | DIALOGO | Il forno è spento. Tengo la brace sotto la cenere, per quando servirà.
-NPC_52_02                 | DIALOGO | Pane biscotto: duro come la pietra, ma dura un mese. Assaggiate?
-NPC_53_00                 | DIALOGO | Ho cucito scarpe piccole tutta la notte. Quelli del borgo sono entrati scalzi.
-NPC_53_01                 | DIALOGO | Ho cucito tutta la notte. Domani in tanti dovranno camminare.
-NPC_53_02                 | DIALOGO | Batto piano col martelletto. La città vuole silenzio.
-NPC_53_03                 | DIALOGO | Suole doppie per chi sale sulle mura. Le pietre di Gubbio consumano tutto.
-NPC_54_00                 | DIALOGO | Domani torno all'orto. Se c'è ancora un orto.
-NPC_54_01                 | DIALOGO | Il digiuno lo faccio volentieri. I cavoli li ho portati tutti al convento.
-NPC_54_02                 | DIALOGO | Raccolgo tutto, anche il verde. Meglio acerbo che in bocca a loro.
-NPC_55_00                 | DIALOGO | Sono nero da capo a piedi. Almeno col digiuno non sporco il pane.
-NPC_55_01                 | DIALOGO | Carbone per le forge e per la pece. Tutta la città brucia il mio bosco.
+NPC_52_01                 | DIALOGO | Il forno è spento. Tengo la brace sotto la cenere, così lo riaccendo in fretta.
+NPC_52_02                 | DIALOGO | Faccio pane biscotto: duro come la pietra, ma si conserva un mese. Volete assaggiare?
+NPC_53_00                 | DIALOGO | Ho cucito scarpe piccole tutta la notte. I bambini del borgo sono entrati scalzi.
+NPC_53_01                 | DIALOGO | Ho risuolato scarpe tutta la notte. Sulle mura si consumano in fretta.
+NPC_53_02                 | DIALOGO | Batto piano col martelletto, per non disturbare. La città vuole silenzio.
+NPC_53_03                 | DIALOGO | Faccio suole doppie per chi sta sulle mura. Le pietre di Gubbio consumano tutto.
+NPC_54_00                 | DIALOGO | Domani torno al mio orto, fuori dalle mura. Se c'è ancora un orto.
+NPC_54_01                 | DIALOGO | Il digiuno non mi pesa. I miei cavoli li ho portati tutti al convento.
+NPC_54_02                 | DIALOGO | Raccolgo tutto, anche quello ancora verde. Meglio acerbo che in bocca ai perugini.
+NPC_55_00                 | DIALOGO | Sono nero di carbone da capo a piedi. Per fortuna col digiuno non devo toccare il pane.
+NPC_55_01                 | DIALOGO | Porto carbone per le forge e per scaldare la pece. Tutta la città brucia la legna del mio bosco.
 NPC_56_00                 | DIALOGO | La palizzata è finita. Ci ho inciso il mio nome in basso, dove non si vede.
-NPC_56_01                 | DIALOGO | Inchiodo piano, per rispetto. Le palizzate crescono lo stesso.
-NPC_56_02                 | DIALOGO | Palizzate dietro le porte. Il legno fresco geme, ma regge.
-NPC_57_00                 | DIALOGO | Diecimila frecce. Le ho contate una per una, con le dita nere.
-NPC_57_01                 | DIALOGO | Le oche mi guardano storto. Sanno chi è stato.
-NPC_57_02                 | DIALOGO | Penne d'oca per le frecce. Ho spennato tutte le oche del quartiere.
-NPC_58_00                 | DIALOGO | All'alba suono a festa o a martello. Speriamo a festa, monsignore.
-NPC_58_01                 | DIALOGO | La campana tace. Il silenzio della città suona più forte di lei.
-NPC_58_02                 | DIALOGO | Se arrivano, suono a martello: tre colpi, poi tre, poi tre. Ricordatevelo.
-NPC_59_00                 | DIALOGO | Quando apriranno le porte riprenderò la strada. Ma racconterò di questa città.
-NPC_59_01                 | DIALOGO | Digiuno anch'io. Per chi è in cammino è il pane di ogni giorno.
-NPC_59_02                 | DIALOGO | Andavo a Roma e mi hanno chiuso dentro Gubbio. Il Signore ha i suoi piani.
-NPC_60_00                 | DIALOGO | Lascio una riga bianca nel registro. Domani ci scriverò com'è andata.
-NPC_60_01                 | DIALOGO | Ho scritto il voto del digiuno nel registro. Così nessuno lo dimentica.
-NPC_60_02                 | DIALOGO | Scrivo i nomi di chi va sulle mura. Il ruolo dei difensori è già di tre fogli.
-NPC_61_00                 | DIALOGO | I consoli sono sulle mura. La sala si veglia lo stesso.
-NPC_61_01                 | DIALOGO | Niente pane neanche per le guardie. Sto dritto lo stesso.
-NPC_61_02                 | DIALOGO | Qui si entra con rispetto, monsignore. Per voi, sempre.
+NPC_56_01                 | DIALOGO | Pianto i chiodi piano, per rispetto del silenzio. Ma la palizzata deve crescere lo stesso.
+NPC_56_02                 | DIALOGO | Costruisco palizzate dietro le porte. Il legno fresco scricchiola, ma regge.
+NPC_57_00                 | DIALOGO | Diecimila frecce pronte per le mura. Le ho contate una per una.
+NPC_57_01                 | DIALOGO | Le oche del quartiere mi guardano storto. Sanno che sono stato io a spennarle.
+NPC_57_02                 | DIALOGO | Faccio frecce. Per le penne ho dovuto spennare tutte le oche del quartiere.
+NPC_58_00                 | DIALOGO | All'alba suonerò a festa o a martello. Speriamo a festa, monsignore.
+NPC_58_01                 | DIALOGO | Le campane tacciono per il digiuno. Non avevo mai sentito la città così silenziosa.
+NPC_58_02                 | DIALOGO | Se attaccano, suono a martello: tre colpi, poi tre, poi tre. Ricordatevelo.
+NPC_59_00                 | DIALOGO | Quando riapriranno le porte riprenderò la strada. Ma racconterò a tutti di questa città.
+NPC_59_01                 | DIALOGO | Digiuno anch'io. Per chi è in viaggio, saltare i pasti è normale.
+NPC_59_02                 | DIALOGO | Andavo a Roma in pellegrinaggio e mi hanno chiuso dentro Gubbio. Il Signore ha i suoi piani.
+NPC_60_00                 | DIALOGO | Ho lasciato una pagina bianca nel registro. Domani ci scriverò com'è andata.
+NPC_60_01                 | DIALOGO | Ho scritto il voto del digiuno nel registro del Comune. Così nessuno potrà dimenticarlo.
+NPC_60_02                 | DIALOGO | Scrivo i nomi di chi va a difendere le mura. Ho già riempito tre fogli.
+NPC_61_00                 | DIALOGO | I consoli sono sulle mura. Io resto qui a fare la guardia alla sala.
+NPC_61_01                 | DIALOGO | Niente pane neanche per le guardie. Ma resto in piedi lo stesso.
+NPC_61_02                 | DIALOGO | Qui si entra con rispetto, monsignore. Per voi la porta è sempre aperta.
 NPC_62_00                 | DIALOGO | Non bevo, sto qui per la compagnia. Al buio da solo non ci so stare.
-NPC_62_01                 | DIALOGO | Taverna chiusa, ma la panca è aperta. Guardo il camino spento.
-NPC_62_02                 | DIALOGO | Un bicchiere per il coraggio, monsignore. Uno solo, lo giuro.
-NPC_63_00                 | DIALOGO | Valenza mi ha rimboccato la coperta. Alla mia età, pensate.
-NPC_63_01                 | DIALOGO | Digiuno anch'io, monsignore. A me riesce bene da anni.
-NPC_63_02                 | DIALOGO | Dalla finestra si vedono le tende sul piano. Tante. Io conto le stelle: sono di più.
-NPC_64_00                 | DIALOGO | Mastro Rufino dorme accanto al carro. Dice che così non glielo rubano.
-NPC_64_01                 | DIALOGO | Ingrasso i mozzi a stomaco vuoto. Il grasso lo guardo e basta.
-NPC_64_02                 | DIALOGO | Il mastro dice che le ruote cantano, se sono fatte bene. Io sento solo cigolare.
+NPC_62_01                 | DIALOGO | La taverna è chiusa per il digiuno, ma la panca è libera. Mi siedo e guardo il camino spento.
+NPC_62_02                 | DIALOGO | Un bicchiere per farmi coraggio, monsignore. Uno solo, lo giuro.
+NPC_63_00                 | DIALOGO | Valenza mi ha rimboccato la coperta. Alla mia età, pensate un po'.
+NPC_63_01                 | DIALOGO | Digiuno anch'io, monsignore. Alla mia età si mangia poco comunque.
+NPC_63_02                 | DIALOGO | Dalla finestra vedo le tende dei nemici nella valle. Sono tante, ma le stelle sono di più.
+NPC_64_00                 | DIALOGO | Mastro Rufino dorme accanto al carro. Dice che così nessuno glielo ruba.
+NPC_64_01                 | DIALOGO | Ungo le ruote a stomaco vuoto. Il grasso lo guardo e basta.
+NPC_64_02                 | DIALOGO | Il mastro dice che le ruote fatte bene cantano. Io le sento solo cigolare.
 QST_SM01_00               | DIALOGO | Fornaci spente, ragazzo. Spoleto ha bloccato al passo il ferro del Monte Calvo.
 QST_SM01_01               | DIALOGO | E il ferro già colato l'hanno ammucchiato nelle fornaci basse del Teatro Romano.
 QST_SM01_02               | DIALOGO | Riportami tre blocchi, e ti dico come si fa a bucare una corazza di Spoleto.

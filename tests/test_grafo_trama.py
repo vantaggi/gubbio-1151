@@ -93,8 +93,8 @@ class CopioneRotto(unittest.TestCase):
 
     def test_battuta_che_non_si_sente_mai(self):
         # nell'ULTIMATUM non si e' ancora rientrati da Porta Metauro
-        r = self.rompi("03_npc_ambiente.md", "- NOTTE: CECCO: Da Porta Metauro?",
-                       "- ULTIMATUM (se RIENTRO_PORTA_METAURO): CECCO: Impossibile.\n- NOTTE: CECCO: Da Porta Metauro?")
+        r = self.rompi("03_npc_ambiente.md", "- NOTTE: CECCO: Siete rientrati da Porta Metauro?",
+                       "- ULTIMATUM (se RIENTRO_PORTA_METAURO): CECCO: Impossibile.\n- NOTTE: CECCO: Siete rientrati da Porta Metauro?")
         self.assertIn("BATTUTA_IRRAGGIUNGIBILE", codici(r))
 
     def test_condizione_che_il_gioco_non_capisce(self):

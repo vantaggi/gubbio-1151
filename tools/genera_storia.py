@@ -164,6 +164,19 @@ PARLANTI = {"UBALDO": "Ubaldo", "GIORGIO": "Giorgio", "ANTONIO": "Antonio", "GUI
             # i datori delle quest e chi parla nelle loro battute (04_quest.md)
             "RANIERO": "Mastro Raniero", "AGNESE": "Monna Agnese", "FRA' BERNARDO": "Fra' Bernardo",
             "FERITO": "Ferito", "INFILTRATO": "Infiltrato"}
+# Gli NPC d'ambiente (03_npc_ambiente.md) e i mestieri (06_npc_mestieri.md) parlano col loro nome nel cartiglio
+# (prova di Cioti del 5 nov 2026: senza nome le loro battute sembravano frasi del narratore, senza senso).
+PARLANTI.update({
+    "BERTO": "Berto il Tagliapietre", "POPOLANA": "Popolana", "MERCIAIO": "Merciaio", "TANO": "Mastro Tano",
+    "LAVANDAIA": "Lavandaia", "VENDITORE": "Venditore", "FRA' MATTEO": "Fra' Matteo", "LUCIA": "Lucia la Tessitrice",
+    "VECCHIO": "Vecchio", "FRATE": "Frate agostiniano", "SENTINELLA": "Sentinella",
+    "BANDITORE": "Banditore", "MISURATORE": "Misuratore del grano", "FABBRO": "Fabbro", "VASAIA": "Vasaia",
+    "ACQUAIOLO": "Acquaiolo", "FUNAIO": "Funaio", "TINTORE": "Tintore", "CONCIATORE": "Conciatore",
+    "MUGNAIO": "Mugnaio", "LANAIOLO": "Lanaiolo", "PASTORE": "Pastore", "MACELLAIO": "Macellaio",
+    "FORNAIA": "Fornaia", "CALZOLAIO": "Calzolaio", "ORTOLANA": "Ortolana", "CARBONAIO": "Carbonaio",
+    "CARPENTIERE": "Carpentiere", "FRECCIAIO": "Frecciaio", "CAMPANARO": "Campanaro", "VIANDANTE": "Viandante",
+    "NOTAIO": "Notaio del Comune", "GUARDIA": "Guardia della sala", "AVVENTORE": "Avventore",
+    "RICOVERATO": "Ricoverato", "GARZONE": "Garzone del carradore"})
 SENZA_NOME = {"NARRATORE", "AREA", "SISTEMA", "OBIETTIVO", "SCELTA"}
 ESPRESSIONI = ["calmo", "preoccupato", "deciso"]
 TIPI = ["PERSONAGGIO", "NARRATORE", "AREA", "SISTEMA", "OBIETTIVO", "SCELTA"]

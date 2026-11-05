@@ -12,7 +12,7 @@ Si rifa' con `python3 tools/grafo_moduli.py`; `tests/test_architettura.py` contr
 
 ## Numeri
 
-- 98 file: 82 scritti a mano (23837 righe), 16 generati (65738 righe).
+- 98 file: 82 scritti a mano (23837 righe), 16 generati (66205 righe).
 - 269 include fra file del progetto.
 - 38 asset, 38 usati.
 - 25 aree, 7 interni con una sola porta; 62 varchi.
@@ -36,7 +36,7 @@ Si rifa' con `python3 tools/grafo_moduli.py`; `tests/test_architettura.py` contr
 | `include/stile/palette.h` | `stile/esporta_cpp.py` | 45 |
 | `include/stile/pose.h` | `stile/esporta_cpp.py` | 80 |
 | `include/storia.h` | `tools/genera_storia.py` | 3581 |
-| `include/testi.h` | `tools/genera_testi.py` | 14046 |
+| `include/testi.h` | `tools/genera_testi.py` | 14513 |
 
 ## Gli header piu' inclusi
 

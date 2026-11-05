@@ -24,7 +24,7 @@ Varianti con bandiera (v2): una riga `- NOTTE (se BANDIERA): ...` vale solo con 
 
 Se `BORGO_DENTRO`:
 
-- GUIDO (preoccupato): Settanta bocche in più. Ho rifatto i conti tre volte.
+- GUIDO (preoccupato): Con quelli del borgo sono settanta bocche in più. Ho rifatto i conti del grano tre volte.
 
 Poi, per tutti:
 
@@ -35,22 +35,22 @@ Con «Sì, è ora» (`ALBA_CONFERMATA`):
 
 - GUIDO (deciso): Allora andiamo. Il popolo vi aspetta già in piazza.
 
-- DIGIUNO: GUIDO (calmo): La città tace, come avete chiesto. Non l'ho mai sentita così.
+- DIGIUNO: GUIDO (calmo): La città tace, come avete chiesto. Non l'avevo mai sentita così silenziosa.
 
 **Berto il Tagliapietre** (sul selciato, verso il parapetto)
 
-- NOTTE: BERTO: Siete scesi dal Bottaccione? E la roccia nera... l'avete vista? Ve l'avevo detto.
-- DIGIUNO: BERTO: Mio nonno ha scalpellato la pietra del Condotto nel Bottaccione.
-- DIGIUNO: BERTO: Diceva sempre: c'è una fessura dove la roccia diventa nera come la pece. Lì la terra non dorme.
-- DIGIUNO: BERTO: Fate attenzione, se scendete laggiù. La crepa la conosceva solo chi l'ha costruita.
-- ULTIMATUM: BERTO: Undici stendardi. Io ne ho contati dodici, ma uno forse era un lenzuolo steso.
+- NOTTE: BERTO: Siete tornati dal Bottaccione! L'avete vista, la roccia nera di cui vi parlavo?
+- DIGIUNO: BERTO: Mio nonno faceva lo scalpellino. Ha tagliato le pietre del condotto, giù nella gola del Bottaccione.
+- DIGIUNO: BERTO: Raccontava di un punto dove la roccia diventa nera come la pece, diversa da tutta l'altra.
+- DIGIUNO: BERTO: Se scendete laggiù, state attenti. Quel punto lo conoscevano solo i costruttori del condotto.
+- ULTIMATUM: BERTO: Quest'estate ho rattoppato io le mura. Adesso vedremo se ho lavorato bene.
 
 **Popolana** (vicino al parapetto)
 
 - NOTTE (se PANE_DATO): POPOLANA: Dicono che sul monte si sono accese tre luci. Le ho viste anch'io, giuro.
-- NOTTE: POPOLANA: Tre luci sul monte, dicono. Il bambino non le ha viste: dormiva per la fame.
-- DIGIUNO (se PANE_DATO): POPOLANA: Dorme, finalmente. Dio vi renda il doppio, monsignore.
-- DIGIUNO: POPOLANA: Tre giorni senza pane. Li faccio, monsignore. Ma il bambino piange.
+- NOTTE: POPOLANA: Dicono che sul monte si sono accese tre luci. Mio figlio non le ha viste: dormiva, sfinito dalla fame.
+- DIGIUNO (se PANE_DATO): POPOLANA: Il bambino dorme, finalmente. Che Dio vi renda il doppio, monsignore.
+- DIGIUNO: POPOLANA: Il digiuno lo faccio, monsignore. Ma il mio bambino piange dalla fame.
 
 Dilemma D3: dopo la battuta del DIGIUNO, se il gruppo ha almeno una Crescia di Pasqua e non c'è `PANE_DATO`:
 
@@ -65,7 +65,7 @@ Con «Non ora»:
 
 - ANTONIO (calmo): La fame di un giorno non uccide. Lassù ci servirà tutto quello che abbiamo.
 
-- ULTIMATUM: POPOLANA: Quel cavaliere col Grifo... ha guardato le nostre case come si guarda il bestiame.
+- ULTIMATUM: POPOLANA: Quel cavaliere di Perugia guardava le nostre case come si guarda il bestiame al mercato.
 
 ---
 
@@ -73,7 +73,7 @@ Con «Non ora»:
 
 **Merciaio** (davanti a una bottega chiusa)
 
-- ULTIMATUM: MERCIAIO: Se arrivano i perugini, la prima cosa che rubano sono le stoffe. Le nascondo in cantina.
+- ULTIMATUM: MERCIAIO: Se entrano i perugini, la prima cosa che rubano sono le stoffe. Le nascondo in cantina.
 
 ---
 
@@ -81,9 +81,9 @@ Con «Non ora»:
 
 **Mastro Tano** (accanto alla Fontana dei Matti). La Patente da Matto è fuori dalla v1: Tano la promette e basta.
 
-- NOTTE: TANO: Ancora in giro? Solo i matti girano a quest'ora. Siete dei nostri, allora.
-- DIGIUNO: TANO: Oggi la fontana digiuna pure lei. Torna quando la città sarà libera, e ti farò matto davvero.
-- ULTIMATUM: TANO: L'acqua di questa fonte ha visto più assedi di me. E io ne ho visti tanti.
+- NOTTE: TANO: Ancora in giro a quest'ora? Qui si dice che di notte girano solo i matti.
+- DIGIUNO: TANO: Questa è la Fontana dei Matti. A città libera, tre giri intorno e vi faccio matti anche voi.
+- ULTIMATUM: TANO: Questa fontana ha visto più assedi di me. E io, alla mia età, ne ho visti parecchi.
 
 ---
 
@@ -91,16 +91,16 @@ Con «Non ora»:
 
 **Cecco il Balestriere** (alla postierla). Le battute di trama sono in A1-03.
 
-- NOTTE (se ESULE_LIBERATO): CECCO: Il ragazzo l'avete lasciato andare? Speriamo che sappia la strada di casa.
-- NOTTE: CECCO: Da Porta Metauro? Allora la gola non è più loro. Dormirò un'ora, forse.
-- DIGIUNO (se INDIZIO_ROCCIA): CECCO: Quello di San Pietro dice che tira meglio di me? Bugia.
-- DIGIUNO: CECCO: Postierla chiusa, monsignore. Nemmeno il vento passa senza il mio permesso.
+- NOTTE (se ESULE_LIBERATO): CECCO: Avete lasciato andare quel ragazzo? Speriamo che trovi la strada di casa.
+- NOTTE: CECCO: Siete rientrati da Porta Metauro? Allora la gola è di nuovo nostra. Stanotte dormo un'ora.
+- DIGIUNO (se INDIZIO_ROCCIA): CECCO: Quello di San Pietro dice che con la balestra tira meglio di me? È una bugia.
+- DIGIUNO: CECCO: La postierla è chiusa, monsignore. Da qui non passa nemmeno il vento senza il mio permesso.
 
 **Lavandaia** (sul Camignano)
 
-- NOTTE: LAVANDAIA: L'acqua del Camignano stasera è più chiara. Non so perché, ma la ringrazio.
-- DIGIUNO: LAVANDAIA: L'acqua del fosso ha un colore che non mi piace. Verde, come il ramarro.
-- ULTIMATUM: LAVANDAIA: Se chiudono le porte, chi ci porta la legna? Il bosco sta fuori.
+- NOTTE: LAVANDAIA: Stasera l'acqua del Camignano è tornata limpida. Non so cosa sia successo, ma ringrazio il cielo.
+- DIGIUNO: LAVANDAIA: L'acqua del fosso ha un colore strano, verdastro. Non ci lavo più nemmeno gli stracci.
+- ULTIMATUM: LAVANDAIA: Se chiudono le porte, chi ci porta la legna? Il bosco sta fuori dalle mura.
 
 ---
 
@@ -116,15 +116,15 @@ Nessun NPC d'ambiente nella fase ULTIMATUM: al Teatro Romano c'è la scena A1-04
 
 **Venditore delle Logge dei Tiratori**. Se F5 prevede un negozio, è qui; altrimenti diventa un dono una tantum.
 
-- NOTTE: VENDITORE: Non dovrei vendere, col digiuno. Ma voi non digiunate, vero? Avvicinatevi.
-- DIGIUNO (se BORGO_DENTRO): VENDITORE: Il borgo mangia anche lui. Una fetta di Crescia in meno per voi, mi spiace.
-- DIGIUNO: VENDITORE: Crescia, Biscotti all'anice, e poco altro. Per chi combatte, il vescovo ha detto.
-- ULTIMATUM: VENDITORE: Comprate oggi, che domani non so se ci sarà ancora una loggia.
+- NOTTE: VENDITORE: Col digiuno non dovrei vendere. Ma chi combatte può mangiare, l'ha detto il vescovo.
+- DIGIUNO (se BORGO_DENTRO): VENDITORE: Con la gente del borgo dentro, il cibo non basta. Ho meno Crescia per voi, mi spiace.
+- DIGIUNO: VENDITORE: Ho Crescia, Biscotti all'anice e poco altro. Il vescovo ha detto: il cibo a chi combatte.
+- ULTIMATUM: VENDITORE: Comprate oggi! Stasera chiudono le porte, e chissà cosa resterà da vendere.
 
 **Fra' Matteo il Pescatore**. Dona un Baccalà alla Ceraiola una sola volta: la battuta del DIGIUNO imposta `DONO_MATTEO`. La prima volta parla la variante «se non `DONO_MATTEO`», che dà il baccalà (il dono dell'oggetto è da collegare nel codice degli NPC: oggi una battuta d'ambiente non dà oggetti); dopo, la riga senza condizione.
 
-- DIGIUNO (se non DONO_MATTEO): FRA' MATTEO: Il Camignano è torbido, ma il convento ha riserve. Prendi questo baccalà.
-- DIGIUNO: FRA' MATTEO: Uno a testa, e già è troppo. Il resto è per i feriti.
+- DIGIUNO (se non DONO_MATTEO): FRA' MATTEO: Il Camignano è torbido, ma il convento ha delle riserve. Prendete questo baccalà.
+- DIGIUNO: FRA' MATTEO: Uno solo, mi dispiace. Il resto lo teniamo per i feriti.
 
 ---
 
@@ -132,9 +132,9 @@ Nessun NPC d'ambiente nella fase ULTIMATUM: al Teatro Romano c'è la scena A1-04
 
 **Lucia la Tessitrice**. Nel GDD cuce i Fazzoletti Ceraioli, che sono della festa di oggi: qui cuce bende e stendardi.
 
-- NOTTE: LUCIA: Ho cucito bende tutta la notte. Ogni punto trattiene una preghiera.
-- DIGIUNO: LUCIA: Quando tornerete, cucirò uno stendardo nuovo: rosso, col monte bianco. Ma tornate.
-- ULTIMATUM: LUCIA: Se chiudono le porte, la lana finisce in una settimana. Le bende prima.
+- NOTTE: LUCIA: Ho cucito bende tutta la notte. Domani ne serviranno tante.
+- DIGIUNO: LUCIA: Quando tornerete dal monte vi cucirò uno stendardo nuovo, rosso col monte bianco. Ma tornate.
+- ULTIMATUM: LUCIA: Se chiudono le porte, la lana finirà in una settimana. E le bende anche prima.
 
 ---
 
@@ -142,9 +142,9 @@ Nessun NPC d'ambiente nella fase ULTIMATUM: al Teatro Romano c'è la scena A1-04
 
 **Vecchio sulla scalinata**
 
-- NOTTE: VECCHIO: Ho sentito l'acqua tornare nelle fontane. A una certa età si sente tutto.
-- DIGIUNO: VECCHIO: Undici anni fa le torri dei Valmarcola. Ora tornano, lo sento nelle ossa.
-- DIGIUNO: VECCHIO: Questa salita la faccio da settant'anni. I perugini la troveranno più ripida di me.
+- NOTTE: VECCHIO: Ho sentito l'acqua tornare nelle fontane. Alla mia età il sonno è leggero, si sente tutto.
+- DIGIUNO: VECCHIO: Anni fa abbiamo cacciato i Valmarcola dalle loro torri. Dicono che ora sono là fuori, con Perugia.
+- DIGIUNO: VECCHIO: Questa salita la faccio da settant'anni. Ai perugini sembrerà ancora più ripida.
 - ULTIMATUM: VECCHIO: Ubaldo! Ti ricordi quando eri chierico e ti addormentavi ai vespri?
 - ULTIMATUM: UBALDO (calmo): Me lo ricordo. Mi svegliavi tu, con un calcio.
 
@@ -154,11 +154,11 @@ Nessun NPC d'ambiente nella fase ULTIMATUM: al Teatro Romano c'è la scena A1-04
 
 **Frate agostiniano**
 
-- NOTTE (se BORGO_FUORI): FRATE: Hanno bruciato tre case del borgo. Il convento no. Non so se ringraziare.
-- NOTTE: FRATE: Preghiamo a turno, tutta la notte. Il mio turno è finito, ma resto sveglio.
-- DIGIUNO: FRATE: La chiesa è aperta a chi vuole pregare in silenzio. Il silenzio è l'unica cosa che non manca.
-- DIGIUNO: FRATE: Vent'anni fa il borgo bruciò, e il morbo si fermò. Chi accese il fuoco, nessuno lo dice.
-- ULTIMATUM: FRATE: Le mura di qui sono le più basse. Lo sanno anche loro, temo.
+- NOTTE (se BORGO_FUORI): FRATE: Hanno bruciato tre case del borgo, fuori dalle mura. Il convento si è salvato.
+- NOTTE: FRATE: Preghiamo a turno, tutta la notte. Il mio turno è finito, ma non riesco a dormire.
+- DIGIUNO: FRATE: La chiesa è aperta a chi vuole pregare in silenzio. Di cibo non ne abbiamo, di silenzio sì.
+- DIGIUNO: FRATE: Vent'anni fa nel borgo c'era un morbo. Qualcuno diede fuoco alle case dei malati e il morbo si fermò.
+- ULTIMATUM: FRATE: Le mura da questa parte sono le più basse della città. Temo che lo sappiano anche loro.
 
 ---
 
@@ -166,10 +166,10 @@ Nessun NPC d'ambiente nella fase ULTIMATUM: al Teatro Romano c'è la scena A1-04
 
 **Sentinella di Porta Romana**
 
-- NOTTE: SENTINELLA: I fuochi dei perugini non si muovono. Aspettano l'alba come noi.
+- NOTTE: SENTINELLA: I fuochi dei perugini sono fermi. Anche loro aspettano l'alba, come noi.
 - DIGIUNO: SENTINELLA: Da qui si vedono gli stendardi di Spoleto e Foligno. Sono tanti, monsignore.
-- DIGIUNO: SENTINELLA: Da qui si vedono gli stendardi di Gualdo e Fossato. Non si sono mossi da ieri.
-- ULTIMATUM: SENTINELLA: Porta Romana tiene. Per ora tiene.
+- DIGIUNO: SENTINELLA: Da qui si vedono gli stendardi di Gualdo e Fossato. Da ieri non si sono mossi.
+- ULTIMATUM: SENTINELLA: Porta Romana regge. Per ora regge.
 
 ---
 
@@ -177,8 +177,8 @@ Nessun NPC d'ambiente nella fase ULTIMATUM: al Teatro Romano c'è la scena A1-04
 
 **Canonico** (sul varco del monte). La battuta di trama è in A1-06.
 
-- NOTTE: CANONICO: Il capitolo ha pregato per voi tre notti. Vedo che è servito.
-- ULTIMATUM: CANONICO: Il vescovo sale al monte? Allora preparo le candele. Tre, mi pare giusto.
+- NOTTE: CANONICO: Noi canonici abbiamo pregato per voi tutte le notti. Vedo che è servito.
+- ULTIMATUM: CANONICO: Il vescovo sale al monte? Allora vi preparo tre candele, una per ciascuno.
 
 ---
 

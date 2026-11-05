@@ -30,7 +30,7 @@ Regia: piombi neri, vetri chiari senza figure. La luce entra di sbieco. La camer
 
 - NARRATORE: Sul Monte Ingino c'è una vetrata che racconta una guerra.
 - NARRATORE: Chi la guarda oggi vede soldati in rotta, stendardi spezzati e un vescovo con le braccia aperte.
-- NARRATORE: Ma prima che il vetro avesse un colore, la storia andava ancora combattuta.
+- NARRATORE: Ora torniamo a quei giorni, quando nessuno sapeva ancora come sarebbe finita.
 
 Regia: un vetro si oscura, la camera ci entra dentro e la scena diventa la mappa di P-02.
 
@@ -46,13 +46,13 @@ Regia: un vetro si oscura, la camera ci entra dentro e la scena diventa la mappa
 
 Regia: l'inchiostro nero si allarga sulla pergamena. A ogni battuta del narratore si piantano alcuni stendardi sui valichi, con il nome della città sotto. L'ultimo, più grande, è quello di Perugia: rosso scuro, con il grifo bianco coronato d'oro. Gubbio resta al centro: un piccolo drappo rosso con il monte bianco a cinque cime. Grifo bianco contro monte bianco, entrambi su rosso: è il confronto visivo di tutto il gioco (vedi `simboli/CENSIMENTO_SIMBOLI.md`).
 
-- NARRATORE: Nel 1151, vecchi torti e nuove ambizioni spezzarono la pace dei colli.
-- NARRATORE: Spoleto e Foligno. Assisi, Spello e Bettona. Todi e Cagli.
-- NARRATORE: Nocera, Gualdo Tadino e Fossato. E sopra tutte, Perugia.
-- NARRATORE: Undici città confederate cinsero d'assedio la roccaforte di Gubbio.
-- NARRATORE: Senza vie di fuga e con le scorte al lumicino, la città sembrò destinata a cadere nell'oblio.
-- NARRATORE: Ma dalle pietre del Monte Ingino non sorse la resa.
-- NARRATORE: Sorse il fuoco della Fede.
+- NARRATORE: Anno 1151. Gubbio ha molti nemici, e alcuni hanno anche delle buone ragioni.
+- NARRATORE: Contro di lei si alleano Spoleto e Foligno, Assisi, Spello e Bettona, Todi e Cagli.
+- NARRATORE: E poi Nocera, Gualdo Tadino e Fossato. A guidarle tutte c'è Perugia.
+- NARRATORE: Undici città in tutto. I loro eserciti si accampano nella valle, sotto le mura di Gubbio.
+- NARRATORE: La città è circondata: nessuno può uscire, e il grano basta per pochi giorni.
+- NARRATORE: Gubbio è sola. Ma non vuole arrendersi.
+- NARRATORE: Il vescovo Ubaldo sceglie di combatterli con un'arma diversa: la fede.
 
 Regia: dissolvenza sul loggiato di Palazzo dei Consoli. Si passa ad A1-01.
 
