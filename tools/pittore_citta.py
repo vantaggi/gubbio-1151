@@ -100,6 +100,31 @@ class Quadro:
         self.alto = [[0] * self.w for _ in range(self.h)]   # l'altezza in pixel che proietta l'ombra
         self.livello = {}                                     # (x, y) di un tetto -> quanto e' alto (0..2)
         self.elementi = {}
+        # le aperture e le cose appese alle facciate, ognuna col suo rettangolo (x0, y0, x1, y1 compresi): servono a
+        # tests/test_aperture.py per trovare porte e finestre sovrapposte (Cioti, 5 nov)
+        self.ingombri = []
+        self._traccia = None
+
+    def ingombro(self, tipo, x0, y0, x1, y1, chi=None):
+        self.ingombri.append((tipo, x0, y0, x1, y1, chi))
+
+    def traccia(self, tipo, chi=None):
+        """Con 'with q.traccia(tipo):' il rettangolo dei pixel disegnati dentro il blocco diventa un ingombro."""
+        quadro = self
+
+        class _T:
+            def __enter__(self):
+                self.prima, quadro._traccia = quadro._traccia, []
+                return self
+
+            def __exit__(self, *_):
+                punti, quadro._traccia = quadro._traccia, self.prima
+                if self.prima is not None:
+                    self.prima.extend(punti)
+                if punti:
+                    xs, ys = [x for x, _ in punti], [y for _, y in punti]
+                    quadro.ingombro(tipo, min(xs), min(ys), max(xs), max(ys), chi)
+        return _T()
 
     def livella(self, x0, x1, y0, y1, livello):
         for y in range(y0, y1 + 1):
@@ -112,6 +137,8 @@ class Quadro:
     def punto(self, x, y, c):
         if 0 <= x < self.w and 0 <= y < self.h:
             self.px[y][x] = c
+            if self._traccia is not None:
+                self._traccia.append((x, y))
 
     def rett(self, x0, y0, w, h, c):
         for y in range(y0, y0 + h):
@@ -446,39 +473,65 @@ def dipingi_casa(q, casa, w_celle):
         if larga >= 12:
             _finestra(q, X0 + larga // 2 - 2, Y0 + 3, 5, max(4, alta - 8), casa.n, False, chiusa=True)
         return
-    # il piano terra: porta (o bottega) e, se c'e' posto, la porta del morto
+    # il piano terra: porta (o bottega) e, se c'e' posto, la porta del morto. Ogni apertura prende il suo
+    # rettangolo in casa.occupati (con le imposte e il davanzale): le finestre e, dopo, gli stendardi e le fiaccole
+    # vanno solo dove il muro e' libero, cosi' non si sovrappongono mai (Cioti, 5 nov; tests/test_aperture.py)
+    casa.occupati = []
     hp = min(28, alta - 4)       # M2: porte e botteghe di almeno 26 pixel dove la facciata e' alta 4-5 tile
     if casa.bottega:
         wb = min(larga - 6, 18)
         bx = X0 + 8 * int(h32(casa.n, 12) * max(1, (larga - wb) // 8)) + 3
         _bottega(q, bx, Y1, wb, hp, casa.n)
         porta_x, porta_w = bx, wb
+        casa.occupati.append((bx - 1, Y1 - hp, bx + wb, Y1))
     else:
         pw = 10 if larga >= 20 else 8
         posti = max(1, larga - pw - 6)
         px = X0 + 8 * int(h32(casa.n, 13) * max(1, posti // 8)) + (3 if pw == 10 else 4)
         _porta(q, px, Y1, pw, hp, casa.n)
         porta_x, porta_w = px, pw
+        casa.occupati.append((px, Y1 - hp, px + pw - 1, Y1))
         if casa.morto and px - X0 >= 9:
             _porta_del_morto(q, px - 7, Y1, hp)
+            casa.occupati.append((px - 8, Y1 - hp, px - 3, Y1 - 5))
         elif casa.morto and X1 - (px + pw) >= 9:
             _porta_del_morto(q, px + pw + 2, Y1, hp)
+            casa.occupati.append((px + pw + 1, Y1 - hp, px + pw + 6, Y1 - 5))
     # le finestre: al piano di sopra se la facciata e' alta 5 tile, accanto alla porta se c'e' posto
+    casa.finestre = []
+
+    def metti_finestra(fx, fy, seme, imposte):
+        ingombro = (fx - (2 if imposte else 1), fy, fx + 6 + (1 if imposte else 0), fy + 8)
+        if ingombro[0] < X0 + 1 or ingombro[2] > X1 - 1 or not casa_libera(casa, ingombro):
+            return False
+        _finestra(q, fx, fy, 6, 7, seme, imposte)
+        casa.occupati.append(ingombro)
+        casa.finestre.append((fx, fy))
+        return True
     if alta >= 40:
+        # il piano di sopra: subito sotto la gronda, cosi' resta un palmo di muro sopra l'arco della porta
         k = max(1, (larga - 4) // 12)
         passo = larga / (k + 1)
         for i in range(k):
             fx = (int(X0 + passo * (i + 1)) // 8) * 8 + 1
-            _finestra(q, fx, Y0 + 3, 6, 7, casa.n * 5 + i, h32(casa.n, i, 14) < 0.5)
-            casa_finestre = getattr(casa, "finestre", [])
-            casa_finestre.append((fx, Y0 + 3))
-            casa.finestre = casa_finestre
-    else:
-        for fx in (X0 + 1, X1 - 14):
-            if fx + 6 < porta_x - 1 or fx > porta_x + porta_w + 1:
-                _finestra(q, fx, Y0 + 4, 6, 7, casa.n * 3 + fx, False)
-                casa.finestre = getattr(casa, "finestre", []) + [(fx, Y0 + 4)]
+            if not metti_finestra(fx, Y0 + 2, casa.n * 5 + i, h32(casa.n, i, 14) < 0.5):
+                metti_finestra(fx, Y0 + 2, casa.n * 5 + i, False)      # senza imposte ci sta
+    # accanto alla porta, nei tratti di muro liberi: una finestra per tratto, al centro (due se il tratto e' largo)
+    sx, dx = min(o[0] for o in casa.occupati), max(o[2] for o in casa.occupati)
+    fy = Y0 + 4 if alta < 40 else Y1 - 22
+    for a0, a1 in ((X0 + 1, sx - 2), (dx + 2, X1 - 1)):
+        largo_tratto = a1 - a0 + 1
+        quante = 2 if largo_tratto >= 22 else (1 if largo_tratto >= 9 else 0)
+        for i in range(quante):
+            c = a0 + largo_tratto * (2 * i + 1) // (2 * quante)
+            metti_finestra(c - 3, fy, casa.n * 3 + c, False)
     casa.porta = (porta_x, porta_w)
+
+
+def casa_libera(casa, r, margine=1):
+    """Vero se il rettangolo r (x0, y0, x1, y1) non tocca nessuna apertura della casa (con 'margine' pixel)."""
+    return all(r[2] + margine < o[0] or o[2] + margine < r[0] or r[3] + margine < o[1] or o[3] + margine < r[1]
+               for o in getattr(casa, "occupati", []))
 
 
 # --- la vita (F7, Cioti 4 nov: la citta' in fermento) -----------------------------------------------------
@@ -593,20 +646,26 @@ def vita_delle_case(q, case, aid, seme_area):
         Y0 = (casa.yb - casa.fh + 1) * 8
         if casa.fh >= 3 and h32(casa.n, 21, seme_area) < 0.6:
             # lo stendardo appeso sotto la gronda, in un tratto di muro libero (non sopra la porta, M6/I3)
-            occupati = [(porta[0] - 2, porta[0] + porta[1] + 1)] if porta else []
-            liberi = [x for x in range(X0 + 2, X1 - 6, 8) if all(x + 6 < a or x > b for a, b in occupati)]
+            liberi = [x for x in range(X0 + 2, X1 - 6, 8)
+                      if casa_libera(casa, (x - 1, Y0 + 2, x + 5, Y0 + 13)) and
+                      (not porta or x + 6 < porta[0] - 1 or x > porta[0] + porta[1] + 1)]
             if liberi:
                 comune = colore_q is None or h32(casa.n, 22) < 0.5
                 fx = liberi[int(h32(casa.n, 27) * len(liberi))]
                 _stendardo(q, fx, Y0 + 2, (R, 2) if comune else colore_q, comune)
+                casa.occupati = getattr(casa, "occupati", []) + [(fx - 1, Y0 + 2, fx + 5, Y0 + 13)]
         if casa.fh >= 3 and porta and h32(casa.n, 23, seme_area) < 0.35:
             px, pw = porta
-            fx = px + pw + 2 if px + pw + 5 < X1 else px - 4
-            _fiaccola(q, fx, Y1 - 20)
+            for fx in (px + pw + 2, px - 4):
+                if X0 + 1 <= fx and fx + 3 < X1 and casa_libera(casa, (fx, Y1 - 20, fx + 2, Y1 - 16)):
+                    _fiaccola(q, fx, Y1 - 20)
+                    casa.occupati = getattr(casa, "occupati", []) + [(fx, Y1 - 20, fx + 2, Y1 - 16)]
+                    break
         # alla base: un oggetto per casa, in un angolo libero
         if casa.fh >= 2 and porta:
             px, pw = porta
-            liberi = [x for x in (X0 + 2, X1 - 9) if x + 8 < px - 1 or x > px + pw + 1]
+            liberi = [x for x in (X0 + 2, X1 - 9) if (x + 8 < px - 1 or x > px + pw + 1) and
+                      casa_libera(casa, (x, Y1 - 20, x + 7, Y1), 0)]     # le lance sono alte 20
             if liberi and h32(casa.n, 24, seme_area) < 0.7:
                 x = liberi[int(h32(casa.n, 25) * len(liberi))]
                 scelta = int(h32(casa.n, 26, seme_area) * 4)
@@ -1452,6 +1511,7 @@ def accendi_portale(q, x0, x1, ybase, cerca=48):
         for xx in range(x0, x1):
             q.px[yy][xx] = q.px[yy][x0 - 3]
     q.rett(sx, ybase, larga, 1, (P, 3))
+    q.ingombro("ingresso", sx, top, dx, ybase)
     _lanterna(q, dx + 1, top + 3)
     q.conta("ingresso")
     return True
@@ -1642,3 +1702,25 @@ def dipingi_torrente(q, g, w, h):
                 q.px[y * 8 + 6][xx] = (P, 2) if (xx + 3) % 6 else (P, 1)
                 q.px[y * 8 + 7][xx] = (P, 1)
     q.conta("ponte")
+
+
+# --- gli ingombri delle facciate (Cioti, 5 nov: «si vedono porte e finestre sovrapposte») --------------------------
+# Ogni pittore di un'apertura o di una cosa appesa alla facciata lascia nel Quadro il rettangolo che ha dipinto
+# (Quadro.ingombri): tests/test_aperture.py controlla che due di loro non si tocchino dove non devono.
+def _tracciato(tipo, f):
+    def pittore(q, *args, **kw):
+        if not hasattr(q, "traccia"):
+            return f(q, *args, **kw)
+        with q.traccia(tipo):
+            return f(q, *args, **kw)
+    pittore.__name__, pittore.__doc__, pittore.originale = f.__name__, f.__doc__, f
+    return pittore
+
+
+INGOMBRI = {"porta": "_porta", "porta_del_morto": "_porta_del_morto", "finestra": "_finestra",
+            "bottega": "_bottega", "stendardo": "_stendardo", "fiaccola": "_fiaccola", "botte": "_botte",
+            "sacco": "_sacco", "cassa": "_cassa", "lance": "_lance", "lanterna": "_lanterna",
+            "ingresso": "dipingi_ingresso_frontale", "ingresso_laterale": "dipingi_ingresso_laterale",
+            "tenda": "dipingi_tenda"}
+for _tipo, _nome in INGOMBRI.items():
+    globals()[_nome] = _tracciato(_tipo, globals()[_nome])
