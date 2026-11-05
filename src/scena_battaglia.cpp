@@ -330,15 +330,18 @@ namespace
     // della voce scelta: il Santo e il suo Fervore, cosa fa la mossa, il numero (danno, barriera, cura) e il
     // costo. Vive solo mentre si scelgono i comandi: gli sprite tornano liberi per i colpi.
     // Le righe dentro la cornice (interno x 8-231, y 112-151): l'interlinea del font e' 10 px.
-    constexpr int MOSSE_RIGA_Y[RIGHE_ELENCO] = { PANNELLO_Y + 8, PANNELLO_Y + 18, PANNELLO_Y + 28, PANNELLO_Y + 38 };
+    // Le quattro righe riempiono i 40 px dell'interno: l'inchiostro va dalla riga 2 (maiuscole) alla 9 (discendenti)
+    // della cella, cosi' resta 1 px sopra e 1 px sotto (revisione del custode visivo, 5 nov).
+    constexpr int MOSSE_RIGA_Y[RIGHE_ELENCO] = { PANNELLO_Y + 7, PANNELLO_Y + 17, PANNELLO_Y + 27, PANNELLO_Y + 37 };
     constexpr int MOSSE_CURSORE_X = 10;
-    constexpr int MOSSE_NOMI_X = 18;            // la voce piu' larga e' 84 px: fino a 101
-    constexpr int MOSSE_FRECCE_X = 99;          // le frecce dell'elenco, 7 px alla base: 99-105
+    constexpr int MOSSE_NOMI_X = 16;            // il cursore e' 10-14; la voce piu' larga e' 84 px: fino a 99
+    constexpr int MOSSE_FRECCE_X = 100;         // lo sprite delle frecce: i 5 px alla base (pixel 1-5) a 101-105, fuori dal testo
     constexpr int MOSSE_FILO_X = 107;
     constexpr int MOSSE_SCHEDA_X = 111;
     constexpr int MOSSE_DESTRA_X = 227;
     constexpr int MOSSE_STACCO = 4;             // fra un'etichetta e il suo numero
 
+    static_assert(MOSSE_NOMI_X + 84 < MOSSE_FRECCE_X + 1 && MOSSE_FRECCE_X + 5 < MOSSE_FILO_X, "le frecce non toccano le voci ne' il filo");
     static_assert(MOSSE_SCHEDA_X + 116 <= MOSSE_DESTRA_X + 1, "la scheda (contesto SCHEDA, 116 px) sta nella colonna destra");
 
     [[nodiscard]] TestoId nome_della_voce(const Comando& c)
@@ -454,12 +457,10 @@ namespace
     }
 
     constexpr uint32_t C = uint32_t(menu::GRIGIO);
-    // le frecce dell'elenco (ce ne sono altre sopra, sotto): 7 px alla base, nell'inchiostro delle voci
+    // le frecce dell'elenco (ce ne sono altre sopra, sotto): 5 px alla base, alte 3, nell'inchiostro delle voci
     constexpr uint32_t I = uint32_t(menu::INCHIOSTRO);
-    constexpr uint32_t FRECCIA_SU[8] = { riga_freccia(0, I), riga_freccia(1, I), riga_freccia(2, I), riga_freccia(3, I),
-                                         0, 0, 0, 0 };
-    constexpr uint32_t FRECCIA_GIU[8] = { 0, 0, 0, 0, riga_freccia(3, I), riga_freccia(2, I), riga_freccia(1, I),
-                                          riga_freccia(0, I) };
+    constexpr uint32_t FRECCIA_SU[8] = { riga_freccia(0, I), riga_freccia(1, I), riga_freccia(2, I), 0, 0, 0, 0, 0 };
+    constexpr uint32_t FRECCIA_GIU[8] = { riga_freccia(2, I), riga_freccia(1, I), riga_freccia(0, I), 0, 0, 0, 0, 0 };
     constexpr uint32_t FILO[8] = { C, C, C, C, C, C, C, C };     // il pixel 0 di ogni riga
 
     class PannelloMosse
@@ -472,8 +473,8 @@ namespace
                     VistaTesto(Contesto::DIALOGO, MOSSE_NOMI_X, MOSSE_RIGA_Y[2], menu::INCHIOSTRO, _palette),
                     VistaTesto(Contesto::DIALOGO, MOSSE_NOMI_X, MOSSE_RIGA_Y[3], menu::INCHIOSTRO, _palette) },
             _cursore(menu::crea_cursore(_palette)),
-            _su(crea_8x8(FRECCIA_SU, MOSSE_FRECCE_X, MOSSE_RIGA_Y[0], _palette)),
-            _giu(crea_8x8(FRECCIA_GIU, MOSSE_FRECCE_X, MOSSE_RIGA_Y[3] + 1, _palette)),
+            _su(crea_8x8(FRECCIA_SU, MOSSE_FRECCE_X, MOSSE_RIGA_Y[0] + 2, _palette)),
+            _giu(crea_8x8(FRECCIA_GIU, MOSSE_FRECCE_X, MOSSE_RIGA_Y[3] + 6, _palette)),
             _filo{ crea_8x8(FILO, MOSSE_FILO_X, PANNELLO_Y + 8, _palette), crea_8x8(FILO, MOSSE_FILO_X, PANNELLO_Y + 16, _palette),
                    crea_8x8(FILO, MOSSE_FILO_X, PANNELLO_Y + 24, _palette), crea_8x8(FILO, MOSSE_FILO_X, PANNELLO_Y + 32, _palette),
                    crea_8x8(FILO, MOSSE_FILO_X, PANNELLO_Y + 40, _palette) },
