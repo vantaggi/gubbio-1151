@@ -1,5 +1,5 @@
 {
-  "_leggimi": "La mappa della citta' nel menu di pausa (MMA, menu/PROPOSTA.md sez. 3.3; mockup menu/mockup/03_mappa.png, approvato). Posizioni a schema in un riquadro 240x120, col nord in alto come il gioco (4 nov 2026: girato dallo schema approvato, che aveva alto = ovest) e non in scala: tools/genera_mappa_menu.py le porta nei 224x88 px dentro la cornice, disegna il fondo (prati, monte, mura, Camignano, stradoni, porte, rosa dei venti) e scrive include/stile/mappa_menu.h e testi/mappa_menu.testi. Le strade fra le aree sono gli archi di mondo/grafo.json: il gioco le disegna piene fra aree viste e a puntini verso quelle no. 'riga' e' la riga della scheda sotto la mappa (i monumenti di mondo/monumenti.json, corti).",
+  "_leggimi": "La mappa della citta' nel menu di pausa (MMA, menu/PROPOSTA.md sez. 3.3; mockup menu/mockup/03_mappa.png, approvato). Posizioni a schema in un riquadro 240x120, col nord in alto come il gioco (4 nov 2026: girato dallo schema approvato, che aveva alto = ovest) e non in scala: tools/genera_mappa_menu.py le porta nei 224x88 px dentro la cornice, disegna il fondo (prati, monte, mura, Camignano, stradoni, porte, rosa dei venti) e scrive include/stile/mappa_menu.h e testi/mappa_menu.testi. Le strade fra le aree sono gli archi di mondo/grafo.json: il gioco le disegna piene fra aree viste e a puntini verso quelle no. 'riga' e' la riga della scheda sotto la mappa (i monumenti di mondo/monumenti.json, corti). Giro 10 della fedelta' (5 nov 2026): la gola del Bottaccione sale da Porta Metauro verso nord-nord-est, fra la citta' e il fianco ovest del Monte Ingino, come quella vera (prima andava verso ovest).",
   "nodi": {
     "TEATRO_ROMANO": [24, 88],
     "SAN_MARTINO": [44, 51],
@@ -14,11 +14,11 @@
     "SANT_AGOSTINO": [208, 107],
     "MONTE_INGINO": [192, 67],
     "BASILICA": [200, 39],
-    "BOTTACCIONE": [76, 32],
-    "GOLA_STRISCIA": [60, 25],
-    "GOLA_MIASMI": [48, 19],
-    "GOLA_ARCO": [36, 13],
-    "CONDOTTO": [24, 10]
+    "BOTTACCIONE": [60, 34],
+    "GOLA_STRISCIA": [66, 27],
+    "GOLA_MIASMI": [72, 20],
+    "GOLA_ARCO": [78, 13],
+    "CONDOTTO": [84, 6]
   },
   "righe": {
     "TEATRO_ROMANO": "Il teatro dei Romani, fuori dalle mura.",
@@ -49,8 +49,8 @@
     "Romana": [200, 102],
     "Sant'Ubaldo": [188, 62]
   },
-  "camignano": [[8, 4], [24, 8], [36, 13], [48, 19], [60, 25], [76, 32], [52, 41], [48, 48], [64, 54], [84, 62], [92, 71], [100, 79], [104, 93], [112, 107], [116, 116]],
-  "monte": [[232, 71], [204, 64], [188, 54], [144, 46], [108, 41], [88, 38], [88, 28], [56, 4], [232, 4]],
+  "camignano": [[90, 0], [84, 6], [78, 13], [72, 20], [66, 27], [60, 34], [50, 39], [44, 44], [48, 48], [64, 54], [84, 62], [92, 71], [100, 79], [104, 93], [112, 107], [116, 116]],
+  "monte": [[232, 71], [204, 64], [188, 54], [144, 46], [108, 41], [92, 38], [84, 32], [92, 18], [100, 4], [232, 4]],
   "stradoni": [[196, 66], [212, 59], [196, 57], [216, 51], [196, 49], [212, 43], [200, 39]],
-  "sentiero": [[200, 39], [156, 36], [116, 34], [76, 32]]
+  "sentiero": [[200, 39], [156, 36], [116, 34], [60, 34]]
 }

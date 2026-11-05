@@ -153,5 +153,21 @@ class Giro9SalaDeiConsoli(unittest.TestCase):
         self.assertFalse(travi & set(riga))
 
 
+class Giro10Mappa(unittest.TestCase):
+    """La mappa del menu e' a schema, non in scala; ma la gola del Bottaccione deve salire da Porta Metauro verso
+    nord-nord-est come quella vera (prima andava verso ovest) e le stazioni della gola seguirla in fila."""
+
+    def test_la_gola_sale_verso_nord_nord_est(self):
+        import json
+        import math
+        d = json.load(open(os.path.join(RADICE, "mondo", "mappa_menu.json"), encoding="utf-8"))
+        n = d["nodi"]
+        fila = [d["porte"]["Metauro"], n["BOTTACCIONE"], n["GOLA_STRISCIA"], n["GOLA_MIASMI"], n["GOLA_ARCO"],
+                n["CONDOTTO"]]
+        for (x0, y0), (x1, y1) in zip(fila, fila[1:]):
+            bussola = math.degrees(math.atan2(x1 - x0, -(y1 - y0))) % 360
+            self.assertTrue(0 <= bussola <= 70, (x0, y0, x1, y1, bussola))
+
+
 if __name__ == "__main__":
     unittest.main()
