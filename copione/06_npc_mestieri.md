@@ -14,15 +14,15 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 
 **Il Banditore del Comune**
 
-- NOTTE: BANDITORE: Stanotte non ho niente da gridare. È la prima volta in vent'anni.
-- DIGIUNO: BANDITORE: Udite... ma piano. Il vescovo ha chiesto silenzio, e io grido sottovoce.
+- NOTTE: BANDITORE: Stanotte non ho niente da annunciare. È la prima volta in vent'anni.
+- DIGIUNO: BANDITORE: Il vescovo ha chiesto silenzio, così gli annunci li faccio sottovoce. Un banditore che bisbiglia!
 - ULTIMATUM: BANDITORE: Udite! Per ordine dei consoli, chi ha un'arma la porti in piazza entro il vespro!
 
 **Il Misuratore del grano**
 
-- NOTTE: MISURATORE: Ho dormito sopra i sacchi del Comune. Qualcuno doveva pur farlo.
-- DIGIUNO: MISURATORE: Col digiuno il grano avanza. Non mi era mai capitato di contare in più.
-- ULTIMATUM: MISURATORE: Uno staio a famiglia, non di più. Il grano del Comune deve durare.
+- NOTTE: MISURATORE: Ho dormito sopra i sacchi del grano del Comune. Qualcuno doveva fargli la guardia.
+- DIGIUNO: MISURATORE: Col digiuno il grano dura di più. Per una volta i miei conti tornano.
+- ULTIMATUM: MISURATORE: Uno staio di grano a famiglia, non di più. Deve durare per tutto l'assedio.
 
 ---
 
@@ -30,15 +30,15 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 
 **Il Fabbro**
 
-- NOTTE: FABBRO: Ho battuto l'ultima punta a mezzanotte. Ora le mani mi suonano da sole.
-- DIGIUNO: FABBRO: Il fuoco della forgia lo tengo basso. Digiuna anche lui.
+- NOTTE: FABBRO: Ho battuto l'ultima punta di freccia a mezzanotte. Non mi sento più le braccia.
+- DIGIUNO: FABBRO: Tengo basso il fuoco della forgia. Il carbone va risparmiato.
 - ULTIMATUM: FABBRO: Punte di freccia, cento al giorno. Il martello non si ferma nemmeno a pranzo.
 
 **La Vasaia**
 
-- NOTTE: VASAIA: Ogni vaso che cuocio stanotte, spero, resterà vuoto.
-- DIGIUNO: VASAIA: Ho rotto tre vasi stamattina. Senza mangiare le mani tremano.
-- ULTIMATUM: VASAIA: Pignatte per la pece, monsignore. Dalle mura la si versa bollente.
+- NOTTE: VASAIA: Ho cotto brocche tutta la notte. Domani serviranno a portare acqua sulle mura.
+- DIGIUNO: VASAIA: Ho rotto tre vasi stamattina. A stomaco vuoto mi tremano le mani.
+- ULTIMATUM: VASAIA: Faccio pignatte per la pece, monsignore. Dalle mura la si versa bollente su chi sale.
 
 ---
 
@@ -46,15 +46,15 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 
 **L'Acquaiolo**
 
-- NOTTE: ACQUAIOLO: Senti come getta? Stanotte la fontana canta.
-- DIGIUNO: ACQUAIOLO: La fontana getta meno del solito. Lo sento dal tempo che ci mette il secchio.
-- ULTIMATUM: ACQUAIOLO: Riempio ogni botte della città. In un assedio l'acqua vale più del vino.
+- NOTTE: ACQUAIOLO: Sentite come scorre forte la fontana? Stanotte l'acqua è tornata.
+- DIGIUNO: ACQUAIOLO: La fontana dà meno acqua del solito. Ci metto il doppio a riempire il secchio.
+- ULTIMATUM: ACQUAIOLO: Riempio tutte le botti della città. In un assedio l'acqua vale più del vino.
 
 **Il Funaio**
 
-- NOTTE: FUNAIO: Le corde sono tutte sulle mura. Mi è rimasto lo spago per legare il pane.
-- DIGIUNO: FUNAIO: La canapa è finita. Ora intreccio i capelli che le donne mi hanno portato.
-- ULTIMATUM: FUNAIO: Corde per le scale e per i secchi delle mura. Me ne chiedono a braccia.
+- NOTTE: FUNAIO: Tutte le mie corde sono sulle mura. Mi è rimasto solo un po' di spago.
+- DIGIUNO: FUNAIO: La canapa è finita. Le donne mi hanno portato i loro capelli, e intreccio quelli.
+- ULTIMATUM: FUNAIO: Faccio corde per le scale e per i secchi delle mura. Me ne chiedono a non finire.
 
 ---
 
@@ -62,21 +62,21 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 
 **Il Tintore** (sul Camignano)
 
-- NOTTE: TINTORE: Stanotte il fosso corre chiaro. Domani lo tingo di festa.
-- DIGIUNO: TINTORE: Il fosso si porta via il colore. Sembra che stia male anche lui.
+- NOTTE: TINTORE: Stanotte il fosso è tornato chiaro. Domani ricomincio a tingere.
+- DIGIUNO: TINTORE: L'acqua del fosso è torbida e i colori non prendono. Ho smesso di tingere.
 - ULTIMATUM: TINTORE: Cento pezze rosse per gli stendardi. Ho le braccia rosse fino al gomito.
 
 **Il Conciatore**
 
-- NOTTE: CONCIATORE: L'ultimo scudo è finito. All'alba lo porto io, sulle mura.
-- DIGIUNO: CONCIATORE: A stomaco vuoto non sento più la puzza. Qualcosa di buono il digiuno ce l'ha.
+- NOTTE: CONCIATORE: Ho finito l'ultimo scudo. All'alba lo porto io stesso sulle mura.
+- DIGIUNO: CONCIATORE: Col digiuno non sento più nemmeno la puzza delle pelli. Qualcosa di buono ce l'ha.
 - ULTIMATUM: CONCIATORE: Pelli per gli scudi, monsignore. Puzzano, ma fermano le frecce.
 
 **Il Mugnaio**
 
-- NOTTE: MUGNAIO: Ho sentito l'acqua nella gora. Domani le macine ripartono.
-- DIGIUNO: MUGNAIO: Le macine sono ferme. Il vescovo ha detto digiuno, e obbediscono anche loro.
-- ULTIMATUM: MUGNAIO: Macino tutto il grano prima che chiudano le strade. Giorno e notte.
+- NOTTE: MUGNAIO: Ho sentito l'acqua tornare nel canale del mulino. Domani le macine ripartono.
+- DIGIUNO: MUGNAIO: Le macine sono ferme. Il vescovo ha chiesto silenzio, e il mulino fa troppo rumore.
+- ULTIMATUM: MUGNAIO: Macino tutto il grano prima che chiudano le porte. Giorno e notte.
 
 ---
 
@@ -84,20 +84,20 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 
 **Il Lanaiolo** (sotto la loggia)
 
-- NOTTE: LANAIOLO: L'ultima coperta l'ho data a un ragazzo di guardia. Ora ho freddo io, ed è giusto.
-- DIGIUNO: LANAIOLO: Stendo la lana e nessuno la tocca. Il digiuno fa santi anche i ladri.
-- ULTIMATUM: LANAIOLO: Lana per le coperte delle sentinelle. Sulle mura, di notte, il freddo morde.
+- NOTTE: LANAIOLO: Ho dato l'ultima coperta a un ragazzo di guardia. Stanotte il freddo lo sento io.
+- DIGIUNO: LANAIOLO: Ho steso la lana ad asciugare e nessuno la tocca. Col digiuno anche i ladri stanno a casa.
+- ULTIMATUM: LANAIOLO: Faccio coperte di lana per le sentinelle. Sulle mura, di notte, fa un freddo che morde.
 
 **Il Pastore**
 
-- NOTTE: PASTORE: Le ho contate tre volte. Ci sono tutte. Stanotte posso pregare anch'io.
-- DIGIUNO: PASTORE: Le pecore brucano i giardini. Il digiuno vale per i cristiani, non per loro.
-- ULTIMATUM: PASTORE: Ho portato il gregge dentro le mura. Le pecore non hanno mai visto una piazza.
+- NOTTE: PASTORE: Ho contato le pecore tre volte. Ci sono tutte. Ora posso pregare anch'io.
+- DIGIUNO: PASTORE: Le pecore mangiano l'erba dei giardini. Il digiuno vale per i cristiani, non per loro.
+- ULTIMATUM: PASTORE: Ho portato il gregge dentro le mura. Le mie pecore non avevano mai visto una piazza.
 
 **Il Macellaio**
 
-- DIGIUNO: MACELLAIO: Bottega chiusa per digiuno. È la prima volta che il coltello riposa.
-- ULTIMATUM: MACELLAIO: Sale, sale e ancora sale. La carne salata dura quanto un assedio.
+- DIGIUNO: MACELLAIO: Bottega chiusa per il digiuno. È la prima volta che il mio coltello riposa.
+- ULTIMATUM: MACELLAIO: Sale, sale e ancora sale. La carne salata si conserva per tutto l'assedio.
 
 ---
 
@@ -106,8 +106,8 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 **La Fornaia**
 
 - NOTTE: FORNAIA: Ho riacceso il forno prima dell'alba. Chi torna troverà il pane caldo.
-- DIGIUNO: FORNAIA: Il forno è spento. Tengo la brace sotto la cenere, per quando servirà.
-- ULTIMATUM: FORNAIA: Pane biscotto: duro come la pietra, ma dura un mese. Assaggiate?
+- DIGIUNO: FORNAIA: Il forno è spento. Tengo la brace sotto la cenere, così lo riaccendo in fretta.
+- ULTIMATUM: FORNAIA: Faccio pane biscotto: duro come la pietra, ma si conserva un mese. Volete assaggiare?
 
 ---
 
@@ -115,10 +115,10 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 
 **Il Calzolaio**
 
-- NOTTE (se BORGO_DENTRO): CALZOLAIO: Ho cucito scarpe piccole tutta la notte. Quelli del borgo sono entrati scalzi.
-- NOTTE: CALZOLAIO: Ho cucito tutta la notte. Domani in tanti dovranno camminare.
-- DIGIUNO: CALZOLAIO: Batto piano col martelletto. La città vuole silenzio.
-- ULTIMATUM: CALZOLAIO: Suole doppie per chi sale sulle mura. Le pietre di Gubbio consumano tutto.
+- NOTTE (se BORGO_DENTRO): CALZOLAIO: Ho cucito scarpe piccole tutta la notte. I bambini del borgo sono entrati scalzi.
+- NOTTE: CALZOLAIO: Ho risuolato scarpe tutta la notte. Sulle mura si consumano in fretta.
+- DIGIUNO: CALZOLAIO: Batto piano col martelletto, per non disturbare. La città vuole silenzio.
+- ULTIMATUM: CALZOLAIO: Faccio suole doppie per chi sta sulle mura. Le pietre di Gubbio consumano tutto.
 
 ---
 
@@ -126,14 +126,14 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 
 **L'Ortolana**
 
-- NOTTE: ORTOLANA: Domani torno all'orto. Se c'è ancora un orto.
-- DIGIUNO: ORTOLANA: Il digiuno lo faccio volentieri. I cavoli li ho portati tutti al convento.
-- ULTIMATUM: ORTOLANA: Raccolgo tutto, anche il verde. Meglio acerbo che in bocca a loro.
+- NOTTE: ORTOLANA: Domani torno al mio orto, fuori dalle mura. Se c'è ancora un orto.
+- DIGIUNO: ORTOLANA: Il digiuno non mi pesa. I miei cavoli li ho portati tutti al convento.
+- ULTIMATUM: ORTOLANA: Raccolgo tutto, anche quello ancora verde. Meglio acerbo che in bocca ai perugini.
 
 **Il Carbonaio**
 
-- DIGIUNO: CARBONAIO: Sono nero da capo a piedi. Almeno col digiuno non sporco il pane.
-- ULTIMATUM: CARBONAIO: Carbone per le forge e per la pece. Tutta la città brucia il mio bosco.
+- DIGIUNO: CARBONAIO: Sono nero di carbone da capo a piedi. Per fortuna col digiuno non devo toccare il pane.
+- ULTIMATUM: CARBONAIO: Porto carbone per le forge e per scaldare la pece. Tutta la città brucia la legna del mio bosco.
 
 ---
 
@@ -142,14 +142,14 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 **Il Carpentiere**
 
 - NOTTE: CARPENTIERE: La palizzata è finita. Ci ho inciso il mio nome in basso, dove non si vede.
-- DIGIUNO: CARPENTIERE: Inchiodo piano, per rispetto. Le palizzate crescono lo stesso.
-- ULTIMATUM: CARPENTIERE: Palizzate dietro le porte. Il legno fresco geme, ma regge.
+- DIGIUNO: CARPENTIERE: Pianto i chiodi piano, per rispetto del silenzio. Ma la palizzata deve crescere lo stesso.
+- ULTIMATUM: CARPENTIERE: Costruisco palizzate dietro le porte. Il legno fresco scricchiola, ma regge.
 
 **Il Frecciaio**
 
-- NOTTE: FRECCIAIO: Diecimila frecce. Le ho contate una per una, con le dita nere.
-- DIGIUNO: FRECCIAIO: Le oche mi guardano storto. Sanno chi è stato.
-- ULTIMATUM: FRECCIAIO: Penne d'oca per le frecce. Ho spennato tutte le oche del quartiere.
+- NOTTE: FRECCIAIO: Diecimila frecce pronte per le mura. Le ho contate una per una.
+- DIGIUNO: FRECCIAIO: Le oche del quartiere mi guardano storto. Sanno che sono stato io a spennarle.
+- ULTIMATUM: FRECCIAIO: Faccio frecce. Per le penne ho dovuto spennare tutte le oche del quartiere.
 
 ---
 
@@ -157,15 +157,15 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 
 **Il Campanaro**
 
-- NOTTE: CAMPANARO: All'alba suono a festa o a martello. Speriamo a festa, monsignore.
-- DIGIUNO: CAMPANARO: La campana tace. Il silenzio della città suona più forte di lei.
-- ULTIMATUM: CAMPANARO: Se arrivano, suono a martello: tre colpi, poi tre, poi tre. Ricordatevelo.
+- NOTTE: CAMPANARO: All'alba suonerò a festa o a martello. Speriamo a festa, monsignore.
+- DIGIUNO: CAMPANARO: Le campane tacciono per il digiuno. Non avevo mai sentito la città così silenziosa.
+- ULTIMATUM: CAMPANARO: Se attaccano, suono a martello: tre colpi, poi tre, poi tre. Ricordatevelo.
 
 **Il Viandante**
 
-- NOTTE: VIANDANTE: Quando apriranno le porte riprenderò la strada. Ma racconterò di questa città.
-- DIGIUNO: VIANDANTE: Digiuno anch'io. Per chi è in cammino è il pane di ogni giorno.
-- ULTIMATUM: VIANDANTE: Andavo a Roma e mi hanno chiuso dentro Gubbio. Il Signore ha i suoi piani.
+- NOTTE: VIANDANTE: Quando riapriranno le porte riprenderò la strada. Ma racconterò a tutti di questa città.
+- DIGIUNO: VIANDANTE: Digiuno anch'io. Per chi è in viaggio, saltare i pasti è normale.
+- ULTIMATUM: VIANDANTE: Andavo a Roma in pellegrinaggio e mi hanno chiuso dentro Gubbio. Il Signore ha i suoi piani.
 
 ---
 
@@ -173,15 +173,15 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 
 **Il Notaio del Comune**
 
-- NOTTE: NOTAIO: Lascio una riga bianca nel registro. Domani ci scriverò com'è andata.
-- DIGIUNO: NOTAIO: Ho scritto il voto del digiuno nel registro. Così nessuno lo dimentica.
-- ULTIMATUM: NOTAIO: Scrivo i nomi di chi va sulle mura. Il ruolo dei difensori è già di tre fogli.
+- NOTTE: NOTAIO: Ho lasciato una pagina bianca nel registro. Domani ci scriverò com'è andata.
+- DIGIUNO: NOTAIO: Ho scritto il voto del digiuno nel registro del Comune. Così nessuno potrà dimenticarlo.
+- ULTIMATUM: NOTAIO: Scrivo i nomi di chi va a difendere le mura. Ho già riempito tre fogli.
 
 **La Guardia della sala**
 
-- NOTTE: GUARDIA: I consoli sono sulle mura. La sala si veglia lo stesso.
-- DIGIUNO: GUARDIA: Niente pane neanche per le guardie. Sto dritto lo stesso.
-- ULTIMATUM: GUARDIA: Qui si entra con rispetto, monsignore. Per voi, sempre.
+- NOTTE: GUARDIA: I consoli sono sulle mura. Io resto qui a fare la guardia alla sala.
+- DIGIUNO: GUARDIA: Niente pane neanche per le guardie. Ma resto in piedi lo stesso.
+- ULTIMATUM: GUARDIA: Qui si entra con rispetto, monsignore. Per voi la porta è sempre aperta.
 
 ---
 
@@ -190,8 +190,8 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 **L'Avventore**
 
 - NOTTE: AVVENTORE: Non bevo, sto qui per la compagnia. Al buio da solo non ci so stare.
-- DIGIUNO: AVVENTORE: Taverna chiusa, ma la panca è aperta. Guardo il camino spento.
-- ULTIMATUM: AVVENTORE: Un bicchiere per il coraggio, monsignore. Uno solo, lo giuro.
+- DIGIUNO: AVVENTORE: La taverna è chiusa per il digiuno, ma la panca è libera. Mi siedo e guardo il camino spento.
+- ULTIMATUM: AVVENTORE: Un bicchiere per farmi coraggio, monsignore. Uno solo, lo giuro.
 
 ---
 
@@ -199,9 +199,9 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 
 **Il Ricoverato dell'ospizio**
 
-- NOTTE: RICOVERATO: Valenza mi ha rimboccato la coperta. Alla mia età, pensate.
-- DIGIUNO: RICOVERATO: Digiuno anch'io, monsignore. A me riesce bene da anni.
-- ULTIMATUM: RICOVERATO: Dalla finestra si vedono le tende sul piano. Tante. Io conto le stelle: sono di più.
+- NOTTE: RICOVERATO: Valenza mi ha rimboccato la coperta. Alla mia età, pensate un po'.
+- DIGIUNO: RICOVERATO: Digiuno anch'io, monsignore. Alla mia età si mangia poco comunque.
+- ULTIMATUM: RICOVERATO: Dalla finestra vedo le tende dei nemici nella valle. Sono tante, ma le stelle sono di più.
 
 ---
 
@@ -209,6 +209,6 @@ Sono gente di passaggio nella storia: nessuno accende bandiere, nessuno dà ogge
 
 **Il Garzone del carradore**
 
-- NOTTE: GARZONE: Mastro Rufino dorme accanto al carro. Dice che così non glielo rubano.
-- DIGIUNO: GARZONE: Ingrasso i mozzi a stomaco vuoto. Il grasso lo guardo e basta.
-- ULTIMATUM: GARZONE: Il mastro dice che le ruote cantano, se sono fatte bene. Io sento solo cigolare.
+- NOTTE: GARZONE: Mastro Rufino dorme accanto al carro. Dice che così nessuno glielo ruba.
+- DIGIUNO: GARZONE: Ungo le ruote a stomaco vuoto. Il grasso lo guardo e basta.
+- ULTIMATUM: GARZONE: Il mastro dice che le ruote fatte bene cantano. Io le sento solo cigolare.
