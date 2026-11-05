@@ -93,8 +93,9 @@ namespace
                                                                    colori(compagni::PALETTE_ANTONIO_NOTTE) };
 
     // La polvere della corsa (Loop 3, ok del custode visivo): uno sbuffo di 3-4 pixel dietro il piede che si
-    // stacca, nei toni 2 (P2) e 3 (P3) del suolo (banco 0 dei fondali, letti dalla palette caricata: di notte e
-    // nella gola cambiano da soli), tre fotogrammi da FRAME_SBUFFO vblank, solo sul selciato e sulla ghiaia.
+    // stacca, piu' chiaro del suolo: toni 5 (P5, sopra) e 4 (P4, a terra) del banco 0 dei fondali, letti dalla
+    // palette caricata (di notte e nella gola cambiano da soli), un pixel sopra la riga dei piedi perche' non cada
+    // sulla fuga del lastrico; tre fotogrammi da FRAME_SBUFFO vblank, solo sul selciato e sulla ghiaia.
     // Ogni pixel tocca un altro pixel (P3: niente pixel orfani). 4bpp: un nibble per pixel, il basso a sinistra.
     constexpr int FRAME_SBUFFO = 4;
     constexpr int VITA_SBUFFO = 3 * FRAME_SBUFFO;
@@ -106,10 +107,10 @@ namespace
     }
 
     constexpr bn::tile POLVERE[3] = {
-        // nasce: due pixel scuri a terra e uno chiaro sopra
+        // nasce: due pixel a terra e uno sopra
         riga_sbuffo(riga_sbuffo(bn::tile{}, 6, 0x00001000), 7, 0x00022000),
-        // si allarga: quattro pixel scuri a terra, due chiari sopra
-        riga_sbuffo(riga_sbuffo(bn::tile{}, 6, 0x00011000), 7, 0x00222200),
+        // si allarga: quattro pixel a terra e quattro sopra
+        riga_sbuffo(riga_sbuffo(bn::tile{}, 6, 0x00111100), 7, 0x00222200),
         // si posa: tre pixel chiari, piu' in alto
         riga_sbuffo(riga_sbuffo(bn::tile{}, 5, 0x00010000), 6, 0x00001100),
     };
@@ -579,11 +580,11 @@ void Esplorazione::_alza_polvere(bool piede_destro)
         y += _direzione == GIU ? 0 : 1;
     }
 
-    // i toni 2 e 3 del suolo (banco 0) della palette caricata, cosi' di notte e nella gola segue il fondale
+    // i toni 5 e 4 del suolo (banco 0: P4 e P3 si confondevano con la pietra) della palette caricata, cosi' di notte e nella gola segue il fondale
     bn::span<const bn::color> fondale = _palette.colors();
     bn::color colori[16] = {};
-    colori[1] = fondale[3];
-    colori[2] = fondale[2];
+    colori[1] = fondale[5];
+    colori[2] = fondale[4];
     _palette_polvere->set_colors(bn::span<const bn::color>(colori));
 
     Sbuffo& b = _sbuffi[_sbuffo_prossimo];
@@ -592,7 +593,7 @@ void Esplorazione::_alza_polvere(bool piede_destro)
     b.x = x;
     b.y = y;
     b.sprite.set_tiles(POLVERE_ITEM, 0);
-    b.sprite.set_position(x - _mezza_larghezza_mappa, y - 4 - _mezza_altezza_mappa);
+    b.sprite.set_position(x - _mezza_larghezza_mappa, y - 5 - _mezza_altezza_mappa);      // un pixel sopra i piedi
     b.sprite.set_z_order(z_sulla_mappa(y) + 1);         // dietro chi sta alla stessa riga
     b.sprite.set_blending_enabled(_scura);
     b.sprite.set_visible(true);

@@ -91,7 +91,7 @@ bandiera dalla parte sbagliata.
   il primo passo e' subito.
 - **Proposte (grafica nuova: passano dal custode visivo):** polvere ai piedi quando si corre (ok di massima del
   custode: piccola, P2/P3 del suolo, solo selciato e ghiaia; fatta sul ramo claude/project-thread-2tvd34, a904d4a,
-  in attesa della scelta dei toni: sul lastrico P2/P3 si confonde con le fughe), scintille al colpo forte in
+  poi rifatta: P5/P4, 8 px al centro, un pixel sopra i piedi, fusa in ripartenza), scintille al colpo forte in
   battaglia.
 
 ## Loop 4: mappe esterne e rendering
