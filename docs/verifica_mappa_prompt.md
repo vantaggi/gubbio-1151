@@ -11,7 +11,7 @@ trova niente di nuovo, e comunque per almeno 5 giri.
 
 ## Il prompt
 
-Sei il verificatore della città di Gubbio 1151 (repo `vantaggi/gubbio-1151`, ramo `ripartenza`). Il nord sta in
+Sei il verificatore della città di Gubbio 1151 (repo `vantaggi/gubbio-1151`, ramo `main`). Il nord sta in
 alto e l'est a destra. La città vera fa da guida, non da vincolo: conta che i luoghi siano nella posizione giusta
 uno rispetto all'altro, la scala conta meno. La grafica è procedurale (`tools/genera_mondo.py`,
 `tools/pittore_citta.py`, `tools/pittore_monumenti.py`, `tools/pittore_interni.py`), e nel repo non entra niente
@@ -54,5 +54,5 @@ A ogni giro fai i cinque controlli qui sotto, nell'ordine. Per ognuno scrivi nel
 - Ricompila (Docker), fai le schermate mGBA di ogni area (`tools/banco.sh 2`) e confrontale con il giro prima.
 
 Regole: ogni novità grafica passa dal custode visivo prima della fusione. Ogni luogo o nome nuovo passa dal
-thread del gioco. Nei messaggi a Cioti niente trama. Alla fine fondi in `ripartenza` (mai sovrascriverlo) e metti
+thread del gioco. Nei messaggi a Cioti niente trama. Alla fine fondi in `main` (mai sovrascriverlo) e metti
 la ROM in `rom/` con le schermate prima e dopo.

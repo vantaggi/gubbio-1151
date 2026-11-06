@@ -2,7 +2,7 @@
 
 Ogni loop: analisi e confronto coi grafi, piano, modifiche, build con **zero avvisi e zero errori**
 (`-Werror` nel Makefile), grafi e matrici aggiornati, test (`python3 tools/prove.py --tutte`) e fusione in
-`ripartenza`. I grafi del codice si rifanno con `python3 tools/grafo_moduli.py` (vedi
+`main`. I grafi del codice si rifanno con `python3 tools/grafo_moduli.py` (vedi
 [docs/architettura/ARCHITETTURA.md](docs/architettura/ARCHITETTURA.md)); il piano di produzione e' in
 `/mnt/project-files/piano/` (`produzione.yaml`, `piano.py`, pezzo `REV`); la trama ha il suo grafo
 (`tools/grafo_trama.py`), che questa revisione non tocca.

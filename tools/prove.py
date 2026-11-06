@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Le prove Python di tests/, veloci: in parallelo e, di default, solo quelle toccate dalla modifica.
 
-    python3 tools/prove.py              # solo i test che leggono un file cambiato rispetto a origin/ripartenza
+    python3 tools/prove.py              # solo i test che leggono un file cambiato rispetto a origin/main
     python3 tools/prove.py --da HEAD    # ... rispetto a un altro punto (qui: le sole modifiche non committate)
     python3 tools/prove.py --veloci     # tutti tranne i lenti (quelli che l'ultima volta hanno superato 15 s)
     python3 tools/prove.py --tutte      # tutti, in parallelo: prima di una fusione (la CI fa lo stesso)
@@ -153,7 +153,7 @@ def main():
     ap.add_argument("nomi", nargs="*", help="moduli o test da far girare (es. test_mondo, test_mondo.Mondo)")
     ap.add_argument("--tutte", action="store_true")
     ap.add_argument("--veloci", action="store_true")
-    ap.add_argument("--da", default="origin/ripartenza")
+    ap.add_argument("--da", default="origin/main")
     ap.add_argument("-j", type=int, default=os.cpu_count() or 2)
     ap.add_argument("--elenco", action="store_true")
     ap.add_argument("--senza-mgba", action="store_true", help="non lanciare le prove in mGBA anche se la ROM e' cambiata")

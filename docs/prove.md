@@ -25,7 +25,7 @@ In serie la suite ora gira in circa 3 min; con `tools/prove.py --tutte` su 4 cor
 ## `tools/prove.py`
 
     python3 tools/prove.py              # giro corto: solo i moduli che leggono un file cambiato
-    python3 tools/prove.py --da HEAD    # ... rispetto all'ultimo commit invece che a origin/ripartenza
+    python3 tools/prove.py --da HEAD    # ... rispetto all'ultimo commit invece che a origin/main
     python3 tools/prove.py --veloci     # tutti tranne i lenti (oltre 15 s l'ultima volta)
     python3 tools/prove.py --tutte      # tutto: prima di fondere (la CI fa lo stesso)
     python3 tools/prove.py test_mondo.Mondo     # quelli nominati

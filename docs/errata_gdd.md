@@ -1,7 +1,7 @@
 # Errata del GDD (regola R5)
 
-Il GDD del prototipo (`GUBBIO_1151_LA_BIBBIA_GDD.md`) non è nel ramo `ripartenza`: sta su `main` e nel
-tag `prototipo-v0`, e non si riscrive. Questo file elenca dove il GDD va letto diversamente, perché la
+Il GDD del prototipo (`GUBBIO_1151_LA_BIBBIA_GDD.md`) non è nel ramo `main`: sta nei
+tag `prototipo-v0` e `main-vecchio`, e non si riscrive. Questo file elenca dove il GDD va letto diversamente, perché la
 ripartenza ha deciso altro. **Quando GDD e questo file non concordano, vale questo file**; quando questo
 file e il copione non concordano, vale il copione (`copione/README.md`).
 
