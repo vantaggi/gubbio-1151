@@ -72,6 +72,7 @@ serve al prossimo gioco: che cosa si è deciso, chi l'ha deciso, se vale per qua
 | D056 | 2026-11-04 | Stile | Porte leggibili: il nero aperto è riservato alle porte vere; ogni ingresso ha luce, soglia e insegna | Claude | G | valida |
 | D057 | 2026-11-05 | Stile | Fedeltà col metodo dei professionisti: comprimere le distanze e non i segni, 3 segni per edificio, prima la silhouette, direzioni vere fra i luoghi | Cioti | G | valida |
 | D058 | 2026-11-04 | Stile | Sagome e animazioni di battaglia rifatte con un generatore a parti; protagonisti presenti nelle cutscene | Cioti | G | valida |
+| D059 | 2026-11-05 | Stile | Una figura, una forma: il controluce di una presentazione si ricava dalla figura a colori che segue, e ogni oggetto in primo piano si controlla perché non somigli a un simbolo d'interfaccia (bersagli, frecce, cursori) | Claude | G | valida |
 
 ## 4. Mondo e mappa
 
