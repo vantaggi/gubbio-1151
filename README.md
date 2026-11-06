@@ -24,6 +24,13 @@ matrice degli asset, aree e varchi. Sono generati dal codice con `python3 tools/
 `tests/test_architettura.py` fallisce se restano indietro. Lo stato della revisione a loop e' in
 [LOOP_PROGRESS.md](LOOP_PROGRESS.md). La ROM si compila con zero avvisi (`-Werror` nel Makefile).
 
+## Metodo di lavoro della serie
+
+[docs/metodo/](docs/metodo/README.md): registro delle decisioni, lezioni imparate e percorso per fare da zero
+il prossimo gioco della serie. Ogni decisione e ogni rifacimento si registrano li' nella stessa fusione che
+li applica; `python3 tools/controlla_metodo.py` (e `tests/test_metodo.py`) controlla che il registro sia in
+ordine.
+
 ## Regole di sviluppo GBA
 
 Chi scrive codice C++ per il gioco (persone e thread di Claude) segue
