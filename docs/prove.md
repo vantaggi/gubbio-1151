@@ -56,6 +56,14 @@ righe vietate (assert), limiti numerici, e le registrazioni in `tests/dati/*_mgb
 | battaglie | 3 | i 700 scontri uguali al mirror Python e a `tests/dati/battaglia_mgba.txt` |
 | salvataggio | 6 | scrittura, ricarica, banche, CRC |
 | varchi, folla, fila | 14, 12 | prestazioni (riga PREST con `-DGUBBIO_PRESTAZIONI`): picchi limitati e al piu' 3 finestre sopra il 100% vicino ai varchi; la fila senza assert |
+| palette_* | 2, 5, 9, 10, 11 | i picchi dei colori di sprite e fondali (`-DGUBBIO_PALETTE`) |
+| caccia_* (lunghe) | 0, 15, 13 | la caccia ai crash: il giocatore scimmia per 100 000 frame a seme, con `-DGUBBIO_LIMITI` ([caccia_ai_crash.md](caccia_ai_crash.md)) |
+| rete | 13 | un assert voluto: la rete che prende i crash deve vederlo e fotografarlo |
+
+Ogni assert di Butano finisce nel log ("ASSERT scattato") e il banco fotografa la schermata d'errore in
+`build_banco/crash/<prova>.png`; il log intero di ogni prova resta in `build_banco/log/<prova>.txt`. Con
+`-DGUBBIO_LIMITI` nessuna risorsa puo' passare il 90% del suo tetto. Le prove "lunghe" (la caccia) non girano nel
+giro corto di `tools/prove.py`, solo con `--tutte` (o `tools/prove_mgba.py` senza `--corte`).
 
 Perche' e' veloce: ogni combinazione di modo e flag ha la sua cartella di oggetti (`banco_obj<...>/`),
 quindi make ricompila solo i file cambiati (un `.cpp` toccato: 2 s), e accanto alla ROM c'e' l'impronta dei

@@ -25,6 +25,7 @@
 #include "aiuti.h"
 #include "compagni.h"
 #include "game_state.h"
+#include "limiti.h"
 #include "opzioni.h"
 #include "pannello.h"
 
@@ -466,6 +467,7 @@ void Esplorazione::_carica_fondale(bool etichetta)
     // Le celle sono gia' in ROM (include/mondo.h): Butano le copia in VRAM, o per una big map ne
     // carica solo la parte vicina allo schermo, e aggiunge da se' gli scostamenti di tile e palette.
     const mondo::Area& a = mondo::area(_e.area);
+    limiti::segna_area(int(_e.area), _e.x, _e.y);
 #ifdef GUBBIO_PRESTAZIONI
     bn::timer t;
     int tempi[4];

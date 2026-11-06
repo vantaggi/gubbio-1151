@@ -12,8 +12,8 @@ Si rifa' con `python3 tools/grafo_moduli.py`; `tests/test_architettura.py` contr
 
 ## Numeri
 
-- 98 file: 82 scritti a mano (23967 righe), 16 generati (66205 righe).
-- 269 include fra file del progetto.
+- 100 file: 84 scritti a mano (24234 righe), 16 generati (66205 righe).
+- 275 include fra file del progetto.
 - 38 asset, 38 usati.
 - 25 aree, 7 interni con una sola porta; 62 varchi.
 
@@ -42,8 +42,8 @@ Si rifa' con `python3 tools/grafo_moduli.py`; `tests/test_architettura.py` contr
 
 | Header | Inclusi da |
 | :-- | --: |
+| `include/game_state.h` | 19 |
 | `include/storia_logica.h` | 19 |
-| `include/game_state.h` | 18 |
 | `include/tabella.h` | 17 |
 | `include/audio.h` | 14 |
 | `include/vista_testo.h` | 13 |
@@ -61,7 +61,8 @@ Si rifa' con `python3 tools/grafo_moduli.py`; `tests/test_architettura.py` contr
 
 - include/battaglia.h: 1101 righe scritte a mano
 - include/storia_logica.h: 1211 righe scritte a mano
-- src/esplorazione.cpp: 1477 righe scritte a mano
+- src/esplorazione.cpp: 1479 righe scritte a mano
+- src/main.cpp: include 16 moduli del progetto
 - src/scena_battaglia.cpp: 1556 righe scritte a mano
 - src/scena_battaglia.cpp: include 14 moduli del progetto
 - src/storia_scena.cpp: 1776 righe scritte a mano

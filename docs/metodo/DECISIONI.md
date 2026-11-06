@@ -47,7 +47,7 @@ serve al prossimo gioco: che cosa si è deciso, chi l'ha deciso, se vale per qua
 | D029 | 2026-11-05 | Codice | Regole di sviluppo GBA (`docs/regole_sviluppo_gba.md`): niente float, niente `std::` e heap, tabelle `constexpr`, niente divisioni nel ciclo di ogni frame; controlli automatici in test, build e CI; pannello di debug L+Select | Cioti | G | valida |
 | D030 | 2026-11-05 | Codice | Budget hardware dichiarati e misurati: 128 strati di ordinamento degli sprite, palette degli sprite liberate prima di battaglie e cutscene, picchi nelle prove mGBA | Claude | G | valida |
 | D031 | 2026-11-05 | Prove | Nella cartella `rom/` resta solo la ROM dell'ultima fusione; le vecchie si cancellano | Cioti | G | valida |
-| D032 | 2026-11-06 | Prove | Caccia ai crash soprattutto con prove automatiche in cloud (limiti nel codice, migliaia di passaggi in mGBA); a Cioti una sessione breve e mirata | Claude, ok Cioti | G | in corso |
+| D032 | 2026-11-06 | Prove | Caccia ai crash soprattutto con prove automatiche in cloud: ogni assert finisce nel log con la foto della schermata, `-DGUBBIO_LIMITI` misura ogni risorsa a tetto fisso e la prova fallisce sopra il 90%, il giocatore scimmia (tasti a caso con seme) gioca gioco vero, titolo con slot e salti per tutti i varchi con battaglie; una prova della rete con un assert voluto (`docs/caccia_ai_crash.md`); a Cioti una sessione breve e mirata | Claude, ok Cioti | G | valida |
 
 ## 3. Stile grafico
 

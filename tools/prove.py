@@ -205,7 +205,7 @@ def main():
         return 0
     if not lista:
         print("[prove] niente da provare in Python")
-        return prove_mgba(a.j) if mgba else 0
+        return prove_mgba(a.j, a.tutte) if mgba else 0
 
     t0 = time.perf_counter()
     falliti, conti, nuove = [], 0, {}
@@ -235,15 +235,16 @@ def main():
     salva_tracce(tracce)
     print(f"[prove] {conti} test in {time.perf_counter() - t0:.1f} s, {len(falliti)} pezzi falliti")
     esito = 1 if falliti else 0
-    return max(esito, prove_mgba(a.j)) if mgba else esito
+    return max(esito, prove_mgba(a.j, a.tutte)) if mgba else esito
 
 
-def prove_mgba(j):
+def prove_mgba(j, tutte=False):
     """Le prove in mGBA. Se qui non si possono fare (niente docker o libmgba, es. sul PC Windows) lo dice e
-    non fallisce: le fa il prossimo giro in cloud prima della fusione."""
+    non fallisce: le fa il prossimo giro in cloud prima della fusione. Nel giro corto senza le lunghe (la caccia
+    ai crash, "lunga" in tests/mgba/prove.json): quelle girano con --tutte, prima di fondere."""
     sys.path.insert(0, os.path.join(RADICE, "tools"))
     import prove_mgba as P
-    esito = P.main(["-j", str(j)])
+    esito = P.main(["-j", str(j)] + ([] if tutte else ["--corte"]))
     if esito == 3:
         print("[prove] ATTENZIONE: prove in mGBA non fatte qui; vanno fatte prima di fondere", file=sys.stderr)
         return 0

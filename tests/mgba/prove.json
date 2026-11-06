@@ -1,5 +1,5 @@
 {
-  "_leggimi": "Prove in mGBA di tools/prove_mgba.py. Campi: nome, cosa, modo (GUBBIO_AVVIO), flag (altri -D, es. -DGUBBIO_PRESTAZIONI: ogni combinazione ha la sua ROM), copione (righe di tools/banco_mgba.c) o copione_file (in tests/mgba/copioni/), attese (regex che devono comparire), vietate (regex che non devono comparire; di default assert e ROM non caricata), limiti (regex col numero fra parentesi: massimo, minimo, righe = quante volte deve comparire, sopra + al_piu = al piu' N valori oltre la soglia (un picco ogni tanto si', un costo fisso no), scarta_dopo = regex dopo cui il valore seguente non conta, quante = quanti valori scartare), registrazione (file in tests/dati/ che le righe del log scelte dal filtro devono rifare uguale; --aggiorna lo riscrive). Il log si legge senza il numero di frame iniziale. Usare 'finche' nei copioni: la prova finisce appena il gioco ha finito.",
+  "_leggimi": "Prove in mGBA di tools/prove_mgba.py. Campi: nome, cosa, modo (GUBBIO_AVVIO), flag (altri -D, es. -DGUBBIO_PRESTAZIONI: ogni combinazione ha la sua ROM), copione (righe di tools/banco_mgba.c) o copione_file (in tests/mgba/copioni/), attese (regex che devono comparire), vietate (regex che non devono comparire; di default assert e ROM non caricata), limiti (regex col numero fra parentesi: massimo, minimo, righe = quante volte deve comparire, sopra + al_piu = al piu' N valori oltre la soglia (un picco ogni tanto si', un costo fisso no), scarta_dopo = regex dopo cui il valore seguente non conta, quante = quanti valori scartare), registrazione (file in tests/dati/ che le righe del log scelte dal filtro devono rifare uguale; --aggiorna lo riscrive). Il log si legge senza il numero di frame iniziale. Usare 'finche' nei copioni: la prova finisce appena il gioco ha finito. Con -DGUBBIO_LIMITI (include/limiti.h) nessuna risorsa puo' passare il 90% del tetto (righe 'LIMITI picco'), salvo 'tetti' ({\"fondali\": 100}); 'assert_atteso' solo per la prova della rete; 'lunga' = fuori dal giro corto di tools/prove.py. Il log intero di ogni prova resta in build_banco/log/, la foto di un assert in build_banco/crash/. Comando 'caso SEME N' = il giocatore scimmia (docs/caccia_ai_crash.md).",
   "prove": [
     {
       "nome": "camminata",
@@ -32,7 +32,13 @@
           "regex": "stack IWRAM (\\d+),",
           "massimo": 12288
         }
-      ]
+      ],
+      "flag": [
+        "-DGUBBIO_LIMITI"
+      ],
+      "tetti": {
+        "fondali": 100
+      }
     },
     {
       "nome": "storia",
@@ -47,6 +53,12 @@
       "registrazione": {
         "file": "tests/dati/storia_mgba.txt",
         "filtro": "."
+      },
+      "flag": [
+        "-DGUBBIO_LIMITI"
+      ],
+      "tetti": {
+        "fondali": 100
       }
     },
     {
@@ -62,6 +74,12 @@
       "registrazione": {
         "file": "tests/dati/prologo_mgba.txt",
         "filtro": "^(?!Istantane)"
+      },
+      "flag": [
+        "-DGUBBIO_LIMITI"
+      ],
+      "tetti": {
+        "fondali": 100
       }
     },
     {
@@ -121,7 +139,8 @@
       "modo": 12,
       "flag": [
         "-DGUBBIO_PRESTAZIONI",
-        "-DGUBBIO_PALETTE"
+        "-DGUBBIO_PALETTE",
+        "-DGUBBIO_LIMITI"
       ],
       "copione": [
         "finche Istantanee 200000"
@@ -149,7 +168,10 @@
           "regex": "^PALETTE picco sprite \\d+ fondali (\\d+)",
           "massimo": 224
         }
-      ]
+      ],
+      "tetti": {
+        "fondali": 100
+      }
     },
     {
       "nome": "fila",
@@ -165,7 +187,8 @@
       "cosa": "Palette (-DGUBBIO_PALETTE: una riga a ogni nuovo picco dei colori usati). Ogni area del mondo (istantanee del modo 2), citta' e interni: al massimo 224 colori su 256 per gli sprite e per i fondali, cosi' restano sempre due palette libere.",
       "modo": 2,
       "flag": [
-        "-DGUBBIO_PALETTE"
+        "-DGUBBIO_PALETTE",
+        "-DGUBBIO_LIMITI"
       ],
       "copione": [
         "finche Istantanee 200000"
@@ -182,14 +205,18 @@
           "regex": "^PALETTE picco sprite \\d+ fondali (\\d+)",
           "massimo": 224
         }
-      ]
+      ],
+      "tetti": {
+        "fondali": 100
+      }
     },
     {
       "nome": "palette_battaglie",
       "cosa": "Palette (-DGUBBIO_PALETTE: una riga a ogni nuovo picco dei colori usati). I 7 incontri col pilota e le schermate di battaglia (menu, schermata delle mosse, bersaglio, esito): al massimo 224 colori su 256 per gli sprite e per i fondali, cosi' restano sempre due palette libere.",
       "modo": 5,
       "flag": [
-        "-DGUBBIO_PALETTE"
+        "-DGUBBIO_PALETTE",
+        "-DGUBBIO_LIMITI"
       ],
       "copione": [
         "finche Istantanee 200000"
@@ -206,14 +233,18 @@
           "regex": "^PALETTE picco sprite \\d+ fondali (\\d+)",
           "massimo": 224
         }
-      ]
+      ],
+      "tetti": {
+        "fondali": 100
+      }
     },
     {
       "nome": "palette_prologo",
       "cosa": "Palette (-DGUBBIO_PALETTE: una riga a ogni nuovo picco dei colori usati). Il prologo giocabile: mappa, cutscene e la prima battaglia partita dalla citta': al massimo 224 colori su 256 per gli sprite e per i fondali, cosi' restano sempre due palette libere.",
       "modo": 9,
       "flag": [
-        "-DGUBBIO_PALETTE"
+        "-DGUBBIO_PALETTE",
+        "-DGUBBIO_LIMITI"
       ],
       "copione": [
         "finche Prologo: 50000"
@@ -230,14 +261,18 @@
           "regex": "^PALETTE picco sprite \\d+ fondali (\\d+)",
           "massimo": 224
         }
-      ]
+      ],
+      "tetti": {
+        "fondali": 100
+      }
     },
     {
       "nome": "palette_cutscene",
       "cosa": "Palette (-DGUBBIO_PALETTE: una riga a ogni nuovo picco dei colori usati). Tutte le cutscene: al massimo 224 colori su 256 per gli sprite e per i fondali, cosi' restano sempre due palette libere.",
       "modo": 10,
       "flag": [
-        "-DGUBBIO_PALETTE"
+        "-DGUBBIO_PALETTE",
+        "-DGUBBIO_LIMITI"
       ],
       "copione": [
         "finche Istantanee 200000"
@@ -254,14 +289,18 @@
           "regex": "^PALETTE picco sprite \\d+ fondali (\\d+)",
           "massimo": 224
         }
-      ]
+      ],
+      "tetti": {
+        "fondali": 100
+      }
     },
     {
       "nome": "palette_figure",
       "cosa": "Palette (-DGUBBIO_PALETTE: una riga a ogni nuovo picco dei colori usati). Tutte le figure degli NPC: al massimo 224 colori su 256 per gli sprite e per i fondali, cosi' restano sempre due palette libere.",
       "modo": 11,
       "flag": [
-        "-DGUBBIO_PALETTE"
+        "-DGUBBIO_PALETTE",
+        "-DGUBBIO_LIMITI"
       ],
       "copione": [
         "finche Istantanee 200000"
@@ -278,7 +317,159 @@
           "regex": "^PALETTE picco sprite \\d+ fondali (\\d+)",
           "massimo": 224
         }
-      ]
+      ],
+      "tetti": {
+        "fondali": 100
+      }
+    },
+    {
+      "nome": "caccia_vero_1",
+      "cosa": "La caccia ai crash (docs/caccia_ai_crash.md) nel gioco vero: titolo, partita nuova, prologo, citta', menu e battaglie coi tasti a caso del giocatore scimmia (seme 1). Nessun assert, nessun errore di mGBA, nessuna risorsa oltre il 90% del tetto.",
+      "modo": 0,
+      "flag": [
+        "-DGUBBIO_LIMITI"
+      ],
+      "copione": [
+        "caso 1 100000"
+      ],
+      "attese": [
+        "^CASO finito"
+      ],
+      "tetti": {
+        "fondali": 100
+      },
+      "lunga": true
+    },
+    {
+      "nome": "caccia_vero_2",
+      "cosa": "La caccia ai crash (docs/caccia_ai_crash.md) nel gioco vero: titolo, partita nuova, prologo, citta', menu e battaglie coi tasti a caso del giocatore scimmia (seme 2). Nessun assert, nessun errore di mGBA, nessuna risorsa oltre il 90% del tetto.",
+      "modo": 0,
+      "flag": [
+        "-DGUBBIO_LIMITI"
+      ],
+      "copione": [
+        "caso 2 100000"
+      ],
+      "attese": [
+        "^CASO finito"
+      ],
+      "tetti": {
+        "fondali": 100
+      },
+      "lunga": true
+    },
+    {
+      "nome": "caccia_slot",
+      "cosa": "La caccia ai crash col titolo e due slot gia' scritti (modo 15): Continua, Dove eravamo, carica e salva coi tasti a caso (seme 7).",
+      "modo": 15,
+      "flag": [
+        "-DGUBBIO_LIMITI"
+      ],
+      "copione": [
+        "caso 7 100000"
+      ],
+      "attese": [
+        "^CASO finito"
+      ],
+      "tetti": {
+        "fondali": 100
+      },
+      "lunga": true
+    },
+    {
+      "nome": "caccia_salti_1",
+      "cosa": "La caccia ai crash col modo 13: ogni 1500 frame un salto al prossimo varco del mondo (tutte le aree, tutti gli ingressi) e ogni tre salti una battaglia dalla mappa piena, giocata coi tasti a caso (seme 1).",
+      "modo": 13,
+      "flag": [
+        "-DGUBBIO_LIMITI"
+      ],
+      "copione": [
+        "caso 1 100000"
+      ],
+      "attese": [
+        "^CASO finito"
+      ],
+      "tetti": {
+        "fondali": 100
+      },
+      "lunga": true
+    },
+    {
+      "nome": "caccia_salti_2",
+      "cosa": "La caccia ai crash col modo 13: ogni 1500 frame un salto al prossimo varco del mondo (tutte le aree, tutti gli ingressi) e ogni tre salti una battaglia dalla mappa piena, giocata coi tasti a caso (seme 2).",
+      "modo": 13,
+      "flag": [
+        "-DGUBBIO_LIMITI"
+      ],
+      "copione": [
+        "caso 2 100000"
+      ],
+      "attese": [
+        "^CASO finito"
+      ],
+      "tetti": {
+        "fondali": 100
+      },
+      "lunga": true
+    },
+    {
+      "nome": "caccia_salti_3",
+      "cosa": "La caccia ai crash col modo 13: ogni 1500 frame un salto al prossimo varco del mondo (tutte le aree, tutti gli ingressi) e ogni tre salti una battaglia dalla mappa piena, giocata coi tasti a caso (seme 3).",
+      "modo": 13,
+      "flag": [
+        "-DGUBBIO_LIMITI"
+      ],
+      "copione": [
+        "caso 3 100000"
+      ],
+      "attese": [
+        "^CASO finito"
+      ],
+      "tetti": {
+        "fondali": 100
+      },
+      "lunga": true
+    },
+    {
+      "nome": "caccia_salti_4",
+      "cosa": "La caccia ai crash col modo 13: ogni 1500 frame un salto al prossimo varco del mondo (tutte le aree, tutti gli ingressi) e ogni tre salti una battaglia dalla mappa piena, giocata coi tasti a caso (seme 4).",
+      "modo": 13,
+      "flag": [
+        "-DGUBBIO_LIMITI"
+      ],
+      "copione": [
+        "caso 4 100000"
+      ],
+      "attese": [
+        "^CASO finito"
+      ],
+      "tetti": {
+        "fondali": 100
+      },
+      "lunga": true
+    },
+    {
+      "nome": "rete",
+      "cosa": "La prova della rete: con -DGUBBIO_PROVA_ASSERT il gioco si ferma apposta con un assert al frame 600 mentre il giocatore scimmia gioca. Il log deve avere la riga dell'assert (include/limiti.h) e il banco la foto della schermata d'errore: se questa prova fallisce, le altre non vedrebbero un crash.",
+      "modo": 13,
+      "flag": [
+        "-DGUBBIO_LIMITI",
+        "-DGUBBIO_PROVA_ASSERT"
+      ],
+      "copione": [
+        "caso 1 5000"
+      ],
+      "attese": [
+        "^ASSERT scattato area \\d+",
+        "^!! fermo all'assert"
+      ],
+      "vietate": [
+        "^CASO finito"
+      ],
+      "assert_atteso": true,
+      "tetti": {
+        "fondali": 100
+      }
     }
   ]
 }

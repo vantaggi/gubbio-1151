@@ -10,6 +10,9 @@
 #include "audio.h"
 #include "esplorazione.h"
 #include "game_state.h"
+#include "limiti.h"
+#include "battaglia_dati.h"
+#include "mondo_logica.h"
 #include "opzioni.h"
 #include "pannello_debug.h"
 #include "scena_battaglia.h"
@@ -28,7 +31,7 @@
 // 4 i tre scontri giocabili a mano, 5 le istantanee della battaglia, 6 la prova del salvataggio,
 // 7 le istantanee del titolo e della pausa, 8 la storia intera senza camminare, 9 il prologo giocabile
 // col pilota, 10 le cutscene con le istantanee, 11 le figure degli NPC, 12 la citta' viva (NPC e folla),
-// (13 libero), 14 la partita senza titolo ne' prologo, 15 il gioco vero con due slot di prova gia' scritti (le foto degli aiuti)
+// 13 la caccia ai crash (salti d'area e battaglie a ritmo fisso, i tasti li preme il banco a caso), 14 la partita senza titolo ne' prologo, 15 il gioco vero con due slot di prova gia' scritti (le foto degli aiuti)
 // (make USERFLAGS=-DGUBBIO_AVVIO=1). Senza modo di prova: il titolo, poi la partita; Start apre la pausa.
 #ifndef GUBBIO_AVVIO
     #define GUBBIO_AVVIO 0
@@ -36,7 +39,7 @@
 
 // Gli aiuti al giocatore (cartelli ai varchi, promemoria di Select): il gioco vero (0), la partita senza
 // titolo ne' prologo (14) e quella con gli slot di prova (15), per fotografarli. Spenti negli altri modi.
-constexpr bool AIUTI_ATTIVI = GUBBIO_AVVIO == 0 || GUBBIO_AVVIO == 14 || GUBBIO_AVVIO == 15;
+constexpr bool AIUTI_ATTIVI = GUBBIO_AVVIO == 0 || GUBBIO_AVVIO == 13 || GUBBIO_AVVIO == 14 || GUBBIO_AVVIO == 15;
 // Il titolo, «Dove eravamo» e gli scontri della storia: il gioco vero e il modo 15, che scrive prima due slot di
 // prova (gubbio::prepara_slot_di_prova) e poi va come il gioco vero, senza il prologo.
 constexpr bool COL_TITOLO = GUBBIO_AVVIO == 0 || GUBBIO_AVVIO == 15;
@@ -45,28 +48,9 @@ int main()
 {
     bn::core::init();
 
-#ifdef GUBBIO_PALETTE
-    // Le palette a ogni frame (prova "palette" in tests/mgba/prove.json): una riga a ogni nuovo picco dei colori
-    // usati, sprite e fondali (256 ciascuno, poi Butano si ferma con "There are no more available colors").
-    bn::core::set_update_callback([]{
-        static int picco_sprite = 0;
-        static int picco_bg = 0;
-        int s = bn::sprite_palettes::used_colors_count();
-        int b = bn::bg_palettes::used_colors_count();
-
-        if(s > picco_sprite || b > picco_bg)
-        {
-            picco_sprite = s > picco_sprite ? s : picco_sprite;
-            picco_bg = b > picco_bg ? b : picco_bg;
-            BN_LOG("PALETTE picco sprite ", picco_sprite, " fondali ", picco_bg);
-
-            if(s >= 224)
-            {
-                bn::sprite_palettes::log_status();
-            }
-        }
-    });
-#endif
+    // gli assert di Butano anche nel log di mGBA; con -DGUBBIO_LIMITI o -DGUBBIO_PALETTE i picchi delle risorse
+    // a ogni frame (include/limiti.h, docs/caccia_ai_crash.md)
+    gubbio::limiti::installa();
     // le opzioni (MOP) valgono da subito, anche nel titolo
     gubbio::opzioni::carica();
     gubbio::opzioni::applica();
@@ -275,6 +259,15 @@ int main()
     auto prest_segna = [](int) {};
 #endif
 
+#if GUBBIO_AVVIO == 13
+    constexpr uint32_t CACCIA_OGNI = 1500;     // frame fra due salti (25 s di gioco)
+    uint32_t caccia_prossimo = CACCIA_OGNI;
+    int caccia_salti = 0;
+    int caccia_area = 0;
+    int caccia_varco = 0;
+    int caccia_incontro = 0;
+#endif
+
     while(true)
     {
 #ifdef GUBBIO_PRESTAZIONI
@@ -331,6 +324,62 @@ int main()
             esplorazione.promemoria();
         }
 
+#if GUBBIO_AVVIO == 13
+        // La caccia ai crash (docs/caccia_ai_crash.md): i tasti li preme a caso il banco (comando "caso"); qui,
+        // a ritmo fisso, un salto in un'altra area da un altro varco (in giro tutte le aree e tutti gli ingressi)
+        // e ogni tre salti una battaglia lasciando la mappa piena, giocata coi tasti a caso.
+        if(! esplorazione.in_dissolvenza() && gubbio::g_game_state.frames >= caccia_prossimo)
+        {
+            caccia_prossimo = gubbio::g_game_state.frames + CACCIA_OGNI;
+            ++caccia_salti;
+
+            if(caccia_salti % 3 == 0)
+            {
+                storia.svuota();
+                scontri.svuota();
+                esplorazione.sospendi();
+                bn::core::update();     // regole GBA 4.B.6
+                int incontro = caccia_incontro;
+                caccia_incontro = caccia_incontro + 1 == gubbio::battaglia::INCONTRI ? 0 : caccia_incontro + 1;
+                gubbio::battaglia::Esito esito = gubbio::scena_battaglia(
+                        incontro, uint32_t(gubbio::g_game_state.frames) | 1u, gubbio::Guida::GIOCATORE, palette, false,
+                        &gubbio::g_game_state);
+                BN_LOG("CACCIA battaglia ", incontro, " dall'area ", int(esplorazione.esploratore().area), " esito ",
+                       int(esito));
+                esplorazione.ricompari();
+            }
+            else
+            {
+                // il prossimo varco del mondo, area per area: si arriva dove porta, come passandoci davvero
+                const gubbio::mondo::Varco* v = nullptr;
+
+                for(int giri = 0; giri < 2 * gubbio::mondo::AREE_CONTEGGIO * gubbio::mondo::VARCHI_MAX && ! v; ++giri)
+                {
+                    const gubbio::mondo::Area& a = gubbio::mondo::area(gubbio::mondo::AreaId(caccia_area));
+
+                    if(caccia_varco < a.varchi && a.varco[caccia_varco].destinazione >= 0)
+                    {
+                        v = &a.varco[caccia_varco];
+                    }
+
+                    if(++caccia_varco >= a.varchi)
+                    {
+                        caccia_varco = 0;
+                        caccia_area = caccia_area + 1 == gubbio::mondo::AREE_CONTEGGIO ? 0 : caccia_area + 1;
+                    }
+                }
+
+                BN_ASSERT(v, "Caccia: nessun varco nel mondo");
+                gubbio::mondo::AreaId id = gubbio::mondo::AreaId(v->destinazione);
+                int spawn = v->spawn;
+                storia.svuota();
+                scontri.svuota();
+                BN_LOG("CACCIA salto ", caccia_salti, " area ", int(id), " ingresso ", spawn);
+                esplorazione.entra(id, spawn);
+            }
+        }
+#endif
+
         int dx = bn::keypad::left_held() ? -1 : (bn::keypad::right_held() ? 1 : 0);
         int dy = bn::keypad::up_held() ? -1 : (bn::keypad::down_held() ? 1 : 0);
         esplorazione.muovi(dx, dy, gubbio::opzioni::passi(gubbio::opzioni::g_opzioni, bn::keypad::b_held()));
@@ -346,7 +395,7 @@ int main()
         esplorazione.imposta_compagni(2);       // la prova della fila: niente scene, solo la camminata
         if(false)
 #else
-        if((COL_TITOLO || GUBBIO_AVVIO == 14) && storia.aggiorna(esplorazione, palette))
+        if((COL_TITOLO || GUBBIO_AVVIO == 13 || GUBBIO_AVVIO == 14) && storia.aggiorna(esplorazione, palette))
 #endif
         {
             scontri.svuota();

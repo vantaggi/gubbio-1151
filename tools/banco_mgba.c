@@ -12,7 +12,12 @@
 //                        fino alla riga che contiene FINE (al massimo M frame)
 //   premi_finche TASTI TESTO M  un tocco di TASTI ogni 20 frame finche' il log contiene TESTO (al massimo M
 //                        frame); trovato, non tocca piu' niente (i dialoghi e la battaglia fino a un menu)
-// Il log del gioco (bn::core::log) va su stderr.
+//   caso SEME N          il giocatore scimmia (docs/caccia_ai_crash.md): N frame di tasti a caso col SEME
+//                        (croce tenuta, corsa, A a raffica, B, Start, Select, L/R), mai A+B+Select+Start; alla
+//                        fine la riga "CASO finito". Dice "!! bloccato" se il gioco tace per 20 000 frame.
+// Il log del gioco (bn::core::log) va su stderr, con gli errori di mGBA ("MGBA ..."). Alla riga
+// "ASSERT scattato" (include/limiti.h) il banco lascia passare 30 frame, salva assert.ppm (la schermata
+// d'errore di Butano, col messaggio) e si ferma.
 #include <mgba/flags.h>
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
@@ -30,14 +35,23 @@ static const char* cerca;
 static long frame_n;
 static const char* cattura;
 static char da_fotografare[512];
+static long crollato = -1;            // il frame dell'assert, -1 nessuno
+static long ultimo_log;               // il frame dell'ultima riga del gioco
 
 static void logga(struct mLogger* l, int cat, enum mLogLevel lv, const char* f, va_list a)
 {
     (void) l;
-    if(strcmp(mLogCategoryName(cat), "GBA Debug") && !(lv & (mLOG_ERROR | mLOG_FATAL)))
+    int debug = !strcmp(mLogCategoryName(cat), "GBA Debug");
+    if(!debug && !(lv & (mLOG_ERROR | mLOG_FATAL | mLOG_GAME_ERROR)))
         return;
     vsnprintf(ultimo, sizeof ultimo, f, a);
-    fprintf(stderr, "[%ld] %s\n", frame_n, ultimo);
+    if(debug)
+        fprintf(stderr, "[%ld] %s\n", frame_n, ultimo);
+    else
+        fprintf(stderr, "[%ld] MGBA %s: %s\n", frame_n, mLogCategoryName(cat), ultimo);
+    ultimo_log = frame_n;
+    if(crollato < 0 && strstr(ultimo, "ASSERT scattato"))
+        crollato = frame_n;
     if(cerca && strstr(ultimo, cerca))
         trovato = 1;
     if(cattura && strstr(ultimo, cattura))
@@ -86,7 +100,62 @@ static void corri(int k, int n)
     {
         core->runFrame(core);
         if(da_fotografare[0]) { foto(da_fotografare); da_fotografare[0] = 0; }
+        if(crollato >= 0 && frame_n - crollato >= 30)
+        {
+            foto("assert");
+            fprintf(stderr, "[%ld] !! fermo all'assert, foto in assert.ppm\n", frame_n);
+            core->deinit(core);
+            exit(0);
+        }
     }
+}
+
+// xorshift32: lo stesso SEME da' gli stessi tasti, quindi un crash trovato si rifa' uguale
+static uint32_t caso_stato;
+static uint32_t caso(uint32_t n)
+{
+    caso_stato ^= caso_stato << 13;
+    caso_stato ^= caso_stato >> 17;
+    caso_stato ^= caso_stato << 5;
+    return caso_stato % n;
+}
+
+static void scimmia(uint32_t seme, long n)
+{
+    enum { A = 1, B = 2, SELECT = 4, START = 8, DESTRA = 16, SINISTRA = 32, SU = 64, GIU = 128, R = 256, L = 512 };
+    static const int croce[8] = { DESTRA, SINISTRA, SU, GIU, SU | DESTRA, SU | SINISTRA, GIU | DESTRA, GIU | SINISTRA };
+    caso_stato = seme ? seme * 2654435761u : 1;
+    long fine = frame_n + n;
+    ultimo_log = frame_n;
+    while(frame_n < fine)
+    {
+        uint32_t r = caso(100);
+        if(r < 50)                                      // camminare (diagonale una volta su 3), a volte di corsa
+        {
+            int k = croce[caso(3) ? caso(4) : 4 + caso(4)];
+            corri(k | (caso(10) < 3 ? B : 0), 8 + caso(90));
+        }
+        else if(r < 76)                                 // A a raffica: dialoghi, cartelli, menu, battaglia
+        {
+            for(int i = 1 + caso(6); i > 0; --i) { corri(A, 2); corri(0, 6); }
+        }
+        else if(r < 82)                                 // una freccia e A: scegliere una voce dei menu
+        {
+            corri(croce[caso(4)], 2); corri(0, 4); corri(A, 2); corri(0, 6);
+        }
+        else if(r < 88) { corri(B, 2); corri(0, 8); }
+        else if(r < 91) { corri(START, 2); corri(0, 10); }
+        else if(r < 93) { corri(SELECT, 2); corri(0, 10); }
+        else if(r < 94) { corri(L, 4); corri(L | SELECT, 2); corri(0, 10); }   // il pannello di debug
+        else if(r < 96) { corri(caso(2) ? L : R, 2); corri(0, 8); }
+        else corri(0, 10 + caso(50));
+        if(frame_n - ultimo_log > 20000)
+        {
+            fprintf(stderr, "[%ld] !! bloccato: il gioco non scrive nel log da %ld frame\n", frame_n, frame_n - ultimo_log);
+            ultimo_log = frame_n;
+        }
+    }
+    fprintf(stderr, "[%ld] CASO finito seme %u frame %ld\n", frame_n, seme, n);
 }
 
 int main(int argc, char** argv)
@@ -110,6 +179,7 @@ int main(int argc, char** argv)
         if(n < 1 || cmd[0] == '#') continue;
         if(!strcmp(cmd, "aspetta")) corri(0, atoi(a));
         else if(!strcmp(cmd, "tieni")) corri(tasti(a), atoi(b));
+        else if(!strcmp(cmd, "caso")) scimmia((uint32_t) strtoul(a, NULL, 10), atol(b));
         else if(!strcmp(cmd, "premi")) { corri(tasti(a), 2); corri(0, 8); }
         else if(!strcmp(cmd, "foto")) foto(a);
         else if(!strcmp(cmd, "tieni_foto"))

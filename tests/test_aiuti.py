@@ -100,7 +100,7 @@ class Testi(unittest.TestCase):
             self.assertTrue(re.search(rf"^{t}\s*\| SCELTA\s*\|", partita, re.M), t)
 
 
-MODI_CON_AIUTI = {0, 14, 15}    # il gioco vero e le due partite di prova che servono a fotografarli
+MODI_CON_AIUTI = {0, 13, 14, 15}    # il gioco vero, la caccia ai crash (13) e le due partite di prova che servono a fotografarli
 MODI_COL_TITOLO = {0, 15}       # titolo e «Dove eravamo»: il gioco vero e la partita con gli slot di prova
 
 

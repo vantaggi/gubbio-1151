@@ -5,6 +5,7 @@
     python3 tools/prove_mgba.py                 # tutte le prove di tests/mgba/prove.json
     python3 tools/prove_mgba.py camminata       # quelle nominate
     python3 tools/prove_mgba.py --aggiorna      # riscrive le registrazioni in tests/dati/ col log nuovo
+    python3 tools/prove_mgba.py --corte         # senza le lunghe (la caccia ai crash: docs/caccia_ai_crash.md)
     opzioni: -j N (prove in parallelo), --elenco
 
 Serve: docker con l'immagine della CI (mirror.gcr.io/devkitpro/devkitarm:20260610, stesso digest di
@@ -37,7 +38,13 @@ SORGENTI = ("src", "include", "graphics", "audio")
 FILE_SOLI = ("Makefile",)
 FRAME = re.compile(r"^\[\d+\] ")
 # righe che nessuna prova accetta: un assert di Butano o un errore di mGBA (si cambia con "vietate": [...])
-VIETATE = (r"(?i)\bassert", r"(?i)\bROM non caricata\b")
+VIETATE = (r"(?i)\bassert", r"(?i)\bROM non caricata\b", r"^!! bloccato", r"^MGBA ")
+# con -DGUBBIO_LIMITI (include/limiti.h): una riga a ogni nuovo picco di ogni risorsa; nessuna puo' passare la
+# soglia (in percento del tetto), salvo i "tetti" della prova ({"sprite": 100, ...})
+PICCO = re.compile(r"^LIMITI picco (\S+) (\d+) su (\d+) \((\d+)%\)")
+SOGLIA = 90
+CRASH = os.path.join(CARTELLA, "crash")
+LOG = os.path.join(CARTELLA, "log")
 
 
 def nome_rom(modo, flag):
@@ -148,8 +155,15 @@ def gira(prova, eseguibile, gba, aggiorna):
                 f.write("\n".join(prova["copione"]) + "\n")
         r = subprocess.run([eseguibile, gba, copione], cwd=dove, capture_output=True, text=True,
                            errors="replace", timeout=prova.get("secondi", 300))
+        foto_assert = salva_foto_assert(prova["nome"], dove)
     righe = [FRAME.sub("", x) for x in r.stderr.splitlines()]
+    os.makedirs(LOG, exist_ok=True)               # il log intero, per rileggerlo dopo (anche quando passa)
+    with open(os.path.join(LOG, f"{prova['nome']}.txt"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(r.stderr)
     errori = []
+    if foto_assert and not prova.get("assert_atteso"):
+        errori.append(f"assert di Butano: la schermata e' in {os.path.relpath(foto_assert, RADICE)}")
+    errori += vicino_al_tetto(righe, prova.get("tetti", {}))
     for attesa in prova.get("attese", []):
         if not any(re.search(attesa, x) for x in righe):
             errori.append(f"nel log manca una riga come /{attesa}/")
@@ -183,9 +197,11 @@ def gira(prova, eseguibile, gba, aggiorna):
                               f"al piu' {limite.get('al_piu', 0)}")
         if "minimo" in limite and min(valori) < limite["minimo"]:
             errori.append(f"/{limite['regex']}/ scende a {min(valori)}, il minimo e' {limite['minimo']}")
+    if prova.get("assert_atteso") and not foto_assert:
+        errori.append("l'assert voluto non ha lasciato la foto della schermata d'errore")
     reg = prova.get("registrazione")
     if reg:
-        dentro = [x for x in righe if re.search(reg["filtro"], x)]
+        dentro = [x for x in righe if re.search(reg["filtro"], x) and not x.startswith("LIMITI ")]
         percorso = os.path.join(RADICE, reg["file"])
         attese = open(percorso, encoding="utf-8").read().splitlines() if os.path.exists(percorso) else []
         if dentro != attese:
@@ -200,11 +216,43 @@ def gira(prova, eseguibile, gba, aggiorna):
     return prova["nome"], errori, time.perf_counter() - t0, righe
 
 
+def vicino_al_tetto(righe, tetti):
+    """Le risorse di -DGUBBIO_LIMITI oltre la soglia (SOGLIA, o quella della prova in tetti): un errore per
+    risorsa, col suo picco piu' alto."""
+    picchi = {}
+    for x in righe:
+        m = PICCO.match(x)
+        if m and int(m.group(4)) >= picchi.get(m.group(1), (0, 0, -1, ""))[2]:
+            picchi[m.group(1)] = (int(m.group(2)), int(m.group(3)), int(m.group(4)), x)
+    errori = []
+    for nome, (uso, tetto, percento, riga) in sorted(picchi.items()):
+        if percento > tetti.get(nome, SOGLIA):
+            errori.append(f"{nome} vicino al tetto: {uso} su {tetto} ({percento}%, soglia {tetti.get(nome, SOGLIA)}%): {riga!r}")
+    return errori
+
+
+def salva_foto_assert(nome, dove):
+    """La schermata d'errore di Butano (assert.ppm del banco) in build_banco/crash/<prova>.png, se c'e'."""
+    ppm = os.path.join(dove, "assert.ppm")
+    if not os.path.exists(ppm):
+        return None
+    os.makedirs(CRASH, exist_ok=True)
+    try:
+        from PIL import Image
+        destinazione = os.path.join(CRASH, f"{nome}.png")
+        Image.open(ppm).resize((480, 320), Image.NEAREST).save(destinazione)
+    except ImportError:
+        destinazione = os.path.join(CRASH, f"{nome}.ppm")
+        shutil.copy(ppm, destinazione)
+    return destinazione
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("nomi", nargs="*")
     ap.add_argument("--aggiorna", action="store_true")
     ap.add_argument("--elenco", action="store_true")
+    ap.add_argument("--corte", action="store_true", help="senza le prove lunghe (la caccia ai crash)")
     ap.add_argument("-j", type=int, default=os.cpu_count() or 2)
     a = ap.parse_args(argv)
     with open(PROVE, encoding="utf-8") as f:
@@ -215,6 +263,8 @@ def main(argv=None):
             print(f"[mgba] prove sconosciute: {', '.join(sorted(sconosciute))}", file=sys.stderr)
             return 2
         prove = [p for p in prove if p["nome"] in a.nomi]
+    elif a.corte:
+        prove = [p for p in prove if not p.get("lunga")]
     for p in prove:
         print(f"[mgba]   {p['nome']:16s} modo {p['modo']:2d} {' '.join(p.get('flag', [])):24s} {p['cosa'][:70]}")
     if a.elenco:
