@@ -95,7 +95,7 @@ void prova_prologo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& pal
 
 // GUBBIO_AVVIO=12: la citta' viva (VIVA): per ogni area della citta' e ogni fase (ultimatum, digiuno, notte) gli
 // NPC e la folla senza scene, due istantanee a distanza di 80 frame ("Istantanea folla_<area>_<fase>_<n>").
-[[noreturn]] void prova_folla(Esplorazione& esplorazione);
+[[noreturn]] void prova_folla(Esplorazione& esplorazione, const bn::sprite_palette_ptr& palette_testo);
 
 }
 

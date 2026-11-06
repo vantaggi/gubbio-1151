@@ -35,6 +35,9 @@ public:
     // Per una battaglia: lo sfondo si libera (i suoi tile servono alla scena) e il giocatore si
     // nasconde; ricompari() rimette tutto com'era.
     void sospendi();
+    void _libera_palette();
+    void _riprendi_palette();
+    const bn::sprite_palette_ptr& _aiuti_palette();
 
     // I compagni che seguono Ubaldo in fila (0 nessuno, 1 Giorgio, 2 Giorgio e Antonio): lo decide la storia a ogni
     // frame (GIORGIO_NEL_GRUPPO, ANTONIO_NEL_GRUPPO). Camminano sulle orme di Ubaldo, COMPAGNO_DISTANZA px l'uno
@@ -203,7 +206,10 @@ private:
     // vicino (mockup 12, A2: legno, freccia, due righe). Si creano solo mentre si vedono: con i loro sprite sempre
     // allocati «Dove eravamo» e i dialoghi finivano gli elementi di tile degli sprite di Butano.
     bn::sprite_palette_ptr _palette_testo;
-    bn::sprite_palette_ptr _palette_aiuti;
+    bn::optional<bn::sprite_palette_ptr> _palette_aiuti;     // si crea quando serve (_aiuti_palette), si libera in sospendi()
+    // in sospendi() Ubaldo, il fumetto, il cartiglio e la polvere passano alla palette del testo e le loro si
+    // liberano: alla battaglia e alle cutscene restano 15 palette di sprite su 16 (prova "palette" in mGBA)
+    bool _palette_libere = false;
     bn::optional<pannello::Pannello> _promemoria_fondo;
     bn::optional<VistaTesto> _promemoria;
     bn::optional<pannello::Pannello> _targa;

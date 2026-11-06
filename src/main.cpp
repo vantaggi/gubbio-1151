@@ -2,6 +2,7 @@
 #include "bn_color.h"
 #include "bn_core.h"
 #include "bn_keypad.h"
+#include "bn_sprite_palettes.h"
 #include "bn_log.h"
 #include "bn_timer.h"
 #include "bn_timers.h"
@@ -43,6 +44,29 @@ constexpr bool COL_TITOLO = GUBBIO_AVVIO == 0 || GUBBIO_AVVIO == 15;
 int main()
 {
     bn::core::init();
+
+#ifdef GUBBIO_PALETTE
+    // Le palette a ogni frame (prova "palette" in tests/mgba/prove.json): una riga a ogni nuovo picco dei colori
+    // usati, sprite e fondali (256 ciascuno, poi Butano si ferma con "There are no more available colors").
+    bn::core::set_update_callback([]{
+        static int picco_sprite = 0;
+        static int picco_bg = 0;
+        int s = bn::sprite_palettes::used_colors_count();
+        int b = bn::bg_palettes::used_colors_count();
+
+        if(s > picco_sprite || b > picco_bg)
+        {
+            picco_sprite = s > picco_sprite ? s : picco_sprite;
+            picco_bg = b > picco_bg ? b : picco_bg;
+            BN_LOG("PALETTE picco sprite ", picco_sprite, " fondali ", picco_bg);
+
+            if(s >= 224)
+            {
+                bn::sprite_palettes::log_status();
+            }
+        }
+    });
+#endif
     // le opzioni (MOP) valgono da subito, anche nel titolo
     gubbio::opzioni::carica();
     gubbio::opzioni::applica();
@@ -175,7 +199,7 @@ int main()
 
     if(GUBBIO_AVVIO == 12)
     {
-        gubbio::prova_folla(esplorazione);
+        gubbio::prova_folla(esplorazione, palette);
     }
 
     if(GUBBIO_AVVIO == 7)

@@ -1645,7 +1645,7 @@ void prova_prologo(Esplorazione& esplorazione, const bn::sprite_palette_ptr& pal
 }
 
 
-void prova_folla(Esplorazione& esplorazione)
+void prova_folla(Esplorazione& esplorazione, [[maybe_unused]] const bn::sprite_palette_ptr& palette_testo)
 {
     constexpr mondo::AreaId AREE[] = {
         mondo::AreaId::PIAZZA_GRANDE, mondo::AreaId::VIA_DEI_CONSOLI, mondo::AreaId::LARGO_BARGELLO,
@@ -1705,6 +1705,22 @@ void prova_folla(Esplorazione& esplorazione)
 
 #ifdef GUBBIO_PRESTAZIONI
             BN_LOG("PREST folla area ", int(area), " fase ", fase, " cpu ", peggio);
+#endif
+
+#ifdef GUBBIO_PALETTE
+            // una battaglia lasciando quest'area piena di gente, con la fila: ogni incontro almeno una volta
+            // (le 10 aree della prima fase), come quando lo scontro parte dalla mappa
+            if(fase == 0)
+            {
+                static int incontro = 0;
+                gente.svuota();
+                esplorazione.sospendi();
+                bn::core::update();
+                battaglia::Esito esito = scena_battaglia(incontro, 1, Guida::PILOTA, palette_testo, true);
+                BN_LOG("PALETTE battaglia ", incontro, " dall'area ", int(area), " esito ", int(esito));
+                incontro = (incontro + 1) % battaglia::INCONTRI;
+                esplorazione.ricompari();
+            }
 #endif
         }
     }

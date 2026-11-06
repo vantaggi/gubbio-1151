@@ -117,13 +117,14 @@
     },
     {
       "nome": "folla",
-      "cosa": "La gente e gli animali in 10 aree per 3 fasi, con Ubaldo e la fila (Giorgio, Antonio) che ci passano in mezzo: il frame piu' pesante per area (oggi al massimo 32%). Poi il passaggio vero da via XX Settembre a Sant'Andrea con la dissolvenza. Con i 16 strati di ordinamento predefiniti di Butano si fermava in San Martino ('No more sprite sort layers available', prova di Cioti del 5 nov): le 30 righe non arrivano.",
+      "cosa": "La gente e gli animali in 10 aree per 3 fasi, con Ubaldo e la fila (Giorgio, Antonio) che ci passano in mezzo: il frame piu' pesante per area (oggi al massimo 32%). Poi il passaggio vero da via XX Settembre a Sant'Andrea con la dissolvenza. Con -DGUBBIO_PALETTE, in ogni area della prima fase una battaglia (ogni incontro almeno una volta) come se partisse dalla mappa, e i picchi delle palette di sprite e fondali: al massimo 224 colori su 256, due palette libere (prova di Cioti del 5 nov: 'There are no more available colors'; prima della correzione la battaglia dalla mappa arrivava a 256). Con i 16 strati di ordinamento predefiniti di Butano si fermava in San Martino ('No more sprite sort layers available', prova di Cioti del 5 nov): le 30 righe non arrivano.",
       "modo": 12,
       "flag": [
-        "-DGUBBIO_PRESTAZIONI"
+        "-DGUBBIO_PRESTAZIONI",
+        "-DGUBBIO_PALETTE"
       ],
       "copione": [
-        "finche Istantanee 20000"
+        "finche Istantanee 200000"
       ],
       "limiti": [
         {
@@ -135,6 +136,18 @@
           "regex": "^PREST passaggio via XX Settembre -> Sant'Andrea arrivato si frame \\d+ cpu (\\d+)",
           "massimo": 95,
           "righe": 1
+        },
+        {
+          "regex": "^PALETTE battaglia \\d+ dall'area \\d+ esito (\\d+)",
+          "righe": 10
+        },
+        {
+          "regex": "^PALETTE picco sprite (\\d+)",
+          "massimo": 224
+        },
+        {
+          "regex": "^PALETTE picco sprite \\d+ fondali (\\d+)",
+          "massimo": 224
         }
       ]
     },
@@ -146,6 +159,126 @@
         "-DGUBBIO_PROVA_FILA"
       ],
       "copione_file": "tests/mgba/copioni/fila.txt"
+    },
+    {
+      "nome": "palette_aree",
+      "cosa": "Palette (-DGUBBIO_PALETTE: una riga a ogni nuovo picco dei colori usati). Ogni area del mondo (istantanee del modo 2), citta' e interni: al massimo 224 colori su 256 per gli sprite e per i fondali, cosi' restano sempre due palette libere.",
+      "modo": 2,
+      "flag": [
+        "-DGUBBIO_PALETTE"
+      ],
+      "copione": [
+        "finche Istantanee 200000"
+      ],
+      "attese": [
+        "^Istantanee finite"
+      ],
+      "limiti": [
+        {
+          "regex": "^PALETTE picco sprite (\\d+)",
+          "massimo": 224
+        },
+        {
+          "regex": "^PALETTE picco sprite \\d+ fondali (\\d+)",
+          "massimo": 224
+        }
+      ]
+    },
+    {
+      "nome": "palette_battaglie",
+      "cosa": "Palette (-DGUBBIO_PALETTE: una riga a ogni nuovo picco dei colori usati). I 7 incontri col pilota e le schermate di battaglia (menu, schermata delle mosse, bersaglio, esito): al massimo 224 colori su 256 per gli sprite e per i fondali, cosi' restano sempre due palette libere.",
+      "modo": 5,
+      "flag": [
+        "-DGUBBIO_PALETTE"
+      ],
+      "copione": [
+        "finche Istantanee 200000"
+      ],
+      "attese": [
+        "^Istantanee finite"
+      ],
+      "limiti": [
+        {
+          "regex": "^PALETTE picco sprite (\\d+)",
+          "massimo": 224
+        },
+        {
+          "regex": "^PALETTE picco sprite \\d+ fondali (\\d+)",
+          "massimo": 224
+        }
+      ]
+    },
+    {
+      "nome": "palette_prologo",
+      "cosa": "Palette (-DGUBBIO_PALETTE: una riga a ogni nuovo picco dei colori usati). Il prologo giocabile: mappa, cutscene e la prima battaglia partita dalla citta': al massimo 224 colori su 256 per gli sprite e per i fondali, cosi' restano sempre due palette libere.",
+      "modo": 9,
+      "flag": [
+        "-DGUBBIO_PALETTE"
+      ],
+      "copione": [
+        "finche Prologo: 50000"
+      ],
+      "attese": [
+        "^Prologo: "
+      ],
+      "limiti": [
+        {
+          "regex": "^PALETTE picco sprite (\\d+)",
+          "massimo": 224
+        },
+        {
+          "regex": "^PALETTE picco sprite \\d+ fondali (\\d+)",
+          "massimo": 224
+        }
+      ]
+    },
+    {
+      "nome": "palette_cutscene",
+      "cosa": "Palette (-DGUBBIO_PALETTE: una riga a ogni nuovo picco dei colori usati). Tutte le cutscene: al massimo 224 colori su 256 per gli sprite e per i fondali, cosi' restano sempre due palette libere.",
+      "modo": 10,
+      "flag": [
+        "-DGUBBIO_PALETTE"
+      ],
+      "copione": [
+        "finche Istantanee 200000"
+      ],
+      "attese": [
+        "^Istantanee finite"
+      ],
+      "limiti": [
+        {
+          "regex": "^PALETTE picco sprite (\\d+)",
+          "massimo": 224
+        },
+        {
+          "regex": "^PALETTE picco sprite \\d+ fondali (\\d+)",
+          "massimo": 224
+        }
+      ]
+    },
+    {
+      "nome": "palette_figure",
+      "cosa": "Palette (-DGUBBIO_PALETTE: una riga a ogni nuovo picco dei colori usati). Tutte le figure degli NPC: al massimo 224 colori su 256 per gli sprite e per i fondali, cosi' restano sempre due palette libere.",
+      "modo": 11,
+      "flag": [
+        "-DGUBBIO_PALETTE"
+      ],
+      "copione": [
+        "finche Istantanee 200000"
+      ],
+      "attese": [
+        "^Istantanee finite"
+      ],
+      "limiti": [
+        {
+          "regex": "^PALETTE picco sprite (\\d+)",
+          "massimo": 224
+        },
+        {
+          "regex": "^PALETTE picco sprite \\d+ fondali (\\d+)",
+          "massimo": 224
+        }
+      ]
     }
   ]
 }

@@ -263,8 +263,7 @@ Esplorazione::Esplorazione(const bn::sprite_palette_ptr& palette_testo) :
     _cartiglio(crea_cartiglio()),
     _ombra(testo::Contesto::AREA, 25, 9, INCHIOSTRO_OMBRA, palette_testo),
     _etichetta(testo::Contesto::AREA, 24, 8, INCHIOSTRO_ETICHETTA, palette_testo),
-    _palette_testo(palette_testo),
-    _palette_aiuti(pannello::crea_palette())
+    _palette_testo(palette_testo)
 {
     _giocatore.set_camera(_camera);
     _fumetto.set_camera(_camera);
@@ -287,6 +286,7 @@ Esplorazione::Esplorazione(const bn::sprite_palette_ptr& palette_testo) :
 void Esplorazione::entra(mondo::AreaId id, int spawn)
 {
     mondo::colloca(_e, id, spawn);
+    _riprendi_palette();
     _carica_fondale();
     _giocatore.set_visible(true);       // dopo il prologo (sospendi): Ubaldo torna solo in citta'
 }
@@ -297,6 +297,7 @@ void Esplorazione::riprendi(mondo::AreaId id, int x, int y)
     _e.x = x;
     _e.y = y;
     _e.varco_sotto = -1;
+    _riprendi_palette();
     _carica_fondale();
     _giocatore.set_visible(true);
 }
@@ -326,8 +327,13 @@ void Esplorazione::imposta_notte(bool notte)
     {
         _notte = notte;
         // Ubaldo (e il fumetto, che ne usa la palette) passa alle rampe di notte con la citta'
-        bn::sprite_palette_ptr palette = _giocatore.palette();
-        palette.set_colors(bn::span<const bn::color>((notte ? COLORI_GIOCATORE_NOTTE : COLORI_GIOCATORE).colori));
+        // con le palette libere (sospendi) Ubaldo ha quella del testo: la sua torna coi colori giusti in
+        // _riprendi_palette, che legge _notte
+        if(! _palette_libere)
+        {
+            bn::sprite_palette_ptr palette = _giocatore.palette();
+            palette.set_colors(bn::span<const bn::color>((notte ? COLORI_GIOCATORE_NOTTE : COLORI_GIOCATORE).colori));
+        }
 
         for(int i = 0; i < _fila.size(); ++i)
         {
@@ -363,14 +369,87 @@ void Esplorazione::sospendi()
     togli_compagni();
     _giocatore.set_visible(false);
     _spegni_polvere();
+    _nascondi_aiuti();
+    _libera_palette();
     _fondale.reset();
     _tiles.reset();
+}
+
+const bn::sprite_palette_ptr& Esplorazione::_aiuti_palette()
+{
+    if(! _palette_aiuti)
+    {
+        _palette_aiuti = pannello::crea_palette();
+    }
+
+    return *_palette_aiuti;
+}
+
+// Le palette di sprite sono 16 e una battaglia ne usa fino a 13 (testo compreso): con quelle della mappa
+// ancora prese (Ubaldo, cartiglio, aiuti, polvere) Butano finiva i colori ("There are no more available
+// colors", prova di Cioti del 5 nov). Gli sprite nascosti restano, con la palette del testo.
+void Esplorazione::_libera_palette()
+{
+    _palette_aiuti.reset();
+
+    if(_palette_libere)
+    {
+        return;
+    }
+
+    _palette_libere = true;
+    _giocatore.set_palette(_palette_testo);
+    _fumetto.set_palette(_palette_testo);
+
+    for(bn::sprite_ptr& pezzo : _cartiglio)
+    {
+        pezzo.set_palette(_palette_testo);
+    }
+
+    for(Sbuffo& b : _sbuffi)
+    {
+        b.sprite.set_palette(_palette_testo);
+    }
+
+    _palette_polvere.reset();
+}
+
+void Esplorazione::_riprendi_palette()
+{
+    if(! _palette_libere)
+    {
+        return;
+    }
+
+    _palette_libere = false;
+    // create_new: le loro palette cambiano colori (la notte, la polvere che segue il suolo), non vanno divise
+    bn::sprite_palette_ptr giocatore = bn::sprite_palette_ptr::create_new(bn::sprite_palette_item(
+        bn::span<const bn::color>((_notte ? COLORI_GIOCATORE_NOTTE : COLORI_GIOCATORE).colori), bn::bpp_mode::BPP_4));
+    _giocatore.set_palette(giocatore);
+    _fumetto.set_palette(giocatore);
+    bn::sprite_palette_ptr cartiglio = bn::sprite_palette_ptr::create(
+        bn::sprite_palette_item(bn::span<const bn::color>(COLORI_FONDALI.colori), bn::bpp_mode::BPP_4));
+
+    for(bn::sprite_ptr& pezzo : _cartiglio)
+    {
+        pezzo.set_palette(cartiglio);
+    }
+
+    bn::color colori[16] = {};
+    _palette_polvere = bn::sprite_palette_ptr::create_new(bn::sprite_palette_item(bn::span<const bn::color>(colori),
+                                                                                  bn::bpp_mode::BPP_4));
+
+    for(Sbuffo& b : _sbuffi)
+    {
+        b.sprite.set_palette(*_palette_polvere);
+    }
 }
 
 void Esplorazione::ricompari()
 {
     // dopo una battaglia o una cutscene si resta nella stessa area: il cartiglio col nome non riappare,
     // se no resterebbe a meta' (la sola iniziale) sotto il dialogo che segue, che non fa avanzare l'etichetta
+    _riprendi_palette();
     _carica_fondale(false);
     _giocatore.set_visible(true);
 }
@@ -491,6 +570,8 @@ void Esplorazione::_dopo_evento(mondo::Evento evento)
 
 void Esplorazione::muovi(int dx, int dy, int passi)
 {
+    _riprendi_palette();
+
     if(_dissolvenza)
     {
         return;
@@ -922,6 +1003,8 @@ void Esplorazione::sincronizza(mondo::Evento evento)
 
 void Esplorazione::aggiorna()
 {
+    _riprendi_palette();       // di solito gia' fatto da entra(), riprendi() o ricompari()
+
     // i riflessi del torrente nelle stanze della gola: i due colori dell'acqua si scambiano
     // (il contatore gira su due scambi, senza modulo: 0 e FRAME_RIFLESSI sono i due momenti dello scambio)
     if(mondo::area(_area_caricata).cupa &&
@@ -1122,12 +1205,12 @@ void Esplorazione::promemoria()
     int righe = testo::dati(testo).righe;
     _promemoria_alto = aiuti::altezza_promemoria(righe);
     int w = aiuti::PROMEMORIA_X1 - aiuti::PROMEMORIA_X0 + 1;
-    _promemoria_fondo.emplace(aiuti::PROMEMORIA_X0, aiuti::PROMEMORIA_Y0, w, _promemoria_alto, _palette_aiuti);
+    _promemoria_fondo.emplace(aiuti::PROMEMORIA_X0, aiuti::PROMEMORIA_Y0, w, _promemoria_alto, _aiuti_palette());
     _promemoria_fondo->rett(0, 0, w - 1, _promemoria_alto - 1, pannello::SCURO);
     _promemoria_fondo->bordo(0, 0, w - 1, _promemoria_alto - 1, pannello::PIOMBO);
     _promemoria_fondo->disegno(aiuti::STELLA, aiuti::STELLA_X - aiuti::PROMEMORIA_X0, 5);
     _promemoria.emplace(testo::Contesto::DIALOGO, aiuti::PROMEMORIA_TESTO_X, aiuti::PROMEMORIA_Y0 + aiuti::PROMEMORIA_TESTO_DY,
-                        pannello::CHIARO, _palette_aiuti);
+                        pannello::CHIARO, _aiuti_palette());
     _promemoria->mostra(testo);
     _promemoria->rivela_tutto();
 
@@ -1148,11 +1231,11 @@ void Esplorazione::promemoria()
         aiuti::Rettangolo r = aiuti::posto_della_targa(largo, righe, _rettangolo_del_giocatore(), cartello);
         _targa_x = r.x0;
         _targa_y = r.y0;
-        _targa.emplace(r.x0, r.y0, r.x1 - r.x0 + 1, aiuti::TARGA_ALTEZZA, _palette_aiuti);
+        _targa.emplace(r.x0, r.y0, r.x1 - r.x0 + 1, aiuti::TARGA_ALTEZZA, _aiuti_palette());
         _targa->rett(0, 0, r.x1 - r.x0, aiuti::TARGA_ALTEZZA - 1, pannello::SCURO);
         _targa->bordo(0, 0, r.x1 - r.x0, aiuti::TARGA_ALTEZZA - 1, pannello::PIOMBO);
         _disegna_freccia_della_targa(false);
-        _targa_nome.emplace(testo::Contesto::AREA, r.x0 + 4, r.y0 + 3, pannello::CHIARO, _palette_aiuti);
+        _targa_nome.emplace(testo::Contesto::AREA, r.x0 + 4, r.y0 + 3, pannello::CHIARO, _aiuti_palette());
         _targa_nome->mostra(dove);
         _targa_nome->rivela_tutto();
     }
@@ -1221,7 +1304,7 @@ void Esplorazione::_mostra_aiuto(bn::optional<VistaTesto>& vista, testo::Contest
 {
     if(! vista)
     {
-        vista.emplace(contesto, x, y, inchiostro, _palette_aiuti);
+        vista.emplace(contesto, x, y, inchiostro, _aiuti_palette());
     }
 
     vista->mostra(testo);
@@ -1277,7 +1360,7 @@ void Esplorazione::_crea_cartello(int varco)
     _oltre.reset();
     _cartello_fondo.reset();
     segna(0);
-    _cartello_fondo.emplace(r.x0, r.y0, w, h, _palette_aiuti);
+    _cartello_fondo.emplace(r.x0, r.y0, w, h, _aiuti_palette());
     _cartello_fondo->rett(0, 0, w - 1, h - 1, pannello::LEGNO);
     _cartello_fondo->bordo(0, 0, w - 1, h - 1, pannello::PIOMBO);
     _cartello_fondo->bordo(2, 2, w - 3, h - 3, pannello::LEGNO_LUCE);
